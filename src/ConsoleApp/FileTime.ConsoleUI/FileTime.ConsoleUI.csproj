@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\FileTime.Core\FileTime.Core.csproj" />
-    <ProjectReference Include="..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
+    <ProjectReference Include="..\..\Core\FileTime.Core\FileTime.Core.csproj" />
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
     <ProjectReference Include="..\FileTime.ConsoleUI.App\FileTime.ConsoleUI.App.csproj" />
-    <ProjectReference Include="..\FileTime.App.Core\FileTime.App.Core.csproj" />
-    <ProjectReference Include="..\FileTime.App.Style\FileTime.App.Style.csproj" />
+    <ProjectReference Include="..\..\AppCommon\FileTime.App.Core\FileTime.App.Core.csproj" />
+    <ProjectReference Include="..\..\AppCommon\FileTime.App.Style\FileTime.App.Style.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />

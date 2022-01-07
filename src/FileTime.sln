@@ -1,31 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Core", "FileTime.Core\FileTime.Core.csproj", "{F5C58BDC-BDCE-47B8-9371-70DB815E9B0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.Core", "Core\FileTime.Core\FileTime.Core.csproj", "{F5C58BDC-BDCE-47B8-9371-70DB815E9B0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.ConsoleUI", "FileTime.ConsoleUI\FileTime.ConsoleUI.csproj", "{EC1F7FC4-5600-4953-A85A-534CA43601C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.ConsoleUI", "ConsoleApp\FileTime.ConsoleUI\FileTime.ConsoleUI.csproj", "{EC1F7FC4-5600-4953-A85A-534CA43601C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.ConsoleUI.App", "FileTime.ConsoleUI.App\FileTime.ConsoleUI.App.csproj", "{A88EB44A-EE33-4A91-8C61-B33B31C9DF07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.ConsoleUI.App", "ConsoleApp\FileTime.ConsoleUI.App\FileTime.ConsoleUI.App.csproj", "{A88EB44A-EE33-4A91-8C61-B33B31C9DF07}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Providers", "Providers", "{517D96CE-A956-4638-A93D-465D34DE22B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Providers.Local", "Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj", "{AAE01ED7-2E8B-40A2-AD0E-95BDA7C99272}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.Providers.Local", "Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj", "{AAE01ED7-2E8B-40A2-AD0E-95BDA7C99272}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.Core", "FileTime.App.Core\FileTime.App.Core.csproj", "{2C0F630D-FD5D-4554-B8DD-F11BF4EB49C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.App.Core", "AppCommon\FileTime.App.Core\FileTime.App.Core.csproj", "{2C0F630D-FD5D-4554-B8DD-F11BF4EB49C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.Style", "FileTime.App.Style\FileTime.App.Style.csproj", "{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.App.Style", "AppCommon\FileTime.App.Style\FileTime.App.Style.csproj", "{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.Style.Abstraction", "FileTime.App.Style.Abstraction\FileTime.App.Style.Abstraction.csproj", "{BEA824B0-7684-44FF-95BF-A75E92A36C9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.App.Style.Abstraction", "AppCommon\FileTime.App.Style.Abstraction\FileTime.App.Style.Abstraction.csproj", "{BEA824B0-7684-44FF-95BF-A75E92A36C9F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConsoleApp", "ConsoleApp", "{1E192D23-2B2B-47E1-915C-82A061C05580}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppCommon", "AppCommon", "{D4C7E692-53C0-4423-9944-E25FE3D51BA2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{38B1B927-4201-4B7A-87EE-737B8C6D4090}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{F5C58BDC-BDCE-47B8-9371-70DB815E9B0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -36,10 +39,6 @@ Global
 		{EC1F7FC4-5600-4953-A85A-534CA43601C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC1F7FC4-5600-4953-A85A-534CA43601C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC1F7FC4-5600-4953-A85A-534CA43601C3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9FC4BC8-4E7D-491A-AA67-EABE52CF2999}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9FC4BC8-4E7D-491A-AA67-EABE52CF2999}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9FC4BC8-4E7D-491A-AA67-EABE52CF2999}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9FC4BC8-4E7D-491A-AA67-EABE52CF2999}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A88EB44A-EE33-4A91-8C61-B33B31C9DF07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A88EB44A-EE33-4A91-8C61-B33B31C9DF07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A88EB44A-EE33-4A91-8C61-B33B31C9DF07}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -61,7 +60,19 @@ Global
 		{BEA824B0-7684-44FF-95BF-A75E92A36C9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEA824B0-7684-44FF-95BF-A75E92A36C9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{F5C58BDC-BDCE-47B8-9371-70DB815E9B0E} = {38B1B927-4201-4B7A-87EE-737B8C6D4090}
+		{EC1F7FC4-5600-4953-A85A-534CA43601C3} = {1E192D23-2B2B-47E1-915C-82A061C05580}
+		{A88EB44A-EE33-4A91-8C61-B33B31C9DF07} = {1E192D23-2B2B-47E1-915C-82A061C05580}
 		{AAE01ED7-2E8B-40A2-AD0E-95BDA7C99272} = {517D96CE-A956-4638-A93D-465D34DE22B1}
+		{2C0F630D-FD5D-4554-B8DD-F11BF4EB49C5} = {D4C7E692-53C0-4423-9944-E25FE3D51BA2}
+		{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA} = {D4C7E692-53C0-4423-9944-E25FE3D51BA2}
+		{BEA824B0-7684-44FF-95BF-A75E92A36C9F} = {D4C7E692-53C0-4423-9944-E25FE3D51BA2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D679DCE-AC84-4A91-BFED-8F8D8E1D8183}
 	EndGlobalSection
 EndGlobal

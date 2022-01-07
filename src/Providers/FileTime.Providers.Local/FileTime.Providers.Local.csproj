@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\..\FileTime.Core\FileTime.Core.csproj"/>
+    <ProjectReference Include="..\..\Core\FileTime.Core\FileTime.Core.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0"/>

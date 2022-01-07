@@ -9,9 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/FileTime.ConsoleUI/bin/Debug/net6.0/FileTime.ConsoleUI.dll",
+            "program": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/bin/Debug/net6.0/FileTime.ConsoleUI.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/FileTime.ConsoleUI",
+            "cwd": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI",
             "console": "internalConsole",
             "stopAtEntry": false
         },
