@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Providers.Local", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.Core", "FileTime.App.Core\FileTime.App.Core.csproj", "{2C0F630D-FD5D-4554-B8DD-F11BF4EB49C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.Style", "FileTime.App.Style\FileTime.App.Style.csproj", "{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.Style.Abstraction", "FileTime.App.Style.Abstraction\FileTime.App.Style.Abstraction.csproj", "{BEA824B0-7684-44FF-95BF-A75E92A36C9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +52,14 @@ Global
 		{2C0F630D-FD5D-4554-B8DD-F11BF4EB49C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C0F630D-FD5D-4554-B8DD-F11BF4EB49C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C0F630D-FD5D-4554-B8DD-F11BF4EB49C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92961CA3-ECAB-4920-95CA-F37E8F3EFDFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEA824B0-7684-44FF-95BF-A75E92A36C9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEA824B0-7684-44FF-95BF-A75E92A36C9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEA824B0-7684-44FF-95BF-A75E92A36C9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEA824B0-7684-44FF-95BF-A75E92A36C9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AAE01ED7-2E8B-40A2-AD0E-95BDA7C99272} = {517D96CE-A956-4638-A93D-465D34DE22B1}

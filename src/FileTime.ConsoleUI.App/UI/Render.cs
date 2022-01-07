@@ -232,8 +232,8 @@ namespace FileTime.ConsoleUI.App.UI
             }
             else
             {
-                _coloredRenderer.BackgroundColor = new BasicColor(ConsoleColor.Red);
-                _coloredRenderer.ForegroundColor = new BasicColor(ConsoleColor.White);
+                _coloredRenderer.BackgroundColor = _appStyle.ErrorColor;
+                _coloredRenderer.ForegroundColor = _appStyle.ErrorInverseColor;
                 Console.SetCursorPosition(startX, startY + currentY++);
 
                 _coloredRenderer.Write($"{{0,-{elementWidth}}}", _paddingLeft + "<empty>" + _paddingRight);

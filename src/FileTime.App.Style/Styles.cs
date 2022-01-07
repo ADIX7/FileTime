@@ -16,6 +16,7 @@ namespace FileTime.ConsoleUI.App.UI
         public IConsoleColor? SelectedItemForeground { get; }
 
         public IConsoleColor? ErrorColor { get; }
+        public IConsoleColor? ErrorInverseColor { get; }
         public IConsoleColor? AccentForeground { get; }
 
         public Styles(bool useAnsiColors)
@@ -29,6 +30,7 @@ namespace FileTime.ConsoleUI.App.UI
                 ElementBackground = AnsiColor.From8bit(0);
 
                 ErrorColor = AnsiColor.From8bit(1);
+                ErrorInverseColor = AnsiColor.From8bit(15);
                 AccentForeground = AnsiColor.From8bit(2);
             }
             else
@@ -40,6 +42,7 @@ namespace FileTime.ConsoleUI.App.UI
                 SelectedItemForeground = new BasicColor(ConsoleColor.DarkYellow);
 
                 ErrorColor = new BasicColor(ConsoleColor.Red);
+                ErrorInverseColor = new BasicColor(ConsoleColor.White);
                 AccentForeground = new BasicColor(ConsoleColor.Green);
             }
 

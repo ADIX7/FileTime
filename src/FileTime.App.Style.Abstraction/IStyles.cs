@@ -15,6 +15,7 @@ namespace FileTime.ConsoleUI.App.UI
         IConsoleColor? SelectedItemBackground { get; }
         IConsoleColor? SelectedItemForeground { get; }
         IConsoleColor? ErrorColor { get; }
+        IConsoleColor? ErrorInverseColor { get; }
         IConsoleColor? AccentForeground { get; }
     }
 }
