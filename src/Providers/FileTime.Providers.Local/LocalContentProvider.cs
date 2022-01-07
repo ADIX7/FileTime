@@ -48,7 +48,6 @@ namespace FileTime.Providers.Local
             var pathParts = (IsCaseInsensitive ? path.ToLower() : path).TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
             var rootContainer = RootContainers.FirstOrDefault(c => NormalizePath(c.Name) == NormalizePath(pathParts[0]));
 
-            _logger.LogError("No root container found with name '{0}'", path[0]);
             if (rootContainer == null)
             {
                 _logger.LogWarning("No root container found with name '{0}'", path[0]);

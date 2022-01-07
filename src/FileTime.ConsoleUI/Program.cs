@@ -100,7 +100,7 @@ namespace FileTime.ConsoleUI
         private static ServiceProvider CreateServiceProvider()
         {
             return new ServiceCollection()
-                .AddLogging((builder) => builder.AddConsole().AddDebug())
+                .AddLogging(/* (builder) => builder.AddConsole().AddDebug() */)
                 .AddSingleton<Application>()
                 .AddSingleton<IStyles>(new Styles(IsAnsiColorSupported()))
                 .AddSingleton<IColoredConsoleRenderer, ColoredConsoleRenderer>()

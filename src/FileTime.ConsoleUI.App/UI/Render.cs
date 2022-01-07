@@ -237,6 +237,7 @@ namespace FileTime.ConsoleUI.App.UI
                 Console.SetCursorPosition(startX, startY + currentY++);
 
                 _coloredRenderer.Write($"{{0,-{elementWidth}}}", _paddingLeft + "<empty>" + _paddingRight);
+                printedItemsCount++;
             }
 
             var padding = new string(' ', elementWidth);

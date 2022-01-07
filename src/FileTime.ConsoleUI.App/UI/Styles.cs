@@ -37,7 +37,7 @@ namespace FileTime.ConsoleUI.App.UI
                 ElementBackground = new BasicColor(Console.BackgroundColor);
                 ElementForeground = new BasicColor(Console.ForegroundColor);
                 ElementSpecialForeground = new BasicColor(ConsoleColor.DarkGreen);
-                SelectedItemForeground = new BasicColor(ConsoleColor.DarkCyan);
+                SelectedItemForeground = new BasicColor(ConsoleColor.DarkYellow);
 
                 ErrorColor = new BasicColor(ConsoleColor.Red);
                 AccentForeground = new BasicColor(ConsoleColor.Green);
