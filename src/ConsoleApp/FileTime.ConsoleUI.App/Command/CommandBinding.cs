@@ -1,3 +1,5 @@
+using FileTime.App.Core.Command;
+
 namespace FileTime.ConsoleUI.App.Command
 {
     public class CommandBinding

@@ -1,4 +1,4 @@
-namespace FileTime.ConsoleUI.App.Command
+namespace FileTime.App.Core.Command
 {
     public enum Commands
     {

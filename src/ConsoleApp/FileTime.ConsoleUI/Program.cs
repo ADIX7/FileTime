@@ -1,4 +1,5 @@
-﻿using FileTime.App.Core.Clipboard;
+﻿using FileTime.App.Core;
+using FileTime.App.Core.Clipboard;
 using FileTime.ConsoleUI.App;
 using FileTime.ConsoleUI.App.UI;
 using FileTime.ConsoleUI.App.UI.Color;
@@ -99,17 +100,14 @@ namespace FileTime.ConsoleUI
 
         private static ServiceProvider CreateServiceProvider()
         {
-            return new ServiceCollection()
+            return DependencyInjection.RegisterDefaultServices()
                 .AddLogging(/* (builder) => builder.AddConsole().AddDebug() */)
                 .AddSingleton<Application>()
+
                 .AddSingleton<IStyles>(new Styles(IsAnsiColorSupported()))
                 .AddSingleton<IColoredConsoleRenderer, ColoredConsoleRenderer>()
-                .AddSingleton<IClipboard, Clipboard>()
-                .AddSingleton<LocalContentProvider>()
-                .AddSingleton<IContentProvider, LocalContentProvider>(sp => sp.GetService<LocalContentProvider>() ?? throw new Exception($"No {nameof(LocalContentProvider)} instance found"))
-                .AddSingleton<ElementCreationStates>()
-                .AddSingleton<CommandExecutor>()
                 .AddSingleton<ConsoleReader>()
+
                 .AddTransient<Render>()
                 .RegisterCommandHandlers()
                 .BuildServiceProvider();

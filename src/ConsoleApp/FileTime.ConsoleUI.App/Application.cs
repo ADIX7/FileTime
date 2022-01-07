@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using FileTime.App.Core.Tab;
 using FileTime.ConsoleUI.App.UI.Color;
 using FileTime.Core.Command;
+using FileTime.App.Core.Command;
 
 namespace FileTime.ConsoleUI.App
 {
