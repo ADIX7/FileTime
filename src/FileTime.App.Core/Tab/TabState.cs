@@ -2,30 +2,30 @@ using System.Collections.ObjectModel;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 
-namespace FileTime.App.Core.Pane
+namespace FileTime.App.Core.Tab
 {
-    public class PaneState
+    public class TabState
     {
-        private readonly Dictionary<IContainer, List<PaneItem>> _selectedItems;
-        private readonly Dictionary<IContainer, IReadOnlyList<PaneItem>> _selectedItemsReadOnly;
-        public IReadOnlyDictionary<IContainer, IReadOnlyList<PaneItem>> SelectedItems { get; }
+        private readonly Dictionary<IContainer, List<TabItem>> _selectedItems;
+        private readonly Dictionary<IContainer, IReadOnlyList<TabItem>> _selectedItemsReadOnly;
+        public IReadOnlyDictionary<IContainer, IReadOnlyList<TabItem>> SelectedItems { get; }
 
-        public FileTime.Core.Components.Pane Pane { get; }
+        public FileTime.Core.Components.Tab Tab { get; }
 
-        public PaneState(FileTime.Core.Components.Pane pane)
+        public TabState(FileTime.Core.Components.Tab pane)
         {
-            Pane = pane;
+            Tab = pane;
 
-            _selectedItems = new Dictionary<IContainer, List<PaneItem>>();
-            _selectedItemsReadOnly = new Dictionary<IContainer, IReadOnlyList<PaneItem>>();
-            SelectedItems = new ReadOnlyDictionary<IContainer, IReadOnlyList<PaneItem>>(_selectedItemsReadOnly);
+            _selectedItems = new Dictionary<IContainer, List<TabItem>>();
+            _selectedItemsReadOnly = new Dictionary<IContainer, IReadOnlyList<TabItem>>();
+            SelectedItems = new ReadOnlyDictionary<IContainer, IReadOnlyList<TabItem>>(_selectedItemsReadOnly);
         }
 
         public void AddSelectedItem(IContentProvider contentProvider, IContainer container, string path)
         {
             if (!_selectedItems.ContainsKey(container))
             {
-                var val = new List<PaneItem>();
+                var val = new List<TabItem>();
                 _selectedItems.Add(container, val);
                 _selectedItemsReadOnly.Add(container, val.AsReadOnly());
             }
@@ -35,7 +35,7 @@ namespace FileTime.App.Core.Pane
                 if (content.ContentProvider == contentProvider && content.Path == path) return;
             }
 
-            _selectedItems[container].Add(new PaneItem(contentProvider, path));
+            _selectedItems[container].Add(new TabItem(contentProvider, path));
         }
 
         public void RemoveSelectedItem(IContentProvider contentProvider, IContainer container, string path)
@@ -65,9 +65,9 @@ namespace FileTime.App.Core.Pane
             return false;
         }
 
-        public IReadOnlyList<PaneItem> GetCurrentSelectedItems() =>
-            SelectedItems.ContainsKey(Pane.CurrentLocation)
-            ? SelectedItems[Pane.CurrentLocation]
-            : new List<PaneItem>().AsReadOnly();
+        public IReadOnlyList<TabItem> GetCurrentSelectedItems() =>
+            SelectedItems.ContainsKey(Tab.CurrentLocation)
+            ? SelectedItems[Tab.CurrentLocation]
+            : new List<TabItem>().AsReadOnly();
     }
 }

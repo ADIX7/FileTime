@@ -2,7 +2,7 @@ namespace FileTime.ConsoleUI.App.Command
 {
     public enum Commands
     {
-        ClosePane,
+        CloseTab,
         Copy,
         Cut,
         GoUp,

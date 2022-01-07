@@ -2,7 +2,7 @@ using FileTime.Core.Models;
 
 namespace FileTime.Core.Components
 {
-    public class Pane
+    public class Tab
     {
         private IItem? currentSelectedItem;
         private IContainer currentLocation;
@@ -42,7 +42,7 @@ namespace FileTime.Core.Components
 
         public event EventHandler CurrentLocationChanged;
 
-        public Pane(IContainer currentPath)
+        public Tab(IContainer currentPath)
         {
             CurrentLocation = currentPath;
             CurrentSelectedItem = CurrentLocation.Items.Count > 0 ? CurrentLocation.Items[0] : null;

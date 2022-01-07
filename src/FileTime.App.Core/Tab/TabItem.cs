@@ -1,14 +1,14 @@
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 
-namespace FileTime.App.Core.Pane
+namespace FileTime.App.Core.Tab
 {
-    public class PaneItem : IAbsolutePath
+    public class TabItem : IAbsolutePath
     {
         public IContentProvider ContentProvider { get; }
         public string Path { get; }
 
-        public PaneItem(IContentProvider contentProvider, string path)
+        public TabItem(IContentProvider contentProvider, string path)
         {
             ContentProvider = contentProvider;
             Path = path;

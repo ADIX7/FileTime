@@ -1,4 +1,4 @@
-using FileTime.App.Core.Pane;
+using FileTime.App.Core.Tab;
 using FileTime.ConsoleUI.App.UI.Color;
 using FileTime.ConsoleUI.UI.App;
 using FileTime.Core.Components;
@@ -23,8 +23,8 @@ namespace FileTime.ConsoleUI.App.UI
         private readonly string _paddingLeft;
         private readonly string _paddingRight;
 
-        public Pane Pane { get; private set; }
-        public PaneState PaneState { get; private set; }
+        public Tab Tab { get; private set; }
+        public TabState TabState { get; private set; }
 
         public int PageSize => Console.WindowHeight - _contentPaddingTop - _contentPaddingBottom;
         public Render(IColoredConsoleRenderer coloredRenderer, IStyles appStyle)
@@ -37,34 +37,34 @@ namespace FileTime.ConsoleUI.App.UI
             _contentRowCount = Console.WindowHeight - _contentPaddingTop - _contentPaddingBottom;
         }
 
-        public void Init(Pane pane, PaneState paneState)
+        public void Init(Tab pane, TabState paneState)
         {
             if (pane == null) throw new Exception($"{nameof(pane)} can not be null");
             if (paneState == null) throw new Exception($"{nameof(paneState)} can not be null");
 
-            Pane = pane;
-            Pane.CurrentLocationChanged += (o, e) => _currentDisplayStartY = 0;
+            Tab = pane;
+            Tab.CurrentLocationChanged += (o, e) => _currentDisplayStartY = 0;
 
-            PaneState = paneState;
+            TabState = paneState;
         }
 
         public void PrintUI()
         {
-            if (Pane != null)
+            if (Tab != null)
             {
                 PrintPrompt();
-                PrintPanes();
+                PrintTabs();
             }
         }
 
-        private void PrintPanes()
+        private void PrintTabs()
         {
             var previousColumnWidth = (int)Math.Floor(Console.WindowWidth * 0.15) - 1;
             var currentColumnWidth = (int)Math.Floor(Console.WindowWidth * 0.4) - 1;
             var nextColumnWidth = Console.WindowWidth - currentColumnWidth - previousColumnWidth - 2;
-            var currentVirtualContainer = Pane!.CurrentLocation as VirtualContainer;
+            var currentVirtualContainer = Tab!.CurrentLocation as VirtualContainer;
 
-            if (Pane.CurrentLocation.GetParent() is var parentContainer && parentContainer is not null)
+            if (Tab.CurrentLocation.GetParent() is var parentContainer && parentContainer is not null)
             {
                 parentContainer.Refresh();
 
@@ -74,7 +74,7 @@ namespace FileTime.ConsoleUI.App.UI
                         : parentContainer,
                     currentVirtualContainer != null
                         ? currentVirtualContainer.GetRealContainer()
-                        : Pane.CurrentLocation,
+                        : Tab.CurrentLocation,
                     PrintMode.Previous,
                     0,
                     _contentPaddingTop,
@@ -90,19 +90,19 @@ namespace FileTime.ConsoleUI.App.UI
                     _contentRowCount);
             }
 
-            Pane.CurrentLocation.Refresh();
+            Tab.CurrentLocation.Refresh();
 
             CheckAndSetCurrentDisplayStartY();
             PrintColumn(
-                Pane.CurrentLocation,
-                Pane.CurrentSelectedItem,
+                Tab.CurrentLocation,
+                Tab.CurrentSelectedItem,
                 PrintMode.Current,
                 previousColumnWidth + 1,
                 _contentPaddingTop,
                 currentColumnWidth,
                 _contentRowCount);
 
-            if (Pane.CurrentSelectedItem is IContainer selectedContainer)
+            if (Tab.CurrentSelectedItem is IContainer selectedContainer)
             {
                 selectedContainer.Refresh();
 
@@ -140,13 +140,13 @@ namespace FileTime.ConsoleUI.App.UI
             _coloredRenderer.Write(' ');
 
             _coloredRenderer.ForegroundColor = _appStyle.ContainerForeground;
-            var path = Pane!.CurrentLocation.FullName + "/";
+            var path = Tab!.CurrentLocation.FullName + "/";
             _coloredRenderer.Write(path);
 
-            if (Pane.CurrentSelectedItem?.Name != null)
+            if (Tab.CurrentSelectedItem?.Name != null)
             {
                 _coloredRenderer.ResetColor();
-                _coloredRenderer.Write($"{{0,-{300 - path.Length}}}", Pane.CurrentSelectedItem.Name);
+                _coloredRenderer.Write($"{{0,-{300 - path.Length}}}", Tab.CurrentSelectedItem.Name);
             }
         }
 
@@ -205,7 +205,7 @@ namespace FileTime.ConsoleUI.App.UI
                         }
                     }
 
-                    var isSelected = PaneState.ContainsSelectedItem(item.Provider, currentContainer, item.FullName!);
+                    var isSelected = TabState.ContainsSelectedItem(item.Provider, currentContainer, item.FullName!);
                     if (isSelected)
                     {
                         backgroundColor = _appStyle.SelectedItemBackground;
@@ -266,14 +266,14 @@ namespace FileTime.ConsoleUI.App.UI
         {
             const int padding = 5;
 
-            while (Pane.CurrentSelectedIndex < _currentDisplayStartY + padding
+            while (Tab.CurrentSelectedIndex < _currentDisplayStartY + padding
                     && _currentDisplayStartY > 0)
             {
                 _currentDisplayStartY--;
             }
 
-            while (Pane.CurrentSelectedIndex > _currentDisplayStartY + _contentRowCount - padding
-                    && _currentDisplayStartY < Pane.CurrentLocation.Items.Count - _contentRowCount)
+            while (Tab.CurrentSelectedIndex > _currentDisplayStartY + _contentRowCount - padding
+                    && _currentDisplayStartY < Tab.CurrentLocation.Items.Count - _contentRowCount)
             {
                 _currentDisplayStartY++;
             }

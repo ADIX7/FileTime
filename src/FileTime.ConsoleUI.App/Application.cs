@@ -6,7 +6,7 @@ using FileTime.Core.Extensions;
 using FileTime.App.Core.Clipboard;
 
 using Microsoft.Extensions.DependencyInjection;
-using FileTime.App.Core.Pane;
+using FileTime.App.Core.Tab;
 using FileTime.ConsoleUI.App.UI.Color;
 using FileTime.Core.Command;
 
@@ -14,10 +14,10 @@ namespace FileTime.ConsoleUI.App
 {
     public partial class Application
     {
-        private readonly List<Pane> _panes = new();
-        private readonly Dictionary<Pane, Render> _renderers = new();
-        private readonly Dictionary<Pane, PaneState> _paneStates = new();
-        private Pane? _selectedPane;
+        private readonly List<Tab> _panes = new();
+        private readonly Dictionary<Tab, Render> _renderers = new();
+        private readonly Dictionary<Tab, TabState> _paneStates = new();
+        private Tab? _selectedTab;
 
         private readonly List<CommandBinding> _commandBindings = new();
         private readonly IServiceProvider _serviceProvider;
@@ -49,15 +49,15 @@ namespace FileTime.ConsoleUI.App
 
         public void SetContainer(IContainer currentPath)
         {
-            _selectedPane = CreatePane(currentPath);
+            _selectedTab = CreateTab(currentPath);
         }
 
-        private Pane CreatePane(IContainer container)
+        private Tab CreateTab(IContainer container)
         {
-            var pane = new Pane(container);
+            var pane = new Tab(container);
             _panes.Add(pane);
 
-            var paneState = new PaneState(pane);
+            var paneState = new TabState(pane);
             _paneStates.Add(pane, paneState);
 
             var renderer = _serviceProvider.GetService<Render>()!;
@@ -67,7 +67,7 @@ namespace FileTime.ConsoleUI.App
             return pane;
         }
 
-        private void RemovePane(Pane pane)
+        private void RemoveTab(Tab pane)
         {
             _panes.Remove(pane);
             _renderers.Remove(pane);
@@ -78,7 +78,7 @@ namespace FileTime.ConsoleUI.App
         {
             var commandBindings = new List<CommandBinding>()
             {
-                new CommandBinding("close pane", Commands.ClosePane, new[] { new ConsoleKeyInfo('q', ConsoleKey.Q, false, false, false) }, ClosePane),
+                new CommandBinding("close pane", Commands.CloseTab, new[] { new ConsoleKeyInfo('q', ConsoleKey.Q, false, false, false) }, CloseTab),
                 new CommandBinding("cursor up", Commands.MoveCursorUp, new[] { new ConsoleKeyInfo('↑', ConsoleKey.UpArrow, false, false, false) }, MoveCursorUp),
                 new CommandBinding("cursor down", Commands.MoveCursorDown, new[] { new ConsoleKeyInfo('↓', ConsoleKey.DownArrow, false, false, false) }, MoveCursorDown),
                 new CommandBinding("cursor page up", Commands.MoveCursorUpPage, new[] { new ConsoleKeyInfo(' ', ConsoleKey.PageUp, false, false, false) }, MoveCursorUpPage),
@@ -182,9 +182,9 @@ namespace FileTime.ConsoleUI.App
 
         public void PrintUI()
         {
-            if (_selectedPane != null)
+            if (_selectedTab != null)
             {
-                _renderers[_selectedPane].PrintUI();
+                _renderers[_selectedTab].PrintUI();
             }
         }
 
