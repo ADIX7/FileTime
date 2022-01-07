@@ -53,7 +53,7 @@ namespace FileTime.ConsoleUI.App.UI.Color
             }
             else if (BackgroundColor.GetType() != ForegroundColor.GetType())
             {
-                throw new Exception($"Type of {nameof(BackgroundColor)} and {nameof(ForegroundColor)} must be the same.");
+                throw new Exception($"Type of {nameof(BackgroundColor)} ({BackgroundColor.GetType()}) and {nameof(ForegroundColor)} ({ForegroundColor.GetType()}) must be the same.");
             }
             else
             {

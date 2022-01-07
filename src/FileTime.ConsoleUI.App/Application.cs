@@ -25,6 +25,7 @@ namespace FileTime.ConsoleUI.App
         private readonly IColoredConsoleRenderer _coloredConsoleRenderer;
         private readonly CommandExecutor _commandExecutor;
         private readonly ConsoleReader _consoleReader;
+        private readonly IStyles _styles;
         private readonly List<ConsoleKeyInfo> _previousKeys = new();
 
         public bool IsRunning { get; private set; } = true;
@@ -34,13 +35,15 @@ namespace FileTime.ConsoleUI.App
             IClipboard clipboard,
             IColoredConsoleRenderer coloredConsoleRenderer,
             CommandExecutor commandExecutor,
-            ConsoleReader consoleReader)
+            ConsoleReader consoleReader,
+            IStyles styles)
         {
             _serviceProvider = serviceProvider;
             _clipboard = clipboard;
             _coloredConsoleRenderer = coloredConsoleRenderer;
             _commandExecutor = commandExecutor;
             _consoleReader = consoleReader;
+            _styles = styles;
             InitCommandBindings();
         }
 

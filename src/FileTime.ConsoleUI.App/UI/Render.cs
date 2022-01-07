@@ -133,13 +133,13 @@ namespace FileTime.ConsoleUI.App.UI
         {
             Console.SetCursorPosition(0, 0);
             _coloredRenderer.ResetColor();
-            _coloredRenderer.ForegroundColor = AnsiColor.From8bit(2);
+            _coloredRenderer.ForegroundColor = _appStyle.AccentForeground;
             _coloredRenderer.Write(Environment.UserName + "@" + Environment.MachineName);
 
             _coloredRenderer.ResetColor();
             _coloredRenderer.Write(' ');
 
-            _coloredRenderer.ForegroundColor = AnsiColor.From8bit(4);
+            _coloredRenderer.ForegroundColor = _appStyle.ContainerForeground;
             var path = Pane!.CurrentLocation.FullName + "/";
             _coloredRenderer.Write(path);
 

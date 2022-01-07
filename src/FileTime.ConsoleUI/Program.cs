@@ -87,12 +87,22 @@ namespace FileTime.ConsoleUI
             }
         }
 
+        private static bool IsAnsiColorSupported()
+        {
+            Console.CursorLeft = 0;
+            Console.CursorTop = 0;
+
+            Console.Write("\u001b[0ma");
+
+            return Console.CursorLeft == 1 && Console.CursorTop == 0;
+        }
+
         private static ServiceProvider CreateServiceProvider()
         {
             return new ServiceCollection()
                 .AddLogging((builder) => builder.AddConsole().AddDebug())
                 .AddSingleton<Application>()
-                .AddSingleton<IStyles>(new Styles(true))
+                .AddSingleton<IStyles>(new Styles(IsAnsiColorSupported()))
                 .AddSingleton<IColoredConsoleRenderer, ColoredConsoleRenderer>()
                 .AddSingleton<IClipboard, Clipboard>()
                 .AddSingleton<LocalContentProvider>()

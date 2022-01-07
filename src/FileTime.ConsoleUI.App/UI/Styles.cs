@@ -15,6 +15,9 @@ namespace FileTime.ConsoleUI.App.UI
         public IConsoleColor? SelectedItemBackground { get; }
         public IConsoleColor? SelectedItemForeground { get; }
 
+        public IConsoleColor? ErrorColor { get; }
+        public IConsoleColor? AccentForeground { get; }
+
         public Styles(bool useAnsiColors)
         {
             if (useAnsiColors)
@@ -23,17 +26,25 @@ namespace FileTime.ConsoleUI.App.UI
                 ElementForeground = AnsiColor.From8bit(14);
                 ElementSpecialForeground = AnsiColor.From8bit(2);
                 SelectedItemForeground = AnsiColor.From8bit(3);
+                ElementBackground = AnsiColor.From8bit(0);
 
-                DefaultForeground = ElementForeground;
-                SelectedItemBackground = ElementSpecialBackground = ContainerBackground = DefaultBackground = ElementBackground = AnsiColor.From8bit(0);
+                ErrorColor = AnsiColor.From8bit(1);
+                AccentForeground = AnsiColor.From8bit(2);
             }
             else
             {
-                ContainerBackground = new BasicColor(Console.BackgroundColor);
                 ContainerForeground = new BasicColor(ConsoleColor.Blue);
                 ElementBackground = new BasicColor(Console.BackgroundColor);
                 ElementForeground = new BasicColor(Console.ForegroundColor);
+                ElementSpecialForeground = new BasicColor(ConsoleColor.DarkGreen);
+                SelectedItemForeground = new BasicColor(ConsoleColor.DarkCyan);
+
+                ErrorColor = new BasicColor(ConsoleColor.Red);
+                AccentForeground = new BasicColor(ConsoleColor.Green);
             }
+
+            DefaultForeground = ElementForeground;
+            SelectedItemBackground = ElementSpecialBackground = ContainerBackground = DefaultBackground = ElementBackground;
         }
     }
 }

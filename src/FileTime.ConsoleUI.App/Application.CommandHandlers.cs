@@ -169,7 +169,7 @@ namespace FileTime.ConsoleUI.App
             {
                 if (_selectedPane!.CurrentLocation.IsExists(newPath))
                 {
-                    _coloredConsoleRenderer.ForegroundColor = AnsiColor.From8bit(1);
+                    _coloredConsoleRenderer.ForegroundColor = _styles.ErrorColor;
                 }
                 else
                 {
