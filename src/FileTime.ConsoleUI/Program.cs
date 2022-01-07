@@ -8,11 +8,14 @@ using FileTime.Core.Providers;
 using FileTime.Core.StateManagement;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.ConsoleUI
 {
-    public static class Program
+    public class Program
     {
+        static ILogger<Program>? _logger;
+
         public static void Main()
         {
             /* Console.Clear();
@@ -47,11 +50,14 @@ namespace FileTime.ConsoleUI
             return; */
 
             var serviceProvider = CreateServiceProvider();
+            _logger = serviceProvider.GetService<ILogger<Program>>()!;
 
             var coloredConsoleRenderer = serviceProvider.GetService<IColoredConsoleRenderer>()!;
             var localContentProvider = serviceProvider.GetService<LocalContentProvider>()!;
 
-            var currentPossibleDirectory = localContentProvider.GetByPath(Environment.CurrentDirectory.Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar));
+            var currentPath = Environment.CurrentDirectory.Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar);
+            _logger.LogInformation("Current directory: '{0}'", currentPath);
+            var currentPossibleDirectory = localContentProvider.GetByPath(currentPath);
 
             if (currentPossibleDirectory is IContainer container)
             {
@@ -77,12 +83,14 @@ namespace FileTime.ConsoleUI
             else
             {
                 Console.WriteLine("Current working directory is not a directory???");
+                Thread.Sleep(100);
             }
         }
 
         private static ServiceProvider CreateServiceProvider()
         {
             return new ServiceCollection()
+                .AddLogging((builder) => builder.AddConsole().AddDebug())
                 .AddSingleton<Application>()
                 .AddSingleton<IStyles>(new Styles(true))
                 .AddSingleton<IColoredConsoleRenderer, ColoredConsoleRenderer>()
@@ -96,8 +104,11 @@ namespace FileTime.ConsoleUI
                 .RegisterCommandHandlers()
                 .BuildServiceProvider();
         }
+    }
 
-        private static IServiceCollection RegisterCommandHandlers(this IServiceCollection serviceCollection)
+    internal static class ProgramExtensions
+    {
+        internal static IServiceCollection RegisterCommandHandlers(this IServiceCollection serviceCollection)
         {
             foreach (var commandHandler in Startup.GetCommandHandlers())
             {

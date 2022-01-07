@@ -12,7 +12,8 @@ namespace FileTime.Providers.Local
 
         public bool IsHidden => (Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
         public DirectoryInfo Directory { get; }
-        public IContentProvider Provider { get; }
+        public LocalContentProvider Provider { get; }
+        IContentProvider IItem.Provider => Provider;
 
         public IReadOnlyList<IItem> Items
         {
@@ -53,12 +54,12 @@ namespace FileTime.Providers.Local
 
         public event EventHandler? Refreshed;
 
-        public LocalFolder(DirectoryInfo directory, IContentProvider contentProvider, IContainer? parent)
+        public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer? parent)
         {
             Directory = directory;
             _parent = parent;
 
-            Name = directory.Name;
+            Name = directory.Name.TrimEnd(Path.DirectorySeparatorChar);
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
             Provider = contentProvider;
         }
@@ -85,7 +86,7 @@ namespace FileTime.Providers.Local
         {
             var paths = path.Split(Constants.SeparatorChar);
 
-            var item = Items.FirstOrDefault(i => i.Name == paths[0]);
+            var item = Items.FirstOrDefault(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(paths[0]));
 
             if (paths.Length == 1)
             {
@@ -104,7 +105,7 @@ namespace FileTime.Providers.Local
             Directory.CreateSubdirectory(name);
             Refresh();
 
-            return _containers!.FirstOrDefault(c => c.Name == name)!;
+            return _containers!.FirstOrDefault(c => Provider.NormalizePath(c.Name) == Provider.NormalizePath(name))!;
         }
 
         public IElement CreateElement(string name)
@@ -112,14 +113,11 @@ namespace FileTime.Providers.Local
             using (File.Create(Path.Combine(Directory.FullName, name))) { }
             Refresh();
 
-            return _elements!.FirstOrDefault(e => e.Name == name)!;
+            return _elements!.FirstOrDefault(e => Provider.NormalizePath(e.Name) == Provider.NormalizePath(name))!;
         }
 
-        public bool IsExists(string name) => Items.Any(i => i.Name == name);
+        public bool IsExists(string name) => Items.Any(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(name));
 
-        public void Delete()
-        {
-            Directory.Delete(true);
-        }
+        public void Delete() => Directory.Delete(true);
     }
 }
