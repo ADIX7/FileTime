@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FileTime.App.Core\FileTime.App.Core.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.Smb\FileTime.Providers.Smb.csproj" />
   </ItemGroup>
 
 </Project>

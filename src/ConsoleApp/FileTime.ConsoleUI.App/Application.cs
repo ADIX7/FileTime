@@ -267,7 +267,7 @@ namespace FileTime.ConsoleUI.App
         private static bool AreKeysEqual(ConsoleKeyInfo keyInfo1, ConsoleKeyInfo keyInfo2) =>
             keyInfo1.Key == keyInfo2.Key && keyInfo1.Modifiers == keyInfo2.Modifiers;
 
-        private static void MoveToIOLine(int left = 0)
+        public void MoveToIOLine(int left = 0)
         {
             Console.SetCursorPosition(left, Console.WindowHeight - 2);
         }

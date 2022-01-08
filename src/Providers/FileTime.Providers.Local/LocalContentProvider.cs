@@ -8,6 +8,7 @@ namespace FileTime.Providers.Local
     public class LocalContentProvider : IContentProvider
     {
         private readonly ILogger<LocalContentProvider> _logger;
+        private IContainer _parent = null;
 
         public IReadOnlyList<IContainer> RootContainers { get; }
 
@@ -61,10 +62,7 @@ namespace FileTime.Providers.Local
         {
         }
 
-        public IContainer? GetParent()
-        {
-            return null;
-        }
+        public IContainer? GetParent() => _parent;
         public IContainer CreateContainer(string name) => throw new NotSupportedException();
         public IElement CreateElement(string name) => throw new NotSupportedException();
         public bool IsExists(string name) => Items.Any(i => i.Name == name);
@@ -72,5 +70,12 @@ namespace FileTime.Providers.Local
         public void Delete() => throw new NotSupportedException();
 
         internal string NormalizePath(string path) => IsCaseInsensitive ? path.ToLower() : path;
+
+        public bool CanHandlePath(string path) => RootContainers.Any(r => path.StartsWith(r.Name));
+
+        public void SetParent(IContainer container)
+        {
+            _parent = container;
+        }
     }
 }

@@ -173,7 +173,6 @@ namespace FileTime.ConsoleUI.App.UI
                 printedItemsCount = itemsToPrint.Count;
                 foreach (var item in itemsToPrint)
                 {
-                    Console.SetCursorPosition(startX, startY + currentY++);
                     var namePart = item.Name.Length > maxTextWidth
                         ? string.Concat(item.Name.AsSpan(0, maxTextWidth - 1), "~")
                         : item.Name;
@@ -182,6 +181,8 @@ namespace FileTime.ConsoleUI.App.UI
 
                     var container = item as IContainer;
                     var element = item as IElement;
+
+                    attributePart = container != null ? "" + container.Items.Count : element!.GetPrimaryAttributeText();
 
                     IConsoleColor? backgroundColor = null;
                     IConsoleColor? foregroundColor = null;
@@ -220,11 +221,10 @@ namespace FileTime.ConsoleUI.App.UI
                     _coloredRenderer.BackgroundColor = backgroundColor;
                     _coloredRenderer.ForegroundColor = foregroundColor;
 
-                    attributePart = container != null ? "" + container.Items.Count : element!.GetPrimaryAttributeText();
-
                     var text = string.Format($"{{0,-{elementWidth}}}", _paddingLeft + (isSelected ? " " : "") + namePart + _paddingRight);
                     text = string.Concat(text.AsSpan(0, text.Length - attributePart.Length - 1), " ", attributePart);
 
+                    Console.SetCursorPosition(startX, startY + currentY++);
                     _coloredRenderer.Write(text);
 
                     _coloredRenderer.ResetColor();

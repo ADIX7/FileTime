@@ -3,6 +3,7 @@ using FileTime.Core.Command;
 using FileTime.Core.Providers;
 using FileTime.Core.StateManagement;
 using FileTime.Providers.Local;
+using FileTime.Providers.Smb;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.App.Core
@@ -15,8 +16,10 @@ namespace FileTime.App.Core
 
             return serviceCollection
                 .AddSingleton<IClipboard, Clipboard.Clipboard>()
+                .AddSingleton<TopContainer>()
                 .AddSingleton<LocalContentProvider>()
                 .AddSingleton<IContentProvider, LocalContentProvider>(sp => sp.GetService<LocalContentProvider>() ?? throw new Exception($"No {nameof(LocalContentProvider)} instance found"))
+                .AddSingleton<IContentProvider, SmbContentProvider>()
                 .AddSingleton<ElementCreationStates>()
                 .AddSingleton<CommandExecutor>();
         }

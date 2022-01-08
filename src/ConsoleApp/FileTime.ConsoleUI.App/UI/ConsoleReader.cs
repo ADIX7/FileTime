@@ -10,7 +10,7 @@ namespace FileTime.ConsoleUI.App.UI
         {
             _coloredConsoleRenderer = coloredConsoleRenderer;
         }
-        public string ReadText(int? maxLength = null, Action<string>? validator = null)
+        public string? ReadText(int? maxLength = null, Action<string>? validator = null, char? placeHolder = null)
         {
             var cursorVisible = false;
             try
@@ -76,10 +76,10 @@ namespace FileTime.ConsoleUI.App.UI
                 validator?.Invoke(input);
 
                 Console.SetCursorPosition(currentConsoleLeft, currentConsoleTop);
-                _coloredConsoleRenderer.Write($"{{0,-{maxLength}}}", input);
+                _coloredConsoleRenderer.Write($"{{0,-{maxLength}}}", placeHolder == null ? input : new string((char)placeHolder, input.Length));
 
                 Console.SetCursorPosition(currentConsoleLeft + position, currentConsoleTop);
-                key = Console.ReadKey();
+                key = Console.ReadKey(true);
             }
 
             Console.CursorVisible = cursorVisible;

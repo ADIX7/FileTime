@@ -55,6 +55,10 @@ namespace FileTime.Core.Components
             {
                 CurrentSelectedItem = CurrentLocation.Items.FirstOrDefault(i => i.FullName == currentSelectedName) ?? currentLocation.Items.FirstOrDefault();
             }
+            else if (CurrentLocation.Items.Count > 0)
+            {
+                CurrentSelectedItem = CurrentLocation.Items[0];
+            }
         }
 
         public void SelectFirstItem()
