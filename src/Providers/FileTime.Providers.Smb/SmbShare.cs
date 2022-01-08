@@ -159,6 +159,9 @@ namespace FileTime.Providers.Smb
                 }
             }
 
+            containers = containers.OrderBy(c => c.Name).ToList();
+            elements = elements.OrderBy(e => e.Name).ToList();
+
             return (containers, elements);
         }
     }

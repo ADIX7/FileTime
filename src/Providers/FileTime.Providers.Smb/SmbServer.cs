@@ -1,3 +1,4 @@
+using System.Net;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
@@ -87,7 +88,7 @@ namespace FileTime.Providers.Smb
         {
             ISMBClient client = GetSmbClient();
 
-            List<string> shares =  new List<string>(); //client.ListShares(out var status);
+            List<string> shares = client.ListShares(out var status);
 
             _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, GetSmbClient)).AsReadOnly();
             Refreshed?.Invoke(this, EventArgs.Empty);
@@ -97,8 +98,13 @@ namespace FileTime.Providers.Smb
         {
             if (_client == null)
             {
+                var couldParse = IPAddress.TryParse(Name[2..], out var ipAddress);
                 _client = new SMB2Client();
-                if (_client.Connect(Name[2..], SMBTransportType.DirectTCPTransport))
+                var connected = couldParse
+                    ? _client.Connect(ipAddress, SMBTransportType.DirectTCPTransport)
+                    : _client.Connect(Name[2..], SMBTransportType.DirectTCPTransport);
+
+                if (connected)
                 {
                     if (_username == null && _password == null)
                     {
