@@ -1,0 +1,24 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FileTime.Uno.Converters">
+    <local:EqualityToVisibilityConverter x:Key="EqualityToVisibilityConverter" />
+    <local:EqualityToVisibilityConverter
+        x:Key="GreaterThanToVisibilityConverter"
+        ComparisonCondition="GreaterThan" />
+    <local:EqualityToVisibilityConverter
+        x:Key="NotEqualToVisibilityConverter"
+        ComparisonCondition="NotEqual" />
+
+    <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <local:BoolToVisibilityConverter
+        x:Key="InverseBoolToVisibilityConverter"
+        Inverse="True" />
+    <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+
+    <local:ItemToImageConverter x:Key="ItemToImageConverter" />
+    <local:EnumToStringConverter x:Key="EnumToStringConverter" />
+    <local:FormatSizeConverter x:Key="FormatSizeConverter" />
+
+    <local:DebugConverter x:Key="DebugConverter" />
+</ResourceDictionary>

@@ -1,0 +1,76 @@
+<Application
+    x:Class="FileTime.Uno.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FileTime.Uno">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary
+                    x:Name="DefaultLight"
+                    Source="Themes/DefaultLight.xaml" />
+                <ResourceDictionary
+                    x:Name="SolarizedDark"
+                    Source="Themes/SolarizedDark.xaml" />
+                <ResourceDictionary>
+                    <SolidColorBrush
+                        x:Key="AppBackgroundBrush"
+                        Color="{ThemeResource AppBackgroundColor}" />
+                    <SolidColorBrush
+                        x:Key="ContainerBackgroundBrush"
+                        Color="{ThemeResource ContainerBackgroundColor}" />
+
+                    <SolidColorBrush
+                        x:Key="ItemBackgroundBrush"
+                        Color="{ThemeResource ItemBackgroundColor}" />
+                    <SolidColorBrush
+                        x:Key="AlternativeItemBackgroundBrush"
+                        Color="{ThemeResource AlternativeItemBackgroundColor}" />
+                    <SolidColorBrush
+                        x:Key="SelectedItemBackgroundBrush"
+                        Color="{ThemeResource SelectedItemBackgroundColor}" />
+
+                    <SolidColorBrush
+                        x:Key="ForegroundBrush"
+                        Color="{ThemeResource ForegroundColor}" />
+                    <SolidColorBrush
+                        x:Key="AlternativeForegroundBrush"
+                        Color="{ThemeResource AlternativeForegroundColor}" />
+                    <SolidColorBrush
+                        x:Key="SelectedItemForegroundBrush"
+                        Color="{ThemeResource SelectedItemForegroundColor}" />
+
+                    <SolidColorBrush
+                        x:Key="ErrorBrush"
+                        Color="{ThemeResource ErrorColor}" />
+                </ResourceDictionary>
+
+                <ResourceDictionary Source="Converters/Converters.xaml" />
+                <ResourceDictionary Source="Styles/ListStyles.xaml" />
+                <ResourceDictionary Source="Styles/TextStyles.xaml" />
+
+                <ResourceDictionary>
+                    <Style
+                        x:Key="ContainerBackgroundRectangle"
+                        TargetType="Rectangle">
+                        <Setter Property="Fill" Value="{ThemeResource ContainerBackgroundBrush}" />
+                        <Setter Property="RadiusX" Value="10" />
+                        <Setter Property="RadiusY" Value="10" />
+                    </Style>
+
+                    <Style
+                        x:Key="NormalText"
+                        TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{ThemeResource ForegroundBrush}" />
+                    </Style>
+                </ResourceDictionary>
+                <ResourceDictionary>
+                    <FontFamily x:Key="FontAwesome">/Assets/Fonts/fontawesome-webfont.ttf#FontAwesome</FontFamily>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

@@ -1,0 +1,299 @@
+<Page
+    x:Class="FileTime.Uno.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:local="using:FileTime.Uno"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+    <Grid
+        x:Name="RootContainer"
+        Background="{ThemeResource AppBackgroundBrush}"
+        Loaded="RootContainer_Loaded">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Margin="10">
+                <Rectangle
+                    Fill="{StaticResource ContainerBackgroundBrush}"
+                    RadiusX="5"
+                    RadiusY="5" />
+                <Grid Padding="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Margin="0,0,0,10"
+                        Style="{StaticResource NormalText}"
+                        Text="Drives" />
+
+                    <ItemsControl
+                        Grid.Row="1"
+                        ItemsSource="{Binding RootDriveInfos}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Image
+                                        Grid.RowSpan="2"
+                                        Width="20"
+                                        Height="20"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Source="ms-appx:///Assets/material/folder.svg" />
+
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="5,0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource NormalText}"
+                                        Text="{Binding Name}" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Style="{StaticResource NormalText}">
+                                        <Run Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
+                                        <Run Text="/" />
+                                        <Run Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
+                                    </TextBlock>
+
+                                    <ProgressBar
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="2"
+                                        Margin="5,0,0,0"
+                                        Maximum="{Binding Size}"
+                                        Value="{Binding Used}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Grid>
+
+            <Button
+                Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Click="Button_Click">
+                Change theme
+            </Button>
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Margin="20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="40*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="45*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <ListView
+                            ItemsSource="{Binding AppState.SelectedTab.Parent.Items}"
+                            SelectedItem="{Binding AppState.SelectedTab.CurrentLocation}"
+                            Style="{StaticResource NonMainContentListView}" />
+                    </Grid>
+
+                    <Rectangle
+                        x:Name="asd"
+                        Grid.Column="1"
+                        Width="1"
+                        Margin="0,10,0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        Fill="{ThemeResource ContentSeparatorBrush}" />
+
+                    <Grid Grid.Column="2">
+                        <ListView
+                            x:Name="CurrentItems"
+                            FocusVisualMargin="0"
+                            IsTabStop="True"
+                            ItemsSource="{Binding AppState.SelectedTab.CurrentLocation.Items}"
+                            KeyDown="CurrentItems_KeyDown"
+                            KeyUp="CurrentItems_KeyUp"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                            SelectedItem="{Binding AppState.SelectedTab.SelectedItem, Mode=TwoWay}"
+                            Style="{StaticResource ContentListView}" />
+
+                        <TextBlock
+                            x:Name="CurrentEmpty"
+                            Margin="10"
+                            HorizontalAlignment="Center"
+                            FontWeight="Bold"
+                            Foreground="{ThemeResource ErrorBrush}"
+                            Visibility="{Binding AppState.SelectedTab.CurrentLocation.Items.Count, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=0}">
+                            Empty
+                        </TextBlock>
+                    </Grid>
+
+                    <Rectangle
+                        Grid.Column="3"
+                        Width="1"
+                        Margin="0,10,0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        Fill="{ThemeResource ContentSeparatorBrush}" />
+
+                    <Grid Grid.Column="4">
+                        <ListView
+                            x:Name="ChildItems"
+                            ItemsSource="{Binding AppState.SelectedTab.ChildContainer.Items}"
+                            Style="{StaticResource NonMainContentListView}"
+                            Visibility="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource NotEqualToVisibilityConverter}, ConverterParameter=0}" />
+
+                        <TextBlock
+                            x:Name="ChildEmpty"
+                            Margin="10"
+                            HorizontalAlignment="Center"
+                            FontWeight="Bold"
+                            Foreground="{ThemeResource ErrorBrush}"
+                            Style="{StaticResource NormalText}"
+                            Visibility="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=0}">
+                            Empty
+                        </TextBlock>
+                    </Grid>
+                </Grid>
+
+                <Grid
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Visibility="{Binding Inputs, Converter={StaticResource NullToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ListView
+                        x:Name="InputList"
+                        ItemsSource="{Binding Inputs}"
+                        SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid MinWidth="400">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition MinWidth="200" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource NormalText}"
+                                        Text="{Binding InputElement.Text}" />
+                                    <TextBox
+                                        Grid.Column="1"
+                                        GotFocus="InpuText_GotFocus"
+                                        KeyDown="InputText_KeyDown"
+                                        Text="{Binding Value, Mode=TwoWay}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <StackPanel
+                        Grid.Row="1"
+                        Orientation="Horizontal">
+                        <Button
+                            Command="{Binding ProcessInputsCommand}"
+                            Content="Ok" />
+                        <Button
+                            Command="{Binding CancelInputsCommand}"
+                            Content="Cancel" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <Grid Visibility="{Binding NoCommandFound, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Rectangle
+                        Height="1"
+                        Margin="10,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Fill="{ThemeResource ContentSeparatorBrush}" />
+
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="10"
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource ErrorBrush}"
+                        Text="No command found" />
+                </Grid>
+
+                <Grid Visibility="{Binding PossibleCommands.Count, Converter={StaticResource NotEqualToVisibilityConverter}, ConverterParameter=0}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Rectangle
+                        Height="1"
+                        Margin="10,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Fill="{ThemeResource ContentSeparatorBrush}" />
+
+                    <ListView
+                        Grid.Row="1"
+                        ItemsSource="{Binding PossibleCommands}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock
+                                        Style="{StaticResource NormalText}"
+                                        Text="{Binding KeysDisplayText}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Style="{StaticResource NormalText}"
+                                        Text="{Binding Name}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>
