@@ -1,3 +1,4 @@
+using AsyncEvent;
 using FileTime.Core.Models;
 
 namespace FileTime.Core.Components
@@ -7,7 +8,7 @@ namespace FileTime.Core.Components
         private IItem? _currentSelectedItem;
         private IContainer _currentLocation;
 
-        public IContainer CurrentLocation
+        /* public IContainer CurrentLocation
         {
             get => _currentLocation;
             private set
@@ -38,75 +39,122 @@ namespace FileTime.Core.Components
                     CurrentSelectedItemChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-        }
+        } */
         public int CurrentSelectedIndex { get; private set; }
 
         public event EventHandler CurrentLocationChanged;
         public event EventHandler CurrentSelectedItemChanged;
 
-        public Tab(IContainer currentPath)
+        public async Task Init(IContainer currentPath)
         {
-            CurrentLocation = currentPath;
-            CurrentSelectedItem = CurrentLocation.Items.Count > 0 ? CurrentLocation.Items[0] : null;
+            await SetCurrentLocation(currentPath);
         }
 
-        private void HandleCurrentLocationRefresh(object? sender, EventArgs e)
+        public Task<IContainer> GetCurrentLocation()
         {
-            var currentSelectedName = CurrentSelectedItem?.FullName;
+            return Task.FromResult(_currentLocation);
+        }
+
+        public async Task SetCurrentLocation(IContainer value)
+        {
+            if (_currentLocation != value)
+            {
+                if (_currentLocation != null)
+                {
+                    _currentLocation.Refreshed.Remove(HandleCurrentLocationRefresh);
+                }
+
+                _currentLocation = value;
+                CurrentLocationChanged?.Invoke(this, EventArgs.Empty);
+
+                var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+                await SetCurrentSelectedItem(currentLocationItems.Count > 0 ? currentLocationItems[0] : null);
+                _currentLocation.Refreshed.Add(HandleCurrentLocationRefresh);
+            }
+        }
+
+        public Task<IItem?> GetCurrentSelectedItem()
+        {
+            return Task.FromResult(_currentSelectedItem);
+        }
+
+        public async Task SetCurrentSelectedItem(IItem? value)
+        {
+            if (_currentSelectedItem != value)
+            {
+                var contains = (await _currentLocation.GetItems())?.Contains(value) ?? false;
+                if(value != null && !contains) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
+
+                _currentSelectedItem = value;
+                CurrentSelectedIndex = await GetItemIndex(value);
+                CurrentSelectedItemChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private async Task HandleCurrentLocationRefresh(object? sender, AsyncEventArgs e)
+        {
+            var currentSelectedName = (await GetCurrentSelectedItem())?.FullName;
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
             if (currentSelectedName != null)
             {
-                CurrentSelectedItem = CurrentLocation.Items.FirstOrDefault(i => i.FullName == currentSelectedName) ?? _currentLocation.Items.FirstOrDefault();
+                await SetCurrentSelectedItem(currentLocationItems.FirstOrDefault(i => i.FullName == currentSelectedName) ?? currentLocationItems.FirstOrDefault());
             }
-            else if (CurrentLocation.Items.Count > 0)
+            else if (currentLocationItems.Count > 0)
             {
-                CurrentSelectedItem = CurrentLocation.Items[0];
+                await SetCurrentSelectedItem(currentLocationItems[0]);
             }
         }
 
-        public void SelectFirstItem()
+        public async Task SelectFirstItem()
         {
-            if (CurrentLocation.Items.Count > 0)
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            if (currentLocationItems.Count > 0)
             {
-                CurrentSelectedItem = CurrentLocation.Items[0];
+                await SetCurrentSelectedItem(currentLocationItems[0]);
             }
         }
 
-        public void SelectLastItem()
+        public async Task SelectLastItem()
         {
-            if (CurrentLocation.Items.Count > 0)
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            if (currentLocationItems.Count > 0)
             {
-                CurrentSelectedItem = CurrentLocation.Items[CurrentLocation.Items.Count - 1];
+                await SetCurrentSelectedItem(currentLocationItems[currentLocationItems.Count - 1]);
             }
         }
 
-        public void SelectPreviousItem(int skip = 0)
+        public async Task SelectPreviousItem(int skip = 0)
         {
-            var possibleItemsToSelect = CurrentLocation.Items.Take(CurrentSelectedIndex).Reverse().Skip(skip).ToList();
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            var possibleItemsToSelect = currentLocationItems.Take(CurrentSelectedIndex).Reverse().Skip(skip).ToList();
 
-            if (possibleItemsToSelect.Count == 0) possibleItemsToSelect = CurrentLocation.Items.ToList();
-            SelectItem(possibleItemsToSelect);
+            if (possibleItemsToSelect.Count == 0) possibleItemsToSelect = currentLocationItems.ToList();
+            await SelectItem(possibleItemsToSelect);
         }
 
-        public void SelectNextItem(int skip = 0)
+        public async Task SelectNextItem(int skip = 0)
         {
-            var possibleItemsToSelect = CurrentLocation.Items.Skip(CurrentSelectedIndex + 1 + skip).ToList();
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            var possibleItemsToSelect = currentLocationItems.Skip(CurrentSelectedIndex + 1 + skip).ToList();
 
-            if (possibleItemsToSelect.Count == 0) possibleItemsToSelect = CurrentLocation.Items.Reverse().ToList();
-            SelectItem(possibleItemsToSelect);
+            if (possibleItemsToSelect.Count == 0) possibleItemsToSelect = currentLocationItems.Reverse().ToList();
+            await SelectItem(possibleItemsToSelect);
         }
 
-        private void SelectItem(IEnumerable<IItem> currentPossibleItems)
+        private async Task SelectItem(IEnumerable<IItem> currentPossibleItems)
         {
             if (!currentPossibleItems.Any()) return;
 
-            if (CurrentSelectedItem != null)
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+
+            if (await GetCurrentSelectedItem() != null)
             {
-                CurrentLocation.Refresh();
+                (await GetCurrentLocation())?.Refresh();
 
                 IItem? newSelectedItem = null;
                 foreach (var item in currentPossibleItems)
                 {
-                    if (CurrentLocation.Items.FirstOrDefault(i => i.Name == item.Name) is var possibleNewSelectedItem
+                    if (currentLocationItems.FirstOrDefault(i => i.Name == item.Name) is var possibleNewSelectedItem
                         && possibleNewSelectedItem is not null)
                     {
                         newSelectedItem = possibleNewSelectedItem;
@@ -114,78 +162,89 @@ namespace FileTime.Core.Components
                     }
                 }
 
-                CurrentSelectedItem = newSelectedItem ?? (CurrentLocation.Items.Count > 0 ? CurrentLocation.Items[0] : null);
+                if(newSelectedItem != null)
+                {
+                    newSelectedItem = (await (await GetCurrentLocation()).GetItems())?.FirstOrDefault(i => i.Name == newSelectedItem.Name);
+                }
+
+                await SetCurrentSelectedItem(newSelectedItem ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null));
             }
             else
             {
-                CurrentSelectedItem = CurrentLocation.Items.Count > 0 ? CurrentLocation.Items[0] : null;
+                await SetCurrentSelectedItem(currentLocationItems.Count > 0 ? currentLocationItems[0] : null);
             }
         }
 
-        public void GoToProvider()
+        public async Task GoToProvider()
         {
-            if (CurrentLocation == null) return;
+            var currentLocatin = await GetCurrentLocation();
+            if (currentLocatin == null) return;
 
-            CurrentLocation = CurrentLocation.Provider;
+            await SetCurrentLocation(currentLocatin.Provider);
         }
 
-        public void GoToRoot()
+        public async Task GoToRoot()
         {
-            if (CurrentLocation == null) return;
+            var currentLocatin = await GetCurrentLocation();
+            if (currentLocatin == null) return;
 
-            var root = CurrentLocation;
+            var root = currentLocatin;
             while (root!.GetParent() != null)
             {
                 root = root.GetParent();
             }
 
-            CurrentLocation = root;
+            await SetCurrentLocation(root);
         }
 
-        public void GoUp()
+        public async Task GoUp()
         {
-            var lastCurrentLocation = CurrentLocation;
-            var parent = CurrentLocation.GetParent();
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            var lastCurrentLocation = await GetCurrentLocation();
+            var parent = (await GetCurrentLocation()).GetParent();
 
             if (parent is not null)
             {
                 if (lastCurrentLocation is VirtualContainer lastCurrentVirtualContainer)
                 {
-                    CurrentLocation = lastCurrentVirtualContainer.CloneVirtualChainFor(parent, v => v.IsPermanent);
-                    CurrentSelectedItem = lastCurrentVirtualContainer.GetRealContainer();
+                    await SetCurrentLocation(lastCurrentVirtualContainer.CloneVirtualChainFor(parent, v => v.IsPermanent));
+                    await SetCurrentSelectedItem(lastCurrentVirtualContainer.GetRealContainer());
                 }
                 else
                 {
-                    CurrentLocation = parent;
-                    CurrentSelectedItem = lastCurrentLocation;
+                    await SetCurrentLocation(parent);
+                    var newCurrentLocation = (await (await GetCurrentLocation()).GetItems())?.FirstOrDefault(i => i.Name == lastCurrentLocation.Name);
+                    await SetCurrentSelectedItem(newCurrentLocation);
                 }
             }
         }
 
-        public void Open()
+        public async Task Open()
         {
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
             if (_currentSelectedItem is IContainer childContainer)
             {
-                if (CurrentLocation is VirtualContainer currentVirtuakContainer)
+                if (await GetCurrentLocation() is VirtualContainer currentVirtuakContainer)
                 {
-                    CurrentLocation = currentVirtuakContainer.CloneVirtualChainFor(childContainer, v => v.IsPermanent);
+                    await SetCurrentLocation(currentVirtuakContainer.CloneVirtualChainFor(childContainer, v => v.IsPermanent));
                 }
                 else
                 {
-                    CurrentLocation = childContainer;
+                    await SetCurrentLocation(childContainer);
                 }
             }
         }
 
-        public void OpenContainer(IContainer container) => CurrentLocation = container;
+        public async Task OpenContainer(IContainer container) => await SetCurrentLocation(container);
 
-        private int GetItemIndex(IItem? item)
+        private async Task<int> GetItemIndex(IItem? item)
         {
             if (item == null) return -1;
+            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
 
-            for (var i = 0; i < CurrentLocation.Items.Count; i++)
+            for (var i = 0; i < currentLocationItems.Count; i++)
             {
-                if (CurrentLocation.Items[i] == item) return i;
+                if (currentLocationItems[i] == item) return i;
             }
 
             return -1;

@@ -16,38 +16,39 @@ namespace FileTime.Core.Command
             throw new NotImplementedException();
         }
 
-        public void Execute(Action<IAbsolutePath, IAbsolutePath> copy)
+        public async Task Execute(Action<IAbsolutePath, IAbsolutePath> copy)
         {
-            DoCopy(Sources, Target, TransportMode, copy);
+            await DoCopy(Sources, Target, TransportMode, copy);
         }
 
-        private void DoCopy(IEnumerable<IAbsolutePath> sources, IContainer target, TransportMode transportMode, Action<IAbsolutePath, IAbsolutePath> copy)
+        private async Task DoCopy(IEnumerable<IAbsolutePath> sources, IContainer target, TransportMode transportMode, Action<IAbsolutePath, IAbsolutePath> copy)
         {
             foreach (var source in sources)
             {
-                var item = source.ContentProvider.GetByPath(source.Path);
+                var item = await source.ContentProvider.GetByPath(source.Path);
 
                 if (item is IContainer container)
                 {
-                    var targetContainer = target.Containers.FirstOrDefault(d => d.Name == container.Name) ?? (target.CreateContainer(container.Name)!);
+                    var targetContainer = (await target.GetContainers())?.FirstOrDefault(d => d.Name == container.Name) ?? (await target.CreateContainer(container.Name)!);
 
-                    var childDirectories = container.Containers.Select(d => new AbsolutePath(item.Provider, d.FullName!));
-                    var childFiles = container.Elements.Select(f => new AbsolutePath(item.Provider, f.FullName!));
+                    var childDirectories = (await container.GetContainers())!.Select(d => new AbsolutePath(item.Provider, d.FullName!));
+                    var childFiles = (await container.GetElements())!.Select(f => new AbsolutePath(item.Provider, f.FullName!));
 
-                    DoCopy(childDirectories.Concat(childFiles), targetContainer, transportMode, copy);
+                    await DoCopy(childDirectories.Concat(childFiles), targetContainer, transportMode, copy);
                 }
                 else if (item is IElement element)
                 {
                     var targetName = element.Name;
 
+                    var targetNameExists = await target.IsExists(targetName);
                     if (transportMode == TransportMode.Merge)
                     {
-                        for (var i = 0; target.IsExists(targetName); i++)
+                        for (var i = 0; targetNameExists; i++)
                         {
                             targetName = element.Name + (i == 0 ? "_" : $"_{i}");
                         }
                     }
-                    else if (transportMode == TransportMode.Skip && target.IsExists(targetName))
+                    else if (transportMode == TransportMode.Skip && targetNameExists)
                     {
                         continue;
                     }

@@ -16,18 +16,15 @@ namespace FileTime.Providers.Smb
 
         public IContentProvider Provider { get; }
 
-        private readonly Func<ISMBClient> _getSmbClient;
-
-        public SmbFile(string name, SmbContentProvider provider, IContainer parent, Func<ISMBClient> getSmbClient)
+        public SmbFile(string name, SmbContentProvider provider, IContainer parent)
         {
             Name = name;
             FullName = parent.FullName + Constants.SeparatorChar + Name;
 
             Provider = provider;
-            _getSmbClient = getSmbClient;
         }
 
-        public void Delete()
+        public Task Delete()
         {
             throw new NotImplementedException();
         }

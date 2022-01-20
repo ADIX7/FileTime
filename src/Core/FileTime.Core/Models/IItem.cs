@@ -8,6 +8,6 @@ namespace FileTime.Core.Models
         string? FullName { get; }
         bool IsHidden { get; }
         IContentProvider Provider { get; }
-        void Delete();
+        Task Delete();
     }
 }

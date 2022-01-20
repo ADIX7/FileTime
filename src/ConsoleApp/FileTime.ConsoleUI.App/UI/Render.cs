@@ -48,33 +48,37 @@ namespace FileTime.ConsoleUI.App.UI
             TabState = paneState;
         }
 
-        public void PrintUI()
+        public async Task PrintUI(CancellationToken token = default)
         {
             if (Tab != null)
             {
-                PrintPrompt();
-                PrintTabs();
+                await PrintPrompt(token);
+                await PrintTabs(token);
             }
         }
 
-        private void PrintTabs()
+        private async Task PrintTabs(CancellationToken token = default)
         {
             var previousColumnWidth = (int)Math.Floor(Console.WindowWidth * 0.15) - 1;
             var currentColumnWidth = (int)Math.Floor(Console.WindowWidth * 0.4) - 1;
             var nextColumnWidth = Console.WindowWidth - currentColumnWidth - previousColumnWidth - 2;
-            var currentVirtualContainer = Tab!.CurrentLocation as VirtualContainer;
 
-            if (Tab.CurrentLocation.GetParent() is var parentContainer && parentContainer is not null)
+            var currentLocation = (await Tab!.GetCurrentLocation())!;
+            var currentSelectedItem = (await Tab!.GetCurrentSelectedItem())!;
+
+            var currentVirtualContainer = currentLocation as VirtualContainer;
+
+            if (currentLocation.GetParent() is var parentContainer && parentContainer is not null)
             {
-                parentContainer.Refresh();
+                await parentContainer.Refresh();
 
-                PrintColumn(
+                await PrintColumn(
                     currentVirtualContainer != null
                         ? currentVirtualContainer.CloneVirtualChainFor(parentContainer, v => v.IsTransitive)
                         : parentContainer,
                     currentVirtualContainer != null
                         ? currentVirtualContainer.GetRealContainer()
-                        : Tab.CurrentLocation,
+                        : currentLocation,
                     PrintMode.Previous,
                     0,
                     _contentPaddingTop,
@@ -90,29 +94,35 @@ namespace FileTime.ConsoleUI.App.UI
                     _contentRowCount);
             }
 
-            Tab.CurrentLocation.Refresh();
+            if (token.IsCancellationRequested) return;
 
-            CheckAndSetCurrentDisplayStartY();
-            PrintColumn(
-                Tab.CurrentLocation,
-                Tab.CurrentSelectedItem,
+            await currentLocation.Refresh();
+
+            await CheckAndSetCurrentDisplayStartY();
+            await PrintColumn(
+                currentLocation,
+                currentSelectedItem,
                 PrintMode.Current,
                 previousColumnWidth + 1,
                 _contentPaddingTop,
                 currentColumnWidth,
                 _contentRowCount);
 
-            if (Tab.CurrentSelectedItem is IContainer selectedContainer)
+            if (token.IsCancellationRequested) return;
+
+            if (currentSelectedItem is IContainer selectedContainer)
             {
-                selectedContainer.Refresh();
+                await selectedContainer.Refresh();
 
                 selectedContainer = currentVirtualContainer != null
                     ? currentVirtualContainer.CloneVirtualChainFor(selectedContainer, v => v.IsTransitive)
                     : selectedContainer;
 
-                PrintColumn(
+                var selectedContainerItems = (await selectedContainer.GetItems())!;
+
+                await PrintColumn(
                     selectedContainer,
-                    selectedContainer.Items.Count > 0 ? selectedContainer.Items[0] : null,
+                    selectedContainerItems.Count > 0 ? selectedContainerItems[0] : null,
                     PrintMode.Next,
                     previousColumnWidth + currentColumnWidth + 2,
                     _contentPaddingTop,
@@ -129,8 +139,11 @@ namespace FileTime.ConsoleUI.App.UI
             }
         }
 
-        private void PrintPrompt()
+        private async Task PrintPrompt(CancellationToken token = default)
         {
+            var currentLocation = await Tab!.GetCurrentLocation();
+            var currentSelectedItem = await Tab!.GetCurrentSelectedItem();
+
             Console.SetCursorPosition(0, 0);
             _coloredRenderer.ResetColor();
             _coloredRenderer.ForegroundColor = _appStyle.AccentForeground;
@@ -140,24 +153,24 @@ namespace FileTime.ConsoleUI.App.UI
             _coloredRenderer.Write(' ');
 
             _coloredRenderer.ForegroundColor = _appStyle.ContainerForeground;
-            var path = Tab!.CurrentLocation.FullName + "/";
+            var path = currentLocation.FullName + "/";
             _coloredRenderer.Write(path);
 
-            if (Tab.CurrentSelectedItem?.Name != null)
+            if (currentSelectedItem?.Name != null)
             {
                 _coloredRenderer.ResetColor();
-                _coloredRenderer.Write($"{{0,-{300 - path.Length}}}", Tab.CurrentSelectedItem.Name);
+                _coloredRenderer.Write($"{{0,-{300 - path.Length}}}", currentSelectedItem.Name);
             }
         }
 
-        private void PrintColumn(IContainer currentContainer, IItem? currentItem, PrintMode printMode, int startX, int startY, int elementWidth, int availableRows)
+        private async Task PrintColumn(IContainer currentContainer, IItem? currentItem, PrintMode printMode, int startX, int startY, int elementWidth, int availableRows, CancellationToken token = default)
         {
-            var allItem = currentContainer.Containers.Cast<IItem>().Concat(currentContainer.Elements).ToList();
+            var allItem = (await currentContainer.GetItems())!.ToList();
             var printedItemsCount = 0;
             var currentY = 0;
             if (allItem.Count > 0)
             {
-                var currentIndex = allItem.FindIndex(i => i == currentItem);
+                var currentIndex = allItem.FindIndex(i => i.Name == currentItem?.Name);
 
                 var skipElements = printMode switch
                 {
@@ -169,7 +182,7 @@ namespace FileTime.ConsoleUI.App.UI
 
                 var maxTextWidth = elementWidth - ITEMPADDINGLEFT - ITEMPADDINGRIGHT;
 
-                var itemsToPrint = currentContainer.Items.Skip(skipElements).Take(availableRows).ToList();
+                var itemsToPrint = (await currentContainer.GetItems())!.Skip(skipElements).Take(availableRows).ToList();
                 printedItemsCount = itemsToPrint.Count;
                 foreach (var item in itemsToPrint)
                 {
@@ -182,7 +195,7 @@ namespace FileTime.ConsoleUI.App.UI
                     var container = item as IContainer;
                     var element = item as IElement;
 
-                    attributePart = container != null ? "" + container.Items.Count : element!.GetPrimaryAttributeText();
+                    attributePart = container != null ? "" + (await container.GetItems())!.Count : element!.GetPrimaryAttributeText();
 
                     IConsoleColor? backgroundColor = null;
                     IConsoleColor? foregroundColor = null;
@@ -213,7 +226,7 @@ namespace FileTime.ConsoleUI.App.UI
                         foregroundColor = _appStyle.SelectedItemForeground;
                     }
 
-                    if (item == currentItem)
+                    if (item.Name == currentItem?.Name)
                     {
                         (backgroundColor, foregroundColor) = (foregroundColor, backgroundColor);
                     }
@@ -224,6 +237,7 @@ namespace FileTime.ConsoleUI.App.UI
                     var text = string.Format($"{{0,-{elementWidth}}}", _paddingLeft + (isSelected ? " " : "") + namePart + _paddingRight);
                     text = string.Concat(text.AsSpan(0, text.Length - attributePart.Length - 1), " ", attributePart);
 
+                    if (token.IsCancellationRequested) return;
                     Console.SetCursorPosition(startX, startY + currentY++);
                     _coloredRenderer.Write(text);
 
@@ -262,7 +276,7 @@ namespace FileTime.ConsoleUI.App.UI
             }
         }
 
-        private void CheckAndSetCurrentDisplayStartY()
+        private async Task CheckAndSetCurrentDisplayStartY()
         {
             const int padding = 5;
 
@@ -273,7 +287,7 @@ namespace FileTime.ConsoleUI.App.UI
             }
 
             while (Tab.CurrentSelectedIndex > _currentDisplayStartY + _contentRowCount - padding
-                    && _currentDisplayStartY < Tab.CurrentLocation.Items.Count - _contentRowCount)
+                    && _currentDisplayStartY < (await (await Tab.GetCurrentLocation()).GetItems())!.Count - _contentRowCount)
             {
                 _currentDisplayStartY++;
             }

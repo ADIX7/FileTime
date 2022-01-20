@@ -65,9 +65,13 @@ namespace FileTime.App.Core.Tab
             return false;
         }
 
-        public IReadOnlyList<TabItem> GetCurrentSelectedItems() =>
-            SelectedItems.ContainsKey(Tab.CurrentLocation)
-            ? SelectedItems[Tab.CurrentLocation]
-            : new List<TabItem>().AsReadOnly();
+        public async Task<IReadOnlyList<TabItem>> GetCurrentSelectedItems()
+        {
+            var currentLocation = await Tab.GetCurrentLocation();
+
+            return SelectedItems.ContainsKey(currentLocation)
+                ? SelectedItems[currentLocation]
+                : new List<TabItem>().AsReadOnly();
+        }
     }
 }

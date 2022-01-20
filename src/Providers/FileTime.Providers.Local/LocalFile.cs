@@ -34,9 +34,10 @@ namespace FileTime.Providers.Local
 
         public string GetPrimaryAttributeText() => _file.Length.ToSizeString();
 
-        public void Delete()
+        public Task Delete()
         {
             _file.Delete();
+            return Task.CompletedTask;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace FileTime.ConsoleUI.App.UI
             _coloredConsoleRenderer = coloredConsoleRenderer;
             _consoleReader = consoleReader;
         }
-        public string?[] ReadInputs(IEnumerable<InputElement> fields)
+        public async Task<string?[]> ReadInputs(IEnumerable<InputElement> fields)
         {
             var results = new List<string?>();
 
@@ -26,7 +26,7 @@ namespace FileTime.ConsoleUI.App.UI
                 _application.MoveToIOLine();
                 _coloredConsoleRenderer.Write(input.Text + ": ");
 
-                results.Add(_consoleReader.ReadText(placeHolder: input.InputType == InputType.Password ? '*' : null));
+                results.Add(await _consoleReader.ReadText(placeHolder: input.InputType == InputType.Password ? '*' : null));
             }
 
             return results.ToArray();

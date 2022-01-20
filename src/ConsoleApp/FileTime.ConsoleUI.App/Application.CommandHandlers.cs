@@ -8,12 +8,12 @@ namespace FileTime.ConsoleUI.App
     {
         private void CloseTab()
         {
-            var currentTabIndex = _panes.IndexOf(_selectedTab!);
+            var currentTabIndex = _tabs.IndexOf(_selectedTab!);
             RemoveTab(_selectedTab!);
 
-            if (_panes.Count > 0)
+            if (_tabs.Count > 0)
             {
-                _selectedTab = _panes[currentTabIndex == 0 ? 0 : currentTabIndex - 1];
+                _selectedTab = _tabs[currentTabIndex == 0 ? 0 : currentTabIndex - 1];
             }
             else
             {
@@ -22,34 +22,36 @@ namespace FileTime.ConsoleUI.App
             }
         }
 
-        private void MoveCursorUp() => _selectedTab!.SelectPreviousItem();
-        private void MoveCursorDown() => _selectedTab!.SelectNextItem();
-        private void GoUp() => _selectedTab!.GoUp();
-        private void Open() => _selectedTab!.Open();
+        private async Task MoveCursorUp() => await _selectedTab!.SelectPreviousItem();
+        private async Task MoveCursorDown() => await _selectedTab!.SelectNextItem();
+        private async Task GoUp() => await _selectedTab!.GoUp();
+        private async Task Open() => await _selectedTab!.Open();
 
-        private void MoveCursorUpPage() => _selectedTab!.SelectPreviousItem(_renderers[_selectedTab].PageSize);
-        private void MoveCursorDownPage() => _selectedTab!.SelectNextItem(_renderers[_selectedTab].PageSize);
-        private void MoveCursorToTop() => _selectedTab!.SelectFirstItem();
-        private void MoveCursorToBottom() => _selectedTab!.SelectLastItem();
+        private async Task MoveCursorUpPage() => await _selectedTab!.SelectPreviousItem(_renderers[_selectedTab].PageSize);
+        private async Task MoveCursorDownPage() => await _selectedTab!.SelectNextItem(_renderers[_selectedTab].PageSize);
+        private async Task MoveCursorToTop() => await _selectedTab!.SelectFirstItem();
+        private async Task MoveCursorToBottom() => await _selectedTab!.SelectLastItem();
 
-        private void ToggleHidden()
+        private async Task ToggleHidden()
         {
             const string hiddenFilterName = "filter_showhiddenelements";
 
-            IContainer containerToOpen = _selectedTab!.CurrentLocation;
+            var currentLocation = await _selectedTab!.GetCurrentLocation();
 
-            if (_selectedTab.CurrentLocation is VirtualContainer oldVirtualContainer)
+            IContainer containerToOpen = currentLocation;
+
+            if (currentLocation is VirtualContainer oldVirtualContainer)
             {
                 containerToOpen = oldVirtualContainer.HasWithName(hiddenFilterName)
                 ? oldVirtualContainer.ExceptWithName(hiddenFilterName)
-                : GenerateHiddenFilterVirtualContainer(_selectedTab.CurrentLocation);
+                : GenerateHiddenFilterVirtualContainer(currentLocation);
             }
             else
             {
-                containerToOpen = GenerateHiddenFilterVirtualContainer(_selectedTab.CurrentLocation);
+                containerToOpen = GenerateHiddenFilterVirtualContainer(currentLocation);
             }
 
-            _selectedTab.OpenContainer(containerToOpen);
+            await _selectedTab.OpenContainer(containerToOpen);
 
             static VirtualContainer GenerateHiddenFilterVirtualContainer(IContainer container)
             {
@@ -70,39 +72,42 @@ namespace FileTime.ConsoleUI.App
             }
         }
 
-        public void Select()
+        public async Task Select()
         {
-            if (_selectedTab!.CurrentSelectedItem != null)
+            var currentLocation = await _selectedTab!.GetCurrentLocation();
+            if (currentLocation != null)
             {
-                var currentSelectedItem = _selectedTab.CurrentSelectedItem;
-                if (_paneStates[_selectedTab].ContainsSelectedItem(currentSelectedItem.Provider, _selectedTab.CurrentLocation, currentSelectedItem.FullName!))
+                var currentSelectedItem = await _selectedTab.GetCurrentSelectedItem()!;
+                if (_paneStates[_selectedTab].ContainsSelectedItem(currentSelectedItem.Provider, currentLocation, currentSelectedItem.FullName!))
                 {
-                    _paneStates[_selectedTab].RemoveSelectedItem(currentSelectedItem.Provider, _selectedTab.CurrentLocation, currentSelectedItem.FullName!);
+                    _paneStates[_selectedTab].RemoveSelectedItem(currentSelectedItem.Provider, currentLocation, currentSelectedItem.FullName!);
                 }
                 else
                 {
-                    _paneStates[_selectedTab].AddSelectedItem(currentSelectedItem.Provider, _selectedTab.CurrentLocation, currentSelectedItem.FullName!);
+                    _paneStates[_selectedTab].AddSelectedItem(currentSelectedItem.Provider, currentLocation, currentSelectedItem.FullName!);
                 }
 
-                _selectedTab.SelectNextItem();
+                await _selectedTab.SelectNextItem();
             }
         }
 
-        public void Copy()
+        public async Task Copy()
         {
             _clipboard.Clear();
             _clipboard.SetCommand<CopyCommand>();
 
-            if (_paneStates[_selectedTab!].GetCurrentSelectedItems().Count > 0)
+            var currentSelectedItems = await _paneStates[_selectedTab!].GetCurrentSelectedItems();
+            if (currentSelectedItems.Count > 0)
             {
-                foreach (var selectedItem in _paneStates[_selectedTab!].GetCurrentSelectedItems())
+                foreach (var selectedItem in currentSelectedItems)
                 {
                     _clipboard.AddContent(selectedItem.ContentProvider, selectedItem.Path);
                 }
             }
             else
             {
-                _clipboard.AddContent(_selectedTab!.CurrentSelectedItem!.Provider, _selectedTab.CurrentSelectedItem.FullName!);
+                var currentSelectedItem = (await _selectedTab!.GetCurrentSelectedItem())!;
+                _clipboard.AddContent(currentSelectedItem.Provider, currentSelectedItem.FullName!);
             }
         }
 
@@ -112,21 +117,21 @@ namespace FileTime.ConsoleUI.App
             _clipboard.SetCommand<MoveCommand>();
         }
 
-        public void PasteMerge()
+        public async Task PasteMerge()
         {
-            Paste(TransportMode.Merge);
+            await Paste(TransportMode.Merge);
         }
-        public void PasteOverwrite()
+        public async Task PasteOverwrite()
         {
-            Paste(TransportMode.Overwrite);
-        }
-
-        public void PasteSkip()
-        {
-            Paste(TransportMode.Skip);
+            await Paste(TransportMode.Overwrite);
         }
 
-        private void Paste(TransportMode transportMode)
+        public async Task PasteSkip()
+        {
+            await Paste(TransportMode.Skip);
+        }
+
+        private async Task Paste(TransportMode transportMode)
         {
             if (_clipboard.CommandType != null)
             {
@@ -140,9 +145,10 @@ namespace FileTime.ConsoleUI.App
                     command.Sources.Add(item);
                 }
 
-                command.Target = _selectedTab.CurrentLocation is VirtualContainer virtualContainer
+                var currentLocation = await _selectedTab!.GetCurrentLocation();
+                command.Target = currentLocation is VirtualContainer virtualContainer
                     ? virtualContainer.BaseContainer
-                    : _selectedTab.CurrentLocation;
+                    : currentLocation;
 
                 _commandExecutor.ExecuteCommand(command);
 
@@ -150,24 +156,25 @@ namespace FileTime.ConsoleUI.App
             }
         }
 
-        private void CreateContainer()
+        private async Task CreateContainer()
         {
-            if (_selectedTab?.CurrentLocation != null)
+            var currentLocation = await _selectedTab?.GetCurrentLocation();
+            if (currentLocation != null)
             {
                 _coloredConsoleRenderer.ResetColor();
                 MoveToIOLine(2);
                 _coloredConsoleRenderer.Write("New container name: ");
-                var newContainerName = _consoleReader.ReadText(validator: Validator);
+                var newContainerName = await _consoleReader.ReadText(validator: Validator);
 
                 if (!string.IsNullOrWhiteSpace(newContainerName))
                 {
-                    _selectedTab.CurrentLocation.CreateContainer(newContainerName);
+                    await currentLocation.CreateContainer(newContainerName);
                 }
             }
 
-            void Validator(string newPath)
+            async Task Validator(string newPath)
             {
-                if (_selectedTab!.CurrentLocation.IsExists(newPath))
+                if (await currentLocation.IsExists(newPath))
                 {
                     _coloredConsoleRenderer.ForegroundColor = _styles.ErrorColor;
                 }
@@ -178,30 +185,33 @@ namespace FileTime.ConsoleUI.App
             }
         }
 
-        private void HardDelete()
+        private async Task HardDelete()
         {
-            IList<IAbsolutePath> itemsToDelete = null;
+            IList<IAbsolutePath>? itemsToDelete = null;
 
-            if (_paneStates[_selectedTab!].GetCurrentSelectedItems().Count > 0)
+            var currentSelectedItems = await _paneStates[_selectedTab!].GetCurrentSelectedItems();
+            var currentSelectedItem = await _selectedTab?.GetCurrentSelectedItem();
+            if (currentSelectedItems.Count > 0)
             {
                 var delete = true;
 
-                if (_paneStates[_selectedTab!].GetCurrentSelectedItems().Count == 1
-                    && _paneStates[_selectedTab!].GetCurrentSelectedItems()[0] is IContainer container
-                    && container.Items.Count > 0)
+                //FIXME: check 'is Container'
+                if (currentSelectedItems.Count == 1
+                    && currentSelectedItems[0] is IContainer container
+                    && (await container.GetItems())?.Count > 0)
                 {
                     delete = AskForApprove($"The container '{container.Name}' is not empty.");
                 }
 
                 if (delete)
                 {
-                    itemsToDelete = _paneStates[_selectedTab].GetCurrentSelectedItems().Cast<IAbsolutePath>().ToList();
+                    itemsToDelete = currentSelectedItems.Cast<IAbsolutePath>().ToList();
                 }
             }
-            else if (_selectedTab?.CurrentSelectedItem != null)
+            else if (currentSelectedItem != null)
             {
                 bool delete = true;
-                if (_selectedTab?.CurrentSelectedItem is IContainer container && container.Items.Count > 0)
+                if (currentSelectedItem is IContainer container && (await container.GetItems())?.Count > 0)
                 {
                     delete = AskForApprove($"The container '{container.Name}' is not empty.");
                 }
@@ -210,7 +220,7 @@ namespace FileTime.ConsoleUI.App
                 {
                     itemsToDelete = new List<IAbsolutePath>()
                     {
-                        new AbsolutePath(_selectedTab.CurrentSelectedItem.Provider, _selectedTab.CurrentSelectedItem.FullName!)
+                        new AbsolutePath(currentSelectedItem.Provider, currentSelectedItem.FullName!)
                     };
                 }
             }

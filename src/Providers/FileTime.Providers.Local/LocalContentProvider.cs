@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using Microsoft.Extensions.Logging;
@@ -8,15 +9,19 @@ namespace FileTime.Providers.Local
     public class LocalContentProvider : IContentProvider
     {
         private readonly ILogger<LocalContentProvider> _logger;
-        private IContainer _parent = null;
+        private IContainer? _parent;
 
-        public IReadOnlyList<IContainer> RootContainers { get; }
+        private readonly IReadOnlyList<IContainer> _rootContainers;
+        private readonly IReadOnlyList<IItem>? _items;
+        private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
+
+        /* public IReadOnlyList<IContainer> RootContainers { get; }
 
         public IReadOnlyList<IItem> Items => RootContainers;
 
         public IReadOnlyList<IContainer> Containers => RootContainers;
 
-        public IReadOnlyList<IElement> Elements { get; } = new List<IElement>();
+        public IReadOnlyList<IElement> Elements { get; } = new List<IElement>(); */
 
         public string Name { get; } = "local";
 
@@ -25,7 +30,7 @@ namespace FileTime.Providers.Local
 
         public IContentProvider Provider => this;
 
-        public event EventHandler? Refreshed;
+        public AsyncEventHandler Refreshed { get; } = new();
 
         public bool IsCaseInsensitive { get; }
 
@@ -41,13 +46,14 @@ namespace FileTime.Providers.Local
 
             FullName = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "" : null;
 
-            RootContainers = rootDirectories.Select(d => new LocalFolder(d, this, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
+            _rootContainers = rootDirectories.Select(d => new LocalFolder(d, this, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
+            _items = _rootContainers.Cast<IItem>().ToList().AsReadOnly();
         }
 
-        public IItem? GetByPath(string path)
+        public async Task<IItem?> GetByPath(string path)
         {
             var pathParts = (IsCaseInsensitive ? path.ToLower() : path).TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
-            var rootContainer = RootContainers.FirstOrDefault(c => NormalizePath(c.Name) == NormalizePath(pathParts[0]));
+            var rootContainer = _rootContainers.FirstOrDefault(c => NormalizePath(c.Name) == NormalizePath(pathParts[0]));
 
             if (rootContainer == null)
             {
@@ -55,27 +61,43 @@ namespace FileTime.Providers.Local
                 return null;
             }
 
-            return rootContainer.GetByPath(string.Join(Constants.SeparatorChar, pathParts.Skip(1)));
+            return await rootContainer.GetByPath(string.Join(Constants.SeparatorChar, pathParts.Skip(1)));
         }
 
-        public void Refresh()
-        {
-        }
+        public Task Refresh() => Task.CompletedTask;
+
 
         public IContainer? GetParent() => _parent;
-        public IContainer CreateContainer(string name) => throw new NotSupportedException();
-        public IElement CreateElement(string name) => throw new NotSupportedException();
-        public bool IsExists(string name) => Items.Any(i => i.Name == name);
+        public Task<IContainer> CreateContainer(string name) => throw new NotSupportedException();
+        public Task<IElement> CreateElement(string name) => throw new NotSupportedException();
+        public Task<bool> IsExists(string name) => Task.FromResult(_rootContainers.Any(i => i.Name == name));
 
-        public void Delete() => throw new NotSupportedException();
+        public Task Delete() => throw new NotSupportedException();
 
         internal string NormalizePath(string path) => IsCaseInsensitive ? path.ToLower() : path;
 
-        public bool CanHandlePath(string path) => RootContainers.Any(r => path.StartsWith(r.Name));
+        public bool CanHandlePath(string path) => _rootContainers.Any(r => path.StartsWith(r.Name));
 
         public void SetParent(IContainer container)
         {
             _parent = container;
+        }
+        public Task<IReadOnlyList<IContainer>?> GetRootContainers(CancellationToken token = default)
+        {
+            return Task.FromResult(_rootContainers);
+        }
+
+        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
+        {
+            return Task.FromResult(_items);
+        }
+        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
+        {
+            return Task.FromResult(_rootContainers);
+        }
+        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
+        {
+            return Task.FromResult(_elements);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace FileTime.ConsoleUI.App
 {
     public partial class Application
     {
-        private readonly List<Tab> _panes = new();
+        private readonly List<Tab> _tabs = new();
         private readonly Dictionary<Tab, Render> _renderers = new();
         private readonly Dictionary<Tab, TabState> _paneStates = new();
         private Tab? _selectedTab;
@@ -48,29 +48,30 @@ namespace FileTime.ConsoleUI.App
             InitCommandBindings();
         }
 
-        public void SetContainer(IContainer currentPath)
+        public async Task SetContainer(IContainer currentPath)
         {
-            _selectedTab = CreateTab(currentPath);
+            _selectedTab = await CreateTab(currentPath);
         }
 
-        private Tab CreateTab(IContainer container)
+        private async Task<Tab> CreateTab(IContainer container)
         {
-            var pane = new Tab(container);
-            _panes.Add(pane);
+            var tab = new Tab();
+            await tab.Init(container);
+            _tabs.Add(tab);
 
-            var paneState = new TabState(pane);
-            _paneStates.Add(pane, paneState);
+            var paneState = new TabState(tab);
+            _paneStates.Add(tab, paneState);
 
             var renderer = _serviceProvider.GetService<Render>()!;
-            renderer.Init(pane, paneState);
-            _renderers.Add(pane, renderer);
+            renderer.Init(tab, paneState);
+            _renderers.Add(tab, renderer);
 
-            return pane;
+            return tab;
         }
 
         private void RemoveTab(Tab pane)
         {
-            _panes.Remove(pane);
+            _tabs.Remove(pane);
             _renderers.Remove(pane);
             _paneStates.Remove(pane);
         }
@@ -181,15 +182,15 @@ namespace FileTime.ConsoleUI.App
             _commandBindings.AddRange(commandBindings);
         }
 
-        public void PrintUI()
+        public async Task PrintUI(CancellationToken token = default)
         {
             if (_selectedTab != null)
             {
-                _renderers[_selectedTab].PrintUI();
+                await _renderers[_selectedTab].PrintUI(token);
             }
         }
 
-        public bool ProcessKey(ConsoleKeyInfo keyinfo)
+        public async Task<bool> ProcessKey(ConsoleKeyInfo keyinfo)
         {
             var key = keyinfo.Key;
             _previousKeys.Add(keyinfo);
@@ -208,7 +209,7 @@ namespace FileTime.ConsoleUI.App
             }
             else if (selectedCommandBinding != null)
             {
-                selectedCommandBinding.Invoke();
+                await selectedCommandBinding.InvokeAsync();
                 _previousKeys.Clear();
             }
             else

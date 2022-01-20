@@ -1,4 +1,5 @@
 
+using AsyncEvent;
 using FileTime.Core.Models;
 
 namespace FileTime.Core.Providers
@@ -6,12 +7,9 @@ namespace FileTime.Core.Providers
     public class TopContainer : IContainer
     {
         private readonly List<IContentProvider> _contentProviders;
-
-        public IReadOnlyList<IItem> Items => Containers;
-
-        public IReadOnlyList<IContainer> Containers { get; }
-
-        public IReadOnlyList<IElement> Elements { get; } = new List<IElement>().AsReadOnly();
+        private readonly IReadOnlyList<IContainer>? _containers;
+        private readonly IReadOnlyList<IItem>? _items;
+        private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
 
         public string Name => null;
 
@@ -21,12 +19,13 @@ namespace FileTime.Core.Providers
 
         public IContentProvider Provider => null;
 
-        public event EventHandler? Refreshed;
+        public AsyncEventHandler Refreshed { get; } = new();
 
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {
             _contentProviders = new List<IContentProvider>(contentProviders);
-            Containers = _contentProviders.AsReadOnly();
+            _containers = _contentProviders.AsReadOnly();
+            _items = _containers.Cast<IItem>().ToList().AsReadOnly();
 
             foreach (var contentProvider in contentProviders)
             {
@@ -34,21 +33,34 @@ namespace FileTime.Core.Providers
             }
         }
 
-        public IContainer CreateContainer(string name) => throw new NotImplementedException();
+        public Task<IContainer> CreateContainer(string name) => throw new NotImplementedException();
 
-        public IElement CreateElement(string name) => throw new NotImplementedException();
+        public Task<IElement> CreateElement(string name) => throw new NotImplementedException();
 
-        public void Delete() => throw new NotImplementedException();
+        public Task Delete() => throw new NotImplementedException();
 
-        public IItem? GetByPath(string path) => throw new NotImplementedException();
+        public Task<IItem?> GetByPath(string path) => throw new NotImplementedException();
 
         public IContainer? GetParent() => null;
 
-        public bool IsExists(string name) => throw new NotImplementedException();
+        public Task<bool> IsExists(string name) => throw new NotImplementedException();
 
-        public void Refresh()
+        public Task Refresh()
         {
+            return Task.CompletedTask;
+        }
 
+        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
+        {
+            return Task.FromResult(_items);
+        }
+        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
+        {
+            return Task.FromResult(_containers);
+        }
+        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
+        {
+            return Task.FromResult(_elements);
         }
     }
 }

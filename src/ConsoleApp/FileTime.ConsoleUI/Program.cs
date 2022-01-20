@@ -15,36 +15,47 @@ namespace FileTime.ConsoleUI
     public class Program
     {
         static ILogger<Program>? _logger;
+        static Thread? _renderThread;
 
-        public static void Main()
+        public static async Task Main()
         {
             var serviceProvider = CreateServiceProvider();
             _logger = serviceProvider.GetService<ILogger<Program>>()!;
 
             var coloredConsoleRenderer = serviceProvider.GetService<IColoredConsoleRenderer>()!;
             var localContentProvider = serviceProvider.GetService<LocalContentProvider>()!;
+            var renderSynchronizer = serviceProvider.GetService<RenderSynchronizer>()!;
 
             var currentPath = Environment.CurrentDirectory.Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar);
             _logger.LogInformation("Current directory: '{0}'", currentPath);
-            var currentPossibleDirectory = localContentProvider.GetByPath(currentPath);
+            var currentPossibleDirectory = await localContentProvider.GetByPath(currentPath);
 
             if (currentPossibleDirectory is IContainer container)
             {
                 serviceProvider.GetService<TopContainer>();
                 coloredConsoleRenderer.Clear();
-                Console.CursorVisible = false;
+                try
+                {
+                    Console.CursorVisible = false;
+                }
+                catch { }
 
                 var app = serviceProvider.GetService<Application>()!;
-                app.SetContainer(container);
-                app.PrintUI();
+                await app.SetContainer(container);
+                renderSynchronizer.NeedsReRender();
+
+                _renderThread = new Thread(new ThreadStart(renderSynchronizer.Start));
+                _renderThread.Start();
 
                 while (app.IsRunning)
                 {
-                    if (app.ProcessKey(Console.ReadKey(true)))
+                    if (await app.ProcessKey(Console.ReadKey(true)))
                     {
-                        app.PrintUI();
+                        renderSynchronizer.NeedsReRender();
                     }
                 }
+
+                renderSynchronizer.NeedsReRender();
 
                 Console.SetCursorPosition(0, Console.WindowHeight - 1);
 
@@ -52,26 +63,35 @@ namespace FileTime.ConsoleUI
             }
             else
             {
-                Console.WriteLine("Current working directory is not a directory???");
+                Console.WriteLine("Current working directory is not a directory??? Possible directory's type is: '" + currentPossibleDirectory?.GetType() + "'");
                 Thread.Sleep(100);
             }
         }
 
         private static bool IsAnsiColorSupported()
         {
-            Console.CursorLeft = 0;
-            Console.CursorTop = 0;
+            try
+            {
+                Console.CursorLeft = 0;
+                Console.CursorTop = 0;
 
-            Console.Write("\u001b[0ma");
+                Console.Write("\u001b[0ma");
 
-            return Console.CursorLeft == 1 && Console.CursorTop == 0;
+                return Console.CursorLeft == 1 && Console.CursorTop == 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static ServiceProvider CreateServiceProvider()
         {
             return DependencyInjection.RegisterDefaultServices()
-                .AddLogging(/* (builder) => builder.AddConsole().AddDebug() */)
+                //.AddLogging()
+                .AddLogging((builder) => builder.AddConsole().AddDebug())
                 .AddSingleton<Application>()
+                .AddSingleton<RenderSynchronizer>()
                 .AddSingleton<IStyles>(new Styles(IsAnsiColorSupported()))
                 .AddSingleton<IColoredConsoleRenderer, ColoredConsoleRenderer>()
                 .AddSingleton<ConsoleReader>()

@@ -12,29 +12,29 @@ namespace FileTime.Core.Command
             throw new NotImplementedException();
         }
 
-        public void Execute()
+        public async Task Execute()
         {
             foreach (var item in ItemsToDelete)
             {
-                DoDelete(item.ContentProvider.GetByPath(item.Path)!);
+                await DoDelete(await item.ContentProvider.GetByPath(item.Path)!);
             }
         }
 
-        private void DoDelete(IItem item)
+        private async Task DoDelete(IItem item)
         {
             if (item is IContainer container)
             {
-                foreach (var child in container.Items)
+                foreach (var child in await container.GetItems())
                 {
-                    DoDelete(child);
-                    child.Delete();
+                    await DoDelete(child);
+                    await child.Delete();
                 }
 
-                item.Delete();
+                await item.Delete();
             }
             else if(item is IElement element)
             {
-                element.Delete();
+                await element.Delete();
             }
         }
     }

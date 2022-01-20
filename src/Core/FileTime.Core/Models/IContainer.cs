@@ -1,19 +1,21 @@
+using AsyncEvent;
+
 namespace FileTime.Core.Models
 {
     public interface IContainer : IItem
     {
-        IReadOnlyList<IItem> Items { get; }
-        IReadOnlyList<IContainer> Containers { get; }
-        IReadOnlyList<IElement> Elements { get; }
+        Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default);
+        Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default);
+        Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default);
 
-        void Refresh();
+        Task Refresh();
         IContainer? GetParent();
-        IItem? GetByPath(string path);
-        IContainer CreateContainer(string name);
-        IElement CreateElement(string name);
+        Task<IItem?> GetByPath(string path);
+        Task<IContainer> CreateContainer(string name);
+        Task<IElement> CreateElement(string name);
 
-        bool IsExists(string name);
+        Task<bool> IsExists(string name);
 
-        event EventHandler? Refreshed;
+        AsyncEventHandler Refreshed { get; }
     }
 }

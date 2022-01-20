@@ -1,3 +1,4 @@
+using AsyncEvent;
 using FileTime.Core.Providers;
 
 namespace FileTime.Core.Models
@@ -12,11 +13,11 @@ namespace FileTime.Core.Models
         public bool IsPermanent { get; }
         public bool IsTransitive { get; }
         public string? VirtualContainerName { get; }
-        public IReadOnlyList<IItem> Items { get; private set; }
+        public IReadOnlyList<IItem>? Items { get; private set; }
 
-        public IReadOnlyList<IContainer> Containers { get; private set; }
+        public IReadOnlyList<IContainer>? Containers { get; private set; }
 
-        public IReadOnlyList<IElement> Elements { get; private set; }
+        public IReadOnlyList<IElement>? Elements { get; private set; }
 
         public string Name => BaseContainer.Name;
 
@@ -26,10 +27,15 @@ namespace FileTime.Core.Models
 
         public IContentProvider Provider => BaseContainer.Provider;
 
-        public event EventHandler? Refreshed
+        public AsyncEventHandler Refreshed { get; }
+
+        private void RefreshAddBase(Func<object?, AsyncEventArgs, Task> handler)
         {
-            add => BaseContainer.Refreshed += value;
-            remove => BaseContainer.Refreshed -= value;
+            BaseContainer.Refreshed.Add(handler);
+        }
+        private void RefreshRemoveBase(Func<object?, AsyncEventArgs, Task> handler)
+        {
+            BaseContainer.Refreshed.Add(handler);
         }
 
         public VirtualContainer(
@@ -40,32 +46,40 @@ namespace FileTime.Core.Models
             bool isTransitive = false,
             string? virtualContainerName = null)
         {
+            Refreshed = new (RefreshAddBase, RefreshRemoveBase);
             BaseContainer = baseContainer;
             _containerTransformators = containerTransformators;
             _elementTransformators = elementTransformators;
 
-            InitItems();
             IsPermanent = isPermanent;
             IsTransitive = isTransitive;
             VirtualContainerName = virtualContainerName;
         }
 
-        private void InitItems()
+        public async Task Init()
         {
-            Containers = _containerTransformators.Aggregate(BaseContainer.Containers.AsEnumerable(), (a, t) => t(a)).ToList().AsReadOnly();
-            Elements = _elementTransformators.Aggregate(BaseContainer.Elements.AsEnumerable(), (a, t) => t(a)).ToList().AsReadOnly();
-
-            Items = Containers.Cast<IItem>().Concat(Elements).ToList().AsReadOnly();
+            await InitItems();
         }
 
-        public IItem? GetByPath(string path) => BaseContainer.GetByPath(path);
+        private async Task InitItems()
+        {
+            Containers = _containerTransformators.Aggregate((await BaseContainer.GetContainers())?.AsEnumerable(), (a, t) => t(a!))?.ToList()?.AsReadOnly();
+            Elements = _elementTransformators.Aggregate((await BaseContainer.GetElements())?.AsEnumerable(), (a, t) => t(a!))?.ToList()?.AsReadOnly();
+
+            Items = (Elements != null
+                    ? Containers?.Cast<IItem>().Concat(Elements)
+                    : Containers?.Cast<IItem>())
+                ?.ToList().AsReadOnly();
+        }
+
+        public async Task<IItem?> GetByPath(string path) => await BaseContainer.GetByPath(path);
 
         public IContainer? GetParent() => BaseContainer.GetParent();
 
-        public void Refresh()
+        public async Task Refresh()
         {
-            BaseContainer.Refresh();
-            InitItems();
+            await BaseContainer.Refresh();
+            await InitItems();
         }
 
         public IContainer GetRealContainer() =>
@@ -113,10 +127,23 @@ namespace FileTime.Core.Models
                 : baseContainer;
         }
 
-        public IContainer CreateContainer(string name) => BaseContainer.CreateContainer(name);
-        public IElement CreateElement(string name) => BaseContainer.CreateElement(name);
-        public bool IsExists(string name) => BaseContainer.IsExists(name);
+        public async Task<IContainer> CreateContainer(string name) => await BaseContainer.CreateContainer(name);
+        public async Task<IElement> CreateElement(string name) => await BaseContainer.CreateElement(name);
+        public async Task<bool> IsExists(string name) => await BaseContainer.IsExists(name);
 
-        public void Delete() => BaseContainer.Delete();
+        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
+        {
+            return Task.FromResult(Items);
+        }
+        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
+        {
+            return Task.FromResult(Containers);
+        }
+        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
+        {
+            return Task.FromResult(Elements);
+        }
+
+        public async Task Delete() => await BaseContainer.Delete();
     }
 }

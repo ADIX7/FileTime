@@ -1,4 +1,5 @@
 using System.Net;
+using AsyncEvent;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
@@ -13,30 +14,10 @@ namespace FileTime.Providers.Smb
         private string? _password;
 
         private IReadOnlyList<IContainer>? _shares;
+        private IReadOnlyList<IItem>? _items;
+        private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
         private ISMBClient? _client;
         private readonly IInputInterface _inputInterface;
-
-        public IReadOnlyList<IItem> Items
-        {
-            get
-            {
-                if (_shares == null) Refresh();
-                return _shares!;
-            }
-        }
-
-        public IReadOnlyList<IContainer> Containers
-        {
-            get
-            {
-                if (_shares == null) Refresh();
-                return _shares!;
-            }
-
-            private set => _shares = value;
-        }
-
-        public IReadOnlyList<IElement> Elements { get; } = new List<IElement>().AsReadOnly();
 
         public string Name { get; }
 
@@ -48,7 +29,7 @@ namespace FileTime.Providers.Smb
 
         IContentProvider IItem.Provider => Provider;
 
-        public event EventHandler? Refreshed;
+        public AsyncEventHandler Refreshed { get; } = new();
 
         public SmbServer(string path, SmbContentProvider contentProvider, IInputInterface inputInterface)
         {
@@ -58,43 +39,60 @@ namespace FileTime.Providers.Smb
             FullName = Name = path;
         }
 
-        public IContainer CreateContainer(string name)
+        public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
+        {
+            if (_shares == null) await Refresh();
+            return _shares;
+        }
+        public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
+        {
+            if (_shares == null) await Refresh();
+            return _shares;
+        }
+        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
+        {
+            return Task.FromResult(_elements);
+        }
+
+        public Task<IContainer> CreateContainer(string name)
         {
             throw new NotSupportedException();
         }
 
-        public IElement CreateElement(string name)
+        public Task<IElement> CreateElement(string name)
         {
             throw new NotSupportedException();
         }
 
-        public void Delete()
+        public Task Delete()
         {
+            return Task.CompletedTask;
         }
 
-        public IItem? GetByPath(string path)
+        public Task<IItem?> GetByPath(string path)
         {
             throw new NotImplementedException();
         }
 
         public IContainer? GetParent() => Provider;
 
-        public bool IsExists(string name)
+        public Task<bool> IsExists(string name)
         {
             throw new NotImplementedException();
         }
 
-        public void Refresh()
+        public async Task Refresh()
         {
-            ISMBClient client = GetSmbClient();
+            ISMBClient client = await GetSmbClient();
 
             List<string> shares = client.ListShares(out var status);
 
             _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, GetSmbClient)).AsReadOnly();
-            Refreshed?.Invoke(this, EventArgs.Empty);
+            _items = _shares.Cast<IItem>().ToList().AsReadOnly();
+            await Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
-        private ISMBClient GetSmbClient()
+        private async Task<ISMBClient> GetSmbClient()
         {
             if (_client == null)
             {
@@ -108,7 +106,7 @@ namespace FileTime.Providers.Smb
                 {
                     if (_username == null && _password == null)
                     {
-                        var inputs = _inputInterface.ReadInputs(
+                        var inputs = await _inputInterface.ReadInputs(
                             new InputElement[]
                             {
                                 new InputElement($"Username for '{Name}'", InputType.Text),

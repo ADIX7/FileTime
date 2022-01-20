@@ -71,8 +71,12 @@ namespace FileTime.ConsoleUI.App.UI.Color
 
         public void Clear()
         {
-            Console.SetCursorPosition(0, 0);
-            Write(new string(' ', Console.WindowHeight * Console.WindowWidth));
+            try
+            {
+                Console.SetCursorPosition(0, 0);
+                Write(new string(' ', Console.WindowHeight * Console.WindowWidth));
+            }
+            catch { }
         }
     }
 }
