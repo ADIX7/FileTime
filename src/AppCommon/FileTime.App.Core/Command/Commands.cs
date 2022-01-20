@@ -16,7 +16,12 @@ namespace FileTime.App.Core.Command
         CreateElement,
         MoveCursorUpPage,
         MoveCursorDownPage,
-        GoToTop,
-        GoToBottom,
+        MoveToTop,
+        MoveToBottom,
+        MoveToFirst,
+        MoveToLast,
+        GoToRoot,
+        GoToProvider,
+        GoToHome,
     }
 }

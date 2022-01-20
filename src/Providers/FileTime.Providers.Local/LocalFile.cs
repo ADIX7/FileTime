@@ -10,6 +10,8 @@ namespace FileTime.Providers.Local
     {
         private readonly FileInfo _file;
 
+        public FileInfo File => _file;
+
         public string Name { get; }
 
         public string FullName { get; }

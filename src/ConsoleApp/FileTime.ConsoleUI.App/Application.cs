@@ -88,7 +88,7 @@ namespace FileTime.ConsoleUI.App
                 new CommandBinding("open", Commands.Open, new[] { new ConsoleKeyInfo('→', ConsoleKey.RightArrow, false, false, false) }, Open),
                 new CommandBinding(
                     "go to top",
-                    Commands.GoToTop,
+                    Commands.MoveToTop,
                     new[]
                     {
                         new ConsoleKeyInfo('g', ConsoleKey.G, false, false, false),
@@ -97,7 +97,7 @@ namespace FileTime.ConsoleUI.App
                     MoveCursorToTop),
                 new CommandBinding(
                     "go to bottom",
-                    Commands.GoToBottom,
+                    Commands.MoveToBottom,
                     new[]
                     {
                         new ConsoleKeyInfo('G', ConsoleKey.G, true, false, false)
@@ -194,7 +194,7 @@ namespace FileTime.ConsoleUI.App
             var key = keyinfo.Key;
             _previousKeys.Add(keyinfo);
 
-            CommandBinding? selectedCommandBinding = _commandBindings.Find(c => AreKeysEqual(c.Keys, _previousKeys));
+            var selectedCommandBinding = _commandBindings.Find(c => AreKeysEqual(c.Keys, _previousKeys));
 
             if (keyinfo.Key == ConsoleKey.Escape)
             {

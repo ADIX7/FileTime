@@ -19,7 +19,10 @@ namespace FileTime.Providers.Local.Extensions
                 _ => (fileSizeD, "B")
             };
 
-            return string.Format("{0:N" + precision + "}", size).TrimEnd('0').Replace(',', '.').TrimEnd('.') + " " + suffix;
+            var result = string.Format("{0:N" + precision + "}", size).Replace(',', '.');
+
+            if (result.Contains('.')) result = result.TrimEnd('0').TrimEnd('.');
+            return result + " " + suffix;
         }
     }
 }

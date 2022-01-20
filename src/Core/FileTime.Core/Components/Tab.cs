@@ -4,43 +4,45 @@ namespace FileTime.Core.Components
 {
     public class Tab
     {
-        private IItem? currentSelectedItem;
-        private IContainer currentLocation;
+        private IItem? _currentSelectedItem;
+        private IContainer _currentLocation;
 
         public IContainer CurrentLocation
         {
-            get => currentLocation;
+            get => _currentLocation;
             private set
             {
-                if (currentLocation != value)
+                if (_currentLocation != value)
                 {
-                    if (currentLocation != null)
+                    if (_currentLocation != null)
                     {
-                        currentLocation.Refreshed -= HandleCurrentLocationRefresh;
+                        _currentLocation.Refreshed -= HandleCurrentLocationRefresh;
                     }
 
-                    currentLocation = value;
+                    _currentLocation = value;
                     CurrentLocationChanged?.Invoke(this, EventArgs.Empty);
                     CurrentSelectedItem = CurrentLocation.Items.Count > 0 ? CurrentLocation.Items[0] : null;
-                    currentLocation.Refreshed += HandleCurrentLocationRefresh;
+                    _currentLocation.Refreshed += HandleCurrentLocationRefresh;
                 }
             }
         }
         public IItem? CurrentSelectedItem
         {
-            get => currentSelectedItem;
-            private set
+            get => _currentSelectedItem;
+            set
             {
-                if (currentSelectedItem != value && (currentLocation.Items.Contains(value) || value == null))
+                if (_currentSelectedItem != value && (_currentLocation.Items.Contains(value) || value == null))
                 {
-                    currentSelectedItem = value;
+                    _currentSelectedItem = value;
                     CurrentSelectedIndex = GetItemIndex(value);
+                    CurrentSelectedItemChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
         public int CurrentSelectedIndex { get; private set; }
 
         public event EventHandler CurrentLocationChanged;
+        public event EventHandler CurrentSelectedItemChanged;
 
         public Tab(IContainer currentPath)
         {
@@ -53,7 +55,7 @@ namespace FileTime.Core.Components
             var currentSelectedName = CurrentSelectedItem?.FullName;
             if (currentSelectedName != null)
             {
-                CurrentSelectedItem = CurrentLocation.Items.FirstOrDefault(i => i.FullName == currentSelectedName) ?? currentLocation.Items.FirstOrDefault();
+                CurrentSelectedItem = CurrentLocation.Items.FirstOrDefault(i => i.FullName == currentSelectedName) ?? _currentLocation.Items.FirstOrDefault();
             }
             else if (CurrentLocation.Items.Count > 0)
             {
@@ -120,6 +122,26 @@ namespace FileTime.Core.Components
             }
         }
 
+        public void GoToProvider()
+        {
+            if (CurrentLocation == null) return;
+
+            CurrentLocation = CurrentLocation.Provider;
+        }
+
+        public void GoToRoot()
+        {
+            if (CurrentLocation == null) return;
+
+            var root = CurrentLocation;
+            while (root!.GetParent() != null)
+            {
+                root = root.GetParent();
+            }
+
+            CurrentLocation = root;
+        }
+
         public void GoUp()
         {
             var lastCurrentLocation = CurrentLocation;
@@ -142,7 +164,7 @@ namespace FileTime.Core.Components
 
         public void Open()
         {
-            if (currentSelectedItem is IContainer childContainer)
+            if (_currentSelectedItem is IContainer childContainer)
             {
                 if (CurrentLocation is VirtualContainer currentVirtuakContainer)
                 {
