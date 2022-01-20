@@ -4,27 +4,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FileTime.Uno.Command
 {
     public class CommandBinding
     {
-        private readonly Action _commandHandler;
+        private readonly Func<Task> _commandHandler;
 
         public string Name { get; }
         public Commands? Command { get; }
         public KeyWithModifiers[] Keys { get; }
-        public void Invoke() => _commandHandler();
 
         public string KeysDisplayText => GetKeysDisplayText();
 
-        public CommandBinding(string name, Commands? command, KeyWithModifiers[] keys, Action commandHandler)
+        public CommandBinding(string name, Commands? command, KeyWithModifiers[] keys, Func<Task> commandHandler)
         {
             _commandHandler = commandHandler;
             Name = name;
             Command = command;
             Keys = keys;
         }
+        public async Task InvokeAsync() => await _commandHandler();
 
         public string GetKeysDisplayText()
         {

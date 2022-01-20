@@ -89,7 +89,7 @@ namespace FileTime.Providers.Smb
 
             _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, GetSmbClient)).AsReadOnly();
             _items = _shares.Cast<IItem>().ToList().AsReadOnly();
-            await Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty);
+            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
         private async Task<ISMBClient> GetSmbClient()

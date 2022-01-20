@@ -45,22 +45,10 @@ namespace FileTime.Core.Providers
 
         public Task<bool> IsExists(string name) => throw new NotImplementedException();
 
-        public Task Refresh()
-        {
-            return Task.CompletedTask;
-        }
+        public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
 
-        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
-        {
-            return Task.FromResult(_items);
-        }
-        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
-        {
-            return Task.FromResult(_containers);
-        }
-        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
-        {
-            return Task.FromResult(_elements);
-        }
+        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
+        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult(_containers);
+        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
     }
 }

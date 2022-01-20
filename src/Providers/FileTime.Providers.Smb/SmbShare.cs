@@ -108,7 +108,7 @@ namespace FileTime.Providers.Smb
             _elements = elements.AsReadOnly();
 
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            await Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty);
+            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
         public async Task<(List<IContainer> containers, List<IElement> elements)> ListFolder(IContainer parent, string shareName, string folderName)

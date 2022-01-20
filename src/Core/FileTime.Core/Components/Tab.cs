@@ -42,8 +42,8 @@ namespace FileTime.Core.Components
         } */
         public int CurrentSelectedIndex { get; private set; }
 
-        public event EventHandler CurrentLocationChanged;
-        public event EventHandler CurrentSelectedItemChanged;
+        public AsyncEventHandler CurrentLocationChanged = new();
+        public AsyncEventHandler CurrentSelectedItemChanged = new();
 
         public async Task Init(IContainer currentPath)
         {
@@ -65,7 +65,7 @@ namespace FileTime.Core.Components
                 }
 
                 _currentLocation = value;
-                CurrentLocationChanged?.Invoke(this, EventArgs.Empty);
+                await CurrentLocationChanged?.InvokeAsync(this, AsyncEventArgs.Empty);
 
                 var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
                 await SetCurrentSelectedItem(currentLocationItems.Count > 0 ? currentLocationItems[0] : null);
@@ -87,7 +87,7 @@ namespace FileTime.Core.Components
 
                 _currentSelectedItem = value;
                 CurrentSelectedIndex = await GetItemIndex(value);
-                CurrentSelectedItemChanged?.Invoke(this, EventArgs.Empty);
+                await CurrentSelectedItemChanged?.InvokeAsync(this, AsyncEventArgs.Empty);
             }
         }
 

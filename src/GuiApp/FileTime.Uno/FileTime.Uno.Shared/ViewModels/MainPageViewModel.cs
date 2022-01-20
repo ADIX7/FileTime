@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.System;
 
 namespace FileTime.Uno.ViewModels
@@ -20,6 +21,7 @@ namespace FileTime.Uno.ViewModels
     public partial class MainPageViewModel
     {
         private readonly List<KeyWithModifiers> _previousKeys = new List<KeyWithModifiers>();
+        private readonly List<KeyWithModifiers[]> _keysToSkip = new List<KeyWithModifiers[]>();
         private bool _isAltPressed = false;
         private bool _isShiftPressed = false;
         private bool _isCtrlPressed = false;
@@ -46,19 +48,28 @@ namespace FileTime.Uno.ViewModels
 
         public Action FocusDefaultElement { get; set; }
 
-        partial void OnInitialize()
+        async partial void OnInitialize()
         {
             InitCommandBindings();
 
+            _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(VirtualKey.Up) });
+            _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(VirtualKey.Down) });
+            _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(VirtualKey.Tab) });
+
+            var tab = new Tab();
+            await tab.Init(LocalContentProvider);
+
+            var tabContainer = new TabContainer(tab, LocalContentProvider);
+            await tabContainer.Init();
             AppState.Tabs = new List<TabContainer>()
             {
-                new TabContainer(new Tab(LocalContentProvider), LocalContentProvider)
+                tabContainer
             };
 
             var driveInfos = new List<RootDriveInfo>();
             foreach (var drive in DriveInfo.GetDrives())
             {
-                var container = LocalContentProvider.RootContainers.FirstOrDefault(d => d.Name == drive.Name.TrimEnd(Path.DirectorySeparatorChar));
+                var container = (await LocalContentProvider.GetRootContainers()).FirstOrDefault(d => d.Name == drive.Name.TrimEnd(Path.DirectorySeparatorChar));
                 if (container != null)
                 {
                     var driveInfo = new RootDriveInfo(drive, container);
@@ -69,73 +80,75 @@ namespace FileTime.Uno.ViewModels
             RootDriveInfos = driveInfos;
         }
 
-        public void OpenContainer()
+        public async Task OpenContainer()
         {
-            AppState.SelectedTab.Open();
+            await AppState.SelectedTab.Open();
         }
 
-        public void GoUp()
+        public async Task GoUp()
         {
-            AppState.SelectedTab.GoUp();
+            await AppState.SelectedTab.GoUp();
         }
 
-        public void MoveCursorUp()
+        public async Task MoveCursorUp()
         {
-            AppState.SelectedTab.MoveCursorUp();
+            await AppState.SelectedTab.MoveCursorUp();
         }
 
-        public void MoveCursorDown()
+        public async Task MoveCursorDown()
         {
-            AppState.SelectedTab.MoveCursorDown();
+            await AppState.SelectedTab.MoveCursorDown();
         }
 
-        public void MoveCursorUpPage()
+        public async Task MoveCursorUpPage()
         {
-            AppState.SelectedTab.MoveCursorUpPage();
+            await AppState.SelectedTab.MoveCursorUpPage();
         }
 
-        public void MoveCursorDownPage()
+        public async Task MoveCursorDownPage()
         {
-            AppState.SelectedTab.MoveCursorDownPage();
+            await AppState.SelectedTab.MoveCursorDownPage();
         }
 
-        public void MoveToFirst()
+        public async Task MoveToFirst()
         {
-            AppState.SelectedTab.MoveCursorToFirst();
+            await AppState.SelectedTab.MoveCursorToFirst();
         }
 
-        public void MoveToLast()
+        public async Task MoveToLast()
         {
-            AppState.SelectedTab.MoveCursorToLast();
+            await AppState.SelectedTab.MoveCursorToLast();
         }
 
-        public void GotToProvider()
+        public async Task GotToProvider()
         {
-            AppState.SelectedTab.GotToProvider();
+            await AppState.SelectedTab.GotToProvider();
         }
 
-        public void GotToRoot()
+        public async Task GotToRoot()
         {
-            AppState.SelectedTab.GotToRoot();
+            await AppState.SelectedTab.GotToRoot();
         }
 
-        public void GotToHome()
+        public async Task GotToHome()
         {
-            AppState.SelectedTab.GotToHome();
+            await AppState.SelectedTab.GotToHome();
         }
 
-        public void CreateContainer()
+        public Task CreateContainer()
         {
             var handler = () =>
             {
                 if (Inputs != null)
                 {
-                    AppState.SelectedTab.CreateContainer(Inputs[0].Value);
+                    AppState.SelectedTab.CreateContainer(Inputs[0].Value).Wait();
                     Inputs = null;
                 }
             };
 
             ReadInputs(new List<InputElement>() { new InputElement("Container name", InputType.Text) }, handler);
+
+            return Task.CompletedTask;
         }
 
         [Command]
@@ -172,7 +185,7 @@ namespace FileTime.Uno.ViewModels
             return false;
         }
 
-        public bool ProcessKeyUp(VirtualKey key)
+        public async Task<bool> ProcessKeyUp(VirtualKey key)
         {
             if (key == VirtualKey.Menu)
             {
@@ -192,21 +205,15 @@ namespace FileTime.Uno.ViewModels
                 _previousKeys.Add(keyWithModifiers);
 
                 var selectedCommandBinding = _commandBindings.Find(c => AreKeysEqual(c.Keys, _previousKeys));
-
+                
                 if (key == VirtualKey.Escape)
                 {
                     _previousKeys.Clear();
                     PossibleCommands = new();
                 }
-                else if (_previousKeys.Count == 2 && selectedCommandBinding == null)
-                {
-                    NoCommandFound = true;
-                    _previousKeys.Clear();
-                    PossibleCommands = new();
-                }
                 else if (selectedCommandBinding != null)
                 {
-                    selectedCommandBinding.Invoke();
+                    await selectedCommandBinding.InvokeAsync();
                     _previousKeys.Clear();
                     PossibleCommands = new();
 
@@ -214,6 +221,17 @@ namespace FileTime.Uno.ViewModels
                     {
                         FocusDefaultElement?.Invoke();
                     }
+                }
+                else if (_keysToSkip.Any(k => AreKeysEqual(k, _previousKeys)))
+                {
+                    _previousKeys.Clear();
+                    PossibleCommands = new();
+                }
+                else if (_previousKeys.Count == 2)
+                {
+                    NoCommandFound = true;
+                    _previousKeys.Clear();
+                    PossibleCommands = new();
                 }
                 else
                 {
@@ -275,11 +293,11 @@ namespace FileTime.Uno.ViewModels
                 new CommandBinding("cursor down", FileTime.App.Core.Command.Commands.MoveCursorDown, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.Down)}, MoveCursorDown),
                 new CommandBinding("cursor page up", FileTime.App.Core.Command.Commands.MoveCursorUpPage, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.PageUp)}, MoveCursorUpPage),
                 new CommandBinding("cursor page down", FileTime.App.Core.Command.Commands.MoveCursorDownPage, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.PageDown)}, MoveCursorDownPage),*/
-                new CommandBinding("", null, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.Up)}, () =>{ }),
+                /*new CommandBinding("", null, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.Up)}, () =>{ }),
                 new CommandBinding("", null, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.Down)}, () =>{ }),
                 new CommandBinding("", null, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.PageUp)}, () =>{ }),
                 new CommandBinding("", null, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.PageDown)}, () =>{ }),
-                new CommandBinding("", null, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.Tab)}, () =>{ }),
+                new CommandBinding("", null, new KeyWithModifiers[]{new KeyWithModifiers(VirtualKey.Tab)}, () =>{ }),*/
                 new CommandBinding(
                     "create container",
                     FileTime.App.Core.Command.Commands.CreateContainer,

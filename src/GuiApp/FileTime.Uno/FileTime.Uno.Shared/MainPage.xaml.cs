@@ -62,9 +62,9 @@ namespace FileTime.Uno
             e.Handled = ViewModel.ProcessKeyDown(e.Key) || e.Handled;
         }
 
-        private void CurrentItems_KeyUp(object sender, KeyRoutedEventArgs e)
+        private async void CurrentItems_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            e.Handled = ViewModel.ProcessKeyUp(e.Key) || e.Handled;
+            e.Handled = await ViewModel.ProcessKeyUp(e.Key) || e.Handled;
         }
 
         private void InputText_KeyDown(object sender, KeyRoutedEventArgs e)

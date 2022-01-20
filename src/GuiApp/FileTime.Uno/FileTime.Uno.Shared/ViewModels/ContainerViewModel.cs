@@ -1,15 +1,20 @@
-﻿using FileTime.Core.Models;
+﻿using AsyncEvent;
+using FileTime.Core.Models;
 using MvvmGen;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FileTime.Uno.ViewModels
 {
     [ViewModel]
     public partial class ContainerViewModel : IItemViewModel
     {
+        private bool isRefreshing;
+
         [Property]
         private IContainer _container;
 
@@ -19,13 +24,13 @@ namespace FileTime.Uno.ViewModels
         public IItem Item => _container;
 
         //[Property]
-        private List<ContainerViewModel> _containers;
+        private readonly ObservableCollection<ContainerViewModel> _containers = new ObservableCollection<ContainerViewModel>();
 
         //[Property]
-        private List<ElementViewModel> _elements;
+        private readonly ObservableCollection<ElementViewModel> _elements = new ObservableCollection<ElementViewModel>();
 
         //[Property]
-        private List<IItemViewModel> _items;
+        private readonly ObservableCollection<IItemViewModel> _items = new ObservableCollection<IItemViewModel>();
 
         [Property]
         private bool _isAlternative;
@@ -40,77 +45,88 @@ namespace FileTime.Uno.ViewModels
                 ? ItemViewMode.Alternative
                 : ItemViewMode.Default;
 
-        public List<ContainerViewModel> Containers
+        public ObservableCollection<ContainerViewModel> Containers
         {
             get
             {
-                if(_containers == null) Refresh();
+                if (_containers == null) Task.Run(Refresh);
                 return _containers;
             }
-            set
-            {
-                if(_containers != value)
-                {
-                    _containers = value;
-                    OnPropertyChanged(nameof(_containers));
-                }
-            }
         }
-        public List<ElementViewModel> Elements
+        public ObservableCollection<ElementViewModel> Elements
         {
             get
             {
-                if(_elements == null) Refresh();
+                if (_elements == null) Task.Run(Refresh);
                 return _elements;
             }
-            set
-            {
-                if(_elements != value)
-                {
-                    _elements = value;
-                    OnPropertyChanged(nameof(_elements));
-                }
-            }
         }
-        public List<IItemViewModel> Items
+        public ObservableCollection<IItemViewModel> Items
         {
             get
             {
-                if(_items == null) Refresh();
+                if (_items == null) Task.Run(Refresh);
                 return _items;
             }
-            set
-            {
-                if(_items != value)
-                {
-                    _items = value;
-                    OnPropertyChanged(nameof(_items));
-                }
-            }
         }
 
-        public ContainerViewModel(IContainer container)
+        public ContainerViewModel(IContainer container) : this()
         {
             Container = container;
-            Container.Refreshed += Container_Refreshed;
+            Container.Refreshed.Add(Container_Refreshed);
         }
 
-        private void Container_Refreshed(object sender, EventArgs e)
+        public async Task Init(bool initializeChildren = true)
         {
-            Refresh();
+            await Refresh(initializeChildren);
         }
 
-        private void Refresh()
+        private async Task Container_Refreshed(object sender, AsyncEventArgs e)
         {
-            Containers = _container.Containers.Select(c => new ContainerViewModel(c)).ToList();
-            Elements = _container.Elements.Select(e => new ElementViewModel(e)).ToList();
+            await Refresh(false);
+        }
 
-            Items = Containers.Cast<IItemViewModel>().Concat(Elements).ToList();
+        private async Task Refresh()
+        {
+            await Refresh(true);
+        }
+        private async Task Refresh(bool initializeChildren)
+        {
+            if (isRefreshing) return;
 
-            for(var i = 0;i<Items.Count;i++)
+            try
             {
-                Items[i].IsAlternative = i % 2 == 1;
+                isRefreshing = true;
+
+                var containers = (await _container.GetContainers()).Select(c => new ContainerViewModel(c)).ToList();
+                var elements = (await _container.GetElements()).Select(e => new ElementViewModel(e)).ToList();
+
+                _containers.Clear();
+                _elements.Clear();
+                _items.Clear();
+
+                foreach (var container in containers)
+                {
+                    if (initializeChildren) await container.Init(false);
+
+                    _containers.Add(container);
+                    _items.Add(container);
+                }
+
+                foreach (var element in elements)
+                {
+                    _elements.Add(element);
+                    _items.Add(element);
+                }
+
+                for (var i = 0; i < _items.Count; i++)
+                {
+                    _items[i].IsAlternative = i % 2 == 1;
+                }
             }
+            catch { }
+
+            isRefreshing = false;
         }
     }
 }

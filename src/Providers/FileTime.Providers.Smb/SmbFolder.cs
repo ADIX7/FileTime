@@ -92,7 +92,7 @@ namespace FileTime.Providers.Smb
             _elements = elements.AsReadOnly();
 
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            await Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty);
+            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)

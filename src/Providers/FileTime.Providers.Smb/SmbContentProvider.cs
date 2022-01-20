@@ -7,7 +7,7 @@ namespace FileTime.Providers.Smb
 {
     public class SmbContentProvider : IContentProvider
     {
-        private IContainer _parent;
+        private IContainer? _parent;
         private readonly IInputInterface _inputInterface;
         private readonly List<IContainer> _rootContainers;
         private readonly IReadOnlyList<IContainer> _rootContainersReadOnly;
@@ -64,32 +64,17 @@ namespace FileTime.Providers.Smb
 
         public IContainer? GetParent() => _parent;
 
-        public async Task<bool> IsExists(string name) => (await GetItems()).Any(i => i.Name == name);
+        public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
 
-        public async Task Refresh()
-        {
-            await Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty);
-        }
+        public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
 
         public bool CanHandlePath(string path) => path.StartsWith("smb://") || path.StartsWith(@"\\");
 
         public void SetParent(IContainer container) => _parent = container;
-        public Task<IReadOnlyList<IContainer>?> GetRootContainers(CancellationToken token = default)
-        {
-            return Task.FromResult(_rootContainersReadOnly);
-        }
+        public Task<IReadOnlyList<IContainer>> GetRootContainers(CancellationToken token = default) => Task.FromResult(_rootContainersReadOnly);
 
-        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
-        {
-            return Task.FromResult(_items);
-        }
-        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
-        {
-            return Task.FromResult(_rootContainersReadOnly);
-        }
-        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
-        {
-            return Task.FromResult(_elements);
-        }
+        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
+        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult((IReadOnlyList<IContainer>?)_rootContainersReadOnly);
+        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
     }
 }

@@ -1,4 +1,5 @@
-﻿using FileTime.Core.Components;
+﻿using AsyncEvent;
+using FileTime.Core.Components;
 using FileTime.Core.Models;
 using FileTime.Providers.Local;
 using FileTime.Uno.ViewModels;
@@ -6,7 +7,9 @@ using MvvmGen;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FileTime.Uno.Application
 {
@@ -28,32 +31,39 @@ namespace FileTime.Uno.Application
         [PropertyCallMethod(nameof(SelectedItemChanged))]
         private IItemViewModel _selectedItem;
 
-        partial void OnInitialize()
+        public async Task Init()
         {
-            Tab.CurrentLocationChanged += Tab_CurrentLocationChanged;
-            Tab.CurrentSelectedItemChanged += Tab_CurrentSelectedItemChanged;
+            Tab.CurrentLocationChanged.Add(Tab_CurrentLocationChanged);
+            Tab.CurrentSelectedItemChanged.Add(Tab_CurrentSelectedItemChanged);
 
-            CurrentLocation = new ContainerViewModel(Tab.CurrentLocation);
-            var parent = Tab.CurrentLocation.GetParent();
+            CurrentLocation = new ContainerViewModel(await Tab.GetCurrentLocation());
+            await CurrentLocation.Init();
+
+            var parent = (await Tab.GetCurrentLocation()).GetParent();
             if (parent != null)
             {
                 Parent = new ContainerViewModel(parent);
+                await Parent.Init();
             }
             else
             {
                 Parent = null;
             }
 
-            UpdateCurrentSelectedItem();
+            await UpdateCurrentSelectedItem();
         }
 
-        private void Tab_CurrentLocationChanged(object sender, EventArgs e)
+        private async Task Tab_CurrentLocationChanged(object sender, AsyncEventArgs e)
         {
-            CurrentLocation = new ContainerViewModel(Tab.CurrentLocation);
-            var parent = Tab.CurrentLocation.GetParent();
+            var currentLocation = await Tab.GetCurrentLocation();
+            CurrentLocation = new ContainerViewModel(currentLocation);
+            await CurrentLocation.Init();
+
+            var parent = currentLocation.GetParent();
             if (parent != null)
             {
                 Parent = new ContainerViewModel(parent);
+                await Parent.Init();
             }
             else
             {
@@ -61,30 +71,32 @@ namespace FileTime.Uno.Application
             }
         }
 
-        private void Tab_CurrentSelectedItemChanged(object sender, EventArgs e)
+        private async Task Tab_CurrentSelectedItemChanged(object sender, AsyncEventArgs e)
         {
-            UpdateCurrentSelectedItem();
+            await UpdateCurrentSelectedItem();
         }
 
-        private void UpdateCurrentSelectedItem()
+        private async Task UpdateCurrentSelectedItem()
         {
+            var tabCurrentSelectenItem = await Tab.GetCurrentSelectedItem();
             IItemViewModel currentSelectenItem = null;
-            if (Tab.CurrentSelectedItem == null)
+            if (tabCurrentSelectenItem == null)
             {
                 SelectedItem = null;
                 ChildContainer = null;
             }
             else
             {
-                currentSelectenItem = _currentLocation.Items.Find(i => i.Item.Name == Tab.CurrentSelectedItem.Name);
+                currentSelectenItem = _currentLocation.Items.FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
                 if (currentSelectenItem is ContainerViewModel currentSelectedContainer)
                 {
-                    SelectedItem = ChildContainer = currentSelectedContainer;
+                    SelectedItem = currentSelectedContainer;
+                    ChildContainer = currentSelectedContainer;
                 }
                 else if (currentSelectenItem is ElementViewModel element)
                 {
-                    ChildContainer = null;
                     SelectedItem = element;
+                    ChildContainer = null;
                 }
                 else
                 {
@@ -99,79 +111,79 @@ namespace FileTime.Uno.Application
             }
         }
 
-        private void SelectedItemChanged()
+        private async void SelectedItemChanged()
         {
-            Tab.CurrentSelectedItem = SelectedItem?.Item;
+            await Tab.SetCurrentSelectedItem(SelectedItem?.Item);
         }
 
-        public void Open()
+        public async Task Open()
         {
             if (ChildContainer != null)
             {
-                Tab.Open();
-                UpdateCurrentSelectedItem();
+                await Tab.Open();
+                await UpdateCurrentSelectedItem();
             }
         }
 
-        public void GoUp()
+        public async Task GoUp()
         {
-            Tab.GoUp();
-            UpdateCurrentSelectedItem();
+            await Tab.GoUp();
+            await UpdateCurrentSelectedItem();
         }
 
-        public void MoveCursorDown()
+        public async Task MoveCursorDown()
         {
-            Tab.SelectNextItem();
+            await Tab.SelectNextItem();
         }
 
-        public void MoveCursorDownPage()
+        public async Task MoveCursorDownPage()
         {
-            Tab.SelectNextItem(10);
+            await Tab.SelectNextItem(10);
         }
 
-        public void MoveCursorUp()
+        public async Task MoveCursorUp()
         {
-            Tab.SelectPreviousItem();
+            await Tab.SelectPreviousItem();
         }
 
-        public void MoveCursorUpPage()
+        public async Task MoveCursorUpPage()
         {
-            Tab.SelectPreviousItem(10);
+            await Tab.SelectPreviousItem(10);
         }
 
-        public void MoveCursorToFirst()
+        public async Task MoveCursorToFirst()
         {
-            Tab.SelectFirstItem();
+            await Tab.SelectFirstItem();
         }
 
-        public void MoveCursorToLast()
+        public async Task MoveCursorToLast()
         {
-            Tab.SelectLastItem();
+            await Tab.SelectLastItem();
         }
 
-        public void GotToProvider()
+        public async Task GotToProvider()
         {
-            Tab.GoToProvider();
+            await Tab.GoToProvider();
         }
 
-        public void GotToRoot()
+        public async Task GotToRoot()
         {
-            Tab.GoToRoot();
+            await Tab.GoToRoot();
         }
 
-        public void GotToHome()
+        public async Task GotToHome()
         {
             var path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar);
             var resolvedPath = LocalContentProvider.GetByPath(path);
-            if(resolvedPath is IContainer homeFolder)
+            if (resolvedPath is IContainer homeFolder)
             {
-                Tab.OpenContainer(homeFolder);
+                await Tab.OpenContainer(homeFolder);
             }
         }
 
-        public void CreateContainer(string name)
+        public async Task CreateContainer(string name)
         {
-            Tab.CurrentLocation.CreateContainer(name);
+            (await Tab.GetCurrentLocation())?.CreateContainer(name);
         }
     }
 }

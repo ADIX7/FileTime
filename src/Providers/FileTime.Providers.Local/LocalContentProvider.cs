@@ -64,8 +64,7 @@ namespace FileTime.Providers.Local
             return await rootContainer.GetByPath(string.Join(Constants.SeparatorChar, pathParts.Skip(1)));
         }
 
-        public Task Refresh() => Task.CompletedTask;
-
+        public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
 
         public IContainer? GetParent() => _parent;
         public Task<IContainer> CreateContainer(string name) => throw new NotSupportedException();
@@ -78,26 +77,11 @@ namespace FileTime.Providers.Local
 
         public bool CanHandlePath(string path) => _rootContainers.Any(r => path.StartsWith(r.Name));
 
-        public void SetParent(IContainer container)
-        {
-            _parent = container;
-        }
-        public Task<IReadOnlyList<IContainer>?> GetRootContainers(CancellationToken token = default)
-        {
-            return Task.FromResult(_rootContainers);
-        }
+        public void SetParent(IContainer container) => _parent = container;
+        public Task<IReadOnlyList<IContainer>> GetRootContainers(CancellationToken token = default) => Task.FromResult(_rootContainers);
 
-        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
-        {
-            return Task.FromResult(_items);
-        }
-        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
-        {
-            return Task.FromResult(_rootContainers);
-        }
-        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
-        {
-            return Task.FromResult(_elements);
-        }
+        public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
+        public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult((IReadOnlyList<IContainer>?)_rootContainers);
+        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
     }
 }
