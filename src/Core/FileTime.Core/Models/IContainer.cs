@@ -16,6 +16,8 @@ namespace FileTime.Core.Models
 
         Task<bool> IsExists(string name);
 
+        Task<IContainer> Clone();
+
         AsyncEventHandler Refreshed { get; }
     }
 }

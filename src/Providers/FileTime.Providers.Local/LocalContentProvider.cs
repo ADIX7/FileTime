@@ -15,14 +15,6 @@ namespace FileTime.Providers.Local
         private readonly IReadOnlyList<IItem>? _items;
         private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
 
-        /* public IReadOnlyList<IContainer> RootContainers { get; }
-
-        public IReadOnlyList<IItem> Items => RootContainers;
-
-        public IReadOnlyList<IContainer> Containers => RootContainers;
-
-        public IReadOnlyList<IElement> Elements { get; } = new List<IElement>(); */
-
         public string Name { get; } = "local";
 
         public string? FullName { get; }
@@ -65,6 +57,8 @@ namespace FileTime.Providers.Local
         }
 
         public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+
+        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
 
         public IContainer? GetParent() => _parent;
         public Task<IContainer> CreateContainer(string name) => throw new NotSupportedException();

@@ -23,5 +23,7 @@ namespace FileTime.App.Core.Command
         GoToRoot,
         GoToProvider,
         GoToHome,
+        EnterRapidTravel,
+        OpenOrRun,
     }
 }

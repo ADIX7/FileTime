@@ -1,12 +1,13 @@
 ﻿using FileTime.Core.Models;
+using FileTime.Uno.Models;
+using FileTime.Uno.Services;
 using MvvmGen;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FileTime.Uno.ViewModels
 {
     [ViewModel]
+    [Inject(typeof(ItemNameConverterService))]
     public partial class ElementViewModel : IItemViewModel
     {
         public IItem Item => _element;
@@ -29,9 +30,13 @@ namespace FileTime.Uno.ViewModels
                 ? ItemViewMode.Alternative
                 : ItemViewMode.Default;
 
-        public ElementViewModel(IElement element)
+        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
+
+        public ElementViewModel(IElement element, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
         {
             Element = element;
         }
+
+        public void InvalidateDisplayName() => OnPropertyChanged(nameof(DisplayName));
     }
 }

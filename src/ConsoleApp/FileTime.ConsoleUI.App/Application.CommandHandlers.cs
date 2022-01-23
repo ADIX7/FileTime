@@ -1,5 +1,6 @@
 using FileTime.ConsoleUI.App.UI.Color;
 using FileTime.Core.Command;
+using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 
 namespace FileTime.ConsoleUI.App
@@ -38,7 +39,7 @@ namespace FileTime.ConsoleUI.App
 
             var currentLocation = await _selectedTab!.GetCurrentLocation();
 
-            IContainer containerToOpen = currentLocation;
+            /*IContainer containerToOpen = currentLocation;
 
             if (currentLocation is VirtualContainer oldVirtualContainer)
             {
@@ -49,13 +50,15 @@ namespace FileTime.ConsoleUI.App
             else
             {
                 containerToOpen = GenerateHiddenFilterVirtualContainer(currentLocation);
-            }
+            } */
+
+            var containerToOpen = await currentLocation.ToggleVirtualContainerInChain(hiddenFilterName, GenerateHiddenFilterVirtualContainer);
 
             await _selectedTab.OpenContainer(containerToOpen);
 
-            static VirtualContainer GenerateHiddenFilterVirtualContainer(IContainer container)
+            static async Task<VirtualContainer> GenerateHiddenFilterVirtualContainer(IContainer container)
             {
-                return new VirtualContainer(
+                var newContainer = new VirtualContainer(
                     container,
                     new List<Func<IEnumerable<IContainer>, IEnumerable<IContainer>>>()
                     {
@@ -69,6 +72,10 @@ namespace FileTime.ConsoleUI.App
                     true,
                     hiddenFilterName
                 );
+
+                await newContainer.Init();
+
+                return newContainer;
             }
         }
 

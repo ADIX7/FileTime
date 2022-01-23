@@ -43,7 +43,7 @@ namespace FileTime.ConsoleUI.App.UI
             if (paneState == null) throw new Exception($"{nameof(paneState)} can not be null");
 
             Tab = pane;
-            Tab.CurrentLocationChanged += (o, e) => _currentDisplayStartY = 0;
+            Tab.CurrentLocationChanged.Add((_, _) => { _currentDisplayStartY = 0; return Task.CompletedTask; });
 
             TabState = paneState;
         }

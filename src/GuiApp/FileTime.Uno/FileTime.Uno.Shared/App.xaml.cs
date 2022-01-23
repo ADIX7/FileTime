@@ -32,6 +32,7 @@ namespace FileTime.Uno
             ServiceProvider ??= DependencyInjection
                 .RegisterDefaultServices()
                 .AddViewModels()
+                .AddServices()
                 .BuildServiceProvider();
 
 #if HAS_UNO || NETFX_CORE

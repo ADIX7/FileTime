@@ -32,9 +32,9 @@ namespace FileTime.Uno
 
             ViewModel.FocusDefaultElement = () => (FindName(nameof(CurrentItems)) as FrameworkElement)?.Focus(FocusState.Programmatic);
 
-            foreach (var asd in Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries)
+            foreach (var resourceDictionary in Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries)
             {
-                if (asd is ResourceDictionary resourceDictionary && resourceDictionary.Source != null)
+                if (resourceDictionary.Source != null)
                 {
                     if (resourceDictionary.Source.LocalPath == "/Files/Themes/DefaultLight.xaml")
                     {
@@ -57,9 +57,9 @@ namespace FileTime.Uno
             CurrentItems.Focus(FocusState.Programmatic);
         }
 
-        private void CurrentItems_KeyDown(object sender, KeyRoutedEventArgs e)
+        private async void CurrentItems_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            e.Handled = ViewModel.ProcessKeyDown(e.Key) || e.Handled;
+            e.Handled = await ViewModel.ProcessKeyDown(e.Key) || e.Handled;
         }
 
         private async void CurrentItems_KeyUp(object sender, KeyRoutedEventArgs e)

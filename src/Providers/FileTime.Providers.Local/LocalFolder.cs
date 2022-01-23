@@ -34,6 +34,8 @@ namespace FileTime.Providers.Local
 
         public IContainer? GetParent() => _parent;
 
+        public Task<IContainer> Clone() => Task.FromResult((IContainer)new LocalFolder(Directory, Provider, _parent));
+
         public Task Refresh()
         {
             _containers = new List<IContainer>();

@@ -92,6 +92,8 @@ namespace FileTime.Providers.Smb
             await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
+        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+
         private async Task<ISMBClient> GetSmbClient()
         {
             if (_client == null)

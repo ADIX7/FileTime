@@ -88,6 +88,8 @@ namespace FileTime.Providers.Smb
 
         public IContainer? GetParent() => _parent;
 
+        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+
         public Task<bool> IsExists(string name)
         {
             throw new NotImplementedException();

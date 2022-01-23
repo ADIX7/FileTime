@@ -2,6 +2,7 @@
 using FileTime.Core.Components;
 using FileTime.Core.Models;
 using FileTime.Providers.Local;
+using FileTime.Uno.Services;
 using FileTime.Uno.ViewModels;
 using MvvmGen;
 using System;
@@ -14,6 +15,7 @@ using System.Threading.Tasks;
 namespace FileTime.Uno.Application
 {
     [ViewModel]
+    [Inject(typeof(ItemNameConverterService))]
     [Inject(typeof(LocalContentProvider))]
     [Inject(typeof(Tab))]
     public partial class TabContainer
@@ -27,22 +29,36 @@ namespace FileTime.Uno.Application
         [Property]
         private ContainerViewModel _childContainer;
 
-        [Property]
-        [PropertyCallMethod(nameof(SelectedItemChanged))]
+        //[Property]
+        //[PropertyCallMethod(nameof(SelectedItemChanged))]
         private IItemViewModel _selectedItem;
+
+        public IItemViewModel SelectedItem
+        {
+            get => _selectedItem;
+            set
+            {
+                if (_selectedItem != value && value != null)
+                {
+                    _selectedItem = value;
+                    OnPropertyChanged("SelectedItem");
+                    SelectedItemChanged();
+                }
+            }
+        }
 
         public async Task Init()
         {
             Tab.CurrentLocationChanged.Add(Tab_CurrentLocationChanged);
             Tab.CurrentSelectedItemChanged.Add(Tab_CurrentSelectedItemChanged);
 
-            CurrentLocation = new ContainerViewModel(await Tab.GetCurrentLocation());
+            CurrentLocation = new ContainerViewModel(await Tab.GetCurrentLocation(), ItemNameConverterService);
             await CurrentLocation.Init();
 
             var parent = (await Tab.GetCurrentLocation()).GetParent();
             if (parent != null)
             {
-                Parent = new ContainerViewModel(parent);
+                Parent = new ContainerViewModel(parent, ItemNameConverterService);
                 await Parent.Init();
             }
             else
@@ -56,13 +72,13 @@ namespace FileTime.Uno.Application
         private async Task Tab_CurrentLocationChanged(object sender, AsyncEventArgs e)
         {
             var currentLocation = await Tab.GetCurrentLocation();
-            CurrentLocation = new ContainerViewModel(currentLocation);
+            CurrentLocation = new ContainerViewModel(currentLocation, ItemNameConverterService);
             await CurrentLocation.Init();
 
             var parent = currentLocation.GetParent();
             if (parent != null)
             {
-                Parent = new ContainerViewModel(parent);
+                Parent = new ContainerViewModel(parent, ItemNameConverterService);
                 await Parent.Init();
             }
             else
@@ -174,7 +190,7 @@ namespace FileTime.Uno.Application
         public async Task GotToHome()
         {
             var path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar);
-            var resolvedPath = LocalContentProvider.GetByPath(path);
+            var resolvedPath = await LocalContentProvider.GetByPath(path);
             if (resolvedPath is IContainer homeFolder)
             {
                 await Tab.OpenContainer(homeFolder);
@@ -184,6 +200,11 @@ namespace FileTime.Uno.Application
         public async Task CreateContainer(string name)
         {
             (await Tab.GetCurrentLocation())?.CreateContainer(name);
+        }
+
+        public async Task OpenContainer(IContainer container)
+        {
+            await Tab.OpenContainer(container);
         }
     }
 }

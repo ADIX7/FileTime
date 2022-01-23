@@ -1,4 +1,5 @@
 ﻿using FileTime.Uno.Application;
+using FileTime.Uno.Services;
 using FileTime.Uno.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -12,9 +13,14 @@ namespace FileTime.Uno
         internal static IServiceCollection AddViewModels(this IServiceCollection serviceCollection)
         {
             return serviceCollection
-                .AddLogging()
-                .AddTransient<AppState>()
+                .AddSingleton<AppState>()
                 .AddTransient<MainPageViewModel>();
+        }
+        internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)
+        {
+            return serviceCollection
+                .AddLogging()
+                .AddSingleton<ItemNameConverterService>();
         }
     }
 }

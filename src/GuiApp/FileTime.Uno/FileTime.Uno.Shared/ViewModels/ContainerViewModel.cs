@@ -1,5 +1,7 @@
 ﻿using AsyncEvent;
 using FileTime.Core.Models;
+using FileTime.Uno.Models;
+using FileTime.Uno.Services;
 using MvvmGen;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,7 @@ using System.Threading.Tasks;
 namespace FileTime.Uno.ViewModels
 {
     [ViewModel]
+    [Inject(typeof(ItemNameConverterService))]
     public partial class ContainerViewModel : IItemViewModel
     {
         private bool isRefreshing;
@@ -45,6 +48,8 @@ namespace FileTime.Uno.ViewModels
                 ? ItemViewMode.Alternative
                 : ItemViewMode.Default;
 
+        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
+
         public ObservableCollection<ContainerViewModel> Containers
         {
             get
@@ -70,11 +75,13 @@ namespace FileTime.Uno.ViewModels
             }
         }
 
-        public ContainerViewModel(IContainer container) : this()
+        public ContainerViewModel(IContainer container, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
         {
             Container = container;
             Container.Refreshed.Add(Container_Refreshed);
         }
+
+        public void InvalidateDisplayName() => OnPropertyChanged(nameof(DisplayName));
 
         public async Task Init(bool initializeChildren = true)
         {
@@ -98,8 +105,8 @@ namespace FileTime.Uno.ViewModels
             {
                 isRefreshing = true;
 
-                var containers = (await _container.GetContainers()).Select(c => new ContainerViewModel(c)).ToList();
-                var elements = (await _container.GetElements()).Select(e => new ElementViewModel(e)).ToList();
+                var containers = (await _container.GetContainers()).Select(c => new ContainerViewModel(c, ItemNameConverterService)).ToList();
+                var elements = (await _container.GetElements()).Select(e => new ElementViewModel(e, ItemNameConverterService)).ToList();
 
                 _containers.Clear();
                 _elements.Clear();

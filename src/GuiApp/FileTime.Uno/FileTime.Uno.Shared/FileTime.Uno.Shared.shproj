@@ -13,6 +13,7 @@
   <ItemGroup>
     <_Globbed_Compile Remove="Application\AppState.cs" />
     <_Globbed_Compile Remove="Application\TabContainer.cs" />
+    <_Globbed_Compile Remove="Application\ViewMode.cs" />
     <_Globbed_Compile Remove="Command\CommandBinding.cs" />
     <_Globbed_Compile Remove="Converters\BoolToVisibilityConverter.cs" />
     <_Globbed_Compile Remove="Converters\DebugConverter.cs" />
@@ -27,7 +28,9 @@
     <_Globbed_Compile Remove="IconProviders\SystemIconProvider.cs" />
     <_Globbed_Compile Remove="Misc\InputElementWrapper.cs" />
     <_Globbed_Compile Remove="Misc\KeyWithModifiers.cs" />
+    <_Globbed_Compile Remove="Models\ItemNamePart.cs" />
     <_Globbed_Compile Remove="Models\RootDriveInfo.cs" />
+    <_Globbed_Compile Remove="Services\ItemNameConverterService.cs" />
     <_Globbed_Compile Remove="Startup.cs" />
     <_Globbed_Compile Remove="StyleSelectors\ContentItemStyleSelector.cs" />
     <_Globbed_Compile Remove="ViewModels\ContainerViewModel.cs" />
@@ -35,6 +38,7 @@
     <_Globbed_Compile Remove="ViewModels\IItemViewModel.cs" />
     <_Globbed_Compile Remove="ViewModels\ItemViewMode.cs" />
     <_Globbed_Compile Remove="ViewModels\MainPageViewModel.cs" />
+    <_Globbed_Compile Remove="ViewModels\TabControlViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <_Globbed_Content Remove="Assets\Fonts\Font Awesome 5 Brands-Regular-400.otf" />

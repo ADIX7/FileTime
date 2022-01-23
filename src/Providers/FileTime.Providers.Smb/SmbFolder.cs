@@ -45,6 +45,8 @@ namespace FileTime.Providers.Smb
             throw new NotImplementedException();
         }
 
+        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+
         public async Task<IItem?> GetByPath(string path)
         {
             var paths = path.Split(Constants.SeparatorChar);

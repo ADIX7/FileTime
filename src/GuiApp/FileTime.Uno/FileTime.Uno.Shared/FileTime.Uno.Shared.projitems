@@ -20,6 +20,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Application\AppState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Application\TabContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Application\ViewMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Command\CommandBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Command\CommandHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\BoolToVisibilityConverter.cs" />
@@ -29,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Converters\FormatSizeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\ItemToImageConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ItemViewModeToBrushConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IconProviders\AwesomeIconProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IconProviders\IIconProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IconProviders\MaterialIconProvider.cs" />
@@ -38,13 +40,16 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Misc\InputElementWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\KeyWithModifiers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ItemNamePart.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\RootDriveInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ItemNameConverterService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Startup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContainerViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ElementViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\IItemViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ItemViewMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\MainPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TabControlViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Converters\Converters.xaml">

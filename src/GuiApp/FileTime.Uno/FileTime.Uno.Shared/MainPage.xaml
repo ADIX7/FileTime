@@ -105,11 +105,78 @@
 
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Grid Margin="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid>
+                    <TextBlock
+                        Margin="10,5"
+                        Foreground="{ThemeResource ForegroundBrush}"
+                        Text="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName}" />
+                </Grid>
+
+                <ItemsControl
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    ItemsSource="{Binding Tabs}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsStackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid
+                                Margin="10,0,0,0"
+                                Padding="5">
+                                <i:Interaction.Behaviors>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{Binding IsSelected}"
+                                        Value="True">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Background"
+                                            Value="{ThemeResource ForegroundBrush}" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Foreground"
+                                            TargetObject="{Binding ElementName=Text}"
+                                            Value="{ThemeResource ContainerBackgroundBrush}" />
+                                    </ic:DataTriggerBehavior>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{Binding IsSelected}"
+                                        Value="False">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Background"
+                                            Value="{ThemeResource ContainerBackgroundBrush}" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Foreground"
+                                            TargetObject="{Binding ElementName=Text}"
+                                            Value="{ThemeResource ForegroundBrush}" />
+                                    </ic:DataTriggerBehavior>
+                                </i:Interaction.Behaviors>
+
+                                <TextBlock
+                                    x:Name="Text"
+                                    VerticalAlignment="Center">
+                                    <Run Text="{Binding TabNumber}" />
+                                    <Run Text="{Binding Tab.CurrentLocation.Container.FullName}" />
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+
+            <Grid
+                Grid.Row="1"
+                Margin="20">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="15*" />
@@ -235,7 +302,37 @@
                 </Grid>
             </Grid>
 
-            <Grid Grid.Row="1">
+            <Grid Grid.Row="2">
+                <Grid Visibility="{Binding AppState.ViewMode, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=RapidTravel}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Rectangle
+                        Height="1"
+                        Margin="10,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Fill="{ThemeResource ContentSeparatorBrush}" />
+
+                    <StackPanel
+                        Grid.Row="1"
+                        Margin="30,10,10,10"
+                        Orientation="Horizontal">
+
+                        <TextBlock
+                            Margin="0,0,30,0"
+                            Foreground="{ThemeResource ForegroundBrush}"
+                            Text="Rapid travel mode" />
+
+                        <TextBlock Foreground="{ThemeResource ForegroundBrush}">
+                            <Run Text="Filter" />
+                            <Run Text="{Binding AppState.RapidTravelText}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+
                 <Grid Visibility="{Binding NoCommandFound, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1" />

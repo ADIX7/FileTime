@@ -64,6 +64,8 @@ namespace FileTime.Providers.Smb
 
         public IContainer? GetParent() => _parent;
 
+        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+
         public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
 
         public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);

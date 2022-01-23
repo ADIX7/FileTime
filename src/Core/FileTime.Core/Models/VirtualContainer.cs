@@ -90,17 +90,20 @@ namespace FileTime.Core.Models
             || (BaseContainer is VirtualContainer virtualContainer
                 && virtualContainer.HasWithName(name));
 
-        public IContainer ExceptWithName(string name)
+        public async Task<IContainer> ExceptWithName(string name)
         {
             if (BaseContainer is VirtualContainer virtualBaseContainer && virtualBaseContainer.VirtualContainerName == name)
             {
-                return new VirtualContainer(
-                    virtualBaseContainer.ExceptWithName(name),
+                var newContainer = new VirtualContainer(
+                    await virtualBaseContainer.ExceptWithName(name),
                     _containerTransformators,
                     _elementTransformators,
                     IsPermanent,
                     IsTransitive,
                     VirtualContainerName);
+
+                await newContainer.Init();
+                return newContainer;
             }
             else if (VirtualContainerName == name)
             {
@@ -145,5 +148,16 @@ namespace FileTime.Core.Models
         }
 
         public async Task Delete() => await BaseContainer.Delete();
+        public async Task<IContainer> Clone()
+        {
+            return new VirtualContainer(
+                await BaseContainer.Clone(),
+                _containerTransformators,
+                _elementTransformators,
+                IsPermanent,
+                IsTransitive,
+                VirtualContainerName
+            );
+        }
     }
 }

@@ -45,6 +45,7 @@ namespace FileTime.Uno.Converters
             {
                 if (value is int valueInt && (parameter is int parameterInt || int.TryParse(parameter?.ToString(), out parameterInt))) return valueInt == parameterInt;
                 else if (value is double valueDouble && (parameter is double parameterDouble || double.TryParse(parameter?.ToString(), out parameterDouble))) return valueDouble == parameterDouble;
+                else if (value.GetType().IsEnum && Enum.TryParse(value.GetType(), parameter.ToString(), out var _)) return value.ToString() == parameter.ToString();
             }
 
             return value == parameter;

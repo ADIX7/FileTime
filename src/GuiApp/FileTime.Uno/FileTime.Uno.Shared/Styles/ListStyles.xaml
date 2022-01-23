@@ -1,14 +1,23 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:FileTime.Uno.Converters"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core">
     <DataTemplate x:Key="ContainerItemTemplate">
         <Grid
+            x:Name="ContainerItemTemplateRoot"
             Margin="0"
             Padding="0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch">
+            <Grid.Resources>
+                <converters:ItemViewModeToBrushConverter
+                    x:Key="TextForegroundConverter"
+                    AlternativeBrush="AlternativeForegroundBrush"
+                    DefaultBrush="ForegroundBrush"
+                    SelectedBrush="SelectedItemForegroundBrush" />
+            </Grid.Resources>
             <i:Interaction.Behaviors>
                 <ic:DataTriggerBehavior
                     Binding="{Binding ViewMode, Converter={StaticResource EnumToStringConverter}}"
@@ -16,10 +25,6 @@
                     <ic:ChangePropertyAction
                         PropertyName="Background"
                         Value="{ThemeResource ItemBackgroundBrush}" />
-                    <ic:ChangePropertyAction
-                        PropertyName="Foreground"
-                        TargetObject="{Binding ElementName=DispalyText}"
-                        Value="{ThemeResource ForegroundBrush}" />
                 </ic:DataTriggerBehavior>
                 <ic:DataTriggerBehavior
                     Binding="{Binding ViewMode, Converter={StaticResource EnumToStringConverter}}"
@@ -27,10 +32,6 @@
                     <ic:ChangePropertyAction
                         PropertyName="Background"
                         Value="{ThemeResource AlternativeItemBackgroundBrush}" />
-                    <ic:ChangePropertyAction
-                        PropertyName="Foreground"
-                        TargetObject="{Binding ElementName=DispalyText}"
-                        Value="{ThemeResource AlternativeForegroundBrush}" />
                 </ic:DataTriggerBehavior>
                 <ic:DataTriggerBehavior
                     Binding="{Binding ViewMode, Converter={StaticResource EnumToStringConverter}}"
@@ -38,10 +39,6 @@
                     <ic:ChangePropertyAction
                         PropertyName="Background"
                         Value="{ThemeResource SelectedItemBackgroundBrush}" />
-                    <ic:ChangePropertyAction
-                        PropertyName="Foreground"
-                        TargetObject="{Binding ElementName=DispalyText}"
-                        Value="{ThemeResource SelectedItemForegroundBrush}" />
                 </ic:DataTriggerBehavior>
             </i:Interaction.Behaviors>
             <Grid.ColumnDefinitions>
@@ -54,11 +51,28 @@
                 Height="32"
                 Margin="10,0"
                 Source="{Binding Converter={StaticResource ItemToImageConverter}}" />
-            <TextBlock
-                x:Name="DispalyText"
+
+            <ItemsControl
                 Grid.Column="1"
                 VerticalAlignment="Center"
-                Text="{Binding Item.Name}" />
+                ItemsSource="{Binding DisplayName}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <TextBlock
+                                x:Name="DispalyText"
+                                Foreground="{Binding DataContext.ViewMode, ElementName=ContainerItemTemplateRoot, Converter={StaticResource TextForegroundConverter}}"
+                                Text="{Binding Text}"
+                                TextDecorations="{Binding TextDecorations}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
     </DataTemplate>
 

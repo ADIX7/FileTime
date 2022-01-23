@@ -50,5 +50,7 @@ namespace FileTime.Core.Providers
         public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
         public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult(_containers);
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
+
+        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
     }
 }

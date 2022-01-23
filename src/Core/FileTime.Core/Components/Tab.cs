@@ -7,39 +7,7 @@ namespace FileTime.Core.Components
     {
         private IItem? _currentSelectedItem;
         private IContainer _currentLocation;
-
-        /* public IContainer CurrentLocation
-        {
-            get => _currentLocation;
-            private set
-            {
-                if (_currentLocation != value)
-                {
-                    if (_currentLocation != null)
-                    {
-                        _currentLocation.Refreshed -= HandleCurrentLocationRefresh;
-                    }
-
-                    _currentLocation = value;
-                    CurrentLocationChanged?.Invoke(this, EventArgs.Empty);
-                    CurrentSelectedItem = CurrentLocation.Items.Count > 0 ? CurrentLocation.Items[0] : null;
-                    _currentLocation.Refreshed += HandleCurrentLocationRefresh;
-                }
-            }
-        }
-        public IItem? CurrentSelectedItem
-        {
-            get => _currentSelectedItem;
-            set
-            {
-                if (_currentSelectedItem != value && (_currentLocation.Items.Contains(value) || value == null))
-                {
-                    _currentSelectedItem = value;
-                    CurrentSelectedIndex = GetItemIndex(value);
-                    CurrentSelectedItemChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        } */
+        
         public int CurrentSelectedIndex { get; private set; }
 
         public AsyncEventHandler CurrentLocationChanged = new();
