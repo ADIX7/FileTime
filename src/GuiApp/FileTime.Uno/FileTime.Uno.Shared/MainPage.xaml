@@ -69,7 +69,7 @@
                                         Margin="5,0"
                                         VerticalAlignment="Center"
                                         Style="{StaticResource NormalText}"
-                                        Text="{Binding Name}" />
+                                        Text="{Binding FullName}" />
                                     <TextBlock
                                         Grid.Column="2"
                                         VerticalAlignment="Center"
