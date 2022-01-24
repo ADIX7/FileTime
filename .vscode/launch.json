@@ -1,24 +1,62 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": ".NET Core Launch (console)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/bin/Debug/net6.0/FileTime.ConsoleUI.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI",
-            "console": "internalConsole",
-            "stopAtEntry": false
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach"
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Core Launch (console)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/bin/Debug/net6.0/FileTime.ConsoleUI.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach"
+    },
+    {
+      // Use IntelliSense to find out which attributes exist for C# debugging
+      // Use hover for the description of the existing attributes
+      // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+      "name": "Skia.GTK (Debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-skia-gtk",
+      // If you have changed target frameworks, make sure to update the program path.
+      "program": "${workspaceFolder}/src/GuiApp/FileTime.Uno/FileTime.Uno.Skia.Gtk/bin/Debug/net6.0/FileTime.Uno.Skia.Gtk.dll",
+      "args": [],
+      "env": {
+        "DOTNET_MODIFIABLE_ASSEMBLIES": "debug"
+      },
+      "cwd": "${workspaceFolder}/src/GuiApp/FileTime.Uno/FileTime.Uno.Skia.Gtk",
+      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      // Use IntelliSense to find out which attributes exist for C# debugging
+      // Use hover for the description of the existing attributes
+      // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+      "name": "Skia.Linux.FrameBuffer (Debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-skia-gtk",
+      // If you have changed target frameworks, make sure to update the program path.
+      "program": "${workspaceFolder}/src/GuiApp/FileTime.Uno/FileTime.Uno.Skia.Linux.FrameBuffer/bin/Debug/net6.0/FileTime.Uno.Skia.Linux.FrameBuffer.dll",
+      "args": [],
+      "env": {
+        "DOTNET_MODIFIABLE_ASSEMBLIES": "debug"
+      },
+      "cwd": "${workspaceFolder}/src/GuiApp/FileTime.Uno/FileTime.Uno.Skia.Linux.FrameBuffer",
+      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+      "console": "internalConsole",
+      "stopAtEntry": false
+    }
+  ]
 }

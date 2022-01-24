@@ -17,6 +17,9 @@ namespace FileTime.Uno.Models
         private string _name;
 
         [Property]
+        private string _fullName;
+
+        [Property]
         private long _size;
 
         [Property]
@@ -35,6 +38,7 @@ namespace FileTime.Uno.Models
             _container = container;
 
             Name = container.Name;
+            FullName = container.FullName;
             Size = driveInfo.TotalSize;
             Free = driveInfo.AvailableFreeSpace;
             Used = driveInfo.TotalSize - driveInfo.AvailableFreeSpace;

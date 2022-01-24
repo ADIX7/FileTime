@@ -1,76 +1,112 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish singlefile linux",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
-                "-p:PublishSingleFile=true",
-                "-c",
-                "Release",
-                "-r",
-                "linux-x64",
-                "--self-contained",
-                "true"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish singlefile windows",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
-                "-p:PublishSingleFile=true",
-                "-c",
-                "Release",
-                "-r",
-                "win-x64",
-                "--self-contained",
-                "true"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish singlefile linux",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
+        "-p:PublishSingleFile=true",
+        "-c",
+        "Release",
+        "-r",
+        "linux-x64",
+        "--self-contained",
+        "true"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish singlefile windows",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
+        "-p:PublishSingleFile=true",
+        "-c",
+        "Release",
+        "-r",
+        "win-x64",
+        "--self-contained",
+        "true"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/FileTime.ConsoleUI.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-skia-gtk",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/GuiApp/FileTime.Uno/FileTime.Uno.Skia.Gtk/FileTime.Uno.Skia.Gtk.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish-skia-gtk",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src//GuiApp/FileTime.Uno/FileTime.Uno.Skia.Gtk/FileTime.Uno.Skia.Gtk.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-skia-framebuffer",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/GuiApp/FileTime.Uno/FileTime.Uno.Skia.Linux.FrameBuffer/FileTime.Uno.Skia.Linux.FrameBuffer.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+  ]
 }

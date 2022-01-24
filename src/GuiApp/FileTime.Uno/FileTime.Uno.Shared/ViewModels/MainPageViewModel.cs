@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.System;
 
@@ -81,9 +82,11 @@ namespace FileTime.Uno.ViewModels
             _tabs.Add(new TabControlViewModel(1, tabContainer));
 
             var driveInfos = new List<RootDriveInfo>();
-            foreach (var drive in DriveInfo.GetDrives())
+            foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
             {
-                var container = (await LocalContentProvider.GetRootContainers()).FirstOrDefault(d => d.Name == drive.Name.TrimEnd(Path.DirectorySeparatorChar));
+                var container = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+                    ? await GetContainerForWindowsDrive(drive)
+                    : await GetContainerForLinuxDrive(drive);
                 if (container != null)
                 {
                     var driveInfo = new RootDriveInfo(drive, container);
@@ -91,7 +94,18 @@ namespace FileTime.Uno.ViewModels
                 }
             }
 
+            //TODO: order by
             RootDriveInfos = driveInfos;
+        }
+
+        private async Task<IContainer> GetContainerForWindowsDrive(DriveInfo drive)
+        {
+            return (await LocalContentProvider.GetRootContainers()).FirstOrDefault(d => d.Name == drive.Name.TrimEnd(Path.DirectorySeparatorChar));
+        }
+
+        private async Task<IContainer> GetContainerForLinuxDrive(DriveInfo drive)
+        {
+            return await LocalContentProvider.GetByPath(drive.Name) as IContainer;
         }
 
         public async Task OpenContainer()

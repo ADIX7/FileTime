@@ -45,6 +45,9 @@ namespace FileTime.Providers.Local
         public async Task<IItem?> GetByPath(string path)
         {
             var pathParts = (IsCaseInsensitive ? path.ToLower() : path).TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
+            
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && pathParts.Length == 1 && pathParts[0] == "") return this;
+
             var rootContainer = _rootContainers.FirstOrDefault(c => NormalizePath(c.Name) == NormalizePath(pathParts[0]));
 
             if (rootContainer == null)
@@ -53,7 +56,8 @@ namespace FileTime.Providers.Local
                 return null;
             }
 
-            return await rootContainer.GetByPath(string.Join(Constants.SeparatorChar, pathParts.Skip(1)));
+            var remainingPath = string.Join(Constants.SeparatorChar, pathParts.Skip(1));
+            return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath);
         }
 
         public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
