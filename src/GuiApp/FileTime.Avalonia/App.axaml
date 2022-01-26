@@ -1,0 +1,118 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:FileTime.Avalonia"
+			 xmlns:converters="using:FileTime.Avalonia.Converters"
+             x:Class="FileTime.Avalonia.App">
+    <Application.DataTemplates>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme Mode="Light"/>
+
+		<Style Selector="TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+		</Style>
+		<Style Selector="TextBlock.SmallText">
+			<Setter Property="FontSize" Value="12"/>
+		</Style>
+		<Style Selector="ListBox.ContentListView">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="ItemTemplate">
+				<Setter.Value>
+					<DataTemplate>
+						<Grid ColumnDefinitions="Auto,*">
+							<Image
+								Grid.RowSpan="2"
+								Width="20"
+								Height="20"
+								HorizontalAlignment="Left"
+								VerticalAlignment="Center"
+								Source="{SvgImage /Assets/material/folder.svg}" />
+
+							<ItemsControl
+								Grid.Column="1"
+								VerticalAlignment="Center"
+								Items="{Binding DisplayName}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<StackPanel Orientation="Horizontal" />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Grid>
+											<TextBlock
+												Text="{Binding Text}" />
+										</Grid>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</Grid>
+					</DataTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+    </Application.Styles>
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<Color x:Key="AppBackgroundColor">#073642</Color>
+			<Color x:Key="ContainerBackgroundColor">#083e4c</Color>
+
+			<Color x:Key="ItemBackgroundColor">#00000000</Color>
+			<Color x:Key="AlternativeItemBackgroundColor">#10000000</Color>
+			<Color x:Key="SelectedItemBackgroundColor">#93a1a1</Color>
+
+			<Color x:Key="ForegroundColor">#93a1a1</Color>
+			<Color x:Key="AlternativeForegroundColor">#93a1a1</Color>
+			<Color x:Key="SelectedItemForegroundColor">#073642</Color>
+
+			<Color x:Key="ErrorColor">#dc322f</Color>
+
+			<LinearGradientBrush x:Key="ContentSeparatorBrush">
+				<GradientStop Offset="0" Color="#0093a1a1" />
+				<GradientStop Offset="0.5" Color="#93a1a1" />
+				<GradientStop Offset="1" Color="#0093a1a1" />
+			</LinearGradientBrush>
+			
+			
+			
+			<SolidColorBrush
+				x:Key="AppBackgroundBrush"
+				Color="{DynamicResource AppBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="ContainerBackgroundBrush"
+				Color="{DynamicResource ContainerBackgroundColor}" />
+
+			<SolidColorBrush
+				x:Key="ItemBackgroundBrush"
+				Color="{DynamicResource ItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="AlternativeItemBackgroundBrush"
+				Color="{DynamicResource AlternativeItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="SelectedItemBackgroundBrush"
+				Color="{DynamicResource SelectedItemBackgroundColor}" />
+
+			<SolidColorBrush
+				x:Key="ForegroundBrush"
+				Color="{DynamicResource ForegroundColor}" />
+			<SolidColorBrush
+				x:Key="AlternativeForegroundBrush"
+				Color="{DynamicResource AlternativeForegroundColor}" />
+			<SolidColorBrush
+				x:Key="SelectedItemForegroundBrush"
+				Color="{DynamicResource SelectedItemForegroundColor}" />
+
+			<SolidColorBrush
+				x:Key="ErrorBrush"
+				Color="{DynamicResource ErrorColor}" />
+
+			<converters:FormatSizeConverter x:Key="FormatSizeConverter"/>
+			<converters:CompareConverter x:Key="EqualityConverter"/>
+			<converters:CompareConverter x:Key="NotEqualsConverter" ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}"/>
+
+
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>
