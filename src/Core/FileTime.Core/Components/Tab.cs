@@ -50,11 +50,15 @@ namespace FileTime.Core.Components
         {
             if (_currentSelectedItem != value)
             {
-                var contains = (await _currentLocation.GetItems())?.Contains(value) ?? false;
-                if(value != null && !contains) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
+                IItem? itemToSelect = null;
+                if (value != null)
+                {
+                    itemToSelect = (await _currentLocation.GetItems())?.FirstOrDefault(i => i.FullName == value?.FullName);
+                    if (itemToSelect == null) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
+                }
 
-                _currentSelectedItem = value;
-                CurrentSelectedIndex = await GetItemIndex(value);
+                _currentSelectedItem = itemToSelect;
+                CurrentSelectedIndex = await GetItemIndex(itemToSelect);
                 await CurrentSelectedItemChanged?.InvokeAsync(this, AsyncEventArgs.Empty);
             }
         }
