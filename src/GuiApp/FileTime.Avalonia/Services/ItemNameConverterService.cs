@@ -3,9 +3,7 @@ using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
 using MvvmGen;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FileTime.Avalonia.Services
 {
@@ -35,8 +33,7 @@ namespace FileTime.Avalonia.Services
                         nameParts.Add(new ItemNamePart(before));
                     }
 
-                    //TODO: underline
-                    nameParts.Add(new ItemNamePart(rapidTravel) { /*TextDecorations = new TextDecorationCollection() {new TextDecoration() }*/ });
+                    nameParts.Add(new ItemNamePart(rapidTravel) { TextDecorations = TextDecorations.Underline });
                 }
 
                 if (nameLeft.Length > 0)

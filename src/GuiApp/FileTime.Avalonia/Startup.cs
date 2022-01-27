@@ -1,4 +1,5 @@
-﻿using FileTime.Avalonia.Application;
+﻿using System.Runtime.InteropServices;
+using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,9 +16,20 @@ namespace FileTime.Avalonia
         }
         internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)
         {
-            return serviceCollection
+            serviceCollection = serviceCollection
                 .AddLogging()
                 .AddSingleton<ItemNameConverterService>();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                serviceCollection.AddSingleton<IContextMenuProvider, WindowsContextMenuProvider>();
+            }
+            else
+            {
+                throw new System.Exception("TODO: implement linux contextmenu provider");
+            }
+
+            return serviceCollection;
         }
     }
 }

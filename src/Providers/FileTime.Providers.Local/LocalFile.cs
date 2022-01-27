@@ -8,9 +8,7 @@ namespace FileTime.Providers.Local
 {
     public class LocalFile : IElement
     {
-        private readonly FileInfo _file;
-
-        public FileInfo File => _file;
+        public FileInfo File { get; }
 
         public string Name { get; }
 
@@ -18,26 +16,46 @@ namespace FileTime.Providers.Local
 
         public IContentProvider Provider { get; }
 
-        public bool IsHidden => (_file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+        public bool IsHidden => (File.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
         public bool IsSpecial =>
                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                && (new UnixFileInfo(_file.FullName).FileAccessPermissions & FileAccessPermissions.UserExecute) == FileAccessPermissions.UserExecute;
+                && (new UnixFileInfo(File.FullName).FileAccessPermissions & FileAccessPermissions.UserExecute) == FileAccessPermissions.UserExecute;
+
+        public string Attributes => GetAttributes();
+
+        public DateTime CreatedAt => File.CreationTime;
 
         public LocalFile(FileInfo file, IContentProvider contentProvider)
         {
-            _file = file;
+            File = file;
 
             Name = file.Name;
             FullName = file.FullName;
             Provider = contentProvider;
         }
 
-        public string GetPrimaryAttributeText() => _file.Length.ToSizeString();
+        public string GetPrimaryAttributeText() => File.Length.ToSizeString();
 
         public Task Delete()
         {
-            _file.Delete();
+            File.Delete();
             return Task.CompletedTask;
+        }
+
+        public string GetAttributes()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "";
+            }
+            else
+            {
+                return "-"
+                    + ((File.Attributes & FileAttributes.Archive) == FileAttributes.Archive ? "a" : "-")
+                    + ((File.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly ? "r" : "-")
+                    + ((File.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ? "h" : "-")
+                    + ((File.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
+            }
         }
     }
 }

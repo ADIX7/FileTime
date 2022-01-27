@@ -2,6 +2,7 @@
 using MvvmGen;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace FileTime.Avalonia.Application
@@ -10,8 +11,7 @@ namespace FileTime.Avalonia.Application
     public partial class AppState
     {
         [Property]
-        [PropertyCallMethod(nameof(TabsChanged))]
-        private List<TabContainer> _tabs = new List<TabContainer>();
+        private ObservableCollection<TabContainer> _tabs = new ObservableCollection<TabContainer>();
 
         [Property]
         private TabContainer _selectedTab;
@@ -22,9 +22,9 @@ namespace FileTime.Avalonia.Application
         [Property]
         private string _rapidTravelText = "";
 
-        private void TabsChanged()
+        partial void OnInitialize()
         {
-            SelectedTab ??= Tabs[0];
+            _tabs.CollectionChanged += (o, e) => SelectedTab ??= Tabs.Count > 0 ? Tabs[0] : null;
         }
     }
 }

@@ -29,6 +29,12 @@ namespace FileTime.Avalonia.Application
         [Property]
         private ContainerViewModel _childContainer;
 
+        [Property]
+        private int _tabNumber;
+
+        [Property]
+        private bool _isSelected;
+
         private IItemViewModel? _selectedItem;
 
         public IItemViewModel? SelectedItem
@@ -36,7 +42,7 @@ namespace FileTime.Avalonia.Application
             get => _selectedItem;
             set
             {
-                if (_selectedItem != value && value != null)
+                if (_selectedItem != value)// && value != null
                 {
                     _selectedItem = value;
                     OnPropertyChanged("SelectedItem");
@@ -45,8 +51,9 @@ namespace FileTime.Avalonia.Application
             }
         }
 
-        public async Task Init()
+        public async Task Init(int tabNumber)
         {
+            TabNumber = tabNumber;
             Tab.CurrentLocationChanged.Add(Tab_CurrentLocationChanged);
             Tab.CurrentSelectedItemChanged.Add(Tab_CurrentSelectedItemChanged);
 

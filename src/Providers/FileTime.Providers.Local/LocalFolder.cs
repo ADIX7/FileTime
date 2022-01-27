@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
@@ -21,6 +22,9 @@ namespace FileTime.Providers.Local
         public string FullName { get; }
 
         public AsyncEventHandler Refreshed { get; } = new();
+        public string Attributes => GetAttributes();
+
+        public DateTime CreatedAt => Directory.CreationTime;
 
         public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer? parent)
         {
@@ -110,6 +114,22 @@ namespace FileTime.Providers.Local
         {
             Directory.Delete(true);
             return Task.CompletedTask;
+        }
+
+        public string GetAttributes()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "";
+            }
+            else
+            {
+                return "d"
+                    + ((Directory.Attributes & FileAttributes.Archive) == FileAttributes.Archive ? "a" : "-")
+                    + ((Directory.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly ? "r" : "-")
+                    + ((Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ? "h" : "-")
+                    + ((Directory.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
+            }
         }
     }
 }

@@ -51,9 +51,6 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private List<RootDriveInfo> _rootDriveInfos;
 
-        [Property]
-        private ObservableCollection<TabControlViewModel> _tabs = new ObservableCollection<TabControlViewModel>();
-
         public Action? FocusDefaultElement { get; set; }
 
         async partial void OnInitialize()
@@ -70,13 +67,9 @@ namespace FileTime.Avalonia.ViewModels
             await tab.Init(LocalContentProvider);
 
             var tabContainer = new TabContainer(tab, LocalContentProvider, ItemNameConverterService);
-            await tabContainer.Init();
-            AppState.Tabs = new List<TabContainer>()
-            {
-                tabContainer
-            };
-
-            _tabs.Add(new TabControlViewModel(1, tabContainer));
+            await tabContainer.Init(1);
+            tabContainer.IsSelected = true;
+            AppState.Tabs.Add(tabContainer);
 
             var driveInfos = new List<RootDriveInfo>();
             foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
@@ -91,8 +84,7 @@ namespace FileTime.Avalonia.ViewModels
                 }
             }
 
-            //TODO: order by
-            RootDriveInfos = driveInfos;
+            RootDriveInfos = driveInfos.OrderBy(d => d.Name).ToList();
         }
 
         private async Task<IContainer> GetContainerForWindowsDrive(DriveInfo drive)
@@ -203,30 +195,29 @@ namespace FileTime.Avalonia.ViewModels
 
         public async Task SwitchToTab(int number)
         {
-            var tab = _tabs.FirstOrDefault(t => t.TabNumber == number);
+            var tabContainer = AppState.Tabs.FirstOrDefault(t => t.TabNumber == number);
 
             if (number == -1)
             {
-                var greatestNumber = _tabs.Select(t => t.TabNumber).Max();
-                tab = _tabs.FirstOrDefault(t => t.TabNumber == greatestNumber);
+                var greatestNumber = AppState.Tabs.Select(t => t.TabNumber).Max();
+                tabContainer = AppState.Tabs.FirstOrDefault(t => t.TabNumber == greatestNumber);
             }
-            else if (tab == null)
+            else if (tabContainer == null)
             {
                 var newContainer = await AppState.SelectedTab.CurrentLocation.Container.Clone();
 
                 var newTab = new Tab();
                 await newTab.Init(newContainer);
 
-                var tabContainer = new TabContainer(newTab, LocalContentProvider, ItemNameConverterService);
-                await tabContainer.Init();
+                tabContainer = new TabContainer(newTab, LocalContentProvider, ItemNameConverterService);
+                await tabContainer.Init(number);
 
-                tab = new TabControlViewModel(number, tabContainer);
                 var i = 0;
-                for (i = 0; i < Tabs.Count; i++)
+                for (i = 0; i < AppState.Tabs.Count; i++)
                 {
-                    if (Tabs[i].TabNumber > number) break;
+                    if (AppState.Tabs[i].TabNumber > number) break;
                 }
-                Tabs.Insert(i, tab);
+                AppState.Tabs.Insert(i, tabContainer);
             }
 
             if (AppState.ViewMode == ViewMode.RapidTravel)
@@ -234,28 +225,29 @@ namespace FileTime.Avalonia.ViewModels
                 await ExitRapidTravelMode();
             }
 
-            AppState.SelectedTab = tab.Tab;
+            AppState.SelectedTab = tabContainer;
 
-            foreach (var tab2 in Tabs)
+            foreach (var tab2 in AppState.Tabs)
             {
-                tab2.IsSelected = tab2.TabNumber == tab.TabNumber;
+                tab2.IsSelected = tab2.TabNumber == tabContainer!.TabNumber;
             }
         }
 
         public async Task CloseTab()
         {
-            if (_tabs.Count > 1)
+            var tabs = AppState.Tabs;
+            if (tabs.Count > 1)
             {
-                var currentTab = _tabs.FirstOrDefault(t => t.Tab == AppState.SelectedTab);
+                var currentTab = tabs.FirstOrDefault(t => t == AppState.SelectedTab);
 
                 if (currentTab != null)
                 {
-                    _tabs.Remove(currentTab);
-                    var tabNumber = _tabs[0].TabNumber;
-                    for (var i = 0; i < Tabs.Count; i++)
+                    tabs.Remove(currentTab);
+                    var tabNumber = tabs[0].TabNumber;
+                    for (var i = 0; i < tabs.Count; i++)
                     {
-                        tabNumber = _tabs[i].TabNumber;
-                        if (Tabs[i].TabNumber > currentTab.TabNumber) break;
+                        tabNumber = tabs[i].TabNumber;
+                        if (tabs[i].TabNumber > currentTab.TabNumber) break;
                     }
                     await SwitchToTab(tabNumber);
                 }

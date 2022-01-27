@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileTime.Avalonia.ViewModels"
+	xmlns:local="using:FileTime.Avalonia.Views"
     Title="FileTime.Avalonia"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -88,19 +89,25 @@
 			</Border>
 		</Grid>
 
-		<Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+		<Grid Grid.Column="1" RowDefinitions="40,*,Auto">
 			<Grid ColumnDefinitions="*,Auto">
 
-				<Grid>
+				<StackPanel Orientation="Horizontal">
 					<TextBlock
                         Margin="10,5"
-                        Text="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName}" />
-				</Grid>
+                        Text="{Binding AppState.SelectedTab.TabNumber,StringFormat=({0})}" />
+
+					<local:PathPresenter Margin="10,5,0,5" DataContext="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName}"/>
+					
+					<TextBlock
+                        Margin="0,5,10,5"
+                        Text="{Binding AppState.SelectedTab.SelectedItem.Item.Name}" Foreground="{StaticResource AccentForegroundBrush}" />
+				</StackPanel>
 
 				<ItemsControl
 						Grid.Column="1"
 						HorizontalAlignment="Right"
-						Items="{Binding Tabs}">
+						Items="{Binding AppState.Tabs}">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
 							<StackPanel Orientation="Horizontal" />
@@ -108,38 +115,17 @@
 					</ItemsControl.ItemsPanel>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<StackPanel Orientation="Horizontal"
-                                Margin="10,0,0,0">
-								<!--i:Interaction.Behaviors>
-									<ic:DataTriggerBehavior
-                                        Binding="{Binding IsSelected}"
-                                        Value="True">
-										<ic:ChangePropertyAction
-                                            PropertyName="Background"
-                                            Value="{DynamicResource ForegroundBrush}" />
-										<ic:ChangePropertyAction
-                                            PropertyName="Foreground"
-                                            TargetObject="{Binding ElementName=Text}"
-                                            Value="{DynamicResource ContainerBackgroundBrush}" />
-									</ic:DataTriggerBehavior>
-									<ic:DataTriggerBehavior
-                                        Binding="{Binding IsSelected}"
-                                        Value="False">
-										<ic:ChangePropertyAction
-                                            PropertyName="Background"
-                                            Value="{DynamicResource ContainerBackgroundBrush}" />
-										<ic:ChangePropertyAction
-                                            PropertyName="Foreground"
-                                            TargetObject="{Binding ElementName=Text}"
-                                            Value="{DynamicResource ForegroundBrush}" />
-									</ic:DataTriggerBehavior>
-								</i:Interaction.Behaviors-->
+							<Grid RowDefinitions="Auto,1">
+								<StackPanel Orientation="Horizontal" Margin="20,0,20,0">
 
-								<TextBlock
-                                    VerticalAlignment="Center" Text="{Binding TabNumber}" />
-								<TextBlock Margin="5,0,0,0"
-                                    VerticalAlignment="Center" Text="{Binding Tab.CurrentLocation.Container.FullName}" />
-							</StackPanel>
+									<TextBlock
+										VerticalAlignment="Center" Text="{Binding TabNumber,StringFormat=({0})}" />
+
+									<local:PathPresenter Margin="5,0,0,0" DataContext="{Binding CurrentLocation.Container.FullName}"/>
+								</StackPanel>
+								
+								<Rectangle Fill="{DynamicResource ForegroundBrush}" Grid.Row="1" IsVisible="{Binding IsSelected}"/>
+							</Grid>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
@@ -147,7 +133,7 @@
 
 			<Grid
 				Grid.Row="1"
-				Margin="20">
+				Margin="20,0,0,0">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="15*" />
@@ -161,7 +147,13 @@
 						<ListBox
 							Classes="ContentListView"
                             Items="{Binding AppState.SelectedTab.Parent.Items}"
-                            SelectedItem="{Binding AppState.SelectedTab.CurrentLocation}" />
+                            SelectedItem="{Binding AppState.SelectedTab.CurrentLocation}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<local:ItemView ShowAttributes="False"/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
 					</Grid>
 
 					<Rectangle
@@ -180,13 +172,20 @@
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             ScrollViewer.VerticalScrollBarVisibility="Hidden"
                             SelectedItem="{Binding AppState.SelectedTab.SelectedItem, Mode=TwoWay}"
-                            Classes="ContentListView" />
+                            Classes="ContentListView">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<local:ItemView/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
 
 						<TextBlock
                             x:Name="CurrentEmpty"
                             Margin="10"
                             HorizontalAlignment="Center"
                             FontWeight="Bold"
+                            Foreground="{DynamicResource ErrorBrush}"
                             IsVisible="{Binding AppState.SelectedTab.CurrentLocation.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 							Empty
 						</TextBlock>
@@ -205,7 +204,13 @@
 							Classes="ContentListView"
                             x:Name="ChildItems"
                             Items="{Binding AppState.SelectedTab.ChildContainer.Items}"
-                            IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}" />
+                            IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<local:ItemView/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
 
 						<TextBlock
                             x:Name="ChildEmpty"
