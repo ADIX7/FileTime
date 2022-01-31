@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FileTime.Avalonia.Application;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -16,8 +17,9 @@ namespace FileTime.Avalonia.ViewModels
     [Inject(typeof(ItemNameConverterService))]
     public partial class ContainerViewModel : IItemViewModel
     {
-        private bool isRefreshing;
-        private bool isInitialized;
+        private bool _isRefreshing;
+        private bool _isInitialized;
+        private INewItemProcessor _newItemProcessor;
 
         [Property]
         private IContainer _container;
@@ -25,29 +27,39 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private bool _isSelected;
 
-        public IItem Item => _container;
-
-        //[Property]
-        private readonly ObservableCollection<ContainerViewModel> _containers = new ObservableCollection<ContainerViewModel>();
-
-        //[Property]
-        private readonly ObservableCollection<ElementViewModel> _elements = new ObservableCollection<ElementViewModel>();
-
-        //[Property]
-        private readonly ObservableCollection<IItemViewModel> _items = new ObservableCollection<IItemViewModel>();
-
         [Property]
         private bool _isAlternative;
+
+        [Property]
+        private bool _isMarked;
+
+        [Property]
+        private ContainerViewModel? _parent;
+
+        public IItem Item => _container;
+
+        private readonly ObservableCollection<ContainerViewModel> _containers = new ObservableCollection<ContainerViewModel>();
+
+        private readonly ObservableCollection<ElementViewModel> _elements = new ObservableCollection<ElementViewModel>();
+
+        private readonly ObservableCollection<IItemViewModel> _items = new ObservableCollection<IItemViewModel>();
+
+        public List<IItemViewModel> ChildrenToAdopt { get; } = new List<IItemViewModel>();
 
 
         [PropertyInvalidate(nameof(IsSelected))]
         [PropertyInvalidate(nameof(IsAlternative))]
+        [PropertyInvalidate(nameof(IsMarked))]
         public ItemViewMode ViewMode =>
-            IsSelected
-            ? ItemViewMode.Selected
-            : IsAlternative
-                ? ItemViewMode.Alternative
-                : ItemViewMode.Default;
+            (IsMarked, IsSelected, IsAlternative) switch
+            {
+                (true, true, _) => ItemViewMode.MarkedSelected,
+                (true, false, true) => ItemViewMode.MarkedAlternative,
+                (false, true, _) => ItemViewMode.Selected,
+                (false, false, true) => ItemViewMode.Alternative,
+                (true, false, false) => ItemViewMode.Marked,
+                _ => ItemViewMode.Default
+            };
 
         public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
 
@@ -56,7 +68,7 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!isInitialized) Task.Run(Refresh);
+                if (!_isInitialized) Task.Run(Refresh);
                 return _containers;
             }
         }
@@ -66,7 +78,7 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!isInitialized) Task.Run(Refresh);
+                if (!_isInitialized) Task.Run(Refresh);
                 return _elements;
             }
         }
@@ -76,13 +88,16 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!isInitialized) Task.Run(Refresh);
+                if (!_isInitialized) Task.Run(Refresh);
                 return _items;
             }
         }
 
-        public ContainerViewModel(IContainer container, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
+        public ContainerViewModel(INewItemProcessor newItemProcessor, ContainerViewModel? parent, IContainer container, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
         {
+            _newItemProcessor = newItemProcessor;
+            Parent = parent;
+
             Container = container;
             Container.Refreshed.Add(Container_Refreshed);
         }
@@ -94,7 +109,7 @@ namespace FileTime.Avalonia.ViewModels
             await Refresh(initializeChildren);
         }
 
-        private async Task Container_Refreshed(object sender, AsyncEventArgs e)
+        private async Task Container_Refreshed(object? sender, AsyncEventArgs e)
         {
             await Refresh(false);
         }
@@ -105,16 +120,16 @@ namespace FileTime.Avalonia.ViewModels
         }
         private async Task Refresh(bool initializeChildren)
         {
-            if (isRefreshing) return;
+            if (_isRefreshing) return;
 
-            isInitialized = true;
+            _isInitialized = true;
 
             try
             {
-                isRefreshing = true;
+                _isRefreshing = true;
 
-                var containers = (await _container.GetContainers()).Select(c => new ContainerViewModel(c, ItemNameConverterService)).ToList();
-                var elements = (await _container.GetElements()).Select(e => new ElementViewModel(e, ItemNameConverterService)).ToList();
+                var containers = (await _container.GetContainers()).Select(c => AdoptOrCreateItem(c, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
+                var elements = (await _container.GetElements()).Select(e => AdoptOrCreateItem(e, (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
 
                 _containers.Clear();
                 _elements.Clear();
@@ -141,24 +156,51 @@ namespace FileTime.Avalonia.ViewModels
             }
             catch { }
 
-            isRefreshing = false;
+            await _newItemProcessor.UpdateMarkedItems(this);
+
+            _isRefreshing = false;
+        }
+
+        private TResult AdoptOrCreateItem<T, TResult>(T item, Func<T, TResult> generator) where T : IItem
+        {
+            var itemToAdopt = ChildrenToAdopt.Find(i => i.Item.Name == item.Name);
+            if (itemToAdopt is TResult itemViewModel) return itemViewModel;
+
+            return generator(item);
+        }
+
+        public void Unload(bool recursive = true)
+        {
+            _isInitialized = false;
+            if (recursive)
+            {
+                foreach (var container in _containers)
+                {
+                    container.Unload(true);
+                    container.ChildrenToAdopt.Clear();
+                }
+            }
+
+            _containers.Clear();
+            _elements.Clear();
+            _items.Clear();
         }
 
         public async Task<ObservableCollection<ContainerViewModel>> GetContainers()
         {
-            if (!isInitialized) await Task.Run(Refresh);
+            if (!_isInitialized) await Task.Run(Refresh);
             return _containers;
         }
 
         public async Task<ObservableCollection<ElementViewModel>> GetElements()
         {
-            if (!isInitialized) await Task.Run(Refresh);
+            if (!_isInitialized) await Task.Run(Refresh);
             return _elements;
         }
 
         public async Task<ObservableCollection<IItemViewModel>> GetItems()
         {
-            if (!isInitialized) await Task.Run(Refresh);
+            if (!_isInitialized) await Task.Run(Refresh);
             return _items;
         }
     }

@@ -17,7 +17,7 @@
 			Height="18"
 			HorizontalAlignment="Left"
 			VerticalAlignment="Center"
-			Source="{SvgImage /Assets/material/folder.svg}" />
+			Source="{Binding Converter={StaticResource ItemToImageConverter}}" />
 
 		<ItemsControl
 			Grid.Column="1"

@@ -21,7 +21,12 @@ namespace FileTime.Providers.Local
 
         public string FullName { get; }
 
+        public bool IsLoaded => _items != null;
+        public bool CanDelete => true;
+        public bool CanRename => true;
+
         public AsyncEventHandler Refreshed { get; } = new();
+
         public string Attributes => GetAttributes();
 
         public DateTime CreatedAt => Directory.CreationTime;
@@ -48,7 +53,7 @@ namespace FileTime.Providers.Local
             try
             {
                 _containers = Directory.GetDirectories().Select(d => new LocalFolder(d, Provider, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
-                _elements = Directory.GetFiles().Select(f => new LocalFile(f, Provider)).OrderBy(f => f.Name).ToList().AsReadOnly();
+                _elements = Directory.GetFiles().Select(f => new LocalFile(f, this, Provider)).OrderBy(f => f.Name).ToList().AsReadOnly();
             }
             catch { }
 
@@ -114,6 +119,14 @@ namespace FileTime.Providers.Local
         {
             Directory.Delete(true);
             return Task.CompletedTask;
+        }
+        public async Task Rename(string newName)
+        {
+            if (_parent is LocalFolder parentFolder)
+            {
+                System.IO.Directory.Move(Directory.FullName, Path.Combine(parentFolder.Directory.FullName, newName));
+                await _parent.Refresh();
+            }
         }
 
         public string GetAttributes()

@@ -1,77 +1,108 @@
 using System.Collections.ObjectModel;
+using AsyncEvent;
 using FileTime.Core.Models;
-using FileTime.Core.Providers;
 
 namespace FileTime.App.Core.Tab
 {
     public class TabState
     {
-        private readonly Dictionary<IContainer, List<TabItem>> _selectedItems;
-        private readonly Dictionary<IContainer, IReadOnlyList<TabItem>> _selectedItemsReadOnly;
-        public IReadOnlyDictionary<IContainer, IReadOnlyList<TabItem>> SelectedItems { get; }
+        private readonly Dictionary<IContainer, List<AbsolutePath>> _markedItems;
+        private readonly Dictionary<IContainer, IReadOnlyList<AbsolutePath>> _markedItemsReadOnly;
+        public IReadOnlyDictionary<IContainer, IReadOnlyList<AbsolutePath>> MarkedItems { get; }
 
         public FileTime.Core.Components.Tab Tab { get; }
+
+        public AsyncEventHandler<TabState, AbsolutePath> ItemMarked { get; } = new();
+        public AsyncEventHandler<TabState, AbsolutePath> ItemUnmarked { get; } = new();
 
         public TabState(FileTime.Core.Components.Tab pane)
         {
             Tab = pane;
 
-            _selectedItems = new Dictionary<IContainer, List<TabItem>>();
-            _selectedItemsReadOnly = new Dictionary<IContainer, IReadOnlyList<TabItem>>();
-            SelectedItems = new ReadOnlyDictionary<IContainer, IReadOnlyList<TabItem>>(_selectedItemsReadOnly);
+            _markedItems = new Dictionary<IContainer, List<AbsolutePath>>();
+            _markedItemsReadOnly = new Dictionary<IContainer, IReadOnlyList<AbsolutePath>>();
+            MarkedItems = new ReadOnlyDictionary<IContainer, IReadOnlyList<AbsolutePath>>(_markedItemsReadOnly);
         }
 
-        public void AddSelectedItem(IContentProvider contentProvider, IContainer container, string path)
+        public async Task AddMarkedItem(IContainer container, AbsolutePath path)
         {
-            if (!_selectedItems.ContainsKey(container))
+            if (!_markedItems.ContainsKey(container))
             {
-                var val = new List<TabItem>();
-                _selectedItems.Add(container, val);
-                _selectedItemsReadOnly.Add(container, val.AsReadOnly());
+                var val = new List<AbsolutePath>();
+                _markedItems.Add(container, val);
+                _markedItemsReadOnly.Add(container, val.AsReadOnly());
             }
 
-            foreach (var content in _selectedItems[container])
+            foreach (var content in _markedItems[container])
             {
-                if (content.ContentProvider == contentProvider && content.Path == path) return;
+                if (content.IsEqual(path)) return;
             }
 
-            _selectedItems[container].Add(new TabItem(contentProvider, path));
+            var tabItem = new AbsolutePath(path);
+            _markedItems[container].Add(tabItem);
+            await ItemMarked.InvokeAsync(this, tabItem);
         }
 
-        public void RemoveSelectedItem(IContentProvider contentProvider, IContainer container, string path)
+        public async Task RemoveMarkedItem(IContainer container, AbsolutePath path)
         {
-            if (_selectedItems.ContainsKey(container))
+            if (_markedItems.ContainsKey(container))
             {
-                var selectedItems = _selectedItems[container];
-                for (var i = 0; i < selectedItems.Count; i++)
+                var markedItems = _markedItems[container];
+                for (var i = 0; i < markedItems.Count; i++)
                 {
-                    if (selectedItems[i].ContentProvider == contentProvider && selectedItems[i].Path == path)
+                    if (markedItems[i].IsEqual(path))
                     {
-                        selectedItems.RemoveAt(i--);
+                        await ItemUnmarked.InvokeAsync(this, markedItems[i]);
+                        markedItems.RemoveAt(i--);
                     }
                 }
             }
         }
 
-        public bool ContainsSelectedItem(IContentProvider contentProvider, IContainer container, string path)
+        public bool ContainsMarkedItem(IContainer container, AbsolutePath path)
         {
-            if (!_selectedItems.ContainsKey(container)) return false;
+            if (!_markedItems.ContainsKey(container)) return false;
 
-            foreach (var content in _selectedItems[container])
+            foreach (var content in _markedItems[container])
             {
-                if (content.ContentProvider == contentProvider && content.Path == path) return true;
+                if (content.Equals(path)) return true;
             }
 
             return false;
         }
 
-        public async Task<IReadOnlyList<TabItem>> GetCurrentSelectedItems()
+        public async Task<IReadOnlyList<AbsolutePath>> GetCurrentMarkedItems()
         {
-            var currentLocation = await Tab.GetCurrentLocation();
+            return GetCurrentMarkedItems(await Tab.GetCurrentLocation());
+        }
 
-            return SelectedItems.ContainsKey(currentLocation)
-                ? SelectedItems[currentLocation]
-                : new List<TabItem>().AsReadOnly();
+        public IReadOnlyList<AbsolutePath> GetCurrentMarkedItems(IContainer container)
+        {
+            return MarkedItems.ContainsKey(container)
+                ? MarkedItems[container]
+                : new List<AbsolutePath>().AsReadOnly();
+        }
+
+        public async Task MakrCurrentItem()
+        {
+            var currentLocation = await Tab!.GetCurrentLocation();
+            if (currentLocation != null)
+            {
+                var currentSelectedItem = await Tab.GetCurrentSelectedItem()!;
+                if (currentSelectedItem != null)
+                {
+                    if (ContainsMarkedItem(currentLocation, new AbsolutePath(currentSelectedItem)))
+                    {
+                        await RemoveMarkedItem(currentLocation, new AbsolutePath(currentSelectedItem));
+                    }
+                    else
+                    {
+                        await AddMarkedItem(currentLocation, new AbsolutePath(currentSelectedItem));
+                    }
+                }
+
+                await Tab.SelectNextItem();
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
 using MvvmGen;
+using System;
 using System.Collections.Generic;
 
 namespace FileTime.Avalonia.Services
@@ -20,9 +21,8 @@ namespace FileTime.Avalonia.Services
             {
                 var nameLeft = itemViewModel.Item.Name;
 
-                while (nameLeft.ToLower().Contains(rapidTravelText))
+                while (nameLeft.ToLower().IndexOf(rapidTravelText, StringComparison.Ordinal) is int rapidTextStart && rapidTextStart != -1)
                 {
-                    var rapidTextStart = nameLeft.ToLower().IndexOf(rapidTravelText);
                     var before = rapidTextStart > 0 ? nameLeft.Substring(0, rapidTextStart) : null;
                     var rapidTravel = nameLeft.Substring(rapidTextStart, rapidTravelText.Length);
 

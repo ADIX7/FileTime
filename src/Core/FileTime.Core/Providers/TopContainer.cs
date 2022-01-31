@@ -1,4 +1,5 @@
 
+using System;
 using AsyncEvent;
 using FileTime.Core.Models;
 
@@ -16,8 +17,11 @@ namespace FileTime.Core.Providers
         public string? FullName => null;
 
         public bool IsHidden => false;
+        public bool IsLoaded => true;
 
         public IContentProvider Provider => null;
+        public bool CanDelete => false;
+        public bool CanRename => false;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
@@ -52,5 +56,7 @@ namespace FileTime.Core.Providers
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+
+        public Task Rename(string newName) => throw new NotSupportedException();
     }
 }

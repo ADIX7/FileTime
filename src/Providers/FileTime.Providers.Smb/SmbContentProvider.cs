@@ -1,3 +1,4 @@
+using System;
 using AsyncEvent;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
@@ -11,7 +12,7 @@ namespace FileTime.Providers.Smb
         private readonly IInputInterface _inputInterface;
         private readonly List<IContainer> _rootContainers;
         private readonly IReadOnlyList<IContainer> _rootContainersReadOnly;
-        private readonly IReadOnlyList<IItem>? _items;
+        private IReadOnlyList<IItem>? _items;
         private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
 
         public string Name { get; } = "smb";
@@ -19,14 +20,18 @@ namespace FileTime.Providers.Smb
         public string? FullName { get; }
 
         public bool IsHidden => false;
+        public bool IsLoaded => true;
 
         public IContentProvider Provider => this;
+        public bool CanDelete => false;
+        public bool CanRename => false;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
         public SmbContentProvider(IInputInterface inputInterface)
         {
             _rootContainers = new List<IContainer>();
+            _items = new List<IItem>();
             _rootContainersReadOnly = _rootContainers.AsReadOnly();
             _inputInterface = inputInterface;
         }
@@ -40,6 +45,7 @@ namespace FileTime.Providers.Smb
             {
                 container = new SmbServer(fullName, this, _inputInterface);
                 _rootContainers.Add(container);
+                _items = _rootContainers.OrderBy(c => c.Name).ToList().AsReadOnly();
             }
 
             await Refresh();
@@ -78,5 +84,7 @@ namespace FileTime.Providers.Smb
         public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
         public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult((IReadOnlyList<IContainer>?)_rootContainersReadOnly);
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
+
+        public Task Rename(string newName) => throw new NotSupportedException();
     }
 }

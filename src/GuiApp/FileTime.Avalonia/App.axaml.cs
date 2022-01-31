@@ -19,6 +19,7 @@ namespace FileTime.Avalonia
                 .RegisterDefaultServices()
                 .AddViewModels()
                 .AddServices()
+                .RegisterCommandHandlers()
                 .BuildServiceProvider();
         }
 

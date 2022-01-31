@@ -18,6 +18,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using FileTime.App.Core.Clipboard;
+using Microsoft.Extensions.DependencyInjection;
+using FileTime.Core.Command;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -33,6 +37,9 @@ namespace FileTime.Avalonia.ViewModels
         private readonly List<KeyWithModifiers[]> _keysToSkip = new List<KeyWithModifiers[]>();
         private List<CommandBinding> _commandBindings = new();
         private List<CommandBinding> _universalCommandBindings = new();
+
+        private IClipboard _clipboard;
+        private TimeRunner _timeRunner;
 
         private Action? _inputHandler;
 
@@ -51,10 +58,16 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private List<RootDriveInfo> _rootDriveInfos;
 
-        public Action? FocusDefaultElement { get; set; }
+        [Property]
+        private string _messageBoxText;
+
+        public IReadOnlyList<ReadOnlyParallelCommands> TimelineCommands => _timeRunner.ParallelCommands;
 
         async partial void OnInitialize()
         {
+            _clipboard = App.ServiceProvider.GetService<IClipboard>()!;
+            _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
+            _timeRunner.CommandsChanged += (o, e) => OnPropertyChanged(nameof(TimelineCommands));
             InitCommandBindings();
 
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.Up) });
@@ -62,6 +75,7 @@ namespace FileTime.Avalonia.ViewModels
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.Tab) });
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.PageDown) });
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.PageUp) });
+            _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.F4, alt: true) });
 
             var tab = new Tab();
             await tab.Init(LocalContentProvider);
@@ -176,7 +190,6 @@ namespace FileTime.Avalonia.ViewModels
 
             _previousKeys.Clear();
             PossibleCommands = new();
-            FocusDefaultElement?.Invoke();
 
             return Task.CompletedTask;
         }
@@ -190,7 +203,6 @@ namespace FileTime.Avalonia.ViewModels
             AppState.RapidTravelText = "";
 
             await AppState.SelectedTab.OpenContainer(await AppState.SelectedTab.CurrentLocation.Container.WithoutVirtualContainer(RAPIDTRAVEL));
-            FocusDefaultElement?.Invoke();
         }
 
         public async Task SwitchToTab(int number)
@@ -260,7 +272,9 @@ namespace FileTime.Avalonia.ViewModels
             {
                 if (Inputs != null)
                 {
-                    AppState.SelectedTab.CreateContainer(Inputs[0].Value).Wait();
+                    var container = AppState.SelectedTab.CurrentLocation.Container;
+                    var createContainerCommand = new CreateContainerCommand(new Core.Models.AbsolutePath(container), Inputs[0].Value);
+                    _timeRunner.AddCommand(createContainerCommand).Wait();
                     Inputs = null;
                 }
             };
@@ -270,10 +284,222 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
+        public Task CreateElement()
+        {
+            var handler = () =>
+            {
+                if (Inputs != null)
+                {
+                    var container = AppState.SelectedTab.CurrentLocation.Container;
+                    var createElementCommand = new CreateElementCommand(new Core.Models.AbsolutePath(container), Inputs[0].Value);
+                    _timeRunner.AddCommand(createElementCommand).Wait();
+                    Inputs = null;
+                }
+            };
+
+            ReadInputs(new List<Core.Interactions.InputElement>() { new Core.Interactions.InputElement("Element name", InputType.Text) }, handler);
+
+            return Task.CompletedTask;
+        }
+
+        public async Task MarkCurrentItem()
+        {
+            await AppState.SelectedTab.MarkCurrentItem();
+        }
+
+        public async Task Copy()
+        {
+            _clipboard.Clear();
+            _clipboard.SetCommand<CopyCommand>();
+
+            var currentSelectedItems = await AppState.SelectedTab.TabState.GetCurrentMarkedItems();
+            if (currentSelectedItems.Count > 0)
+            {
+                foreach (var selectedItem in currentSelectedItems)
+                {
+                    _clipboard.AddContent(selectedItem);
+                }
+            }
+            else
+            {
+                var currentSelectedItem = AppState.SelectedTab.SelectedItem?.Item;
+                if (currentSelectedItem != null)
+                {
+                    _clipboard.AddContent(new AbsolutePath(currentSelectedItem));
+                }
+            }
+        }
+
+        public Task Cut()
+        {
+            _clipboard.Clear();
+            _clipboard.SetCommand<MoveCommand>();
+
+            return Task.CompletedTask;
+        }
+
+        public async Task Delete()
+        {
+            IList<Core.Models.AbsolutePath>? itemsToDelete = null;
+            var askForDelete = false;
+            var questionText = "";
+            var shouldDelete = false;
+
+            var currentSelectedItems = await AppState.SelectedTab.TabState.GetCurrentMarkedItems();
+            var currentSelectedItem = AppState.SelectedTab.SelectedItem?.Item;
+            if (currentSelectedItems.Count > 0)
+            {
+                itemsToDelete = currentSelectedItems.Cast<Core.Models.AbsolutePath>().ToList();
+
+                //FIXME: check 'is Container'
+                if (currentSelectedItems.Count == 1)
+                {
+                    if ((await currentSelectedItems[0].Resolve()) is IContainer container
+                        && (await container.GetItems())?.Count > 0)
+                    {
+                        askForDelete = true;
+                        questionText = $"The container '{container.Name}' is not empty. Proceed with delete?";
+                    }
+                    else
+                    {
+                        shouldDelete = true;
+                    }
+                }
+                else
+                {
+                    askForDelete = true;
+                    questionText = $"Are you sure you want to delete {itemsToDelete.Count} item?";
+                }
+            }
+            else if (currentSelectedItem != null)
+            {
+                itemsToDelete = new List<Core.Models.AbsolutePath>()
+                {
+                    new Core.Models.AbsolutePath(currentSelectedItem)
+                };
+
+                if (currentSelectedItem is IContainer container && (await container.GetItems())?.Count > 0)
+                {
+                    askForDelete = true;
+                    questionText = $"The container '{container.Name}' is not empty. Proceed with delete?";
+                }
+                else
+                {
+                    shouldDelete = true;
+                }
+            }
+
+            if (itemsToDelete?.Count > 0)
+            {
+                if (askForDelete)
+                {
+                    ShowMessageBox(questionText, HandleDelete);
+                }
+                else if (shouldDelete)
+                {
+                    HandleDelete();
+                }
+            }
+
+            void HandleDelete()
+            {
+                var deleteCommand = new DeleteCommand();
+
+                foreach (var itemToDelete in itemsToDelete!)
+                {
+                    deleteCommand.ItemsToDelete.Add(itemToDelete);
+                }
+
+                _timeRunner.AddCommand(deleteCommand).Wait();
+                _clipboard.Clear();
+            }
+        }
+
+        public async Task PasteMerge()
+        {
+            await Paste(TransportMode.Merge);
+        }
+        public async Task PasteOverwrite()
+        {
+            await Paste(TransportMode.Overwrite);
+        }
+
+        public async Task PasteSkip()
+        {
+            await Paste(TransportMode.Skip);
+        }
+
+        private async Task Paste(TransportMode transportMode)
+        {
+            if (_clipboard.CommandType != null)
+            {
+                var command = (ITransportationCommand)Activator.CreateInstance(_clipboard.CommandType!)!;
+                command.TransportMode = transportMode;
+
+                command.Sources.Clear();
+
+                foreach (var item in _clipboard.Content)
+                {
+                    command.Sources.Add(item);
+                }
+
+                var currentLocation = AppState.SelectedTab.CurrentLocation.Container;
+                command.Target = currentLocation is VirtualContainer virtualContainer
+                    ? virtualContainer.BaseContainer
+                    : currentLocation;
+
+                await _timeRunner.AddCommand(command);
+
+                _clipboard.Clear();
+            }
+        }
+
+        private Task Rename()
+        {
+            var selectedItem = AppState.SelectedTab.SelectedItem?.Item;
+            if (selectedItem != null)
+            {
+                var handler = () =>
+                {
+                    if (Inputs != null)
+                    {
+                        var renameCommand = new RenameCommand(new Core.Models.AbsolutePath(selectedItem), Inputs[0].Value);
+                        _timeRunner.AddCommand(renameCommand).Wait();
+                    }
+                };
+
+                ReadInputs(new List<Core.Interactions.InputElement>() { new Core.Interactions.InputElement("New name", InputType.Text, selectedItem.Name) }, handler);
+            }
+            return Task.CompletedTask;
+        }
+
+        private async Task RefreshCurrentLocation()
+        {
+            await AppState.SelectedTab.CurrentLocation.Container.Refresh();
+            await AppState.SelectedTab.UpdateCurrentSelectedItem();
+        }
+
+        private Task PauseTimeline()
+        {
+            _timeRunner.EnableRunning = false;
+            return Task.CompletedTask;
+        }
+
+        private async Task ContinueTimeline()
+        {
+            _timeRunner.EnableRunning = true;
+            await _timeRunner.TryStartCommandRunner();
+        }
+
+        private async Task RefreshTimeline()
+        {
+            await _timeRunner.Refresh();
+        }
+
         [Command]
         public void ProcessInputs()
         {
-            _inputHandler();
+            _inputHandler?.Invoke();
 
             Inputs = null;
             _inputHandler = null;
@@ -286,8 +512,31 @@ namespace FileTime.Avalonia.ViewModels
             _inputHandler = null;
         }
 
+        [Command]
+        public void ProcessMessageBoxCommand()
+        {
+            _inputHandler?.Invoke();
+
+            MessageBoxText = null;
+            _inputHandler = null;
+        }
+
+        [Command]
+        public void CancelMessageBoxCommand()
+        {
+            MessageBoxText = null;
+            _inputHandler = null;
+        }
+
         public async Task<bool> ProcessKeyDown(Key key, KeyModifiers keyModifiers)
         {
+            if (key == Key.LeftAlt
+                || key == Key.RightAlt
+                || key == Key.LeftShift
+                || key == Key.RightShift
+                || key == Key.LeftCtrl
+                || key == Key.RightCtrl) return false;
+
             NoCommandFound = false;
 
             var isAltPressed = (keyModifiers & KeyModifiers.Alt) == KeyModifiers.Alt;
@@ -312,13 +561,12 @@ namespace FileTime.Avalonia.ViewModels
                     await selectedCommandBinding.InvokeAsync();
                     _previousKeys.Clear();
                     PossibleCommands = new();
-
-                    FocusDefaultElement?.Invoke();
                 }
                 else if (_keysToSkip.Any(k => AreKeysEqual(k, _previousKeys)))
                 {
                     _previousKeys.Clear();
                     PossibleCommands = new();
+                    return false;
                 }
                 else if (_previousKeys.Count == 2)
                 {
@@ -370,7 +618,11 @@ namespace FileTime.Avalonia.ViewModels
                     if (selectedCommandBinding != null)
                     {
                         await selectedCommandBinding.InvokeAsync();
-                        FocusDefaultElement?.Invoke();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
                     }
                 }
 
@@ -399,8 +651,6 @@ namespace FileTime.Avalonia.ViewModels
                     {
                         await AppState.SelectedTab.MoveCursorToFirst();
                     }
-
-                    FocusDefaultElement?.Invoke();
                 }
 
             }
@@ -415,7 +665,13 @@ namespace FileTime.Avalonia.ViewModels
 
         private void ReadInputs(List<Core.Interactions.InputElement> inputs, Action inputHandler)
         {
-            Inputs = inputs.Select(i => new InputElementWrapper(i)).ToList();
+            Inputs = inputs.Select(i => new InputElementWrapper(i, i.DefaultValue)).ToList();
+            _inputHandler = inputHandler;
+        }
+
+        private void ShowMessageBox(string text, Action inputHandler)
+        {
+            MessageBoxText = text;
             _inputHandler = inputHandler;
         }
 
@@ -451,6 +707,11 @@ namespace FileTime.Avalonia.ViewModels
                     FileTime.App.Core.Command.Commands.CreateContainer,
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.C),new KeyWithModifiers(Key.C)},
                     CreateContainer),
+                new CommandBinding(
+                    "create element",
+                    FileTime.App.Core.Command.Commands.CreateElement,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.C),new KeyWithModifiers(Key.E)},
+                    CreateElement),
                 new CommandBinding(
                     "move to first",
                     FileTime.App.Core.Command.Commands.MoveToTop,
@@ -526,6 +787,66 @@ namespace FileTime.Avalonia.ViewModels
                     FileTime.App.Core.Command.Commands.GoToHome,
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.Q)},
                     CloseTab),
+                new CommandBinding(
+                    "select",
+                    FileTime.App.Core.Command.Commands.Select,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.Space)},
+                    MarkCurrentItem),
+                new CommandBinding(
+                    "copy",
+                    FileTime.App.Core.Command.Commands.Copy,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.Y),new KeyWithModifiers(Key.Y)},
+                    Copy),
+                new CommandBinding(
+                    "cut",
+                    FileTime.App.Core.Command.Commands.Cut,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.D),new KeyWithModifiers(Key.D)},
+                    Cut),
+                new CommandBinding(
+                    "delete",
+                    FileTime.App.Core.Command.Commands.Delete,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.D),new KeyWithModifiers(Key.D, shift: true)},
+                    Delete),
+                new CommandBinding(
+                    "paste merge",
+                    FileTime.App.Core.Command.Commands.PasteMerge,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.P),new KeyWithModifiers(Key.P)},
+                    PasteMerge),
+                new CommandBinding(
+                    "paste (overwrite)",
+                    FileTime.App.Core.Command.Commands.PasteOverwrite,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.P),new KeyWithModifiers(Key.O)},
+                    PasteOverwrite),
+                new CommandBinding(
+                    "paste (skip)",
+                    FileTime.App.Core.Command.Commands.PasteSkip,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.P),new KeyWithModifiers(Key.S)},
+                    PasteSkip),
+                new CommandBinding(
+                    "rename",
+                    FileTime.App.Core.Command.Commands.Rename,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.C),new KeyWithModifiers(Key.W)},
+                    Rename),
+                new CommandBinding(
+                    "timeline pause",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.T),new KeyWithModifiers(Key.P)},
+                    PauseTimeline),
+                new CommandBinding(
+                    "timeline start",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.T),new KeyWithModifiers(Key.S)},
+                    ContinueTimeline),
+                new CommandBinding(
+                    "refresh timeline",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.T),new KeyWithModifiers(Key.R)},
+                    RefreshTimeline),
+                new CommandBinding(
+                    "refresh",
+                    FileTime.App.Core.Command.Commands.Refresh,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.R)},
+                    RefreshCurrentLocation),
             };
             var universalCommandBindings = new List<CommandBinding>()
             {

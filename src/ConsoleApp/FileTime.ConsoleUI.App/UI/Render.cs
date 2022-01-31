@@ -26,7 +26,7 @@ namespace FileTime.ConsoleUI.App.UI
         public Tab Tab { get; private set; }
         public TabState TabState { get; private set; }
 
-        public int PageSize => Console.WindowHeight - _contentPaddingTop - _contentPaddingBottom;
+        public static int PageSize => Console.WindowHeight - _contentPaddingTop - _contentPaddingBottom;
         public Render(IColoredConsoleRenderer coloredRenderer, IStyles appStyle)
         {
             _coloredRenderer = coloredRenderer;
@@ -219,7 +219,7 @@ namespace FileTime.ConsoleUI.App.UI
                         }
                     }
 
-                    var isSelected = TabState.ContainsSelectedItem(item.Provider, currentContainer, item.FullName!);
+                    var isSelected = TabState.ContainsMarkedItem(currentContainer, new AbsolutePath(item));
                     if (isSelected)
                     {
                         backgroundColor = _appStyle.SelectedItemBackground;

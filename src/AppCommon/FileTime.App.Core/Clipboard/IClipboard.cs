@@ -1,16 +1,16 @@
 using FileTime.Core.Command;
-using FileTime.Core.Providers;
+using FileTime.Core.Models;
 
 namespace FileTime.App.Core.Clipboard
 {
     public interface IClipboard
     {
-        IReadOnlyList<ClipboardItem> Content { get; }
+        IReadOnlyList<AbsolutePath> Content { get; }
         Type? CommandType { get; }
 
-        void AddContent(IContentProvider contentProvider, string path);
+        void AddContent(AbsolutePath absolutePath);
         void Clear();
-        void RemoveContent(IContentProvider contentProvider, string path);
+        void RemoveContent(AbsolutePath absolutePath);
         void SetCommand<T>() where T : ITransportationCommand;
     }
 }

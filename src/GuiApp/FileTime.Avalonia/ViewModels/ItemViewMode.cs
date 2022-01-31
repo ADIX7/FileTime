@@ -6,8 +6,11 @@ namespace FileTime.Avalonia.ViewModels
 {
     public enum ItemViewMode
     {
-        Selected,
+        Default,
         Alternative,
-        Default
+        Selected,
+        Marked,
+        MarkedSelected,
+        MarkedAlternative
     }
 }

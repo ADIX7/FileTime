@@ -15,12 +15,18 @@
 			<Color x:Key="ItemBackgroundColor">#00000000</Color>
 			<Color x:Key="AlternativeItemBackgroundColor">#10000000</Color>
 			<Color x:Key="SelectedItemBackgroundColor">#93a1a1</Color>
+			<Color x:Key="MarkedItemBackgroundColor">#00000000</Color>
+			<Color x:Key="MarkedAlternativeItemBackgroundColor">#10000000</Color>
+			<Color x:Key="MarkedSelectedItemBackgroundColor">#b58900</Color>
 
 			<Color x:Key="ForegroundColor">#93a1a1</Color>
 			<Color x:Key="AccentForegroundColor">#268bd2</Color>
 			<Color x:Key="LightForegroundColor">#7793a1a1</Color>
-			<Color x:Key="AlternativeForegroundColor">#93a1a1</Color>
+			<Color x:Key="AlternativeItemForegroundColor">#93a1a1</Color>
 			<Color x:Key="SelectedItemForegroundColor">#073642</Color>
+			<Color x:Key="MarkedItemForegroundColor">#b58900</Color>
+			<Color x:Key="MarkedAlternativeItemForegroundColor">#b58900</Color>
+			<Color x:Key="MarkedSelectedItemForegroundColor">#002b36</Color>
 
 			<Color x:Key="ErrorColor">#dc322f</Color>
 
@@ -48,6 +54,15 @@
 			<SolidColorBrush
 				x:Key="SelectedItemBackgroundBrush"
 				Color="{DynamicResource SelectedItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedItemBackgroundBrush"
+				Color="{DynamicResource MarkedItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedSelectedItemBackgroundBrush"
+				Color="{DynamicResource MarkedSelectedItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedAlternativeItemBackgroundBrush"
+				Color="{DynamicResource MarkedAlternativeItemBackgroundColor}" />
 
 			<SolidColorBrush
 				x:Key="ForegroundBrush"
@@ -59,11 +74,20 @@
 				x:Key="LightForegroundBrush"
 				Color="{DynamicResource LightForegroundColor}" />
 			<SolidColorBrush
-				x:Key="AlternativeForegroundBrush"
-				Color="{DynamicResource AlternativeForegroundColor}" />
+				x:Key="AlternativeItemForegroundBrush"
+				Color="{DynamicResource AlternativeItemForegroundColor}" />
 			<SolidColorBrush
 				x:Key="SelectedItemForegroundBrush"
 				Color="{DynamicResource SelectedItemForegroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedItemForegroundBrush"
+				Color="{DynamicResource MarkedItemForegroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedAlternativeItemForegroundBrush"
+				Color="{DynamicResource MarkedAlternativeItemForegroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedSelectedItemForegroundBrush"
+				Color="{DynamicResource MarkedSelectedItemForegroundColor}" />
 
 			<SolidColorBrush
 				x:Key="ErrorBrush"
@@ -79,14 +103,23 @@
 			<converters:ItemViewModeToBrushConverter 
 				x:Key="ItemViewModeToForegroundConverter" 
 				DefaultBrush="{StaticResource ForegroundBrush}"
-				AlternativeBrush="{StaticResource AlternativeForegroundBrush}"
-				SelectedBrush="{StaticResource SelectedItemForegroundBrush}"/>
+				AlternativeBrush="{StaticResource AlternativeItemForegroundBrush}"
+				SelectedBrush="{StaticResource SelectedItemForegroundBrush}"
+				MarkedBrush="{StaticResource MarkedItemForegroundBrush}"
+				MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemForegroundBrush}"
+				MarkedSelectedBrush="{StaticResource MarkedSelectedItemForegroundBrush}"/>
 			<converters:ItemViewModeToBrushConverter
 				x:Key="ItemViewModeToBackgroundConverter"
 				DefaultBrush="{StaticResource ItemBackgroundBrush}"
 				AlternativeBrush="{StaticResource AlternativeItemBackgroundBrush}"
-				SelectedBrush="{StaticResource SelectedItemBackgroundBrush}"/>
+				SelectedBrush="{StaticResource SelectedItemBackgroundBrush}"
+				MarkedBrush="{StaticResource MarkedItemBackgroundBrush}"
+				MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemBackgroundBrush}"
+				MarkedSelectedBrush="{StaticResource MarkedSelectedItemBackgroundBrush}"/>
 			<converters:ContextMenuGenerator x:Key="ContextMenuGenerator"/>
+			<converters:ItemToImageConverter x:Key="ItemToImageConverter"/>
+			<converters:IsNullConverter x:Key="IsNullConverter"/>
+			<converters:IsNullConverter x:Key="IsNotNullConverter" Inverse="true"/>
 
 		</ResourceDictionary>
 	</Application.Resources>

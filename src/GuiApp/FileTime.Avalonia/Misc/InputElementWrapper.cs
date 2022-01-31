@@ -12,9 +12,10 @@ namespace FileTime.Avalonia.Misc
 
         public string Value { get; set; }
 
-        public InputElementWrapper(InputElement inputElement)
+        public InputElementWrapper(InputElement inputElement, string? defaultValue = null)
         {
             InputElement = inputElement;
+            Value = defaultValue ?? "";
         }
     }
 }

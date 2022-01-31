@@ -19,9 +19,12 @@ namespace FileTime.Providers.Smb
         public string? FullName { get; }
 
         public bool IsHidden => false;
+        public bool IsLoaded => _items != null;
 
         public SmbContentProvider Provider { get; }
         IContentProvider IItem.Provider => Provider;
+        public bool CanDelete => true;
+        public bool CanRename => true;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
@@ -74,6 +77,10 @@ namespace FileTime.Providers.Smb
         }
 
         public Task Delete()
+        {
+            throw new NotImplementedException();
+        }
+        public Task Rename(string newName)
         {
             throw new NotImplementedException();
         }

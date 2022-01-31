@@ -21,20 +21,32 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private bool _isAlternative;
 
+        [Property]
+        private bool _isMarked;
+
+        [Property]
+        private ContainerViewModel? _parent;
+
         [PropertyInvalidate(nameof(IsSelected))]
         [PropertyInvalidate(nameof(IsAlternative))]
+        [PropertyInvalidate(nameof(IsMarked))]
         public ItemViewMode ViewMode =>
-            IsSelected
-            ? ItemViewMode.Selected
-            : IsAlternative
-                ? ItemViewMode.Alternative
-                : ItemViewMode.Default;
+            (IsMarked, IsSelected, IsAlternative) switch
+            {
+                (true, true, _) => ItemViewMode.MarkedSelected,
+                (true, false, true) => ItemViewMode.MarkedAlternative,
+                (false, true, _) => ItemViewMode.Selected,
+                (false, false, true) => ItemViewMode.Alternative,
+                (true, false, false) => ItemViewMode.Marked,
+                _ => ItemViewMode.Default
+            };
 
         public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
 
-        public ElementViewModel(IElement element, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
+        public ElementViewModel(IElement element, ContainerViewModel parent, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
         {
             Element = element;
+            Parent = parent;
         }
 
         public void InvalidateDisplayName() => OnPropertyChanged(nameof(DisplayName));

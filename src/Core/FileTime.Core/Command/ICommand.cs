@@ -4,6 +4,7 @@ namespace FileTime.Core.Command
 {
     public interface ICommand
     {
-        PointInTime SimulateCommand(PointInTime moment);
+        Task<CanCommandRun> CanRun(PointInTime startPoint);
+        Task<PointInTime> SimulateCommand(PointInTime startPoint);
     }
 }

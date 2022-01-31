@@ -24,13 +24,18 @@ namespace FileTime.Providers.Local
         public string Attributes => GetAttributes();
 
         public DateTime CreatedAt => File.CreationTime;
+        public bool CanDelete => true;
+        public bool CanRename => true;
 
-        public LocalFile(FileInfo file, IContentProvider contentProvider)
+        private readonly LocalFolder _parent;
+
+        public LocalFile(FileInfo file, LocalFolder parent, IContentProvider contentProvider)
         {
+            _parent = parent;
             File = file;
 
             Name = file.Name;
-            FullName = file.FullName;
+            FullName = parent.FullName + Constants.SeparatorChar + file.Name;
             Provider = contentProvider;
         }
 
@@ -40,6 +45,14 @@ namespace FileTime.Providers.Local
         {
             File.Delete();
             return Task.CompletedTask;
+        }
+        public async Task Rename(string newName)
+        {
+            if (_parent is LocalFolder parentFolder)
+            {
+                System.IO.File.Move(File.FullName, Path.Combine(parentFolder.Directory.FullName, newName));
+                await _parent.Refresh();
+            }
         }
 
         public string GetAttributes()
@@ -57,5 +70,7 @@ namespace FileTime.Providers.Local
                     + ((File.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
             }
         }
+
+        public IContainer? GetParent() => _parent;
     }
 }

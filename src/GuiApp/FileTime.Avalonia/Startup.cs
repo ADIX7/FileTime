@@ -2,6 +2,7 @@
 using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Core.Command;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.Avalonia
@@ -27,6 +28,15 @@ namespace FileTime.Avalonia
             else
             {
                 throw new System.Exception("TODO: implement linux contextmenu provider");
+            }
+
+            return serviceCollection;
+        }
+        internal static IServiceCollection RegisterCommandHandlers(this IServiceCollection serviceCollection)
+        {
+            foreach (var commandHandler in FileTime.Providers.Local.Startup.GetCommandHandlers())
+            {
+                serviceCollection.AddTransient(typeof(ICommandHandler), commandHandler);
             }
 
             return serviceCollection;

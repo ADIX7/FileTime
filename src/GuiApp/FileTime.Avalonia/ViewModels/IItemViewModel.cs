@@ -1,8 +1,6 @@
 ﻿using FileTime.Core.Models;
 using FileTime.Avalonia.Models;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -12,6 +10,8 @@ namespace FileTime.Avalonia.ViewModels
         bool IsSelected { get; set; }
 
         bool IsAlternative { get; set; }
+        bool IsMarked { get; set; }
+        ContainerViewModel? Parent{ get; set; }
 
         ItemViewMode ViewMode { get; }
 

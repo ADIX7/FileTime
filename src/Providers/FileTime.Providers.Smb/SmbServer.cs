@@ -24,10 +24,13 @@ namespace FileTime.Providers.Smb
         public string? FullName { get; }
 
         public bool IsHidden => false;
+        public bool IsLoaded => _items != null;
 
         public SmbContentProvider Provider { get; }
 
         IContentProvider IItem.Provider => Provider;
+        public bool CanDelete => false;
+        public bool CanRename => false;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
@@ -128,5 +131,7 @@ namespace FileTime.Providers.Smb
             }
             return _client;
         }
+
+        public Task Rename(string newName) => throw new NotSupportedException();
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using AsyncEvent;
 using FileTime.Core.Models;
@@ -19,12 +20,15 @@ namespace FileTime.Providers.Local
 
         public string? FullName { get; }
         public bool IsHidden => false;
+        public bool IsLoaded => true;
 
         public IContentProvider Provider => this;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
         public bool IsCaseInsensitive { get; }
+        public bool CanDelete => false;
+        public bool CanRename => false;
 
         public LocalContentProvider(ILogger<LocalContentProvider> logger)
         {
@@ -81,5 +85,7 @@ namespace FileTime.Providers.Local
         public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
         public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult((IReadOnlyList<IContainer>?)_rootContainers);
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
+
+        public Task Rename(string newName) => throw new NotSupportedException();
     }
 }
