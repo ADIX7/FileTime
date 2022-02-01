@@ -10,6 +10,7 @@ using FileTime.App.Core.Tab;
 using FileTime.ConsoleUI.App.UI.Color;
 using FileTime.Core.Command;
 using FileTime.App.Core.Command;
+using FileTime.Core.Timeline;
 
 namespace FileTime.ConsoleUI.App
 {
@@ -17,14 +18,14 @@ namespace FileTime.ConsoleUI.App
     {
         private readonly List<Tab> _tabs = new();
         private readonly Dictionary<Tab, Render> _renderers = new();
-        private readonly Dictionary<Tab, TabState> _paneStates = new();
+        private readonly Dictionary<Tab, TabState> _tabStates = new();
         private Tab? _selectedTab;
 
         private readonly List<CommandBinding> _commandBindings = new();
         private readonly IServiceProvider _serviceProvider;
         private readonly IClipboard _clipboard;
         private readonly IColoredConsoleRenderer _coloredConsoleRenderer;
-        private readonly CommandExecutor _commandExecutor;
+        private readonly TimeRunner _timeRunner;
         private readonly ConsoleReader _consoleReader;
         private readonly IStyles _styles;
         private readonly List<ConsoleKeyInfo> _previousKeys = new();
@@ -35,14 +36,14 @@ namespace FileTime.ConsoleUI.App
             IServiceProvider serviceProvider,
             IClipboard clipboard,
             IColoredConsoleRenderer coloredConsoleRenderer,
-            CommandExecutor commandExecutor,
+            TimeRunner timeRunner,
             ConsoleReader consoleReader,
             IStyles styles)
         {
             _serviceProvider = serviceProvider;
             _clipboard = clipboard;
             _coloredConsoleRenderer = coloredConsoleRenderer;
-            _commandExecutor = commandExecutor;
+            _timeRunner = timeRunner;
             _consoleReader = consoleReader;
             _styles = styles;
             InitCommandBindings();
@@ -60,7 +61,7 @@ namespace FileTime.ConsoleUI.App
             _tabs.Add(tab);
 
             var paneState = new TabState(tab);
-            _paneStates.Add(tab, paneState);
+            _tabStates.Add(tab, paneState);
 
             var renderer = _serviceProvider.GetService<Render>()!;
             renderer.Init(tab, paneState);
@@ -73,7 +74,7 @@ namespace FileTime.ConsoleUI.App
         {
             _tabs.Remove(pane);
             _renderers.Remove(pane);
-            _paneStates.Remove(pane);
+            _tabStates.Remove(pane);
         }
 
         private void InitCommandBindings()
@@ -134,7 +135,7 @@ namespace FileTime.ConsoleUI.App
                     Cut),
                 new CommandBinding(
                     "paste (merge)",
-                    Commands.Paste,
+                    Commands.PasteMerge,
                     new[]
                     {
                         new ConsoleKeyInfo('p', ConsoleKey.P, false, false, false),
@@ -143,7 +144,7 @@ namespace FileTime.ConsoleUI.App
                     PasteMerge),
                 new CommandBinding(
                     "paste (overwrite)",
-                    Commands.Paste,
+                    Commands.PasteOverwrite,
                     new[]
                     {
                         new ConsoleKeyInfo('p', ConsoleKey.P, false, false, false),
@@ -152,7 +153,7 @@ namespace FileTime.ConsoleUI.App
                     PasteOverwrite),
                 new CommandBinding(
                     "paste (skip)",
-                    Commands.Paste,
+                    Commands.PasteSkip,
                     new[]
                     {
                         new ConsoleKeyInfo('p', ConsoleKey.P, false, false, false),

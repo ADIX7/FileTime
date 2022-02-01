@@ -1,0 +1,403 @@
+<Window
+    x:Class="FileTime.Avalonia.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:FileTime.Avalonia.ViewModels"
+	xmlns:local="using:FileTime.Avalonia.Views"
+    Title="FileTime.Avalonia"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    Icon="/Assets/avalonia-logo.ico"
+	InputElement.KeyDown="OnKeyDown"
+	InputElement.KeyUp="OnKeyUp"
+	
+    mc:Ignorable="d">
+	<Grid
+        x:Name="RootContainer"
+        Background="{DynamicResource AppBackgroundBrush}">
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="250" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+
+
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+
+			<Border CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="10" Margin="10">
+				<Grid RowDefinitions="Auto,Auto">
+
+					<TextBlock
+						Margin="0,0,0,10"
+						Classes="NormalText"
+						Text="Drives" />
+
+					<ItemsRepeater
+						Grid.Row="1"
+						Items="{Binding RootDriveInfos}">
+						<ItemsRepeater.ItemTemplate>
+							<DataTemplate>
+								<Grid Margin="0,5" ColumnDefinitions="20,*,Auto" RowDefinitions="Auto,Auto">
+									<Image
+										Grid.RowSpan="2"
+										Width="20"
+										Height="20"
+										HorizontalAlignment="Left"
+										VerticalAlignment="Center"
+										Source="{SvgImage /Assets/material/folder.svg}" />
+
+									<TextBlock
+										Grid.Column="1"
+										VerticalAlignment="Center"
+										HorizontalAlignment="Stretch"
+										Classes="NormalText"
+										Text="{Binding FullName}" />
+
+									<StackPanel HorizontalAlignment="Right"
+										Grid.Column="2"
+										Orientation="Horizontal"
+										VerticalAlignment="Center">
+
+										<TextBlock Classes="SmallText" Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
+										</TextBlock>
+
+										<TextBlock Classes="SmallText" Text=" / ">
+										</TextBlock>
+
+										<TextBlock Classes="SmallText" Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
+										</TextBlock>
+									</StackPanel>
+
+									<ProgressBar
+										Grid.Column="1"
+										Grid.ColumnSpan="2"
+										Grid.Row="2"
+										Maximum="{Binding Size}"
+										Value="{Binding Used}" />
+								</Grid>
+							</DataTemplate>
+						</ItemsRepeater.ItemTemplate>
+					</ItemsRepeater>
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid Grid.Column="2" RowDefinitions="Auto,40,*,Auto">
+			<Grid>
+				<ItemsControl Items="{Binding TimelineCommands}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Horizontal" />
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<ItemsControl Items="{Binding Commands}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding}"/>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Grid>
+
+			<Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+
+				<StackPanel Orientation="Horizontal">
+					<TextBlock
+                        Margin="10,5"
+                        Text="{Binding AppState.SelectedTab.TabNumber,StringFormat=({0})}" />
+
+					<local:PathPresenter Margin="10,5,0,5" DataContext="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName}"/>
+
+					<TextBlock
+                        Margin="0,5,10,5"
+                        Text="{Binding AppState.SelectedTab.SelectedItem.Item.Name}" Foreground="{StaticResource AccentForegroundBrush}" />
+				</StackPanel>
+
+				<ItemsControl
+						Grid.Column="1"
+						HorizontalAlignment="Right"
+						Items="{Binding AppState.Tabs}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Horizontal" />
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Grid RowDefinitions="Auto,1">
+								<StackPanel Orientation="Horizontal" Margin="20,0,20,0">
+
+									<TextBlock
+										VerticalAlignment="Center" Text="{Binding TabNumber,StringFormat=({0})}" />
+
+									<local:PathPresenter Margin="5,0,0,0" DataContext="{Binding CurrentLocation.Container.FullName}"/>
+								</StackPanel>
+
+								<Rectangle Fill="{DynamicResource ForegroundBrush}" Grid.Row="1" IsVisible="{Binding IsSelected}"/>
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Grid>
+
+			<Grid
+				Grid.Row="2"
+				Margin="20,0,0,0">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="15*" />
+						<ColumnDefinition Width="10" />
+						<ColumnDefinition Width="40*" />
+						<ColumnDefinition Width="10" />
+						<ColumnDefinition Width="45*" />
+					</Grid.ColumnDefinitions>
+
+					<Grid>
+						<ListBox
+							Classes="ContentListView"
+							IsEnabled="False"
+                            Items="{Binding AppState.SelectedTab.Parent.Items}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<local:ItemView ShowAttributes="False"/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</Grid>
+
+					<Rectangle
+                        Grid.Column="1"
+                        Width="1"
+                        Margin="0,10,0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        Fill="{DynamicResource ContentSeparatorBrush}" />
+
+					<Grid Grid.Column="2">
+						<ListBox
+                            x:Name="CurrentItems"
+                            IsTabStop="True"
+                            Items="{Binding AppState.SelectedTab.CurrentLocation.Items}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                            SelectedItem="{Binding AppState.SelectedTab.SelectedItem, Mode=TwoWay}"
+                            Classes="ContentListView">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<local:ItemView/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+
+						<TextBlock
+                            x:Name="CurrentEmpty"
+                            Margin="10"
+                            HorizontalAlignment="Center"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource ErrorBrush}"
+                            IsVisible="{Binding AppState.SelectedTab.CurrentLocation.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+							Empty
+						</TextBlock>
+					</Grid>
+
+					<Rectangle
+                        Grid.Column="3"
+                        Width="1"
+                        Margin="0,10,0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        Fill="{DynamicResource ContentSeparatorBrush}" />
+
+					<Grid Grid.Column="4">
+						<ListBox
+							Classes="ContentListView"
+							IsEnabled="False"
+                            x:Name="ChildItems"
+                            Items="{Binding AppState.SelectedTab.ChildContainer.Items}"
+                            IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<local:ItemView/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+
+						<TextBlock
+                            x:Name="ChildEmpty"
+                            Margin="10"
+                            HorizontalAlignment="Center"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource ErrorBrush}"
+                            IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+							Empty
+						</TextBlock>
+					</Grid>
+				</Grid>
+
+				<Grid
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					IsVisible="{Binding Inputs, Converter={StaticResource IsNotNullConverter}}">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<ItemsControl
+                        x:Name="InputList"
+                        Items="{Binding Inputs}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Grid MinWidth="400">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition MinWidth="200" />
+										<ColumnDefinition Width="*" />
+									</Grid.ColumnDefinitions>
+
+									<TextBlock
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding InputElement.Text}" />
+									<TextBox
+										AttachedToVisualTree="InputText_AttachedToVisualTree"
+                                        Grid.Column="1"
+										GotFocus="InputText_GotFocus"
+										LostFocus="InputText_LostFocus"
+                                        KeyDown="InputText_KeyDown"
+                                        Text="{Binding Value, Mode=TwoWay}" />
+								</Grid>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+					<StackPanel
+                        Grid.Row="1"
+                        Orientation="Horizontal">
+						<Button
+                            Command="{Binding ProcessInputsCommand}"
+                            Content="Ok" />
+						<Button
+                            Command="{Binding CancelInputsCommand}"
+                            Content="Cancel" />
+					</StackPanel>
+				</Grid>
+
+				<Grid
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					IsVisible="{Binding MessageBoxText, Converter={StaticResource IsNotNullConverter}}">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<TextBlock Text="{Binding MessageBoxText}"/>
+					<StackPanel
+                        Grid.Row="1"
+                        Orientation="Horizontal">
+						<Button
+                            Command="{Binding ProcessMessageBoxCommand}"
+                            Content="Yes" />
+						<Button
+                            Command="{Binding CancelMessageBoxCommand}"
+                            Content="No" />
+					</StackPanel>
+				</Grid>
+			</Grid>
+
+			<Grid Grid.Row="3">
+				<Grid IsVisible="{Binding AppState.ViewMode, Converter={StaticResource EqualityConverter}, ConverterParameter=RapidTravel}">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<Rectangle
+                        Height="1"
+                        Margin="10,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Fill="{DynamicResource ContentSeparatorBrush}" />
+
+					<StackPanel
+                        Grid.Row="1"
+                        Margin="30,10,10,10"
+                        Orientation="Horizontal">
+
+						<TextBlock
+                            Margin="0,0,30,0"
+                            Text="Rapid travel mode" />
+
+						<TextBlock Text="Filter " />
+
+						<TextBlock Text="{Binding AppState.RapidTravelText}" />
+					</StackPanel>
+				</Grid>
+
+				<Grid IsVisible="{Binding NoCommandFound}">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<Rectangle
+                        Height="1"
+                        Margin="10,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Fill="{DynamicResource ContentSeparatorBrush}" />
+
+					<TextBlock
+                        Grid.Row="1"
+                        Margin="10"
+                        HorizontalAlignment="Center"
+                        Foreground="{DynamicResource ErrorBrush}"
+                        Text="No command found" />
+				</Grid>
+
+				<Grid IsVisible="{Binding PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<Rectangle
+                        Height="1"
+                        Margin="10,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Fill="{DynamicResource ContentSeparatorBrush}" />
+
+					<ItemsControl
+                        Grid.Row="1"
+                        Items="{Binding PossibleCommands}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="200" />
+										<ColumnDefinition Width="*" />
+									</Grid.ColumnDefinitions>
+
+									<TextBlock Text="{Binding KeysDisplayText}" />
+									<TextBlock Grid.Column="1" Text="{Binding Name}" />
+								</Grid>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</Grid>
+			</Grid>
+		</Grid>
+	</Grid>
+</Window>

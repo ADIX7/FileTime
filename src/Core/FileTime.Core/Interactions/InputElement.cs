@@ -4,11 +4,13 @@ namespace FileTime.Core.Interactions
     {
         public string Text { get; }
         public InputType InputType { get; }
+        public string? DefaultValue { get; }
 
-        public InputElement(string text, InputType inputType)
+        public InputElement(string text, InputType inputType, string? defaultValue = null)
         {
             Text = text;
             InputType = inputType;
+            DefaultValue = defaultValue;
         }
     }
 }

@@ -1,3 +1,5 @@
+using FileTime.Core.Timeline;
+
 namespace FileTime.Core.Command
 {
     public class CommandExecutor
@@ -9,15 +11,15 @@ namespace FileTime.Core.Command
             _commandHandlers = commandHandlers.ToList();
         }
 
-        public void ExecuteCommand(ICommand command)
+        public async Task ExecuteCommandAsync(ICommand command, TimeRunner timeRunner)
         {
             if (command is IExecutableCommand executableCommand)
             {
-                executableCommand.Execute();
+                await executableCommand.Execute(timeRunner);
             }
             else
             {
-                _commandHandlers.Find(c => c.CanHandle(command))?.Execute(command);
+                await _commandHandlers.Find(c => c.CanHandle(command))?.ExecuteAsync(command, timeRunner);
             }
         }
     }

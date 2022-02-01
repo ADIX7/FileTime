@@ -9,7 +9,6 @@ namespace FileTime.Core.Models
         Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default);
 
         Task Refresh();
-        IContainer? GetParent();
         Task<IItem?> GetByPath(string path);
         Task<IContainer> CreateContainer(string name);
         Task<IElement> CreateElement(string name);
@@ -17,6 +16,8 @@ namespace FileTime.Core.Models
         Task<bool> IsExists(string name);
 
         Task<IContainer> Clone();
+
+        bool IsLoaded { get; }
 
         AsyncEventHandler Refreshed { get; }
     }

@@ -1,4 +1,5 @@
 
+using System;
 using AsyncEvent;
 using FileTime.Core.Models;
 
@@ -11,13 +12,20 @@ namespace FileTime.Core.Providers
         private readonly IReadOnlyList<IItem>? _items;
         private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
 
+#pragma warning disable CS8603 // Possible null reference return.
         public string Name => null;
+#pragma warning restore CS8603 // Possible null reference return.
 
         public string? FullName => null;
 
         public bool IsHidden => false;
+        public bool IsLoaded => true;
 
+#pragma warning disable CS8603 // Possible null reference return.
         public IContentProvider Provider => null;
+#pragma warning restore CS8603 // Possible null reference return.
+        public bool CanDelete => false;
+        public bool CanRename => false;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
@@ -52,5 +60,7 @@ namespace FileTime.Core.Providers
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+
+        public Task Rename(string newName) => throw new NotSupportedException();
     }
 }

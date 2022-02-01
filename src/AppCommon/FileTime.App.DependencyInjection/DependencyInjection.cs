@@ -2,6 +2,7 @@ using FileTime.App.Core.Clipboard;
 using FileTime.Core.Command;
 using FileTime.Core.Providers;
 using FileTime.Core.StateManagement;
+using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using FileTime.Providers.Smb;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,8 @@ namespace FileTime.App.Core
                 .AddSingleton<IContentProvider, LocalContentProvider>(sp => sp.GetService<LocalContentProvider>() ?? throw new Exception($"No {nameof(LocalContentProvider)} instance found"))
                 .AddSingleton<IContentProvider, SmbContentProvider>()
                 .AddSingleton<ElementCreationStates>()
-                .AddSingleton<CommandExecutor>();
+                .AddSingleton<CommandExecutor>()
+                .AddSingleton<TimeRunner>();
         }
     }
 }

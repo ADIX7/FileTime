@@ -8,9 +8,7 @@ namespace FileTime.Providers.Local
 {
     public class LocalFile : IElement
     {
-        private readonly FileInfo _file;
-
-        public FileInfo File => _file;
+        public FileInfo File { get; }
 
         public string Name { get; }
 
@@ -18,26 +16,61 @@ namespace FileTime.Providers.Local
 
         public IContentProvider Provider { get; }
 
-        public bool IsHidden => (_file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+        public bool IsHidden => (File.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
         public bool IsSpecial =>
                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                && (new UnixFileInfo(_file.FullName).FileAccessPermissions & FileAccessPermissions.UserExecute) == FileAccessPermissions.UserExecute;
+                && (new UnixFileInfo(File.FullName).FileAccessPermissions & FileAccessPermissions.UserExecute) == FileAccessPermissions.UserExecute;
 
-        public LocalFile(FileInfo file, IContentProvider contentProvider)
+        public string Attributes => GetAttributes();
+
+        public DateTime CreatedAt => File.CreationTime;
+        public bool CanDelete => true;
+        public bool CanRename => true;
+
+        private readonly LocalFolder _parent;
+
+        public LocalFile(FileInfo file, LocalFolder parent, IContentProvider contentProvider)
         {
-            _file = file;
+            _parent = parent;
+            File = file;
 
             Name = file.Name;
-            FullName = file.FullName;
+            FullName = parent.FullName + Constants.SeparatorChar + file.Name;
             Provider = contentProvider;
         }
 
-        public string GetPrimaryAttributeText() => _file.Length.ToSizeString();
+        public string GetPrimaryAttributeText() => File.Length.ToSizeString();
 
         public Task Delete()
         {
-            _file.Delete();
+            File.Delete();
             return Task.CompletedTask;
         }
+        public async Task Rename(string newName)
+        {
+            if (_parent is LocalFolder parentFolder)
+            {
+                System.IO.File.Move(File.FullName, Path.Combine(parentFolder.Directory.FullName, newName));
+                await _parent.Refresh();
+            }
+        }
+
+        public string GetAttributes()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "";
+            }
+            else
+            {
+                return "-"
+                    + ((File.Attributes & FileAttributes.Archive) == FileAttributes.Archive ? "a" : "-")
+                    + ((File.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly ? "r" : "-")
+                    + ((File.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ? "h" : "-")
+                    + ((File.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
+            }
+        }
+
+        public IContainer? GetParent() => _parent;
     }
 }

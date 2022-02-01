@@ -1,6 +1,6 @@
 ﻿namespace AsyncEvent
 {
-    public class AsyncEventHandler<TSender, TArg> where TArg : AsyncEventArgs
+    public class AsyncEventHandler<TSender, TArg>
     {
         private readonly List<Func<TSender, TArg, Task>> _handlers;
         private readonly Action<Func<TSender, TArg, Task>> _add;
@@ -56,7 +56,7 @@
             return obj;
         }
     }
-    public class AsyncEventHandler<TArg> : AsyncEventHandler<object?, AsyncEventArgs> where TArg : AsyncEventArgs
+    public class AsyncEventHandler<TArg> : AsyncEventHandler<object?, TArg>
     {
         public AsyncEventHandler(Action<Func<object?, TArg, Task>>? add = null, Action<Func<object?, TArg, Task>>? remove = null) : base(add, remove) { }
     }

@@ -1,0 +1,149 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:FileTime.Avalonia"
+			 xmlns:converters="using:FileTime.Avalonia.Converters"
+			 xmlns:views="using:FileTime.Avalonia.Views"
+             x:Class="FileTime.Avalonia.App">
+	<Application.DataTemplates>
+	</Application.DataTemplates>
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<Color x:Key="AppBackgroundColor">#073642</Color>
+			<Color x:Key="ContainerBackgroundColor">#083e4c</Color>
+
+			<Color x:Key="ItemBackgroundColor">#00000000</Color>
+			<Color x:Key="AlternativeItemBackgroundColor">#10000000</Color>
+			<Color x:Key="SelectedItemBackgroundColor">#93a1a1</Color>
+			<Color x:Key="MarkedItemBackgroundColor">#00000000</Color>
+			<Color x:Key="MarkedAlternativeItemBackgroundColor">#10000000</Color>
+			<Color x:Key="MarkedSelectedItemBackgroundColor">#b58900</Color>
+
+			<Color x:Key="ForegroundColor">#93a1a1</Color>
+			<Color x:Key="AccentForegroundColor">#268bd2</Color>
+			<Color x:Key="LightForegroundColor">#7793a1a1</Color>
+			<Color x:Key="AlternativeItemForegroundColor">#93a1a1</Color>
+			<Color x:Key="SelectedItemForegroundColor">#073642</Color>
+			<Color x:Key="MarkedItemForegroundColor">#b58900</Color>
+			<Color x:Key="MarkedAlternativeItemForegroundColor">#b58900</Color>
+			<Color x:Key="MarkedSelectedItemForegroundColor">#002b36</Color>
+
+			<Color x:Key="ErrorColor">#dc322f</Color>
+
+			<LinearGradientBrush x:Key="ContentSeparatorBrush">
+				<GradientStop Offset="0" Color="#0093a1a1" />
+				<GradientStop Offset="0.5" Color="#93a1a1" />
+				<GradientStop Offset="1" Color="#0093a1a1" />
+			</LinearGradientBrush>
+
+
+
+			<SolidColorBrush
+				x:Key="AppBackgroundBrush"
+				Color="{DynamicResource AppBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="ContainerBackgroundBrush"
+				Color="{DynamicResource ContainerBackgroundColor}" />
+
+			<SolidColorBrush
+				x:Key="ItemBackgroundBrush"
+				Color="{DynamicResource ItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="AlternativeItemBackgroundBrush"
+				Color="{DynamicResource AlternativeItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="SelectedItemBackgroundBrush"
+				Color="{DynamicResource SelectedItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedItemBackgroundBrush"
+				Color="{DynamicResource MarkedItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedSelectedItemBackgroundBrush"
+				Color="{DynamicResource MarkedSelectedItemBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedAlternativeItemBackgroundBrush"
+				Color="{DynamicResource MarkedAlternativeItemBackgroundColor}" />
+
+			<SolidColorBrush
+				x:Key="ForegroundBrush"
+				Color="{DynamicResource ForegroundColor}" />
+			<SolidColorBrush
+				x:Key="AccentForegroundBrush"
+				Color="{DynamicResource AccentForegroundColor}" />
+			<SolidColorBrush
+				x:Key="LightForegroundBrush"
+				Color="{DynamicResource LightForegroundColor}" />
+			<SolidColorBrush
+				x:Key="AlternativeItemForegroundBrush"
+				Color="{DynamicResource AlternativeItemForegroundColor}" />
+			<SolidColorBrush
+				x:Key="SelectedItemForegroundBrush"
+				Color="{DynamicResource SelectedItemForegroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedItemForegroundBrush"
+				Color="{DynamicResource MarkedItemForegroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedAlternativeItemForegroundBrush"
+				Color="{DynamicResource MarkedAlternativeItemForegroundColor}" />
+			<SolidColorBrush
+				x:Key="MarkedSelectedItemForegroundBrush"
+				Color="{DynamicResource MarkedSelectedItemForegroundColor}" />
+
+			<SolidColorBrush
+				x:Key="ErrorBrush"
+				Color="{DynamicResource ErrorColor}" />
+
+
+			<SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush" Color="{DynamicResource SelectedItemBackgroundColor}" />
+
+			<converters:FormatSizeConverter x:Key="FormatSizeConverter"/>
+			<converters:CompareConverter x:Key="EqualityConverter"/>
+			<converters:CompareConverter x:Key="NotEqualsConverter" ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}"/>
+			<converters:SplitStringConverter x:Key="SplitStringConverter" />
+			<converters:ItemViewModeToBrushConverter 
+				x:Key="ItemViewModeToForegroundConverter" 
+				DefaultBrush="{StaticResource ForegroundBrush}"
+				AlternativeBrush="{StaticResource AlternativeItemForegroundBrush}"
+				SelectedBrush="{StaticResource SelectedItemForegroundBrush}"
+				MarkedBrush="{StaticResource MarkedItemForegroundBrush}"
+				MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemForegroundBrush}"
+				MarkedSelectedBrush="{StaticResource MarkedSelectedItemForegroundBrush}"/>
+			<converters:ItemViewModeToBrushConverter
+				x:Key="ItemViewModeToBackgroundConverter"
+				DefaultBrush="{StaticResource ItemBackgroundBrush}"
+				AlternativeBrush="{StaticResource AlternativeItemBackgroundBrush}"
+				SelectedBrush="{StaticResource SelectedItemBackgroundBrush}"
+				MarkedBrush="{StaticResource MarkedItemBackgroundBrush}"
+				MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemBackgroundBrush}"
+				MarkedSelectedBrush="{StaticResource MarkedSelectedItemBackgroundBrush}"/>
+			<converters:ContextMenuGenerator x:Key="ContextMenuGenerator"/>
+			<converters:ItemToImageConverter x:Key="ItemToImageConverter"/>
+			<converters:IsNullConverter x:Key="IsNullConverter"/>
+			<converters:IsNullConverter x:Key="IsNotNullConverter" Inverse="true"/>
+
+		</ResourceDictionary>
+	</Application.Resources>
+
+	<Application.Styles>
+		<FluentTheme Mode="Light"/>
+
+		<Style Selector="TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+			<Setter Property="FontSize" Value="16"/>
+		</Style>
+		<Style Selector="TextBlock.SmallText">
+			<Setter Property="FontSize" Value="16"/>
+		</Style>
+		<Style Selector="ListBox.ContentListView">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="ListBox.ContentListView > ListBoxItem">
+			<Setter Property="Margin" Value="0"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="ContextMenu">
+				<ContextMenu Items="{Binding Converter={StaticResource ContextMenuGenerator}}"/>
+			</Setter>
+		</Style>
+	</Application.Styles>
+</Application>

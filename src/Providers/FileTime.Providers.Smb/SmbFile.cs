@@ -13,8 +13,11 @@ namespace FileTime.Providers.Smb
         public string? FullName { get; }
 
         public bool IsHidden => false;
+        public bool CanDelete => true;
+        public bool CanRename => true;
 
         public IContentProvider Provider { get; }
+        private IContainer _parent;
 
         public SmbFile(string name, SmbContentProvider provider, IContainer parent)
         {
@@ -22,9 +25,14 @@ namespace FileTime.Providers.Smb
             FullName = parent.FullName + Constants.SeparatorChar + Name;
 
             Provider = provider;
+            _parent = parent;
         }
 
         public Task Delete()
+        {
+            throw new NotImplementedException();
+        }
+        public Task Rename(string newName)
         {
             throw new NotImplementedException();
         }
@@ -33,5 +41,7 @@ namespace FileTime.Providers.Smb
         {
             return "";
         }
+
+        public IContainer? GetParent() => _parent;
     }
 }

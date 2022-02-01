@@ -24,6 +24,9 @@ namespace FileTime.Core.Models
         public string? FullName => BaseContainer.FullName;
 
         public bool IsHidden => BaseContainer.IsHidden;
+        public bool IsLoaded => BaseContainer.IsLoaded;
+        public bool CanDelete => BaseContainer.CanDelete;
+        public bool CanRename => BaseContainer.CanRename;
 
         public IContentProvider Provider => BaseContainer.Provider;
 
@@ -159,5 +162,7 @@ namespace FileTime.Core.Models
                 VirtualContainerName
             );
         }
+
+        public async Task Rename(string newName) => await BaseContainer.Rename(newName);
     }
 }

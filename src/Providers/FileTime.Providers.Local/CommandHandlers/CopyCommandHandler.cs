@@ -1,12 +1,12 @@
 using FileTime.Core.Command;
 using FileTime.Core.Models;
 using FileTime.Core.StateManagement;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Providers.Local.CommandHandlers
 {
     public class CopyCommandHandler : ICommandHandler
     {
-        private readonly List<Thread> _copyOperations = new();
         private readonly ElementCreationStates _elementCreationStates;
 
         public CopyCommandHandler(ElementCreationStates elementCreationStates)
@@ -25,17 +25,14 @@ namespace FileTime.Providers.Local.CommandHandlers
             return true;
         }
 
-        public void Execute(object command)
+        public async Task ExecuteAsync(object command, TimeRunner timeRunner)
         {
             if (command is not CopyCommand copyCommand) throw new ArgumentException($"Can not execute command of type '{command.GetType()}'.");
 
-            var thread = new Thread(() => copyCommand.Execute(CopyElement));
-            thread.Start();
-
-            _copyOperations.Add(thread);
+            await copyCommand.Execute(CopyElement, timeRunner);
         }
 
-        public void CopyElement(IAbsolutePath sourcePath, IAbsolutePath targetPath)
+        public static void CopyElement(AbsolutePath sourcePath, AbsolutePath targetPath)
         {
             using var sourceStream = File.OpenRead(sourcePath.Path);
             using var sourceReader = new BinaryReader(sourceStream);
@@ -43,7 +40,7 @@ namespace FileTime.Providers.Local.CommandHandlers
             using var targetStream = File.OpenWrite(targetPath.Path);
             using var targetWriter = new BinaryWriter(targetStream);
 
-            var bufferSize = 1024 * 1024;
+            const int bufferSize = 1024 * 1024;
             byte[] dataRead;
 
             do

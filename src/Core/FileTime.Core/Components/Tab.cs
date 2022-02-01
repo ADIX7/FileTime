@@ -6,8 +6,11 @@ namespace FileTime.Core.Components
     public class Tab
     {
         private IItem? _currentSelectedItem;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private IContainer _currentLocation;
-        
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        private string? _lastPath;
+
         public int CurrentSelectedIndex { get; private set; }
 
         public AsyncEventHandler CurrentLocationChanged = new();
@@ -33,10 +36,10 @@ namespace FileTime.Core.Components
                 }
 
                 _currentLocation = value;
-                await CurrentLocationChanged?.InvokeAsync(this, AsyncEventArgs.Empty);
+                await CurrentLocationChanged.InvokeAsync(this, AsyncEventArgs.Empty);
 
                 var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
-                await SetCurrentSelectedItem(currentLocationItems.Count > 0 ? currentLocationItems[0] : null);
+                await SetCurrentSelectedItem(await GetItemByLastPath() ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null));
                 _currentLocation.Refreshed.Add(HandleCurrentLocationRefresh);
             }
         }
@@ -50,18 +53,82 @@ namespace FileTime.Core.Components
         {
             if (_currentSelectedItem != value)
             {
-                var contains = (await _currentLocation.GetItems())?.Contains(value) ?? false;
-                if(value != null && !contains) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
+                IItem? itemToSelect = null;
+                if (value != null)
+                {
+                    itemToSelect = (await _currentLocation.GetItems())?.FirstOrDefault(i => 
+                        i.FullName == null && value?.FullName == null 
+                        ? i.Name == value?.Name
+                        : i.FullName == value?.FullName);
+                    if (itemToSelect == null) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
+                }
 
-                _currentSelectedItem = value;
-                CurrentSelectedIndex = await GetItemIndex(value);
-                await CurrentSelectedItemChanged?.InvokeAsync(this, AsyncEventArgs.Empty);
+                _currentSelectedItem = itemToSelect;
+                _lastPath = GetCommonPath(_lastPath, itemToSelect?.FullName);
+                CurrentSelectedIndex = await GetItemIndex(itemToSelect);
+                await CurrentSelectedItemChanged.InvokeAsync(this, AsyncEventArgs.Empty);
             }
+        }
+        public async Task<IItem?> GetItemByLastPath(IContainer? container = null)
+        {
+            container ??= _currentLocation;
+            var containerFullName = container.FullName;
+
+            if (_lastPath == null
+                || !container.IsLoaded
+                || (containerFullName != null && !_lastPath.StartsWith(containerFullName))
+             )
+            {
+                return null;
+            }
+
+
+            var itemNameToSelect = _lastPath
+                .Split(Constants.SeparatorChar)
+                .Skip(
+                    containerFullName == null
+                    ? 0
+                    : containerFullName
+                        .Split(Constants.SeparatorChar)
+                        .Count())
+                .FirstOrDefault();
+
+            return (await container.GetItems())?.FirstOrDefault(i => i.Name == itemNameToSelect);
+        }
+
+        private string GetCommonPath(string? oldPath, string? newPath)
+        {
+            var oldPathParts = oldPath?.Split(Constants.SeparatorChar) ?? new string[0];
+            var newPathParts = newPath?.Split(Constants.SeparatorChar) ?? new string[0];
+
+            var commonPathParts = new List<string>();
+
+            var max = oldPathParts.Length > newPathParts.Length ? oldPathParts.Length : newPathParts.Length;
+
+            for (var i = 0; i < max; i++)
+            {
+                if (newPathParts.Length <= i)
+                {
+                    commonPathParts.AddRange(oldPathParts.Skip(i));
+                    break;
+                }
+                else if (oldPathParts.Length <= i || oldPathParts[i] != newPathParts[i])
+                {
+                    commonPathParts.AddRange(newPathParts.Skip(i));
+                    break;
+                }
+                else if (oldPathParts[i] == newPathParts[i])
+                {
+                    commonPathParts.Add(oldPathParts[i]);
+                }
+            }
+
+            return string.Join(Constants.SeparatorChar, commonPathParts);
         }
 
         private async Task HandleCurrentLocationRefresh(object? sender, AsyncEventArgs e)
         {
-            var currentSelectedName = (await GetCurrentSelectedItem())?.FullName;
+            var currentSelectedName = (await GetCurrentSelectedItem())?.FullName ?? (await GetItemByLastPath())?.FullName;
             var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
             if (currentSelectedName != null)
             {

@@ -5,12 +5,17 @@ namespace FileTime.Core.Command
 {
     public class MoveCommand : ITransportationCommand
     {
-        public IList<IAbsolutePath> Sources { get; } = new List<IAbsolutePath>();
+        public IList<AbsolutePath> Sources { get; } = new List<AbsolutePath>();
 
         public IContainer? Target { get; set; }
-        public TransportMode TransportMode { get; set; } = TransportMode.Merge;
+        public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
 
-        public PointInTime SimulateCommand(PointInTime delta)
+        public Task<CanCommandRun> CanRun(PointInTime startPoint)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {
             throw new NotImplementedException();
         }

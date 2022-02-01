@@ -1,5 +1,4 @@
 using AsyncEvent;
-using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using SMBLibrary;
@@ -12,7 +11,7 @@ namespace FileTime.Providers.Smb
         private IReadOnlyList<IItem>? _items;
         private IReadOnlyList<IContainer>? _containers;
         private IReadOnlyList<IElement>? _elements;
-        private Func<Task<ISMBClient>> _getSmbClient;
+        private SmbClientContext _smbClientContext;
         private readonly IContainer? _parent;
 
         public string Name { get; }
@@ -20,16 +19,19 @@ namespace FileTime.Providers.Smb
         public string? FullName { get; }
 
         public bool IsHidden => false;
+        public bool IsLoaded => _items != null;
 
         public SmbContentProvider Provider { get; }
         IContentProvider IItem.Provider => Provider;
+        public bool CanDelete => false;
+        public bool CanRename => false;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
-        public SmbShare(string name, SmbContentProvider contentProvider, IContainer parent, Func<Task<ISMBClient>> getSmbClient)
+        public SmbShare(string name, SmbContentProvider contentProvider, IContainer parent, SmbClientContext smbClientContext)
         {
             _parent = parent;
-            _getSmbClient = getSmbClient;
+            _smbClientContext = smbClientContext;
 
             Name = name;
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
@@ -115,40 +117,44 @@ namespace FileTime.Providers.Smb
 
         public async Task<(List<IContainer> containers, List<IElement> elements)> ListFolder(IContainer parent, string shareName, string folderName)
         {
-            var containers = new List<IContainer>();
-            var elements = new List<IElement>();
-
-            var client = await _getSmbClient();
-            ISMBFileStore fileStore = client.TreeConnect(shareName, out var status);
-            if (status == NTStatus.STATUS_SUCCESS)
+            return await _smbClientContext.RunWithSmbClientAsync(client =>
             {
-                status = fileStore.CreateFile(out object directoryHandle, out FileStatus fileStatus, folderName, AccessMask.GENERIC_READ, SMBLibrary.FileAttributes.Directory, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
+                var containers = new List<IContainer>();
+                var elements = new List<IElement>();
+                NTStatus status = NTStatus.STATUS_DATA_ERROR;
+                ISMBFileStore fileStore = client.TreeConnect(shareName, out status);
                 if (status == NTStatus.STATUS_SUCCESS)
                 {
-                    status = fileStore.QueryDirectory(out List<QueryDirectoryFileInformation> fileList, directoryHandle, "*", FileInformationClass.FileDirectoryInformation);
-                    status = fileStore.CloseFile(directoryHandle);
-
-                    foreach (var item in fileList)
+                    status = fileStore.CreateFile(out object directoryHandle, out FileStatus fileStatus, folderName, AccessMask.GENERIC_READ, SMBLibrary.FileAttributes.Directory, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
+                    if (status == NTStatus.STATUS_SUCCESS)
                     {
-                        if (item is FileDirectoryInformation fileDirectoryInformation && fileDirectoryInformation.FileName != "." && fileDirectoryInformation.FileName != "..")
+                        status = fileStore.QueryDirectory(out List<QueryDirectoryFileInformation> fileList, directoryHandle, "*", FileInformationClass.FileDirectoryInformation);
+                        status = fileStore.CloseFile(directoryHandle);
+
+                        foreach (var item in fileList)
                         {
-                            if ((fileDirectoryInformation.FileAttributes & SMBLibrary.FileAttributes.Directory) == SMBLibrary.FileAttributes.Directory)
+                            if (item is FileDirectoryInformation fileDirectoryInformation && fileDirectoryInformation.FileName != "." && fileDirectoryInformation.FileName != "..")
                             {
-                                containers.Add(new SmbFolder(fileDirectoryInformation.FileName, Provider, this, parent));
-                            }
-                            else
-                            {
-                                elements.Add(new SmbFile(fileDirectoryInformation.FileName, Provider, parent));
+                                if ((fileDirectoryInformation.FileAttributes & SMBLibrary.FileAttributes.Directory) == SMBLibrary.FileAttributes.Directory)
+                                {
+                                    containers.Add(new SmbFolder(fileDirectoryInformation.FileName, Provider, this, parent));
+                                }
+                                else
+                                {
+                                    elements.Add(new SmbFile(fileDirectoryInformation.FileName, Provider, parent));
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            containers = containers.OrderBy(c => c.Name).ToList();
-            elements = elements.OrderBy(e => e.Name).ToList();
+                containers = containers.OrderBy(c => c.Name).ToList();
+                elements = elements.OrderBy(e => e.Name).ToList();
 
-            return (containers, elements);
+                return (containers, elements);
+            });
         }
+
+        public Task Rename(string newName) => throw new NotSupportedException();
     }
 }

@@ -17,23 +17,30 @@ namespace FileTime.Providers.Smb
         private IReadOnlyList<IItem>? _items;
         private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
         private ISMBClient? _client;
+        private readonly object _clientGuard = new object();
+        private bool _refreshingClient;
         private readonly IInputInterface _inputInterface;
+        private readonly SmbClientContext _smbClientContext;
 
         public string Name { get; }
 
         public string? FullName { get; }
 
         public bool IsHidden => false;
+        public bool IsLoaded => _items != null;
 
         public SmbContentProvider Provider { get; }
 
         IContentProvider IItem.Provider => Provider;
+        public bool CanDelete => false;
+        public bool CanRename => false;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
         public SmbServer(string path, SmbContentProvider contentProvider, IInputInterface inputInterface)
         {
             _inputInterface = inputInterface;
+            _smbClientContext = new SmbClientContext(GetSmbClient, DisposeSmbClient);
 
             Provider = contentProvider;
             FullName = Name = path;
@@ -83,26 +90,60 @@ namespace FileTime.Providers.Smb
 
         public async Task Refresh()
         {
-            ISMBClient client = await GetSmbClient();
+            List<string> shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status));
 
-            List<string> shares = client.ListShares(out var status);
-
-            _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, GetSmbClient)).AsReadOnly();
+            _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, _smbClientContext)).AsReadOnly();
             _items = _shares.Cast<IItem>().ToList().AsReadOnly();
             await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
 
+        private void DisposeSmbClient()
+        {
+            lock (_clientGuard)
+            {
+                _client = null;
+            }
+        }
+
         private async Task<ISMBClient> GetSmbClient()
         {
-            if (_client == null)
+            bool isClientNull;
+            lock (_clientGuard)
+            {
+                isClientNull = _client == null;
+            }
+
+            while (isClientNull)
+            {
+                if (!await RefreshSmbClient())
+                {
+                    await Task.Delay(1);
+                }
+
+                lock (_clientGuard)
+                {
+                    isClientNull = _client == null;
+                }
+            }
+            return _client!;
+        }
+
+        private async Task<bool> RefreshSmbClient()
+        {
+            lock (_clientGuard)
+            {
+                if (_refreshingClient) return false;
+                _refreshingClient = true;
+            }
+            try
             {
                 var couldParse = IPAddress.TryParse(Name[2..], out var ipAddress);
-                _client = new SMB2Client();
+                var client = new SMB2Client();
                 var connected = couldParse
-                    ? _client.Connect(ipAddress, SMBTransportType.DirectTCPTransport)
-                    : _client.Connect(Name[2..], SMBTransportType.DirectTCPTransport);
+                    ? client.Connect(ipAddress, SMBTransportType.DirectTCPTransport)
+                    : client.Connect(Name[2..], SMBTransportType.DirectTCPTransport);
 
                 if (connected)
                 {
@@ -119,14 +160,31 @@ namespace FileTime.Providers.Smb
                         _password = inputs[1];
                     }
 
-                    if (_client.Login(string.Empty, _username, _password) != NTStatus.STATUS_SUCCESS)
+                    if (client.Login(string.Empty, _username, _password) != NTStatus.STATUS_SUCCESS)
                     {
                         _username = null;
                         _password = null;
                     }
+                    else
+                    {
+                        lock (_clientGuard)
+                        {
+                            _client = client;
+                        }
+                    }
                 }
             }
-            return _client;
+            finally
+            {
+                lock (_clientGuard)
+                {
+                    _refreshingClient = false;
+                }
+            }
+
+            return true;
         }
+
+        public Task Rename(string newName) => throw new NotSupportedException();
     }
 }
