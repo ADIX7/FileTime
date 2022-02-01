@@ -49,8 +49,8 @@ namespace FileTime.Providers.Local
         public async Task<IItem?> GetByPath(string path)
         {
             var pathParts = (IsCaseInsensitive ? path.ToLower() : path).TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
-            
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && pathParts.Length == 1 && pathParts[0] == "") return this;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && pathParts.Length == 1 && pathParts[0] == "") return this;
 
             var rootContainer = _rootContainers.FirstOrDefault(c => NormalizePath(c.Name) == NormalizePath(pathParts[0]));
 

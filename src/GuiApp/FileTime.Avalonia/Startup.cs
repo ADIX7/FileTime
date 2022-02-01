@@ -3,6 +3,7 @@ using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
+using FileTime.Core.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.Avalonia
@@ -13,7 +14,8 @@ namespace FileTime.Avalonia
         {
             return serviceCollection
                 .AddSingleton<AppState>()
-                .AddTransient<MainPageViewModel>();
+                .AddTransient<MainPageViewModel>()
+                .AddSingleton<IInputInterface, BasicInputHandler>();
         }
         internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)
         {

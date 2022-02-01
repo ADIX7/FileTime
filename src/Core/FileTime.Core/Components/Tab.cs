@@ -54,7 +54,10 @@ namespace FileTime.Core.Components
                 IItem? itemToSelect = null;
                 if (value != null)
                 {
-                    itemToSelect = (await _currentLocation.GetItems())?.FirstOrDefault(i => i.FullName == value?.FullName);
+                    itemToSelect = (await _currentLocation.GetItems())?.FirstOrDefault(i => 
+                        i.FullName == null && value?.FullName == null 
+                        ? i.Name == value?.Name
+                        : i.FullName == value?.FullName);
                     if (itemToSelect == null) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
                 }
 
@@ -123,7 +126,7 @@ namespace FileTime.Core.Components
 
         private async Task HandleCurrentLocationRefresh(object? sender, AsyncEventArgs e)
         {
-            var currentSelectedName = (await GetCurrentSelectedItem())?.FullName ?? (await GetItemByLastPath()).FullName;
+            var currentSelectedName = (await GetCurrentSelectedItem())?.FullName ?? (await GetItemByLastPath())?.FullName;
             var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
             if (currentSelectedName != null)
             {

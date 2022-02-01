@@ -63,9 +63,21 @@ namespace FileTime.Providers.Smb
             throw new NotSupportedException();
         }
 
-        public Task<IItem?> GetByPath(string path)
+        public async Task<IItem?> GetByPath(string path)
         {
-            throw new NotImplementedException();
+            if (path == null) return this;
+
+            var pathParts = path.TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
+
+            var rootContainer = _rootContainers.Find(c => c.Name == pathParts[0]);
+
+            if (rootContainer == null)
+            {
+                return null;
+            }
+
+            var remainingPath = string.Join(Constants.SeparatorChar, pathParts.Skip(1));
+            return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath);
         }
 
         public IContainer? GetParent() => _parent;

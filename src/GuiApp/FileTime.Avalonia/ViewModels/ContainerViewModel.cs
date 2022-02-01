@@ -15,8 +15,9 @@ namespace FileTime.Avalonia.ViewModels
 {
     [ViewModel]
     [Inject(typeof(ItemNameConverterService))]
-    public partial class ContainerViewModel : IItemViewModel
+    public partial class ContainerViewModel : IItemViewModel, IDisposable
     {
+        private bool _disposed;
         private bool _isRefreshing;
         private bool _isInitialized;
         private INewItemProcessor _newItemProcessor;
@@ -128,12 +129,19 @@ namespace FileTime.Avalonia.ViewModels
             {
                 _isRefreshing = true;
 
-                var containers = (await _container.GetContainers()).Select(c => AdoptOrCreateItem(c, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
-                var elements = (await _container.GetElements()).Select(e => AdoptOrCreateItem(e, (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
+                var containers = (await _container.GetContainers())!.Select(c => AdoptOrReuseOrCreateItem(c, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
+                var elements = (await _container.GetElements())!.Select(e => AdoptOrReuseOrCreateItem(e, (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
+
+                var containersToRemove = _containers.Except(containers);
 
                 _containers.Clear();
                 _elements.Clear();
                 _items.Clear();
+
+                foreach (var containerToRemove in containersToRemove)
+                {
+                    containerToRemove?.Dispose();
+                }
 
                 foreach (var container in containers)
                 {
@@ -161,10 +169,13 @@ namespace FileTime.Avalonia.ViewModels
             _isRefreshing = false;
         }
 
-        private TResult AdoptOrCreateItem<T, TResult>(T item, Func<T, TResult> generator) where T : IItem
+        private TResult AdoptOrReuseOrCreateItem<T, TResult>(T item, Func<T, TResult> generator) where T : class, IItem
         {
-            var itemToAdopt = ChildrenToAdopt.Find(i => i.Item.Name == item.Name);
+            var itemToAdopt = ChildrenToAdopt.Find(i => i.Item == item);
             if (itemToAdopt is TResult itemViewModel) return itemViewModel;
+
+            var existingViewModel = _items?.FirstOrDefault(i => i.Item == item);
+            if (existingViewModel is TResult itemViewModelToReuse) return itemViewModelToReuse;
 
             return generator(item);
         }
@@ -177,6 +188,7 @@ namespace FileTime.Avalonia.ViewModels
                 foreach (var container in _containers)
                 {
                     container.Unload(true);
+                    container.Dispose();
                     container.ChildrenToAdopt.Clear();
                 }
             }
@@ -202,6 +214,26 @@ namespace FileTime.Avalonia.ViewModels
         {
             if (!_isInitialized) await Task.Run(Refresh);
             return _items;
+        }
+
+        ~ContainerViewModel()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposed && disposing)
+            {
+                Container.Refreshed.Remove(Container_Refreshed);
+            }
+            _disposed = true;
         }
     }
 }

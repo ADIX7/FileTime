@@ -22,6 +22,7 @@ using FileTime.App.Core.Clipboard;
 using Microsoft.Extensions.DependencyInjection;
 using FileTime.Core.Command;
 using FileTime.Core.Timeline;
+using FileTime.Core.Providers;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -40,7 +41,7 @@ namespace FileTime.Avalonia.ViewModels
 
         private IClipboard _clipboard;
         private TimeRunner _timeRunner;
-
+        private IEnumerable<IContentProvider>? _contentProviders;
         private Action? _inputHandler;
 
         [Property]
@@ -67,6 +68,11 @@ namespace FileTime.Avalonia.ViewModels
         {
             _clipboard = App.ServiceProvider.GetService<IClipboard>()!;
             _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
+            _contentProviders = App.ServiceProvider.GetService<IEnumerable<IContentProvider>>();
+            var inputInterface = (BasicInputHandler)App.ServiceProvider.GetService<IInputInterface>()!;
+            inputInterface.InputHandler = ReadInputs2;
+            App.ServiceProvider.GetService<TopContainer>();
+
             _timeRunner.CommandsChanged += (o, e) => OnPropertyChanged(nameof(TimelineCommands));
             InitCommandBindings();
 
@@ -496,6 +502,19 @@ namespace FileTime.Avalonia.ViewModels
             await _timeRunner.Refresh();
         }
 
+        private async Task GoToContainer()
+        {
+            var handler = () =>
+            {
+                if (Inputs != null)
+                {
+
+                }
+            };
+
+            ReadInputs(new List<Core.Interactions.InputElement>() { new Core.Interactions.InputElement("Path", InputType.Text) }, handler);
+        }
+
         [Command]
         public void ProcessInputs()
         {
@@ -667,6 +686,24 @@ namespace FileTime.Avalonia.ViewModels
         {
             Inputs = inputs.Select(i => new InputElementWrapper(i, i.DefaultValue)).ToList();
             _inputHandler = inputHandler;
+        }
+
+        public async Task<string?[]> ReadInputs2(IEnumerable<Core.Interactions.InputElement> fields)
+        {
+            var waiting = true;
+            var result = new string[0];
+            ReadInputs(fields.ToList(), () => 
+            { 
+                if(Inputs != null)
+                {
+                    result = Inputs.Select(i => i.Value).ToArray();
+                }
+                waiting = false; 
+            });
+
+            while (waiting) await Task.Delay(100);
+
+            return result;
         }
 
         private void ShowMessageBox(string text, Action inputHandler)
@@ -847,6 +884,11 @@ namespace FileTime.Avalonia.ViewModels
                     FileTime.App.Core.Command.Commands.Refresh,
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.R)},
                     RefreshCurrentLocation),
+                new CommandBinding(
+                    "go to",
+                    FileTime.App.Core.Command.Commands.Refresh,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.L, ctrl: true)},
+                    GoToContainer),
             };
             var universalCommandBindings = new List<CommandBinding>()
             {
