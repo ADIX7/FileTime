@@ -42,7 +42,7 @@ namespace FileTime.Avalonia.Views
         {
             if (_inputElementWrapper == null)
             {
-                e.Handled = e.Handled || await ViewModel?.ProcessKeyDown(e.Key, e.KeyModifiers);
+                e.Handled = e.Handled || await ViewModel!.ProcessKeyDown(e.Key, e.KeyModifiers);
             }
         }
 
@@ -50,7 +50,7 @@ namespace FileTime.Avalonia.Views
         {
             if (_inputElementWrapper == null)
             {
-                e.Handled = e.Handled || await ViewModel?.ProcessKeyUp(e.Key, e.KeyModifiers);
+                e.Handled = e.Handled || await ViewModel!.ProcessKeyUp(e.Key, e.KeyModifiers);
             }
         }
 

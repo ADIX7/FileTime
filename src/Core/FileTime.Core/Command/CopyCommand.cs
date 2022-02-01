@@ -9,7 +9,7 @@ namespace FileTime.Core.Command
         private Func<IContainer, string, Task<IContainer>>? _createContainer;
         private TimeRunner? _timeRunner;
 
-        public IList<AbsolutePath>? Sources { get; } = new List<AbsolutePath>();
+        public IList<AbsolutePath> Sources { get; } = new List<AbsolutePath>();
 
         public IContainer? Target { get; set; }
 

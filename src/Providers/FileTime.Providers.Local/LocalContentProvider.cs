@@ -48,11 +48,13 @@ namespace FileTime.Providers.Local
 
         public async Task<IItem?> GetByPath(string path)
         {
+            path = path.Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar).TrimEnd(Constants.SeparatorChar);
             var pathParts = (IsCaseInsensitive ? path.ToLower() : path).TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && pathParts.Length == 1 && pathParts[0] == "") return this;
 
-            var rootContainer = _rootContainers.FirstOrDefault(c => NormalizePath(c.Name) == NormalizePath(pathParts[0]));
+            var normalizedRootContainerName = NormalizePath(pathParts[0]);
+            var rootContainer = _rootContainers.FirstOrDefault(c => NormalizePath(c.Name) == normalizedRootContainerName);
 
             if (rootContainer == null)
             {
@@ -77,7 +79,11 @@ namespace FileTime.Providers.Local
 
         internal string NormalizePath(string path) => IsCaseInsensitive ? path.ToLower() : path;
 
-        public bool CanHandlePath(string path) => _rootContainers.Any(r => path.StartsWith(r.Name));
+        public bool CanHandlePath(string path)
+        {
+            var normalizedPath = NormalizePath(path);
+            return _rootContainers.Any(r => normalizedPath.StartsWith(NormalizePath(r.Name)));
+        }
 
         public void SetParent(IContainer container) => _parent = container;
         public Task<IReadOnlyList<IContainer>> GetRootContainers(CancellationToken token = default) => Task.FromResult(_rootContainers);

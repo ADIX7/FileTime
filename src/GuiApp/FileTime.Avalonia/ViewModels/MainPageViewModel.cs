@@ -41,8 +41,8 @@ namespace FileTime.Avalonia.ViewModels
 
         private IClipboard _clipboard;
         private TimeRunner _timeRunner;
-        private IEnumerable<IContentProvider>? _contentProviders;
-        private Action? _inputHandler;
+        private IEnumerable<IContentProvider> _contentProviders;
+        private Func<Task>? _inputHandler;
 
         [Property]
         private string _text;
@@ -68,7 +68,7 @@ namespace FileTime.Avalonia.ViewModels
         {
             _clipboard = App.ServiceProvider.GetService<IClipboard>()!;
             _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
-            _contentProviders = App.ServiceProvider.GetService<IEnumerable<IContentProvider>>();
+            _contentProviders = App.ServiceProvider.GetService<IEnumerable<IContentProvider>>()!;
             var inputInterface = (BasicInputHandler)App.ServiceProvider.GetService<IInputInterface>()!;
             inputInterface.InputHandler = ReadInputs2;
             App.ServiceProvider.GetService<TopContainer>();
@@ -107,12 +107,12 @@ namespace FileTime.Avalonia.ViewModels
             RootDriveInfos = driveInfos.OrderBy(d => d.Name).ToList();
         }
 
-        private async Task<IContainer> GetContainerForWindowsDrive(DriveInfo drive)
+        private async Task<IContainer?> GetContainerForWindowsDrive(DriveInfo drive)
         {
             return (await LocalContentProvider.GetRootContainers()).FirstOrDefault(d => d.Name == drive.Name.TrimEnd(Path.DirectorySeparatorChar));
         }
 
-        private async Task<IContainer> GetContainerForLinuxDrive(DriveInfo drive)
+        private async Task<IContainer?> GetContainerForLinuxDrive(DriveInfo drive)
         {
             return await LocalContentProvider.GetByPath(drive.Name) as IContainer;
         }
@@ -274,13 +274,13 @@ namespace FileTime.Avalonia.ViewModels
 
         public Task CreateContainer()
         {
-            var handler = () =>
+            var handler = async () =>
             {
                 if (Inputs != null)
                 {
                     var container = AppState.SelectedTab.CurrentLocation.Container;
                     var createContainerCommand = new CreateContainerCommand(new Core.Models.AbsolutePath(container), Inputs[0].Value);
-                    _timeRunner.AddCommand(createContainerCommand).Wait();
+                    await _timeRunner.AddCommand(createContainerCommand);
                     Inputs = null;
                 }
             };
@@ -292,13 +292,13 @@ namespace FileTime.Avalonia.ViewModels
 
         public Task CreateElement()
         {
-            var handler = () =>
+            var handler = async () =>
             {
                 if (Inputs != null)
                 {
                     var container = AppState.SelectedTab.CurrentLocation.Container;
                     var createElementCommand = new CreateElementCommand(new Core.Models.AbsolutePath(container), Inputs[0].Value);
-                    _timeRunner.AddCommand(createElementCommand).Wait();
+                    await _timeRunner.AddCommand(createElementCommand);
                     Inputs = null;
                 }
             };
@@ -346,7 +346,7 @@ namespace FileTime.Avalonia.ViewModels
 
         public async Task Delete()
         {
-            IList<Core.Models.AbsolutePath>? itemsToDelete = null;
+            IList<AbsolutePath>? itemsToDelete = null;
             var askForDelete = false;
             var questionText = "";
             var shouldDelete = false;
@@ -403,11 +403,11 @@ namespace FileTime.Avalonia.ViewModels
                 }
                 else if (shouldDelete)
                 {
-                    HandleDelete();
+                    await HandleDelete();
                 }
             }
 
-            void HandleDelete()
+            async Task HandleDelete()
             {
                 var deleteCommand = new DeleteCommand();
 
@@ -416,7 +416,7 @@ namespace FileTime.Avalonia.ViewModels
                     deleteCommand.ItemsToDelete.Add(itemToDelete);
                 }
 
-                _timeRunner.AddCommand(deleteCommand).Wait();
+                await _timeRunner.AddCommand(deleteCommand);
                 _clipboard.Clear();
             }
         }
@@ -465,12 +465,12 @@ namespace FileTime.Avalonia.ViewModels
             var selectedItem = AppState.SelectedTab.SelectedItem?.Item;
             if (selectedItem != null)
             {
-                var handler = () =>
+                var handler = async () =>
                 {
                     if (Inputs != null)
                     {
                         var renameCommand = new RenameCommand(new Core.Models.AbsolutePath(selectedItem), Inputs[0].Value);
-                        _timeRunner.AddCommand(renameCommand).Wait();
+                        await _timeRunner.AddCommand(renameCommand);
                     }
                 };
 
@@ -502,23 +502,45 @@ namespace FileTime.Avalonia.ViewModels
             await _timeRunner.Refresh();
         }
 
-        private async Task GoToContainer()
+        private Task GoToContainer()
         {
-            var handler = () =>
+            var handler = async () =>
             {
                 if (Inputs != null)
                 {
-
+                    var path = Inputs[0].Value;
+                    foreach (var contentProvider in _contentProviders)
+                    {
+                        if (contentProvider.CanHandlePath(path))
+                        {
+                            var possibleContainer = await contentProvider.GetByPath(path);
+                            if (possibleContainer is IContainer container)
+                            {
+                                AppState.SelectedTab.OpenContainer(container).Wait();
+                            }
+                            //TODO: multiple possible content provider handler
+                            return;
+                        }
+                    }
                 }
             };
 
             ReadInputs(new List<Core.Interactions.InputElement>() { new Core.Interactions.InputElement("Path", InputType.Text) }, handler);
+
+            return Task.CompletedTask;
         }
 
         [Command]
-        public void ProcessInputs()
+        public async void ProcessInputs()
         {
-            _inputHandler?.Invoke();
+            try
+            {
+                if (_inputHandler != null)
+                {
+                    await _inputHandler.Invoke();
+                }
+            }
+            catch { }
 
             Inputs = null;
             _inputHandler = null;
@@ -684,6 +706,10 @@ namespace FileTime.Avalonia.ViewModels
 
         private void ReadInputs(List<Core.Interactions.InputElement> inputs, Action inputHandler)
         {
+            ReadInputs(inputs, () => { inputHandler(); return Task.CompletedTask; });
+        }
+        private void ReadInputs(List<Core.Interactions.InputElement> inputs, Func<Task> inputHandler)
+        {
             Inputs = inputs.Select(i => new InputElementWrapper(i, i.DefaultValue)).ToList();
             _inputHandler = inputHandler;
         }
@@ -692,13 +718,13 @@ namespace FileTime.Avalonia.ViewModels
         {
             var waiting = true;
             var result = new string[0];
-            ReadInputs(fields.ToList(), () => 
-            { 
-                if(Inputs != null)
+            ReadInputs(fields.ToList(), () =>
+            {
+                if (Inputs != null)
                 {
                     result = Inputs.Select(i => i.Value).ToArray();
                 }
-                waiting = false; 
+                waiting = false;
             });
 
             while (waiting) await Task.Delay(100);
@@ -706,7 +732,7 @@ namespace FileTime.Avalonia.ViewModels
             return result;
         }
 
-        private void ShowMessageBox(string text, Action inputHandler)
+        private void ShowMessageBox(string text, Func<Task> inputHandler)
         {
             MessageBoxText = text;
             _inputHandler = inputHandler;

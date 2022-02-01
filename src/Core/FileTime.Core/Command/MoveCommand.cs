@@ -5,7 +5,7 @@ namespace FileTime.Core.Command
 {
     public class MoveCommand : ITransportationCommand
     {
-        public IList<AbsolutePath>? Sources { get; } = new List<AbsolutePath>();
+        public IList<AbsolutePath> Sources { get; } = new List<AbsolutePath>();
 
         public IContainer? Target { get; set; }
         public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;

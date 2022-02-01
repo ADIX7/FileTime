@@ -74,7 +74,7 @@ namespace FileTime.Core.Timeline
                 }
             });
 
-            UpdateReadOnlyCommands();
+            await UpdateReadOnlyCommands();
         }
 
         public async Task TryStartCommandRunner()

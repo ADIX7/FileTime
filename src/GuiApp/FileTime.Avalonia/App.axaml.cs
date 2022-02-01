@@ -13,7 +13,7 @@ namespace FileTime.Avalonia
     {
         public static IServiceProvider ServiceProvider { get; private set; }
 
-        public App()
+        static App()
         {
             ServiceProvider ??= DependencyInjection
                 .RegisterDefaultServices()
