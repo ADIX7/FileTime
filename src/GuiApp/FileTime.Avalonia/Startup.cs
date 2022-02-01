@@ -29,7 +29,7 @@ namespace FileTime.Avalonia
             }
             else
             {
-                throw new System.Exception("TODO: implement linux contextmenu provider");
+                serviceCollection.AddSingleton<IContextMenuProvider, LinuxContextMenuProvider>();
             }
 
             return serviceCollection;
