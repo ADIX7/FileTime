@@ -1,3 +1,4 @@
+using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -7,6 +8,10 @@ namespace FileTime.Core.Command
     {
         public AbsolutePath Container { get; }
         public string NewElementName { get; }
+
+        public int Progress => 100;
+        public AsyncEventHandler ProgressChanged { get; } = new();
+        public string DisplayLabel { get; } = "CreateElement";
 
         public CreateElementCommand(AbsolutePath container, string newElementName)
         {

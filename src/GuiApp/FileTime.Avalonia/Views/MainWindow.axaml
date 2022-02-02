@@ -139,13 +139,18 @@
 					</ItemsControl.ItemsPanel>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<ItemsControl Items="{Binding Commands}">
-								<ItemsControl.ItemTemplate>
-									<DataTemplate>
-										<TextBlock Text="{Binding}"/>
-									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
+							<Border Background="{DynamicResource ContainerBackgroundColor}" Padding="5">
+								<ItemsControl Items="{Binding ParallelCommands}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<StackPanel>
+												<TextBlock Text="{Binding Name}"/>
+												<ProgressBar Margin="0,5,0,0" Maximum="100" Value="{Binding Progress}"/>
+											</StackPanel>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</Border>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
@@ -290,14 +295,14 @@
 							<Grid
 								RowDefinitions="Auto, Auto"
 								IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
-								
+
 								<TextBlock
 									Margin="0,0,0,10"
 									HorizontalAlignment="Center"
 									TextWrapping="Wrap"
 									Text="There were some errors while opening container."
 									Foreground="{DynamicResource ErrorBrush}" />
-								
+
 								<ItemsRepeater Grid.Row="1" Items="{Binding AppState.SelectedTab.ChildContainer.Exceptions}">
 									<ItemsRepeater.ItemTemplate>
 										<DataTemplate>

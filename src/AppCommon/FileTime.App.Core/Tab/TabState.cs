@@ -35,7 +35,7 @@ namespace FileTime.App.Core.Tab
 
             foreach (var content in _markedItems[container])
             {
-                if (content.IsEqual(path)) return;
+                if (content.Equals(path)) return;
             }
 
             var tabItem = new AbsolutePath(path);
@@ -50,7 +50,7 @@ namespace FileTime.App.Core.Tab
                 var markedItems = _markedItems[container];
                 for (var i = 0; i < markedItems.Count; i++)
                 {
-                    if (markedItems[i].IsEqual(path))
+                    if (markedItems[i].Equals(path))
                     {
                         await ItemUnmarked.InvokeAsync(this, markedItems[i]);
                         markedItems.RemoveAt(i--);

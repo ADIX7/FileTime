@@ -1,3 +1,5 @@
+using AsyncEvent;
+using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -7,6 +9,10 @@ namespace FileTime.Core.Command
     {
         public AbsolutePath Source { get; }
         public string Target { get; }
+
+        public int Progress => 100;
+        public AsyncEventHandler ProgressChanged { get; } = new();
+        public string DisplayLabel { get; } = "RenameCommand";
 
         public RenameCommand(AbsolutePath source, string target)
         {
@@ -24,14 +30,25 @@ namespace FileTime.Core.Command
             }
         }
 
-        public Task<PointInTime> SimulateCommand(PointInTime startPoint)
+        public async Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {
-            throw new NotImplementedException();
+            var item = await Source.Resolve();
+            if (item == null) throw new FileNotFoundException();
+            var newDifferences = new List<Difference>()
+            {
+                new Difference(item.ToDifferenceItemType(),
+                    DifferenceActionType.Delete,
+                    Source),
+                new Difference(item.ToDifferenceItemType(),
+                    DifferenceActionType.Delete,
+                    Source)
+            };
+            return startPoint.WithDifferences(newDifferences);
         }
 
         public Task<CanCommandRun> CanRun(PointInTime startPoint)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Source.Resolve() != null ? CanCommandRun.True : CanCommandRun.False);
         }
     }
 }

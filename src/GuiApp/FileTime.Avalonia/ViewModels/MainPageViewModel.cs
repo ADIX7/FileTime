@@ -73,7 +73,7 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private ObservableCollection<string> _popupTexts = new ObservableCollection<string>();
 
-        public IReadOnlyList<ReadOnlyParallelCommands> TimelineCommands => _timeRunner.ParallelCommands;
+        public ObservableCollection<ParallelCommandsViewModel> TimelineCommands { get; } = new();
 
         async partial void OnInitialize()
         {
@@ -85,7 +85,7 @@ namespace FileTime.Avalonia.ViewModels
             inputInterface.InputHandler = ReadInputs;
             App.ServiceProvider.GetService<TopContainer>();
 
-            _timeRunner.CommandsChanged += (o, e) => OnPropertyChanged(nameof(TimelineCommands));
+            _timeRunner.CommandsChanged += UpdateParalellCommands;
             InitCommandBindings();
 
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.Up) });
@@ -177,6 +177,31 @@ namespace FileTime.Avalonia.ViewModels
                 throw new Exception("TODO linux places");
             }
             Places = places;
+        }
+
+        private void UpdateParalellCommands(object? sender, EventArgs e)
+        {
+            foreach (var parallelCommand in _timeRunner.ParallelCommands)
+            {
+                if (!TimelineCommands.Any(c => c.Id == parallelCommand.Id))
+                {
+                    TimelineCommands.Add(new ParallelCommandsViewModel(parallelCommand));
+                }
+            }
+            var itemsToRemove = new List<ParallelCommandsViewModel>();
+            foreach (var parallelCommandVm in TimelineCommands)
+            {
+                if (!_timeRunner.ParallelCommands.Any(c => c.Id == parallelCommandVm.Id))
+                {
+                    itemsToRemove.Add(parallelCommandVm);
+                }
+            }
+
+            for (var i = 0; i < itemsToRemove.Count; i++)
+            {
+                itemsToRemove[i].Dispose();
+                TimelineCommands.Remove(itemsToRemove[i]);
+            }
         }
 
         private async Task<IContainer?> GetContainerForWindowsDrive(DriveInfo drive)
@@ -625,14 +650,10 @@ namespace FileTime.Avalonia.ViewModels
         [Command]
         public async void ProcessInputs()
         {
-            try
+            if (_inputHandler != null)
             {
-                if (_inputHandler != null)
-                {
-                    await _inputHandler.Invoke();
-                }
+                await _inputHandler.Invoke();
             }
-            catch { }
 
             Inputs = null;
             _inputHandler = null;
@@ -781,7 +802,7 @@ namespace FileTime.Avalonia.ViewModels
 
                     var selectedItemName = AppState.SelectedTab.SelectedItem?.Item.Name;
                     var currentLocationItems = await AppState.SelectedTab.CurrentLocation.GetItems();
-                    if(currentLocationItems.FirstOrDefault(i => i.Item.Name.ToLower() == AppState.RapidTravelText.ToLower()) is IItemViewModel matchItem)
+                    if (currentLocationItems.FirstOrDefault(i => i.Item.Name.ToLower() == AppState.RapidTravelText.ToLower()) is IItemViewModel matchItem)
                     {
                         await AppState.SelectedTab.SetCurrentSelectedItem(matchItem.Item);
                     }

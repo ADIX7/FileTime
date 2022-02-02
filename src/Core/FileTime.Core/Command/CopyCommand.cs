@@ -1,3 +1,4 @@
+using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -5,15 +6,37 @@ namespace FileTime.Core.Command
 {
     public class CopyCommand : ITransportationCommand
     {
-        private Action<AbsolutePath, AbsolutePath>? _copyOperation;
+        private Func<AbsolutePath, AbsolutePath, Task>? _copyOperation;
+        private Dictionary<AbsolutePath, OperationProgress> _operationStatuses = new();
         private Func<IContainer, string, Task<IContainer>>? _createContainer;
-        private TimeRunner? _timeRunner;
+        private Func<AbsolutePath, Task>? _containerCopyDone;
 
         public IList<AbsolutePath> Sources { get; } = new List<AbsolutePath>();
 
         public IContainer? Target { get; set; }
 
         public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
+
+        public int Progress { get; private set; }
+
+        public AsyncEventHandler ProgressChanged { get; } = new();
+
+        public string DisplayLabel { get; } = "Copy";
+
+        private async Task UpdateProgress()
+        {
+            var total = 0;
+            var current = 0;
+
+            foreach (var item in _operationStatuses.Values)
+            {
+                current += item.Progress;
+                total += item.TotalCount;
+            }
+
+            Progress = current * 100 / total;
+            await ProgressChanged.InvokeAsync(this, AsyncEventArgs.Empty);
+        }
 
         public async Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {
@@ -33,6 +56,8 @@ namespace FileTime.Core.Command
                     DifferenceActionType.Create,
                     to
                 ));
+
+                return Task.CompletedTask;
             };
 
             _createContainer = async (IContainer target, string name) =>
@@ -59,11 +84,60 @@ namespace FileTime.Core.Command
             if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");
             if (TransportMode == null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
 
-            _copyOperation = copy;
+            await CalculateProgress();
+
+            _copyOperation = async (from, to) =>
+            {
+                copy(from, to);
+                var parentPath = to.GetParentAsAbsolutePath();
+                if (_operationStatuses.ContainsKey(parentPath))
+                {
+                    _operationStatuses[parentPath].Progress++;
+                }
+                await UpdateProgress();
+            };
+
             _createContainer = async (IContainer target, string name) => await target.CreateContainer(name);
-            _timeRunner = timeRunner;
+            _containerCopyDone = async (path) =>
+            {
+                _operationStatuses[path].Progress = _operationStatuses[path].TotalCount;
+                if (timeRunner != null)
+                {
+                    await timeRunner.RefreshContainer.InvokeAsync(this, path);
+                }
+            };
 
             await DoCopy(Sources, Target, TransportMode.Value);
+        }
+
+        private async Task CalculateProgress()
+        {
+            if (Sources == null) throw new ArgumentException(nameof(Sources) + " can not be null");
+            if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");
+            if (TransportMode == null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
+
+            var operationStatuses = new Dictionary<AbsolutePath, OperationProgress>();
+
+            _copyOperation = (_, to) =>
+            {
+                var parentPath = to.GetParentAsAbsolutePath();
+                OperationProgress operation;
+                if (operationStatuses.ContainsKey(parentPath))
+                {
+                    operation = operationStatuses[parentPath];
+                }
+                else
+                {
+                    operation = new OperationProgress();
+                    operationStatuses.Add(parentPath, operation);
+                }
+                operation.TotalCount++;
+
+                return Task.CompletedTask;
+            };
+
+            await DoCopy(Sources, Target, TransportMode.Value);
+            _operationStatuses = operationStatuses;
         }
 
         private async Task DoCopy(
@@ -86,7 +160,7 @@ namespace FileTime.Core.Command
                     var childFiles = (await container.GetElements())!.Select(f => new AbsolutePath(f));
 
                     await DoCopy(childDirectories.Concat(childFiles), targetContainer, transportMode);
-                    _timeRunner?.RefreshContainer.InvokeAsync(this, new AbsolutePath(container));
+                    if (_containerCopyDone != null) await _containerCopyDone.Invoke(new AbsolutePath(container));
                 }
                 else if (item is IElement element)
                 {

@@ -12,7 +12,7 @@ namespace FileTime.Core.Timeline
 
         private bool _resourceIsInUse;
         private readonly List<Thread> _commandRunners = new();
-        private bool _enableRunning = true;
+        private bool _enableRunning = false;//true
 
         public bool EnableRunning
         {
@@ -98,6 +98,8 @@ namespace FileTime.Core.Timeline
 
         private void RunCommands()
         {
+            while (_commandsToRun.Count > 0 && _commandsToRun[0].Commands.Count == 0) _commandsToRun.RemoveAt(0);
+
             if (_commandsToRun.Count > 0)
             {
                 foreach (var command in _commandsToRun[0].Commands)
@@ -139,6 +141,10 @@ namespace FileTime.Core.Timeline
                 if (command != null)
                 {
                     _commandsToRun[0].Remove(command);
+                    if (_commandsToRun[0].Commands.Count == 0)
+                    {
+                        _commandsToRun.RemoveAt(0);
+                    }
                 }
 
                 _commandRunners.Remove(thread);
@@ -150,12 +156,8 @@ namespace FileTime.Core.Timeline
 
         public async Task Refresh()
         {
-            await RunWithLockAsync(async () =>
-            {
-                await RefreshCommands(PointInTime.CreateEmpty());
-            });
+            await RunWithLockAsync(async () => await RefreshCommands(PointInTime.CreateEmpty()));
             await UpdateReadOnlyCommands();
-
         }
 
         private async Task RefreshCommands(PointInTime? fullStartTime = null)
@@ -171,10 +173,10 @@ namespace FileTime.Core.Timeline
 
         private async Task UpdateReadOnlyCommands()
         {
-            await RunWithLockAsync(() =>
-            {
-                ParallelCommands = _commandsToRun.ConvertAll(c => new ReadOnlyParallelCommands(c)).AsReadOnly();
-            });
+            var wait = false;
+            await RunWithLockAsync(() => wait = _commandsToRun.Count == 1);
+            if (wait) await Task.Delay(100);
+            await RunWithLockAsync(() => ParallelCommands = _commandsToRun.ConvertAll(c => new ReadOnlyParallelCommands(c)).AsReadOnly());
             CommandsChanged?.Invoke(this, EventArgs.Empty);
         }
 

@@ -1,3 +1,4 @@
+using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -9,6 +10,10 @@ namespace FileTime.Core.Command
 
         public IContainer? Target { get; set; }
         public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
+
+        public int Progress => 100;
+        public AsyncEventHandler ProgressChanged { get; } = new();
+        public string DisplayLabel { get; } = "MoveCommand";
 
         public Task<CanCommandRun> CanRun(PointInTime startPoint)
         {

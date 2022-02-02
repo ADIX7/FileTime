@@ -3,7 +3,7 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Models
 {
-    public sealed class AbsolutePath
+    public sealed class AbsolutePath : IEquatable<AbsolutePath>
     {
         public IContentProvider ContentProvider { get; }
         public IContentProvider? VirtualContentProvider { get; }
@@ -67,12 +67,6 @@ namespace FileTime.Core.Models
             return new AbsolutePath(contentProvider, path, virtualContentProvider);
         }
 
-        public bool IsEqual(AbsolutePath path)
-        {
-            //TODO: sure??
-            return path.ContentProvider == ContentProvider && path.Path == Path;
-        }
-
         public async Task<IItem?> Resolve()
         {
             var result = VirtualContentProvider != null && (await VirtualContentProvider.IsExists(Path))
@@ -87,11 +81,36 @@ namespace FileTime.Core.Models
         public string GetParent()
         {
             var pathParts = Path.Split(Constants.SeparatorChar);
-            return string.Join(Constants.SeparatorChar, pathParts);
+            return string.Join(Constants.SeparatorChar, pathParts[..^1]);
         }
 
         public AbsolutePath GetParentAsAbsolutePath() => new(ContentProvider, GetParent(), VirtualContentProvider);
 
         public string GetName() => Path.Split(Constants.SeparatorChar).Last();
+
+        public override bool Equals(object? obj) => this.Equals(obj as AbsolutePath);
+
+        public bool Equals(AbsolutePath? other) =>
+            other is not null && other.ContentProvider == ContentProvider && other.Path == Path;
+
+        public override int GetHashCode() => (ContentProvider.Name, Path).GetHashCode();
+
+        public static bool operator ==(AbsolutePath? lhs, AbsolutePath? rhs)
+        {
+            if (lhs is null)
+            {
+                if (rhs is null)
+                {
+                    return true;
+                }
+
+                // Only the left side is null.
+                return false;
+            }
+            // Equals handles case of null on right side.
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(AbsolutePath? lhs, AbsolutePath? rhs) => !(lhs == rhs);
     }
 }

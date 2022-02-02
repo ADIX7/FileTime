@@ -7,7 +7,6 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
-    <Folder Include="ViewModels\" />
     <None Remove=".gitignore" />
   </ItemGroup>
   <ItemGroup>

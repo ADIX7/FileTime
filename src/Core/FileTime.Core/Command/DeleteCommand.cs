@@ -1,3 +1,4 @@
+using AsyncEvent;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -6,7 +7,12 @@ namespace FileTime.Core.Command
 {
     public class DeleteCommand : IExecutableCommand
     {
+        public int Progress => 100;
+
+        public AsyncEventHandler ProgressChanged { get; } = new();
+
         public IList<AbsolutePath> ItemsToDelete { get; } = new List<AbsolutePath>();
+        public string DisplayLabel { get; } = "DeleteCommand";
 
         public async Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {

@@ -1,19 +1,11 @@
 using FileTime.Core.Command;
 using FileTime.Core.Models;
-using FileTime.Core.StateManagement;
 using FileTime.Core.Timeline;
 
 namespace FileTime.Providers.Local.CommandHandlers
 {
     public class CopyCommandHandler : ICommandHandler
     {
-        private readonly ElementCreationStates _elementCreationStates;
-
-        public CopyCommandHandler(ElementCreationStates elementCreationStates)
-        {
-            _elementCreationStates = elementCreationStates;
-        }
-
         public bool CanHandle(object command)
         {
             if (command is not CopyCommand copyCommand) return false;
