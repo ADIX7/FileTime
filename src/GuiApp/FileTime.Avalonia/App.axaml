@@ -11,6 +11,7 @@
 		<ResourceDictionary>
 			<Color x:Key="AppBackgroundColor">#073642</Color>
 			<Color x:Key="ContainerBackgroundColor">#083e4c</Color>
+			<Color x:Key="TransparentContainerBackgroundColor">#D0083e4c</Color>
 
 			<Color x:Key="ItemBackgroundColor">#00000000</Color>
 			<Color x:Key="AlternativeItemBackgroundColor">#10000000</Color>
@@ -44,6 +45,9 @@
 			<SolidColorBrush
 				x:Key="ContainerBackgroundBrush"
 				Color="{DynamicResource ContainerBackgroundColor}" />
+			<SolidColorBrush
+				x:Key="TransparentContainerBackgroundBrush"
+				Color="{DynamicResource TransparentContainerBackgroundColor}" />
 
 			<SolidColorBrush
 				x:Key="ItemBackgroundBrush"

@@ -54,7 +54,7 @@ namespace FileTime.Avalonia.Command
 
             bool ctrlOrAlt = (key.Ctrl ?? false) || (key.Alt ?? false);
 
-            if (ctrlOrAlt && currentText.Last() != ' ') s += " ";
+            if (ctrlOrAlt && currentText.Length > 0 && currentText.Last() != ' ') s += " ";
 
             if (key.Ctrl ?? false) s += "CTRL+";
             if (key.Alt ?? false) s += "ALT+";
@@ -69,7 +69,7 @@ namespace FileTime.Avalonia.Command
         {
             var s = "";
 
-            if (currentText.Last() != ' ' && !wasCtrlOrAlt) s += " ";
+            if (currentText.Length > 0 && currentText.Last() != ' ' && !wasCtrlOrAlt) s += " ";
             s += key.Key.ToString();
             if (!wasCtrlOrAlt) s += " ";
 

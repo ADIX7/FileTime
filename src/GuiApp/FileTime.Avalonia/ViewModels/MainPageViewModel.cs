@@ -73,6 +73,12 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private ObservableCollection<string> _popupTexts = new ObservableCollection<string>();
 
+        [Property]
+        private bool _showAllShortcut;
+
+        [Property]
+        private List<CommandBinding> _allShortcut;
+
         public ObservableCollection<ParallelCommandsViewModel> TimelineCommands { get; } = new();
 
         async partial void OnInitialize()
@@ -94,6 +100,8 @@ namespace FileTime.Avalonia.ViewModels
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.PageDown) });
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.PageUp) });
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.F4, alt: true) });
+
+            AllShortcut = _commandBindings.Concat(_universalCommandBindings).ToList();
 
             var tab = new Tab();
             await tab.Init(LocalContentProvider);
@@ -428,6 +436,7 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     _clipboard.AddContent(selectedItem);
                 }
+                await AppState.SelectedTab.TabState.ClearCurrentMarkedItems();
             }
             else
             {
@@ -647,6 +656,12 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
+        private Task ShowAllShortcut2()
+        {
+            ShowAllShortcut = true;
+            return Task.CompletedTask;
+        }
+
         [Command]
         public async void ProcessInputs()
         {
@@ -707,6 +722,7 @@ namespace FileTime.Avalonia.ViewModels
 
                 if (key == Key.Escape)
                 {
+                    ShowAllShortcut = false;
                     _previousKeys.Clear();
                     PossibleCommands = new();
                 }
@@ -750,7 +766,14 @@ namespace FileTime.Avalonia.ViewModels
 
                 if (key == Key.Escape)
                 {
-                    await ExitRapidTravelMode();
+                    if (ShowAllShortcut)
+                    {
+                        ShowAllShortcut = false;
+                    }
+                    else
+                    {
+                        await ExitRapidTravelMode();
+                    }
                 }
                 else if (key == Key.Back)
                 {
@@ -889,6 +912,11 @@ namespace FileTime.Avalonia.ViewModels
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.C),new KeyWithModifiers(Key.C)},
                     CreateContainer),
                 new CommandBinding(
+                    "create container",
+                    FileTime.App.Core.Command.Commands.CreateContainer,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.F7)},
+                    CreateContainer),
+                new CommandBinding(
                     "create element",
                     FileTime.App.Core.Command.Commands.CreateElement,
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.C),new KeyWithModifiers(Key.E)},
@@ -1009,6 +1037,11 @@ namespace FileTime.Avalonia.ViewModels
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.C),new KeyWithModifiers(Key.W)},
                     Rename),
                 new CommandBinding(
+                    "rename",
+                    FileTime.App.Core.Command.Commands.Rename,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.F2)},
+                    Rename),
+                new CommandBinding(
                     "timeline pause",
                     FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.T),new KeyWithModifiers(Key.P)},
@@ -1029,15 +1062,25 @@ namespace FileTime.Avalonia.ViewModels
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.R)},
                     RefreshCurrentLocation),
                 new CommandBinding(
+                    "refresh",
+                    FileTime.App.Core.Command.Commands.Refresh,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.F5)},
+                    RefreshCurrentLocation),
+                new CommandBinding(
                     "go to",
                     FileTime.App.Core.Command.Commands.Dummy,
-                    new KeyWithModifiers[]{new KeyWithModifiers(Key.L, ctrl: true)},
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.L, ctrl: true) },
                     GoToContainer),
                 new CommandBinding(
                     "toggle advanced icons",
                     FileTime.App.Core.Command.Commands.Dummy,
-                    new KeyWithModifiers[]{new KeyWithModifiers(Key.Z),new KeyWithModifiers(Key.I)},
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.Z), new KeyWithModifiers(Key.I) },
                     ToggleAdvancedIcons),
+                new CommandBinding(
+                    "show all shortcut",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.F1) },
+                    ShowAllShortcut2),
             };
             var universalCommandBindings = new List<CommandBinding>()
             {

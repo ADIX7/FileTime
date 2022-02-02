@@ -59,6 +59,24 @@ namespace FileTime.App.Core.Tab
             }
         }
 
+        public async Task ClearMarkedItems(IContainer container)
+        {
+            if (_markedItems.ContainsKey(container))
+            {
+                var markedItems = _markedItems[container];
+                for (var i = 0; i < markedItems.Count; i++)
+                {
+                    await ItemUnmarked.InvokeAsync(this, markedItems[i]);
+                    markedItems.RemoveAt(i--);
+                }
+            }
+        }
+
+        public async Task ClearCurrentMarkedItems()
+        {
+            await ClearMarkedItems(await Tab.GetCurrentLocation());
+        }
+
         public bool ContainsMarkedItem(IContainer container, AbsolutePath path)
         {
             if (!_markedItems.ContainsKey(container)) return false;
