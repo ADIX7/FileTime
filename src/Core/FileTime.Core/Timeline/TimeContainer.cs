@@ -25,6 +25,7 @@ namespace FileTime.Core.Timeline
 
         public IContentProvider Provider { get; }
         public IContentProvider VirtualProvider { get; }
+        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
         public TimeContainer(string name, IContainer parent, IContentProvider contentProvider, IContentProvider virtualContentProvider, PointInTime pointInTime)
         {
@@ -117,5 +118,6 @@ namespace FileTime.Core.Timeline
             if (elementDiff.Type != DifferenceItemType.Container) throw new ArgumentException($"{elementDiff}'s {nameof(Difference.Type)} property is not {DifferenceItemType.Element}.");
             return new TimeElement(elementDiff.Name, this, Provider, elementDiff.AbsolutePath.VirtualContentProvider ?? elementDiff.AbsolutePath.ContentProvider);
         }
+        public Task<bool> CanOpen() => Task.FromResult(true);
     }
 }

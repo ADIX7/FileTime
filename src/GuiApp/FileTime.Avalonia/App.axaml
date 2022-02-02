@@ -120,6 +120,8 @@
 			<converters:ItemToImageConverter x:Key="ItemToImageConverter"/>
 			<converters:IsNullConverter x:Key="IsNullConverter"/>
 			<converters:IsNullConverter x:Key="IsNotNullConverter" Inverse="true"/>
+			<converters:IsEmptyConverter x:Key="IsEmptyConverter"/>
+			<converters:IsEmptyConverter x:Key="IsNotEmptyConverter" Inverse="true"/>
 
 		</ResourceDictionary>
 	</Application.Resources>
@@ -132,7 +134,7 @@
 			<Setter Property="FontSize" Value="16"/>
 		</Style>
 		<Style Selector="TextBlock.SmallText">
-			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontSize" Value="12"/>
 		</Style>
 		<Style Selector="ListBox.ContentListView">
 			<Setter Property="Background" Value="Transparent"/>
@@ -144,6 +146,14 @@
 			<Setter Property="ContextMenu">
 				<ContextMenu Items="{Binding Converter={StaticResource ContextMenuGenerator}}"/>
 			</Setter>
+		</Style>
+
+		<Style Selector="Grid.PlacesItem">
+			<Setter Property="Background" Value="#01000000"/>
+		</Style>
+
+		<Style Selector="Grid.PlacesItem:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AppBackgroundColor}"/>
 		</Style>
 	</Application.Styles>
 </Application>

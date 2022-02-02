@@ -4,6 +4,7 @@ namespace FileTime.Core.Models
 {
     public interface IContainer : IItem
     {
+        IReadOnlyList<Exception> Exceptions { get; }
         Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default);
         Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default);
         Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default);
@@ -16,6 +17,7 @@ namespace FileTime.Core.Models
         Task<bool> IsExists(string name);
 
         Task<IContainer> Clone();
+        Task<bool> CanOpen();
 
         bool IsLoaded { get; }
 

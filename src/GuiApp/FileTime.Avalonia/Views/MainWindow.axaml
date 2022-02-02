@@ -27,7 +27,6 @@
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
@@ -36,7 +35,6 @@
 
 					<TextBlock
 						Margin="0,0,0,10"
-						Classes="NormalText"
 						Text="Drives" />
 
 					<ItemsRepeater
@@ -53,25 +51,35 @@
 										VerticalAlignment="Center"
 										Source="{SvgImage /Assets/material/folder.svg}" />
 
-									<TextBlock
-										Grid.Column="1"
-										VerticalAlignment="Center"
-										HorizontalAlignment="Stretch"
-										Classes="NormalText"
-										Text="{Binding FullName}" />
+									<StackPanel
+											Grid.Column="1"
+											VerticalAlignment="Center"
+											HorizontalAlignment="Stretch"
+											Orientation="Horizontal">
+
+										<TextBlock
+											VerticalAlignment="Center"
+											Text="{Binding FullName}" />
+
+										<TextBlock
+											Margin="5,0,0,0"
+											VerticalAlignment="Center"
+											Classes="SmallText"
+											Text="{Binding Label}" IsVisible="{Binding Label,Converter={StaticResource IsNotEmptyConverter}}" />
+									</StackPanel>
 
 									<StackPanel HorizontalAlignment="Right"
 										Grid.Column="2"
 										Orientation="Horizontal"
 										VerticalAlignment="Center">
 
-										<TextBlock Classes="SmallText" Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
+										<TextBlock Classes="SmallText" VerticalAlignment="Center" Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
 										</TextBlock>
 
-										<TextBlock Classes="SmallText" Text=" / ">
+										<TextBlock Classes="SmallText" VerticalAlignment="Center" Text=" / ">
 										</TextBlock>
 
-										<TextBlock Classes="SmallText" Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
+										<TextBlock Classes="SmallText" VerticalAlignment="Center" Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
 										</TextBlock>
 									</StackPanel>
 
@@ -79,8 +87,40 @@
 										Grid.Column="1"
 										Grid.ColumnSpan="2"
 										Grid.Row="2"
-										Maximum="{Binding Size}"
-										Value="{Binding Used}" />
+										Maximum="100"
+										Value="{Binding UsedPercentage}" />
+								</Grid>
+							</DataTemplate>
+						</ItemsRepeater.ItemTemplate>
+					</ItemsRepeater>
+				</Grid>
+			</Border>
+
+			<Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+				<Grid RowDefinitions="Auto,Auto">
+
+					<TextBlock
+						Margin="10,0,10,10"
+						Text="Places" />
+
+					<ItemsRepeater
+						Grid.Row="1"
+						Items="{Binding Places}">
+						<ItemsRepeater.ItemTemplate>
+							<DataTemplate>
+								<Grid Classes="PlacesItem" PointerPressed="OnPlacePointerPressed" Cursor="Hand">
+									<StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
+										<Image
+											Width="20"
+											Height="20"
+											VerticalAlignment="Center"
+											Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" />
+
+										<TextBlock
+											Margin="5,0,0,0"
+											VerticalAlignment="Center"
+											Text="{Binding Name}" />
+									</StackPanel>
 								</Grid>
 							</DataTemplate>
 						</ItemsRepeater.ItemTemplate>
@@ -234,15 +274,27 @@
 							</ListBox.ItemTemplate>
 						</ListBox>
 
-						<TextBlock
-                            x:Name="ChildEmpty"
-                            Margin="10"
-                            HorizontalAlignment="Center"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource ErrorBrush}"
-                            IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
-							Empty
-						</TextBlock>
+						<Grid
+							IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+
+							<TextBlock
+								x:Name="ChildEmpty"
+								Margin="10"
+								HorizontalAlignment="Center"
+								FontWeight="Bold"
+								Foreground="{DynamicResource ErrorBrush}"
+								IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+								Empty
+							</TextBlock>
+
+							<ItemsRepeater Items="{Binding AppState.SelectedTab.ChildContainer.Exceptions}">
+								<ItemsRepeater.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding}"/>
+									</DataTemplate>
+								</ItemsRepeater.ItemTemplate>
+							</ItemsRepeater>
+						</Grid>
 					</Grid>
 				</Grid>
 
@@ -314,6 +366,28 @@
                             Content="No" />
 					</StackPanel>
 				</Grid>
+
+				<ItemsRepeater Items="{Binding PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="{Binding PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+					<ItemsRepeater.Styles>
+						<Style Selector="TextBlock">
+							<Style.Animations>
+								<Animation Duration="0:0:1">
+									<KeyFrame Cue="0%">
+										<Setter Property="Opacity" Value="0.0"/>
+									</KeyFrame>
+									<KeyFrame Cue="100%">
+										<Setter Property="Opacity" Value="1.0"/>
+									</KeyFrame>
+								</Animation>
+							</Style.Animations>
+						</Style>
+					</ItemsRepeater.Styles>
+					<ItemsRepeater.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding}" HorizontalAlignment="Center"/>
+						</DataTemplate>
+					</ItemsRepeater.ItemTemplate>
+				</ItemsRepeater>
 			</Grid>
 
 			<Grid Grid.Row="3">

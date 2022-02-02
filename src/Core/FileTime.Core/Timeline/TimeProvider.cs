@@ -6,6 +6,8 @@ namespace FileTime.Core.Timeline
 {
     public class TimeProvider : IContentProvider
     {
+        private readonly PointInTime _pointInTime;
+
         public bool IsLoaded => true;
 
         public AsyncEventHandler Refreshed { get; } = new();
@@ -22,7 +24,7 @@ namespace FileTime.Core.Timeline
 
         public IContentProvider Provider => this;
 
-        private readonly PointInTime _pointInTime;
+        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
         public TimeProvider(PointInTime pointInTime)
         {
@@ -85,5 +87,6 @@ namespace FileTime.Core.Timeline
         public Task Rename(string newName) => throw new NotSupportedException();
 
         public void SetParent(IContainer container) { }
+        public Task<bool> CanOpen() => Task.FromResult(true);
     }
 }

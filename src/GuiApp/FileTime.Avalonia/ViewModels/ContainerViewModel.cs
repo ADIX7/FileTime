@@ -20,7 +20,7 @@ namespace FileTime.Avalonia.ViewModels
         private bool _disposed;
         private bool _isRefreshing;
         private bool _isInitialized;
-        private INewItemProcessor _newItemProcessor;
+        private readonly INewItemProcessor _newItemProcessor;
 
         [Property]
         private IContainer _container;
@@ -37,16 +37,18 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private ContainerViewModel? _parent;
 
+        [Property]
+        private List<Exception> _exceptions;
+
         public IItem Item => _container;
 
-        private readonly ObservableCollection<ContainerViewModel> _containers = new ObservableCollection<ContainerViewModel>();
+        private ObservableCollection<ContainerViewModel> _containers = new();
 
-        private readonly ObservableCollection<ElementViewModel> _elements = new ObservableCollection<ElementViewModel>();
+        private ObservableCollection<ElementViewModel> _elements = new();
 
-        private readonly ObservableCollection<IItemViewModel> _items = new ObservableCollection<IItemViewModel>();
+        private ObservableCollection<IItemViewModel> _items = new();
 
         public List<IItemViewModel> ChildrenToAdopt { get; } = new List<IItemViewModel>();
-
 
         [PropertyInvalidate(nameof(IsSelected))]
         [PropertyInvalidate(nameof(IsAlternative))]
@@ -64,7 +66,7 @@ namespace FileTime.Avalonia.ViewModels
 
         public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
 
-        [Obsolete]
+        [Obsolete($"This property is for databinding only, use {nameof(GetContainers)} method instead.")]
         public ObservableCollection<ContainerViewModel> Containers
         {
             get
@@ -72,9 +74,17 @@ namespace FileTime.Avalonia.ViewModels
                 if (!_isInitialized) Task.Run(Refresh);
                 return _containers;
             }
+            set
+            {
+                if (value != _containers)
+                {
+                    _containers = value;
+                    OnPropertyChanged(nameof(Containers));
+                }
+            }
         }
 
-        [Obsolete]
+        [Obsolete($"This property is for databinding only, use {nameof(GetElements)} method instead.")]
         public ObservableCollection<ElementViewModel> Elements
         {
             get
@@ -82,15 +92,30 @@ namespace FileTime.Avalonia.ViewModels
                 if (!_isInitialized) Task.Run(Refresh);
                 return _elements;
             }
+            set
+            {
+                if (value != _elements)
+                {
+                    _elements = value;
+                    OnPropertyChanged(nameof(Elements));
+                }
+            }
         }
-
-        [Obsolete]
+        [Obsolete($"This property is for databinding only, use {nameof(GetItems)} method instead.")]
         public ObservableCollection<IItemViewModel> Items
         {
             get
             {
                 if (!_isInitialized) Task.Run(Refresh);
                 return _items;
+            }
+            set
+            {
+                if (value != _items)
+                {
+                    _items = value;
+                    OnPropertyChanged(nameof(Items));
+                }
             }
         }
 
@@ -125,44 +150,41 @@ namespace FileTime.Avalonia.ViewModels
 
             _isInitialized = true;
 
+            Exceptions = new List<Exception>();
             try
             {
                 _isRefreshing = true;
 
                 var containers = (await _container.GetContainers())!.Select(c => AdoptOrReuseOrCreateItem(c, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
                 var elements = (await _container.GetElements())!.Select(e => AdoptOrReuseOrCreateItem(e, (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
+                Exceptions = new List<Exception>(_container.Exceptions);
 
-                var containersToRemove = _containers.Except(containers);
-
-                _containers.Clear();
-                _elements.Clear();
-                _items.Clear();
-
-                foreach (var containerToRemove in containersToRemove)
+                foreach (var containerToRemove in _containers.Except(containers))
                 {
                     containerToRemove?.Dispose();
                 }
 
-                foreach (var container in containers)
+                if (initializeChildren)
                 {
-                    if (initializeChildren) await container.Init(false);
-
-                    _containers.Add(container);
-                    _items.Add(container);
-                }
-
-                foreach (var element in elements)
-                {
-                    _elements.Add(element);
-                    _items.Add(element);
+                    foreach (var container in containers)
+                    {
+                        await container.Init(false);
+                    }
                 }
 
                 for (var i = 0; i < _items.Count; i++)
                 {
                     _items[i].IsAlternative = i % 2 == 1;
                 }
+
+                Containers = new ObservableCollection<ContainerViewModel>(containers);
+                Elements = new ObservableCollection<ElementViewModel>(elements);
+                Items = new ObservableCollection<IItemViewModel>(containers.Cast<IItemViewModel>().Concat(elements));
             }
-            catch { }
+            catch (Exception e)
+            {
+                _exceptions.Add(e);
+            }
 
             await _newItemProcessor.UpdateMarkedItems(this);
 
@@ -193,9 +215,9 @@ namespace FileTime.Avalonia.ViewModels
                 }
             }
 
-            _containers.Clear();
-            _elements.Clear();
-            _items.Clear();
+            _containers = new ObservableCollection<ContainerViewModel>();
+            _elements = new ObservableCollection<ElementViewModel>();
+            _items = new ObservableCollection<IItemViewModel>();
         }
 
         public async Task<ObservableCollection<ContainerViewModel>> GetContainers()

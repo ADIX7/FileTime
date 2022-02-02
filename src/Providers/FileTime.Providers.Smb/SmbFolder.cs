@@ -27,6 +27,7 @@ namespace FileTime.Providers.Smb
         public bool CanRename => true;
 
         public AsyncEventHandler Refreshed { get; } = new();
+        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
         public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent)
         {
@@ -119,5 +120,6 @@ namespace FileTime.Providers.Smb
             if (_elements == null) await Refresh();
             return _elements;
         }
+        public Task<bool> CanOpen() => Task.FromResult(true);
     }
 }

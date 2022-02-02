@@ -10,6 +10,7 @@ namespace FileTime.Providers.Local
         private IReadOnlyList<IItem>? _items;
         private IReadOnlyList<IContainer>? _containers;
         private IReadOnlyList<IElement>? _elements;
+        private List<Exception> _exceptions;
         private readonly IContainer? _parent;
 
         public bool IsHidden => (Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
@@ -30,11 +31,15 @@ namespace FileTime.Providers.Local
         public string Attributes => GetAttributes();
 
         public DateTime CreatedAt => Directory.CreationTime;
+        public IReadOnlyList<Exception> Exceptions { get; }
 
         public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer? parent)
         {
             Directory = directory;
             _parent = parent;
+
+            _exceptions = new List<Exception>();
+            Exceptions = _exceptions.AsReadOnly();
 
             Name = directory.Name.TrimEnd(Path.DirectorySeparatorChar);
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
@@ -49,13 +54,17 @@ namespace FileTime.Providers.Local
         {
             _containers = new List<IContainer>();
             _elements = new List<IElement>();
+            _exceptions.Clear();
 
             try
             {
                 _containers = Directory.GetDirectories().Select(d => new LocalFolder(d, Provider, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
                 _elements = Directory.GetFiles().Select(f => new LocalFile(f, this, Provider)).OrderBy(f => f.Name).ToList().AsReadOnly();
             }
-            catch { }
+            catch (Exception e)
+            {
+                _exceptions.Add(e);
+            }
 
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
             Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty);
@@ -144,5 +153,6 @@ namespace FileTime.Providers.Local
                     + ((Directory.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
             }
         }
+        public Task<bool> CanOpen() => Task.FromResult(true);
     }
 }

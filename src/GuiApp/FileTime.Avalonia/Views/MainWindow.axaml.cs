@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using FileTime.Avalonia.Misc;
+using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
 using System.Linq;
 
@@ -86,11 +87,24 @@ namespace FileTime.Avalonia.Views
             }
         }
 
-        private void InputText_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args)
+        private void InputText_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             if (sender is TextBox inputText && inputText.DataContext is InputElementWrapper inputElementWrapper && inputElementWrapper == ViewModel!.Inputs.First())
             {
                 inputText.Focus();
+            }
+        }
+
+        private void OnPlacePointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            if(!e.Handled
+                && ViewModel != null
+                && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed 
+                && sender is StyledElement control 
+                && control.DataContext is PlaceInfo placeInfo)
+            {
+                ViewModel.OpenContainer(placeInfo.Container).Wait();
+                e.Handled = true;
             }
         }
     }

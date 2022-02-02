@@ -1,9 +1,11 @@
+using FileTime.Avalonia.Models;
 using FileTime.Core.Models;
 
 namespace FileTime.Avalonia.IconProviders
 {
     public interface IIconProvider
     {
-        string GetImage(IItem item);
+        ImagePath GetImage(IItem item);
+        bool EnableAdvancedIcons { get; set; }
     }
 }

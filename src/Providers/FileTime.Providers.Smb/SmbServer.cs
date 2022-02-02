@@ -32,8 +32,9 @@ namespace FileTime.Providers.Smb
         public SmbContentProvider Provider { get; }
 
         IContentProvider IItem.Provider => Provider;
-        public bool CanDelete => false;
+        public bool CanDelete => true;
         public bool CanRename => false;
+        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
         public AsyncEventHandler Refreshed { get; } = new();
 
@@ -186,5 +187,6 @@ namespace FileTime.Providers.Smb
         }
 
         public Task Rename(string newName) => throw new NotSupportedException();
+        public Task<bool> CanOpen() => Task.FromResult(true);
     }
 }

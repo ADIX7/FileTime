@@ -1,12 +1,11 @@
 using FileTime.Core.Command;
 using FileTime.Core.Models;
-using FileTime.Core.Providers;
 
 namespace FileTime.App.Core.Clipboard
 {
     public class Clipboard : IClipboard
     {
-        private readonly List<AbsolutePath> _content;
+        private List<AbsolutePath> _content;
         public IReadOnlyList<AbsolutePath> Content { get; }
         public Type? CommandType { get; private set; }
 
@@ -39,7 +38,7 @@ namespace FileTime.App.Core.Clipboard
 
         public void Clear()
         {
-            _content.Clear();
+            _content = new List<AbsolutePath>();
             CommandType = null;
         }
 

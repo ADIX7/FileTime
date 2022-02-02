@@ -29,6 +29,7 @@ namespace FileTime.Core.Models
         public bool CanRename => BaseContainer.CanRename;
 
         public IContentProvider Provider => BaseContainer.Provider;
+        public IReadOnlyList<Exception> Exceptions => BaseContainer.Exceptions;
 
         public AsyncEventHandler Refreshed { get; }
 
@@ -164,5 +165,6 @@ namespace FileTime.Core.Models
         }
 
         public async Task Rename(string newName) => await BaseContainer.Rename(newName);
+        public async Task<bool> CanOpen() => await BaseContainer.CanOpen();
     }
 }

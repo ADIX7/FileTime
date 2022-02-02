@@ -23,6 +23,9 @@ using Microsoft.Extensions.DependencyInjection;
 using FileTime.Core.Command;
 using FileTime.Core.Timeline;
 using FileTime.Core.Providers;
+using Syroot.Windows.IO;
+using FileTime.Avalonia.IconProviders;
+using Avalonia.Threading;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -42,6 +45,8 @@ namespace FileTime.Avalonia.ViewModels
         private IClipboard _clipboard;
         private TimeRunner _timeRunner;
         private IEnumerable<IContentProvider> _contentProviders;
+        private IIconProvider _iconProvider;
+
         private Func<Task>? _inputHandler;
 
         [Property]
@@ -60,7 +65,13 @@ namespace FileTime.Avalonia.ViewModels
         private List<RootDriveInfo> _rootDriveInfos;
 
         [Property]
+        private List<PlaceInfo> _places;
+
+        [Property]
         private string _messageBoxText;
+
+        [Property]
+        private ObservableCollection<string> _popupTexts = new ObservableCollection<string>();
 
         public IReadOnlyList<ReadOnlyParallelCommands> TimelineCommands => _timeRunner.ParallelCommands;
 
@@ -69,8 +80,9 @@ namespace FileTime.Avalonia.ViewModels
             _clipboard = App.ServiceProvider.GetService<IClipboard>()!;
             _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
             _contentProviders = App.ServiceProvider.GetService<IEnumerable<IContentProvider>>()!;
+            _iconProvider = App.ServiceProvider.GetService<IIconProvider>()!;
             var inputInterface = (BasicInputHandler)App.ServiceProvider.GetService<IInputInterface>()!;
-            inputInterface.InputHandler = ReadInputs2;
+            inputInterface.InputHandler = ReadInputs;
             App.ServiceProvider.GetService<TopContainer>();
 
             _timeRunner.CommandsChanged += (o, e) => OnPropertyChanged(nameof(TimelineCommands));
@@ -103,8 +115,68 @@ namespace FileTime.Avalonia.ViewModels
                     driveInfos.Add(driveInfo);
                 }
             }
-
             RootDriveInfos = driveInfos.OrderBy(d => d.Name).ToList();
+
+            var places = new List<PlaceInfo>();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var placesFolders = new List<KnownFolder>()
+                {
+                    KnownFolders.Profile,
+                    KnownFolders.Desktop,
+                    KnownFolders.DocumentsLocalized,
+                    KnownFolders.DownloadsLocalized,
+                    KnownFolders.Music,
+                    KnownFolders.Pictures,
+                    KnownFolders.Videos,
+                };
+
+                foreach (var placesFolder in placesFolders)
+                {
+                    var possibleContainer = await LocalContentProvider.GetByPath(placesFolder.Path);
+                    if (possibleContainer is IContainer container)
+                    {
+                        var name = container.Name;
+                        if (await container.GetByPath("desktop.ini") is LocalFile element)
+                        {
+                            var lines = File.ReadAllLines(element.File.FullName);
+                            if (Array.Find(lines, l => l.StartsWith("localizedresourcename", StringComparison.OrdinalIgnoreCase)) is string nameLine)
+                            {
+                                var nameLineValue = string.Join('=', nameLine.Split('=')[1..]);
+                                var environemntVariables = Environment.GetEnvironmentVariables();
+                                foreach (var keyo in environemntVariables.Keys)
+                                {
+                                    if (keyo is string key && environemntVariables[key] is string value)
+                                    {
+                                        nameLineValue = nameLineValue.Replace($"%{key}%", value);
+                                    }
+                                }
+
+                                if (nameLineValue.StartsWith("@"))
+                                {
+                                    var parts = nameLineValue[1..].Split(',');
+                                    if (parts.Length >= 2 && long.TryParse(parts[^1], out var parsedResourceId))
+                                    {
+                                        if (parsedResourceId < 0) parsedResourceId *= -1;
+
+                                        name = NativeMethodHelpers.GetStringResource(string.Join(',', parts[..^1]), (uint)parsedResourceId);
+                                    }
+                                }
+                                else
+                                {
+                                    name = nameLineValue;
+                                }
+                            }
+                        }
+                        places.Add(new PlaceInfo(name, container));
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("TODO linux places");
+            }
+            Places = places;
         }
 
         private async Task<IContainer?> GetContainerForWindowsDrive(DriveInfo drive)
@@ -121,6 +193,12 @@ namespace FileTime.Avalonia.ViewModels
         {
             AppState.RapidTravelText = "";
             await AppState.SelectedTab.Open();
+        }
+
+        public async Task OpenContainer(IContainer container)
+        {
+            AppState.RapidTravelText = "";
+            await AppState.SelectedTab.OpenContainer(container);
         }
 
         public async Task OpenOrRun()
@@ -530,6 +608,20 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
+        private Task ToggleAdvancedIcons()
+        {
+            _iconProvider.EnableAdvancedIcons = !_iconProvider.EnableAdvancedIcons;
+            var text = "Advanced icons are: " + (_iconProvider.EnableAdvancedIcons ? "ON" : "OFF");
+            _popupTexts.Add(text);
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                await Dispatcher.UIThread.InvokeAsync(() => _popupTexts.Remove(text));
+            });
+            return Task.CompletedTask;
+        }
+
         [Command]
         public async void ProcessInputs()
         {
@@ -714,7 +806,7 @@ namespace FileTime.Avalonia.ViewModels
             _inputHandler = inputHandler;
         }
 
-        public async Task<string?[]> ReadInputs2(IEnumerable<Core.Interactions.InputElement> fields)
+        public async Task<string?[]> ReadInputs(IEnumerable<Core.Interactions.InputElement> fields)
         {
             var waiting = true;
             var result = new string[0];
@@ -912,9 +1004,14 @@ namespace FileTime.Avalonia.ViewModels
                     RefreshCurrentLocation),
                 new CommandBinding(
                     "go to",
-                    FileTime.App.Core.Command.Commands.Refresh,
+                    FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.L, ctrl: true)},
                     GoToContainer),
+                new CommandBinding(
+                    "toggle advanced icons",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.Z),new KeyWithModifiers(Key.I)},
+                    ToggleAdvancedIcons),
             };
             var universalCommandBindings = new List<CommandBinding>()
             {

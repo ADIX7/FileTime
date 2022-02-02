@@ -29,6 +29,7 @@ namespace FileTime.Providers.Local
         public bool IsCaseInsensitive { get; }
         public bool CanDelete => false;
         public bool CanRename => false;
+        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
         public LocalContentProvider(ILogger<LocalContentProvider> logger)
         {
@@ -93,5 +94,6 @@ namespace FileTime.Providers.Local
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
 
         public Task Rename(string newName) => throw new NotSupportedException();
+        public Task<bool> CanOpen() => Task.FromResult(true);
     }
 }

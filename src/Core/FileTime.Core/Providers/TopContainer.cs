@@ -29,6 +29,8 @@ namespace FileTime.Core.Providers
 
         public AsyncEventHandler Refreshed { get; } = new();
 
+        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
+
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {
             _contentProviders = new List<IContentProvider>(contentProviders);
@@ -62,5 +64,7 @@ namespace FileTime.Core.Providers
         public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
 
         public Task Rename(string newName) => throw new NotSupportedException();
+
+        public Task<bool> CanOpen() => Task.FromResult(true);
     }
 }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using System.IO;
+using FileTime.Avalonia.Misc;
 
 #pragma warning disable CA1416
 namespace FileTime.Avalonia.Services
@@ -50,7 +51,7 @@ namespace FileTime.Avalonia.Services
                     {
                         if (parsedResourceId < 0) parsedResourceId *= -1;
 
-                        text = GetStringResource(parts[0], (uint)parsedResourceId);
+                        text = NativeMethodHelpers.GetStringResource(string.Join(',', parts[..^1]), (uint)parsedResourceId);
                     }
                 }
                 else
@@ -230,37 +231,6 @@ namespace FileTime.Avalonia.Services
             }
 
             return (resultX, resultY);
-        }
-
-        static string GetStringResource(string fileName, uint resourceId)
-        {
-            IntPtr? handle = null;
-            try
-            {
-                handle = NativeMethods.LoadLibrary(fileName);
-                StringBuilder buffer = new(8192);     //Buffer for output from LoadString()
-                int length = NativeMethods.LoadString(handle.Value, resourceId, buffer, buffer.Capacity);
-                return buffer.ToString(0, length);      //Return the part of the buffer that was used.
-            }
-            finally
-            {
-                if (handle is IntPtr validHandle)
-                {
-                    NativeMethods.FreeLibrary(validHandle);
-                }
-            }
-        }
-
-        static class NativeMethods
-        {
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
-            internal static extern IntPtr LoadLibrary(string lpLibFileName);
-
-            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
-            internal static extern int LoadString(IntPtr hInstance, uint wID, StringBuilder lpBuffer, int nBufferMax);
-
-            [DllImport("kernel32.dll")]
-            public static extern int FreeLibrary(IntPtr hLibModule);
         }
     }
 }

@@ -40,7 +40,7 @@
 		</ItemsControl>
 
 		<Grid Grid.Column="2" IsVisible="{Binding ShowAttributes,ElementName=ItemRoot}">
-			<Grid ColumnDefinitions="180,40">
+			<Grid ColumnDefinitions="180,45">
 				<TextBlock Text="{Binding Item.CreatedAt}"/>
 				<TextBlock Grid.Column="1" Text="{Binding Item.Attributes}"/>
 			</Grid>

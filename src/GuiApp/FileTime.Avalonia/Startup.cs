@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using FileTime.Avalonia.Application;
+using FileTime.Avalonia.IconProviders;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
@@ -21,7 +22,8 @@ namespace FileTime.Avalonia
         {
             serviceCollection = serviceCollection
                 .AddLogging()
-                .AddSingleton<ItemNameConverterService>();
+                .AddSingleton<ItemNameConverterService>()
+                .AddSingleton<IIconProvider, MaterialIconProvider>();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

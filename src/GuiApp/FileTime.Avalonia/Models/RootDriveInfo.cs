@@ -20,6 +20,9 @@ namespace FileTime.Avalonia.Models
         private string _fullName;
 
         [Property]
+        private string _label;
+
+        [Property]
         private long _size;
 
         [Property]
@@ -37,11 +40,17 @@ namespace FileTime.Avalonia.Models
             _driveInfo = driveInfo;
             _container = container;
 
-            Name = container.Name;
-            FullName = container.FullName;
-            Size = driveInfo.TotalSize;
-            Free = driveInfo.AvailableFreeSpace;
-            Used = driveInfo.TotalSize - driveInfo.AvailableFreeSpace;
+            Refresh();
+        }
+
+        private void Refresh()
+        {
+            Name = _container.Name;
+            FullName = _container.FullName;
+            Label = _driveInfo.VolumeLabel;
+            Size = _driveInfo.TotalSize;
+            Free = _driveInfo.AvailableFreeSpace;
+            Used = _driveInfo.TotalSize - _driveInfo.AvailableFreeSpace;
         }
     }
 }
