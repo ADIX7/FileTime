@@ -260,7 +260,7 @@
                         VerticalAlignment="Stretch"
                         Fill="{DynamicResource ContentSeparatorBrush}" />
 
-					<Grid Grid.Column="4">
+					<Grid Grid.Column="4" IsVisible="{Binding AppState.SelectedTab.ChildContainer,Converter={StaticResource IsNotNullConverter}}">
 						<ListBox
 							Classes="ContentListView"
 							IsEnabled="False"
@@ -283,17 +283,29 @@
 								HorizontalAlignment="Center"
 								FontWeight="Bold"
 								Foreground="{DynamicResource ErrorBrush}"
-								IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+								IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 								Empty
 							</TextBlock>
 
-							<ItemsRepeater Items="{Binding AppState.SelectedTab.ChildContainer.Exceptions}">
-								<ItemsRepeater.ItemTemplate>
-									<DataTemplate>
-										<TextBlock Text="{Binding}"/>
-									</DataTemplate>
-								</ItemsRepeater.ItemTemplate>
-							</ItemsRepeater>
+							<Grid
+								RowDefinitions="Auto, Auto"
+								IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+								
+								<TextBlock
+									Margin="0,0,0,10"
+									HorizontalAlignment="Center"
+									TextWrapping="Wrap"
+									Text="There were some errors while opening container."
+									Foreground="{DynamicResource ErrorBrush}" />
+								
+								<ItemsRepeater Grid.Row="1" Items="{Binding AppState.SelectedTab.ChildContainer.Exceptions}">
+									<ItemsRepeater.ItemTemplate>
+										<DataTemplate>
+											<TextBlock Text="{Binding, Converter={StaticResource ExceptionToStringConverter}}"/>
+										</DataTemplate>
+									</ItemsRepeater.ItemTemplate>
+								</ItemsRepeater>
+							</Grid>
 						</Grid>
 					</Grid>
 				</Grid>

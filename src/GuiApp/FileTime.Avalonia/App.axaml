@@ -122,6 +122,7 @@
 			<converters:IsNullConverter x:Key="IsNotNullConverter" Inverse="true"/>
 			<converters:IsEmptyConverter x:Key="IsEmptyConverter"/>
 			<converters:IsEmptyConverter x:Key="IsNotEmptyConverter" Inverse="true"/>
+			<converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter"/>
 
 		</ResourceDictionary>
 	</Application.Resources>

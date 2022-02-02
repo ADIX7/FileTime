@@ -50,7 +50,7 @@ namespace FileTime.Avalonia.Application
                     _selectedItem = value;
 
                     OnPropertyChanged("SelectedItem");
-                    SelectedItemChanged();
+                    SelectedItemChanged().Wait();
                 }
             }
         }
@@ -152,7 +152,7 @@ namespace FileTime.Avalonia.Application
                 }
 
                 var items = await _currentLocation.GetItems();
-                if (items != null && items.Count > 0)
+                if (items?.Count > 0)
                 {
                     foreach (var item in items)
                     {
@@ -206,11 +206,20 @@ namespace FileTime.Avalonia.Application
             }
         }
 
-        private async void SelectedItemChanged()
+        private async Task SelectedItemChanged()
         {
             try
             {
                 await Tab.SetCurrentSelectedItem(SelectedItem?.Item);
+            }
+            catch { }
+        }
+
+        public async Task SetCurrentSelectedItem(IItem newItem)
+        {
+            try
+            {
+                await Tab.SetCurrentSelectedItem(newItem);
             }
             catch { }
         }

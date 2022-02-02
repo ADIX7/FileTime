@@ -31,18 +31,25 @@ namespace FileTime.Avalonia.Converters
             };
 
             SvgSource? source;
-            var path = _iconProvider.GetImage(item)!;
-            if (path.Type == Models.ImagePathType.Absolute)
+            try
             {
-                source = SvgSource.Load<SvgSource>(path.Path!, null);
+                var path = _iconProvider.GetImage(item)!;
+                if (path.Type == Models.ImagePathType.Absolute)
+                {
+                    source = SvgSource.Load<SvgSource>(path.Path!, null);
+                }
+                else if (path.Type == Models.ImagePathType.Raw)
+                {
+                    return path.Image;
+                }
+                else
+                {
+                    source = SvgSource.Load<SvgSource>("avares://FileTime.Avalonia" + path.Path, null);
+                }
             }
-            else if(path.Type == Models.ImagePathType.Raw)
+            catch
             {
-                return path.Image;
-            }
-            else
-            {
-                source = SvgSource.Load<SvgSource>("avares://FileTime.Avalonia" + path.Path, null);
+                source = SvgSource.Load<SvgSource>("avares://FileTime.Avalonia/Assets/material/file.svg", null);
             }
             return new SvgImage { Source = source };
         }

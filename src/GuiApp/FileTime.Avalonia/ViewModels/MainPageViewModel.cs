@@ -780,7 +780,12 @@ namespace FileTime.Avalonia.ViewModels
                     await AppState.SelectedTab.OpenContainer(newLocation);
 
                     var selectedItemName = AppState.SelectedTab.SelectedItem?.Item.Name;
-                    if (!(await AppState.SelectedTab.CurrentLocation.GetItems()).Select(i => i.Item.Name).Any(n => n == selectedItemName))
+                    var currentLocationItems = await AppState.SelectedTab.CurrentLocation.GetItems();
+                    if(currentLocationItems.FirstOrDefault(i => i.Item.Name.ToLower() == AppState.RapidTravelText.ToLower()) is IItemViewModel matchItem)
+                    {
+                        await AppState.SelectedTab.SetCurrentSelectedItem(matchItem.Item);
+                    }
+                    else if (!currentLocationItems.Select(i => i.Item.Name).Any(n => n == selectedItemName))
                     {
                         await AppState.SelectedTab.MoveCursorToFirst();
                     }

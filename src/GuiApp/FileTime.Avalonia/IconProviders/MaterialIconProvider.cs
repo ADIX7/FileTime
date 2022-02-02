@@ -1,30 +1,50 @@
-using Avalonia.Media.Imaging;
-using FileTime.Avalonia.Misc;
 using FileTime.Avalonia.Models;
 using FileTime.Core.Models;
 using FileTime.Providers.Local;
-using System;
-using System.IO;
+using Syroot.Windows.IO;
+using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace FileTime.Avalonia.IconProviders
 {
     public class MaterialIconProvider : IIconProvider
     {
+        private readonly List<SpecialPathWithIcon> _specialPaths = new();
         public bool EnableAdvancedIcons { get; set; } = true;
+
+        public MaterialIconProvider()
+        {
+            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Desktop.Path, GetAssetPath("desktop.svg")));
+            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Documents.Path, GetAssetPath("folder-resource.svg")));
+            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.DownloadsLocalized.Path, GetAssetPath("folder-download.svg")));
+            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.MusicLocalized.Path, GetAssetPath("folder-music.svg")));
+            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Pictures.Path, GetAssetPath("folder-images.svg")));
+            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Profile.Path, GetAssetPath("folder-home.svg")));
+            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Videos.Path, GetAssetPath("folder-video.svg")));
+        }
 
         public ImagePath GetImage(IItem item)
         {
             var icon = item is IContainer ? "folder.svg" : "file.svg";
+            string? localPath = item switch
+            {
+                LocalFolder folder => folder.Directory.FullName,
+                LocalFile file => file.File.FullName,
+                _ => null
+            };
 
             if (EnableAdvancedIcons)
             {
+                if (localPath != null && _specialPaths.Find(p => p.Path == localPath) is SpecialPathWithIcon specialPath)
+                {
+                    return specialPath.IconPath;
+                }
+
                 if (item is IElement element)
                 {
-                    if (element is LocalFile localFile && (element.FullName?.EndsWith(".svg") ?? false))
+                    if (element is LocalFile && (localPath?.EndsWith(".svg") ?? false))
                     {
-                        return new ImagePath(ImagePathType.Absolute, localFile.File.FullName);
+                        return new ImagePath(ImagePathType.Absolute, localPath);
                     }
                     icon = !element.Name.Contains('.')
                         ? icon
@@ -34,42 +54,13 @@ namespace FileTime.Avalonia.IconProviders
                             _ => icon
                         };
                 }
-                /*else if (item is LocalFolder folder && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    var file = new FileInfo(Path.Combine(folder.FullName, "desktop.ini"));
-                    if (file.Exists)
-                    {
-                        var lines = File.ReadAllLines(file.FullName);
-                        if (Array.Find(lines, l => l.StartsWith("iconresource", StringComparison.OrdinalIgnoreCase)) is string iconLine)
-                        {
-                            var nameLineValue = string.Join('=', iconLine.Split('=')[1..]);
-                            var environemntVariables = Environment.GetEnvironmentVariables();
-                            foreach (var keyo in environemntVariables.Keys)
-                            {
-                                if (keyo is string key && environemntVariables[key] is string value)
-                                {
-                                    nameLineValue = nameLineValue.Replace($"%{key}%", value);
-                                }
-                            }
-
-                            var parts = nameLineValue.Split(',');
-                            if (parts.Length >= 2 && long.TryParse(parts[^1], out var parsedResourceId))
-                            {
-                                if (parsedResourceId < 0) parsedResourceId *= -1;
-
-                                var extractedIcon = NativeMethodHelpers.GetIconResource(string.Join(',', parts[..^1]), (uint)parsedResourceId);
-
-                                var extractedIconAsStream = new MemoryStream();
-                                extractedIcon.Save(extractedIconAsStream);                                
-                                extractedIconAsStream.Position = 0;
-
-                                return new ImagePath(ImagePathType.Raw, new Bitmap(extractedIconAsStream));
-                            }
-                        }
-                    }
-                }*/
             }
-            return new ImagePath(ImagePathType.Asset, "/Assets/material/" + icon);
+            return GetAssetPath(icon);
+        }
+
+        private static ImagePath GetAssetPath(string iconName)
+        {
+            return new ImagePath(ImagePathType.Asset, "/Assets/material/" + iconName);
         }
     }
 }
