@@ -20,6 +20,7 @@ namespace FileTime.Core.Models
         Task<bool> CanOpen();
 
         bool IsLoaded { get; }
+        bool SupportsDirectoryLevelSoftDelete { get; }
 
         AsyncEventHandler Refreshed { get; }
     }

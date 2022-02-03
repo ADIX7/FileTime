@@ -32,11 +32,13 @@ namespace FileTime.Providers.Smb
         public SmbContentProvider Provider { get; }
 
         IContentProvider IItem.Provider => Provider;
-        public bool CanDelete => true;
+        public SupportsDelete CanDelete => SupportsDelete.True;
         public bool CanRename => false;
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
         public AsyncEventHandler Refreshed { get; } = new();
+
+        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public SmbServer(string path, SmbContentProvider contentProvider, IInputInterface inputInterface)
         {
@@ -72,7 +74,7 @@ namespace FileTime.Providers.Smb
             throw new NotSupportedException();
         }
 
-        public Task Delete()
+        public Task Delete(bool hardDelete = false)
         {
             return Task.CompletedTask;
         }

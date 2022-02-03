@@ -24,12 +24,14 @@ namespace FileTime.Core.Providers
 #pragma warning disable CS8603 // Possible null reference return.
         public IContentProvider Provider => null;
 #pragma warning restore CS8603 // Possible null reference return.
-        public bool CanDelete => false;
+        public SupportsDelete CanDelete => SupportsDelete.False;
         public bool CanRename => false;
 
         public AsyncEventHandler Refreshed { get; } = new();
 
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
+
+        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {
@@ -47,7 +49,7 @@ namespace FileTime.Core.Providers
 
         public Task<IElement> CreateElement(string name) => throw new NotImplementedException();
 
-        public Task Delete() => throw new NotImplementedException();
+        public Task Delete(bool hardDelete = false) => throw new NotImplementedException();
 
         public Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false) => throw new NotImplementedException();
 

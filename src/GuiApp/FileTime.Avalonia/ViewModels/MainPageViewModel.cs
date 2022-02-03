@@ -34,14 +34,14 @@ namespace FileTime.Avalonia.ViewModels
     [Inject(typeof(AppState), PropertyAccessModifier = AccessModifier.Public)]
     [Inject(typeof(StatePersistenceService), PropertyName = "StatePersistence", PropertyAccessModifier = AccessModifier.Public)]
     [Inject(typeof(ItemNameConverterService))]
-    public partial class MainPageViewModel
+    public partial class MainPageViewModel : IMainPageViewModelBase
     {
         const string RAPIDTRAVEL = "rapidTravel";
 
-        private readonly List<KeyWithModifiers> _previousKeys = new List<KeyWithModifiers>();
-        private readonly List<KeyWithModifiers[]> _keysToSkip = new List<KeyWithModifiers[]>();
-        private List<CommandBinding> _commandBindings = new();
-        private List<CommandBinding> _universalCommandBindings = new();
+        private readonly List<KeyWithModifiers> _previousKeys = new();
+        private readonly List<KeyWithModifiers[]> _keysToSkip = new();
+        private readonly List<CommandBinding> _commandBindings = new();
+        private readonly List<CommandBinding> _universalCommandBindings = new();
 
         private IClipboard _clipboard;
         private TimeRunner _timeRunner;
@@ -79,6 +79,9 @@ namespace FileTime.Avalonia.ViewModels
 
         [Property]
         private List<CommandBinding> _allShortcut;
+
+        [Property]
+        private bool _loading = true;
 
         public ObservableCollection<ParallelCommandsViewModel> TimelineCommands { get; } = new();
 
@@ -192,6 +195,8 @@ namespace FileTime.Avalonia.ViewModels
                 throw new Exception("TODO linux places");
             }
             Places = places;
+            await Task.Delay(100);
+            Loading = false;
         }
 
         private void UpdateParalellCommands(object? sender, EventArgs e)
@@ -229,7 +234,7 @@ namespace FileTime.Avalonia.ViewModels
             return await LocalContentProvider.GetByPath(drive.Name) as IContainer;
         }
 
-        public async Task OpenContainer()
+        private async Task OpenContainer()
         {
             AppState.RapidTravelText = "";
             await AppState.SelectedTab.Open();
@@ -241,7 +246,7 @@ namespace FileTime.Avalonia.ViewModels
             await AppState.SelectedTab.OpenContainer(container);
         }
 
-        public async Task OpenOrRun()
+        private async Task OpenOrRun()
         {
             if (AppState.SelectedTab.SelectedItem is ContainerViewModel)
             {
@@ -258,57 +263,57 @@ namespace FileTime.Avalonia.ViewModels
             }
         }
 
-        public async Task GoUp()
+        private async Task GoUp()
         {
             await AppState.SelectedTab.GoUp();
         }
 
-        public async Task MoveCursorUp()
+        private async Task MoveCursorUp()
         {
             await AppState.SelectedTab.MoveCursorUp();
         }
 
-        public async Task MoveCursorDown()
+        private async Task MoveCursorDown()
         {
             await AppState.SelectedTab.MoveCursorDown();
         }
 
-        public async Task MoveCursorUpPage()
+        private async Task MoveCursorUpPage()
         {
             await AppState.SelectedTab.MoveCursorUpPage();
         }
 
-        public async Task MoveCursorDownPage()
+        private async Task MoveCursorDownPage()
         {
             await AppState.SelectedTab.MoveCursorDownPage();
         }
 
-        public async Task MoveToFirst()
+        private async Task MoveToFirst()
         {
             await AppState.SelectedTab.MoveCursorToFirst();
         }
 
-        public async Task MoveToLast()
+        private async Task MoveToLast()
         {
             await AppState.SelectedTab.MoveCursorToLast();
         }
 
-        public async Task GotToProvider()
+        private async Task GotToProvider()
         {
             await AppState.SelectedTab.GotToProvider();
         }
 
-        public async Task GotToRoot()
+        private async Task GotToRoot()
         {
             await AppState.SelectedTab.GotToRoot();
         }
 
-        public async Task GotToHome()
+        private async Task GotToHome()
         {
             await AppState.SelectedTab.GotToHome();
         }
 
-        public Task EnterRapidTravelMode()
+        private Task EnterRapidTravelMode()
         {
             AppState.ViewMode = ViewMode.RapidTravel;
 
@@ -318,7 +323,7 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
-        public async Task ExitRapidTravelMode()
+        private async Task ExitRapidTravelMode()
         {
             AppState.ViewMode = ViewMode.Default;
 
@@ -329,7 +334,7 @@ namespace FileTime.Avalonia.ViewModels
             await AppState.SelectedTab.OpenContainer(await AppState.SelectedTab.CurrentLocation.Container.WithoutVirtualContainer(RAPIDTRAVEL));
         }
 
-        public async Task SwitchToTab(int number)
+        private async Task SwitchToTab(int number)
         {
             var tabContainer = AppState.Tabs.FirstOrDefault(t => t.TabNumber == number);
 
@@ -364,7 +369,7 @@ namespace FileTime.Avalonia.ViewModels
             AppState.SelectedTab = tabContainer;
         }
 
-        public async Task CloseTab()
+        private async Task CloseTab()
         {
             var tabs = AppState.Tabs;
             if (tabs.Count > 1)
@@ -385,7 +390,7 @@ namespace FileTime.Avalonia.ViewModels
             }
         }
 
-        public Task CreateContainer()
+        private Task CreateContainer()
         {
             var handler = async () =>
             {
@@ -403,7 +408,7 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
-        public Task CreateElement()
+        private Task CreateElement()
         {
             var handler = async () =>
             {
@@ -421,12 +426,12 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
-        public async Task MarkCurrentItem()
+        private async Task MarkCurrentItem()
         {
             await AppState.SelectedTab.MarkCurrentItem();
         }
 
-        public async Task Copy()
+        private async Task Copy()
         {
             _clipboard.Clear();
             _clipboard.SetCommand<CopyCommand>();
@@ -450,7 +455,7 @@ namespace FileTime.Avalonia.ViewModels
             }
         }
 
-        public Task Cut()
+        private Task Cut()
         {
             _clipboard.Clear();
             _clipboard.SetCommand<MoveCommand>();
@@ -458,7 +463,11 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
-        public async Task Delete()
+        private async Task SoftDelete() => await Delete(false);
+
+        private async Task HardDelete() => await Delete(true);
+
+        public async Task Delete(bool hardDelete = false)
         {
             IList<AbsolutePath>? itemsToDelete = null;
             var askForDelete = false;
@@ -524,6 +533,7 @@ namespace FileTime.Avalonia.ViewModels
             async Task HandleDelete()
             {
                 var deleteCommand = new DeleteCommand();
+                deleteCommand.HardDelete = hardDelete;
 
                 foreach (var itemToDelete in itemsToDelete!)
                 {
@@ -535,16 +545,16 @@ namespace FileTime.Avalonia.ViewModels
             }
         }
 
-        public async Task PasteMerge()
+        private async Task PasteMerge()
         {
             await Paste(TransportMode.Merge);
         }
-        public async Task PasteOverwrite()
+        private async Task PasteOverwrite()
         {
             await Paste(TransportMode.Overwrite);
         }
 
-        public async Task PasteSkip()
+        private async Task PasteSkip()
         {
             await Paste(TransportMode.Skip);
         }
@@ -688,7 +698,7 @@ namespace FileTime.Avalonia.ViewModels
                 textToCopy = fullName;
             }
 
-            if(textToCopy != null && global::Avalonia.Application.Current?.Clipboard is not null)
+            if (textToCopy != null && global::Avalonia.Application.Current?.Clipboard is not null)
             {
                 await global::Avalonia.Application.Current.Clipboard.SetTextAsync(textToCopy);
             }
@@ -1053,7 +1063,12 @@ namespace FileTime.Avalonia.ViewModels
                     "delete",
                     FileTime.App.Core.Command.Commands.Delete,
                     new KeyWithModifiers[]{new KeyWithModifiers(Key.D),new KeyWithModifiers(Key.D, shift: true)},
-                    Delete),
+                    SoftDelete),
+                new CommandBinding(
+                    "hard delete",
+                    FileTime.App.Core.Command.Commands.Delete,
+                    new KeyWithModifiers[]{new KeyWithModifiers(Key.D, shift: true),new KeyWithModifiers(Key.D, shift: true)},
+                    HardDelete),
                 new CommandBinding(
                     "paste merge",
                     FileTime.App.Core.Command.Commands.PasteMerge,

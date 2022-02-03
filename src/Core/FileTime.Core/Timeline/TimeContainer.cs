@@ -19,13 +19,15 @@ namespace FileTime.Core.Timeline
 
         public bool IsHidden => false;
 
-        public bool CanDelete => true;
+        public SupportsDelete CanDelete => SupportsDelete.True;
 
         public bool CanRename => true;
 
         public IContentProvider Provider { get; }
         public IContentProvider VirtualProvider { get; }
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
+
+        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public TimeContainer(string name, IContainer parent, IContentProvider contentProvider, IContentProvider virtualContentProvider, PointInTime pointInTime)
         {
@@ -44,7 +46,7 @@ namespace FileTime.Core.Timeline
 
         public Task<IElement> CreateElement(string name) => Task.FromResult((IElement)new TimeElement(name, this, Provider, VirtualProvider));
 
-        public Task Delete() => Task.CompletedTask;
+        public Task Delete(bool hardDelete = false) => Task.CompletedTask;
 
         public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {

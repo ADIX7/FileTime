@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using FileTime.Providers.Local.Extensions;
+using FileTime.Providers.Local.Interop;
 using Mono.Unix;
 
 namespace FileTime.Providers.Local
@@ -24,7 +25,7 @@ namespace FileTime.Providers.Local
         public string Attributes => GetAttributes();
 
         public DateTime CreatedAt => File.CreationTime;
-        public bool CanDelete => true;
+        public SupportsDelete CanDelete => SupportsDelete.True;
         public bool CanRename => true;
 
         private readonly LocalFolder _parent;
@@ -41,9 +42,16 @@ namespace FileTime.Providers.Local
 
         public string GetPrimaryAttributeText() => File.Length.ToSizeString();
 
-        public Task Delete()
+        public Task Delete(bool hardDelete = false)
         {
-            File.Delete();
+            if (hardDelete)
+            {
+                File.Delete();
+            }
+            else
+            {
+                WindowsInterop.MoveToRecycleBin(File.FullName);
+            }
             return Task.CompletedTask;
         }
         public async Task Rename(string newName)

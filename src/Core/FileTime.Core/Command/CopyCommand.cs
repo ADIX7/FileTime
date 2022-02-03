@@ -22,6 +22,7 @@ namespace FileTime.Core.Command
         public AsyncEventHandler ProgressChanged { get; } = new();
 
         public string DisplayLabel { get; } = "Copy";
+        public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();
 
         private async Task UpdateProgress()
         {
@@ -73,7 +74,7 @@ namespace FileTime.Core.Command
                 return (IContainer)(await newContainerDiff.AbsolutePath.Resolve())!;
             };
 
-            await DoCopy(Sources, Target, TransportMode.Value);
+            await TraverseTree(Sources, Target, TransportMode.Value);
 
             return startPoint.WithDifferences(newDiffs);
         }
@@ -107,7 +108,7 @@ namespace FileTime.Core.Command
                 }
             };
 
-            await DoCopy(Sources, Target, TransportMode.Value);
+            await TraverseTree(Sources, Target, TransportMode.Value);
         }
 
         private async Task CalculateProgress()
@@ -136,11 +137,11 @@ namespace FileTime.Core.Command
                 return Task.CompletedTask;
             };
 
-            await DoCopy(Sources, Target, TransportMode.Value);
+            await TraverseTree(Sources, Target, TransportMode.Value);
             _operationStatuses = operationStatuses;
         }
 
-        private async Task DoCopy(
+        private async Task TraverseTree(
             IEnumerable<AbsolutePath> sources,
             IContainer target,
             TransportMode transportMode)
@@ -159,7 +160,7 @@ namespace FileTime.Core.Command
                     var childDirectories = (await container.GetContainers())!.Select(d => new AbsolutePath(d));
                     var childFiles = (await container.GetElements())!.Select(f => new AbsolutePath(f));
 
-                    await DoCopy(childDirectories.Concat(childFiles), targetContainer, transportMode);
+                    await TraverseTree(childDirectories.Concat(childFiles), targetContainer, transportMode);
                     if (_containerCopyDone != null) await _containerCopyDone.Invoke(new AbsolutePath(container));
                 }
                 else if (item is IElement element)

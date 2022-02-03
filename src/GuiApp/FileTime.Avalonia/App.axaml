@@ -9,7 +9,7 @@
 
 	<Application.Resources>
 		<ResourceDictionary>
-			<Color x:Key="AppBackgroundColor">#073642</Color>
+			<Color x:Key="AppBackgroundColor">#E7073642</Color>
 			<Color x:Key="ContainerBackgroundColor">#083e4c</Color>
 			<Color x:Key="TransparentContainerBackgroundColor">#D0083e4c</Color>
 
@@ -36,8 +36,8 @@
 				<GradientStop Offset="0.5" Color="#93a1a1" />
 				<GradientStop Offset="1" Color="#0093a1a1" />
 			</LinearGradientBrush>
-
-
+			
+			
 
 			<SolidColorBrush
 				x:Key="AppBackgroundBrush"
@@ -127,12 +127,13 @@
 			<converters:IsEmptyConverter x:Key="IsEmptyConverter"/>
 			<converters:IsEmptyConverter x:Key="IsNotEmptyConverter" Inverse="true"/>
 			<converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter"/>
+			<converters:BoolInverter x:Key="BoolInverter"/>
 
 		</ResourceDictionary>
 	</Application.Resources>
 
 	<Application.Styles>
-		<FluentTheme Mode="Light"/>
+		<FluentTheme Mode="Dark"/>
 
 		<Style Selector="TextBlock">
 			<Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>

@@ -7,10 +7,10 @@ namespace FileTime.Core.Models
         string Name { get; }
         string? FullName { get; }
         bool IsHidden { get; }
-        bool CanDelete { get; }
+        SupportsDelete CanDelete { get; }
         bool CanRename { get; }
         IContentProvider Provider { get; }
-        Task Delete();
+        Task Delete(bool hardDelete = false);
         Task Rename(string newName);
         IContainer? GetParent();
     }

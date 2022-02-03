@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using FileTime.Avalonia.Misc;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 
@@ -98,10 +99,10 @@ namespace FileTime.Avalonia.Views
 
         private void OnPlacePointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if(!e.Handled
+            if (!e.Handled
                 && ViewModel != null
-                && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed 
-                && sender is StyledElement control 
+                && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+                && sender is StyledElement control
                 && control.DataContext is PlaceInfo placeInfo)
             {
                 ViewModel.OpenContainer(placeInfo.Container).Wait();
@@ -111,7 +112,38 @@ namespace FileTime.Avalonia.Views
 
         private void OnWindowClosed(object sender, EventArgs e)
         {
-            ViewModel?.StatePersistence.SaveStatesAsync().Wait();
+            try
+            {
+                ViewModel?.StatePersistence.SaveStatesAsync();
+            }
+            catch { }
+        }
+
+        private void OnWindowOpened(object sender, EventArgs e)
+        {
+            if (ViewModel is not MainPageViewModel)
+            {
+                ViewModel = App.ServiceProvider.GetService<MainPageViewModel>();
+            }
+        }
+
+        private void HeaderPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                if (WindowState == WindowState.Maximized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+                else
+                {
+                    WindowState = WindowState.Maximized;
+                }
+            }
+            else
+            {
+                BeginMoveDrag(e);
+            }
         }
     }
 }

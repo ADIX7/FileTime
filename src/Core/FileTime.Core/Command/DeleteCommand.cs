@@ -7,6 +7,9 @@ namespace FileTime.Core.Command
 {
     public class DeleteCommand : IExecutableCommand
     {
+        private Func<IContainer, Task>? _deleteContainer;
+        private Func<IElement, Task>? _deleteElement;
+
         public int Progress => 100;
 
         public AsyncEventHandler ProgressChanged { get; } = new();
@@ -14,46 +17,79 @@ namespace FileTime.Core.Command
         public IList<AbsolutePath> ItemsToDelete { get; } = new List<AbsolutePath>();
         public string DisplayLabel { get; } = "DeleteCommand";
 
+        public bool HardDelete { get; set; }
+        public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();
+
         public async Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {
             var newDifferences = new List<Difference>();
 
-            foreach (var itemToDelete in ItemsToDelete)
+            _deleteContainer = (c) =>
             {
-                var item = await itemToDelete.Resolve();
                 newDifferences.Add(new Difference(
-                    item.ToDifferenceItemType(),
+                    DifferenceItemType.Container,
                     DifferenceActionType.Delete,
-                    itemToDelete
+                    new AbsolutePath(c)
                 ));
+
+                return Task.CompletedTask;
+            };
+            _deleteElement = (e) =>
+            {
+                newDifferences.Add(new Difference(
+                    DifferenceItemType.Element,
+                    DifferenceActionType.Delete,
+                    new AbsolutePath(e)
+                ));
+
+                return Task.CompletedTask;
+            };
+
+            foreach (var item in ItemsToDelete)
+            {
+                await TraverseTree((await item.Resolve())!);
             }
+
             return startPoint.WithDifferences(newDifferences);
         }
 
         public async Task Execute(TimeRunner timeRunner)
         {
+            _deleteContainer = async (c) =>
+            {
+                await c.Delete(HardDelete);
+                await timeRunner.RefreshContainer.InvokeAsync(this, new AbsolutePath(c));
+            };
+            _deleteElement = async (e) => await e.Delete(HardDelete);
+
             foreach (var item in ItemsToDelete)
             {
-                await DoDelete((await item.Resolve())!, timeRunner);
+                await TraverseTree((await item.Resolve())!);
             }
         }
 
-        private async Task DoDelete(IItem item, TimeRunner timeRunner)
+        private async Task TraverseTree(IItem item)
         {
             if (item is IContainer container)
             {
-                foreach (var child in (await container.GetItems())!)
+                if (!HardDelete && container.SupportsDirectoryLevelSoftDelete)
                 {
-                    await DoDelete(child, timeRunner);
-                    await child.Delete();
+                    if (_deleteContainer != null) await _deleteContainer.Invoke(container);
+                }
+                else
+                {
+                    foreach (var child in (await container.GetItems())!)
+                    {
+                        await TraverseTree(child);
+                    }
+
+                    if (_deleteContainer != null) await _deleteContainer.Invoke(container);
                 }
 
-                await item.Delete();
-                await timeRunner.RefreshContainer.InvokeAsync(this, new AbsolutePath(container));
             }
             else if (item is IElement element)
             {
-                await element.Delete();
+                if (_deleteElement != null) await _deleteElement.Invoke(element);
             }
         }
 
@@ -63,7 +99,12 @@ namespace FileTime.Core.Command
             foreach (var itemPath in ItemsToDelete)
             {
                 var resolvedItem = await itemPath.Resolve();
-                if (!(resolvedItem?.CanDelete ?? true))
+                if (resolvedItem != null
+                    && (
+                        resolvedItem.CanDelete == SupportsDelete.False
+                        || (resolvedItem.CanDelete == SupportsDelete.HardDeleteOnly && !HardDelete)
+                    )
+                )
                 {
                     result = CanCommandRun.Forceable;
                 }

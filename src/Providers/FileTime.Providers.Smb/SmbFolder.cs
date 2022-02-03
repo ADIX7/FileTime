@@ -23,11 +23,13 @@ namespace FileTime.Providers.Smb
 
         public SmbContentProvider Provider { get; }
         IContentProvider IItem.Provider => Provider;
-        public bool CanDelete => true;
+        public SupportsDelete CanDelete => SupportsDelete.True;
         public bool CanRename => true;
 
         public AsyncEventHandler Refreshed { get; } = new();
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
+
+        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent)
         {
@@ -77,7 +79,7 @@ namespace FileTime.Providers.Smb
             throw new NotImplementedException();
         }
 
-        public Task Delete()
+        public Task Delete(bool hardDelete = false)
         {
             throw new NotImplementedException();
         }

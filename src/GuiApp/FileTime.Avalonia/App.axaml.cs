@@ -34,7 +34,7 @@ namespace FileTime.Avalonia
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    ViewModel = ServiceProvider.GetService<MainPageViewModel>(),
+                    DataContext = new MainPageLoadingViewModel(),
                 };
             }
 

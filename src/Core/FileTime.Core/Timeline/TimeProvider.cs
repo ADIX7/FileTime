@@ -18,13 +18,15 @@ namespace FileTime.Core.Timeline
 
         public bool IsHidden => false;
 
-        public bool CanDelete => false;
+        public SupportsDelete CanDelete => SupportsDelete.False;
 
         public bool CanRename => false;
 
         public IContentProvider Provider => this;
 
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
+
+        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public TimeProvider(PointInTime pointInTime)
         {
@@ -48,7 +50,7 @@ namespace FileTime.Core.Timeline
             throw new NotImplementedException();
         }
 
-        public Task Delete() => throw new NotSupportedException();
+        public Task Delete(bool hardDelete = false) => throw new NotSupportedException();
 
         public Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {

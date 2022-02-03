@@ -13,6 +13,7 @@ namespace FileTime.Core.Command
         public int Progress => 100;
         public AsyncEventHandler ProgressChanged { get; } = new();
         public string DisplayLabel { get; } = "RenameCommand";
+        public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();
 
         public RenameCommand(AbsolutePath source, string target)
         {

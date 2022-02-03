@@ -27,9 +27,11 @@ namespace FileTime.Providers.Local
         public AsyncEventHandler Refreshed { get; } = new();
 
         public bool IsCaseInsensitive { get; }
-        public bool CanDelete => false;
+        public SupportsDelete CanDelete => SupportsDelete.False;
         public bool CanRename => false;
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
+
+        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public LocalContentProvider(ILogger<LocalContentProvider> logger)
         {
@@ -76,7 +78,7 @@ namespace FileTime.Providers.Local
         public Task<IElement> CreateElement(string name) => throw new NotSupportedException();
         public Task<bool> IsExists(string name) => Task.FromResult(_rootContainers.Any(i => i.Name == name));
 
-        public Task Delete() => throw new NotSupportedException();
+        public Task Delete(bool hardDelete = false) => throw new NotSupportedException();
 
         internal string NormalizePath(string path) => IsCaseInsensitive ? path.ToLower() : path;
 

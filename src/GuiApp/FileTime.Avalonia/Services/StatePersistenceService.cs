@@ -46,15 +46,19 @@ namespace FileTime.Avalonia.Services
         {
             if (!File.Exists(_settingsPath)) return;
 
-            using var stateReader = File.OpenRead(_settingsPath);
-            var state = await JsonSerializer.DeserializeAsync<PersistenceRoot>(stateReader);
-            if (state != null)
+            try
             {
-                await RestoreTabs(state.TabStates);
+                using var stateReader = File.OpenRead(_settingsPath);
+                var state = await JsonSerializer.DeserializeAsync<PersistenceRoot>(stateReader);
+                if (state != null)
+                {
+                    await RestoreTabs(state.TabStates);
+                }
             }
+            catch { }
         }
 
-        public async Task SaveStatesAsync()
+        public void SaveStatesAsync()
         {
             var state = new PersistenceRoot
             {
@@ -62,8 +66,8 @@ namespace FileTime.Avalonia.Services
             };
             var settingsDirectory = new DirectoryInfo(string.Join(Path.DirectorySeparatorChar, _settingsPath.Split(Path.DirectorySeparatorChar)[0..^1]));
             if (!settingsDirectory.Exists) settingsDirectory.Create();
-            using var stateWriter = File.OpenWrite(_settingsPath);
-            await JsonSerializer.SerializeAsync(stateWriter, state, _jsonOptions);
+            var serializedData = JsonSerializer.Serialize(state, _jsonOptions);
+            File.WriteAllText(_settingsPath, serializedData);
         }
 
         private TabStates SerializeTabStates()
@@ -83,49 +87,54 @@ namespace FileTime.Avalonia.Services
 
         private async Task<bool> RestoreTabs(TabStates? tabStates)
         {
-            if (tabStates == null
-                || tabStates.Tabs == null)
+            try
             {
-                return false;
-            }
-
-            foreach (var tab in tabStates.Tabs)
-            {
-                if (tab.Path == null) continue;
-
-                IItem? pathItem = null;
-                foreach (var contentProvider in _contentProviders)
+                if (tabStates == null
+                    || tabStates.Tabs == null)
                 {
-                    if (contentProvider.CanHandlePath(tab.Path))
-                    {
-                        pathItem = await contentProvider.GetByPath(tab.Path, true);
-                        if (pathItem != null) break;
-                    }
+                    return false;
                 }
 
-                var container = pathItem switch
+                foreach (var tab in tabStates.Tabs)
                 {
-                    IContainer c => c,
-                    IElement e => e.GetParent(),
-                    _ => null
-                };
-                
-                if (container == null) continue;
+                    if (tab.Path == null) continue;
 
-                var newTab = new Tab();
-                await newTab.Init(container);
+                    IItem? pathItem = null;
+                    foreach (var contentProvider in _contentProviders)
+                    {
+                        if (contentProvider.CanHandlePath(tab.Path))
+                        {
+                            pathItem = await contentProvider.GetByPath(tab.Path, true);
+                            if (pathItem != null) break;
+                        }
+                    }
 
-                var newTabContainer = new TabContainer(newTab, _localContentProvider, _itemNameConverterService);
-                await newTabContainer.Init(tab.Number);
-                _appState.Tabs.Add(newTabContainer);
+                    var container = pathItem switch
+                    {
+                        IContainer c => c,
+                        IElement e => e.GetParent(),
+                        _ => null
+                    };
+
+                    if (container == null) continue;
+
+                    var newTab = new Tab();
+                    await newTab.Init(container);
+
+                    var newTabContainer = new TabContainer(newTab, _localContentProvider, _itemNameConverterService);
+                    await newTabContainer.Init(tab.Number);
+                    _appState.Tabs.Add(newTabContainer);
+                }
+
+                if (_appState.Tabs.FirstOrDefault(t => t.TabNumber == tabStates.ActiveTabNumber) is TabContainer tabContainer)
+                {
+                    _appState.SelectedTab = tabContainer;
+                }
+
+                return true;
             }
-
-            if (_appState.Tabs.FirstOrDefault(t => t.TabNumber == tabStates.ActiveTabNumber) is TabContainer tabContainer)
-            {
-                _appState.SelectedTab = tabContainer;
-            }
-
-            return true;
+            catch { }
+            return false;
         }
     }
 }

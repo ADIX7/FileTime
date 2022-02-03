@@ -24,14 +24,14 @@ namespace FileTime.Core.Timeline
 
         public bool IsHidden => false;
 
-        public bool CanDelete => true;
+        public SupportsDelete CanDelete => SupportsDelete.True;
 
         public bool CanRename => true;
 
         public IContentProvider Provider { get; }
         public IContentProvider VirtualProvider { get; }
 
-        public Task Delete() => Task.CompletedTask;
+        public Task Delete(bool hardDelete = false) => Task.CompletedTask;
 
         public IContainer? GetParent() => _parent;
 

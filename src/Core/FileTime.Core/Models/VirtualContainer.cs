@@ -25,11 +25,13 @@ namespace FileTime.Core.Models
 
         public bool IsHidden => BaseContainer.IsHidden;
         public bool IsLoaded => BaseContainer.IsLoaded;
-        public bool CanDelete => BaseContainer.CanDelete;
+        public SupportsDelete CanDelete => BaseContainer.CanDelete;
         public bool CanRename => BaseContainer.CanRename;
 
         public IContentProvider Provider => BaseContainer.Provider;
         public IReadOnlyList<Exception> Exceptions => BaseContainer.Exceptions;
+
+        public bool SupportsDirectoryLevelSoftDelete => BaseContainer.SupportsDirectoryLevelSoftDelete;
 
         public AsyncEventHandler Refreshed { get; }
 
@@ -151,7 +153,7 @@ namespace FileTime.Core.Models
             return Task.FromResult(Elements);
         }
 
-        public async Task Delete() => await BaseContainer.Delete();
+        public async Task Delete(bool hardDelete = false) => await BaseContainer.Delete();
         public async Task<IContainer> Clone()
         {
             return new VirtualContainer(

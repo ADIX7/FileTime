@@ -13,7 +13,7 @@ namespace FileTime.Providers.Smb
         public string? FullName { get; }
 
         public bool IsHidden => false;
-        public bool CanDelete => true;
+        public SupportsDelete CanDelete => SupportsDelete.True;
         public bool CanRename => true;
 
         public IContentProvider Provider { get; }
@@ -28,7 +28,7 @@ namespace FileTime.Providers.Smb
             _parent = parent;
         }
 
-        public Task Delete()
+        public Task Delete(bool hardDelete = false)
         {
             throw new NotImplementedException();
         }

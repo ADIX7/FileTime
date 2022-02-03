@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
+using FileTime.Providers.Local.Interop;
 
 namespace FileTime.Providers.Local
 {
@@ -23,7 +24,7 @@ namespace FileTime.Providers.Local
         public string FullName { get; }
 
         public bool IsLoaded => _items != null;
-        public bool CanDelete => true;
+        public SupportsDelete CanDelete { get; }
         public bool CanRename => true;
 
         public AsyncEventHandler Refreshed { get; } = new();
@@ -32,6 +33,8 @@ namespace FileTime.Providers.Local
 
         public DateTime CreatedAt => Directory.CreationTime;
         public IReadOnlyList<Exception> Exceptions { get; }
+
+        public bool SupportsDirectoryLevelSoftDelete { get; }
 
         public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer? parent)
         {
@@ -44,6 +47,12 @@ namespace FileTime.Providers.Local
             Name = directory.Name.TrimEnd(Path.DirectorySeparatorChar);
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
             Provider = contentProvider;
+
+            //TODO: Linux soft delete
+            SupportsDirectoryLevelSoftDelete = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            CanDelete = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? SupportsDelete.True
+                : SupportsDelete.HardDeleteOnly;
         }
 
         public IContainer? GetParent() => _parent;
@@ -124,9 +133,16 @@ namespace FileTime.Providers.Local
 
         public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(name)) ?? false;
 
-        public Task Delete()
+        public Task Delete(bool hardDelete = false)
         {
-            Directory.Delete(true);
+            if (hardDelete)
+            {
+                Directory.Delete(true);
+            }
+            else
+            {
+                WindowsInterop.MoveToRecycleBin(Directory.FullName);
+            }
             return Task.CompletedTask;
         }
         public async Task Rename(string newName)
