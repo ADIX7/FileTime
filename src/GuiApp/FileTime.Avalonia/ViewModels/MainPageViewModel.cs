@@ -32,6 +32,7 @@ namespace FileTime.Avalonia.ViewModels
     [ViewModel]
     [Inject(typeof(LocalContentProvider))]
     [Inject(typeof(AppState), PropertyAccessModifier = AccessModifier.Public)]
+    [Inject(typeof(StatePersistenceService), PropertyName = "StatePersistence", PropertyAccessModifier = AccessModifier.Public)]
     [Inject(typeof(ItemNameConverterService))]
     public partial class MainPageViewModel
     {
@@ -90,6 +91,7 @@ namespace FileTime.Avalonia.ViewModels
             var inputInterface = (BasicInputHandler)App.ServiceProvider.GetService<IInputInterface>()!;
             inputInterface.InputHandler = ReadInputs;
             App.ServiceProvider.GetService<TopContainer>();
+            await StatePersistence.LoadStatesAsync();
 
             _timeRunner.CommandsChanged += UpdateParalellCommands;
             InitCommandBindings();
@@ -100,16 +102,21 @@ namespace FileTime.Avalonia.ViewModels
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.PageDown) });
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.PageUp) });
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.F4, alt: true) });
+            _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.LWin) });
+            _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.RWin) });
 
             AllShortcut = _commandBindings.Concat(_universalCommandBindings).ToList();
 
-            var tab = new Tab();
-            await tab.Init(LocalContentProvider);
+            if (AppState.Tabs.Count == 0)
+            {
+                var tab = new Tab();
+                await tab.Init(LocalContentProvider);
 
-            var tabContainer = new TabContainer(tab, LocalContentProvider, ItemNameConverterService);
-            await tabContainer.Init(1);
-            tabContainer.IsSelected = true;
-            AppState.Tabs.Add(tabContainer);
+                var tabContainer = new TabContainer(tab, LocalContentProvider, ItemNameConverterService);
+                await tabContainer.Init(1);
+                tabContainer.IsSelected = true;
+                AppState.Tabs.Add(tabContainer);
+            }
 
             var driveInfos = new List<RootDriveInfo>();
             foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
@@ -355,11 +362,6 @@ namespace FileTime.Avalonia.ViewModels
             }
 
             AppState.SelectedTab = tabContainer;
-
-            foreach (var tab2 in AppState.Tabs)
-            {
-                tab2.IsSelected = tab2.TabNumber == tabContainer!.TabNumber;
-            }
         }
 
         public async Task CloseTab()
@@ -654,6 +656,42 @@ namespace FileTime.Avalonia.ViewModels
                 await Dispatcher.UIThread.InvokeAsync(() => _popupTexts.Remove(text));
             });
             return Task.CompletedTask;
+        }
+
+        private Task OpenInDefaultFileExplorer()
+        {
+            if (AppState.SelectedTab.CurrentLocation.Container is LocalFolder localFolder)
+            {
+                var path = localFolder.Directory.FullName;
+                if (path != null)
+                {
+                    Process.Start("explorer.exe", "\"" + path + "\"");
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task CopyPath()
+        {
+            string? textToCopy = null;
+            if (AppState.SelectedTab.CurrentLocation.Container is LocalFolder localFolder)
+            {
+                textToCopy = localFolder.Directory.FullName;
+            }
+            if (AppState.SelectedTab.CurrentLocation.Container is LocalFile localFile)
+            {
+                textToCopy = localFile.File.FullName;
+            }
+            else if (AppState.SelectedTab.CurrentLocation.Container.FullName is string fullName)
+            {
+                textToCopy = fullName;
+            }
+
+            if(textToCopy != null && global::Avalonia.Application.Current?.Clipboard is not null)
+            {
+                await global::Avalonia.Application.Current.Clipboard.SetTextAsync(textToCopy);
+            }
         }
 
         private Task ShowAllShortcut2()
@@ -1081,6 +1119,18 @@ namespace FileTime.Avalonia.ViewModels
                     FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[] { new KeyWithModifiers(Key.F1) },
                     ShowAllShortcut2),
+                //TODO REMOVE
+                new CommandBinding(
+                    "open in default file browser",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.O), new KeyWithModifiers(Key.E) },
+                    OpenInDefaultFileExplorer),
+                //TODO REMOVE
+                new CommandBinding(
+                    "copy path",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.C), new KeyWithModifiers(Key.P) },
+                    CopyPath),
             };
             var universalCommandBindings = new List<CommandBinding>()
             {

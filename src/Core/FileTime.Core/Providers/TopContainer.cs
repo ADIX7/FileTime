@@ -49,7 +49,7 @@ namespace FileTime.Core.Providers
 
         public Task Delete() => throw new NotImplementedException();
 
-        public Task<IItem?> GetByPath(string path) => throw new NotImplementedException();
+        public Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false) => throw new NotImplementedException();
 
         public IContainer? GetParent() => null;
 

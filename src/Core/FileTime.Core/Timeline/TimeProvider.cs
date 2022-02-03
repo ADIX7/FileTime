@@ -50,7 +50,7 @@ namespace FileTime.Core.Timeline
 
         public Task Delete() => throw new NotSupportedException();
 
-        public Task<IItem?> GetByPath(string path)
+        public Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
             throw new NotImplementedException();
         }

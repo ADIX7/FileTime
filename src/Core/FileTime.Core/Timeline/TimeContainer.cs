@@ -46,7 +46,7 @@ namespace FileTime.Core.Timeline
 
         public Task Delete() => Task.CompletedTask;
 
-        public async Task<IItem?> GetByPath(string path)
+        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
             var paths = path.Split(Constants.SeparatorChar);
 
@@ -59,7 +59,7 @@ namespace FileTime.Core.Timeline
 
             if (item is IContainer container)
             {
-                return await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)));
+                return await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
             }
 
             return null;

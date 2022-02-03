@@ -10,7 +10,7 @@ namespace FileTime.Core.Models
         Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default);
 
         Task Refresh();
-        Task<IItem?> GetByPath(string path);
+        Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false);
         Task<IContainer> CreateContainer(string name);
         Task<IElement> CreateElement(string name);
 

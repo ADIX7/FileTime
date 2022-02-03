@@ -47,7 +47,7 @@ namespace FileTime.Providers.Local
             _items = _rootContainers.Cast<IItem>().ToList().AsReadOnly();
         }
 
-        public async Task<IItem?> GetByPath(string path)
+        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
             path = path.Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar).TrimEnd(Constants.SeparatorChar);
             var pathParts = (IsCaseInsensitive ? path.ToLower() : path).TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
@@ -64,7 +64,7 @@ namespace FileTime.Providers.Local
             }
 
             var remainingPath = string.Join(Constants.SeparatorChar, pathParts.Skip(1));
-            return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath);
+            return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath, acceptDeepestMatch);
         }
 
         public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);

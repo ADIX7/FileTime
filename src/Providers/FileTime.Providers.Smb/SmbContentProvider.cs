@@ -64,7 +64,7 @@ namespace FileTime.Providers.Smb
             throw new NotSupportedException();
         }
 
-        public async Task<IItem?> GetByPath(string path)
+        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
             if (path == null) return this;
 
@@ -78,7 +78,7 @@ namespace FileTime.Providers.Smb
             }
 
             var remainingPath = string.Join(Constants.SeparatorChar, pathParts.Skip(1));
-            return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath);
+            return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath, acceptDeepestMatch);
         }
 
         public IContainer? GetParent() => _parent;

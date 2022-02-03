@@ -76,7 +76,7 @@ namespace FileTime.Core.Models
                 ?.ToList().AsReadOnly();
         }
 
-        public async Task<IItem?> GetByPath(string path) => await BaseContainer.GetByPath(path);
+        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false) => await BaseContainer.GetByPath(path, acceptDeepestMatch);
 
         public IContainer? GetParent() => BaseContainer.GetParent();
 

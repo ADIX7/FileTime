@@ -16,6 +16,7 @@ namespace FileTime.Avalonia.Application
         private ObservableCollection<TabContainer> _tabs = new();
 
         [Property]
+        [PropertyCallMethod(nameof(SelectedTabChanged))]
         private TabContainer _selectedTab;
 
         [Property]
@@ -59,6 +60,14 @@ namespace FileTime.Avalonia.Application
             {
                 item.TabState.ItemMarked.Remove(TabItemMarked);
                 item.TabState.ItemUnmarked.Remove(TabItemUnmarked);
+            }
+        }
+
+        private void SelectedTabChanged()
+        {
+            foreach(var tab in Tabs)
+            {
+                tab.IsSelected = tab == SelectedTab;
             }
         }
 

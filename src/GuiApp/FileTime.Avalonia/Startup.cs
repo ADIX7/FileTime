@@ -23,6 +23,7 @@ namespace FileTime.Avalonia
             serviceCollection = serviceCollection
                 .AddLogging()
                 .AddSingleton<ItemNameConverterService>()
+                .AddSingleton<StatePersistenceService>()
                 .AddSingleton<IIconProvider, MaterialIconProvider>();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using FileTime.Avalonia.Misc;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
+using System;
 using System.Linq;
 
 namespace FileTime.Avalonia.Views
@@ -106,6 +107,11 @@ namespace FileTime.Avalonia.Views
                 ViewModel.OpenContainer(placeInfo.Container).Wait();
                 e.Handled = true;
             }
+        }
+
+        private void OnWindowClosed(object sender, EventArgs e)
+        {
+            ViewModel?.StatePersistence.SaveStatesAsync().Wait();
         }
     }
 }

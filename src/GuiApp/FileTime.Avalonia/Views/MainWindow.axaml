@@ -6,12 +6,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileTime.Avalonia.ViewModels"
 	xmlns:local="using:FileTime.Avalonia.Views"
-    Title="FileTime.Avalonia"
+    Title="FileTime"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    Icon="/Assets/avalonia-logo.ico"
+    Icon="/Assets/filetime.ico"
 	InputElement.KeyDown="OnKeyDown"
 	InputElement.KeyUp="OnKeyUp"
+	Closed="OnWindowClosed"
 	
     mc:Ignorable="d">
 	<Grid
@@ -188,7 +189,10 @@
 										<TextBlock
 											VerticalAlignment="Center" Text="{Binding TabNumber,StringFormat=({0})}" />
 
-										<local:PathPresenter Margin="5,0,0,0" DataContext="{Binding CurrentLocation.Container.FullName}"/>
+										<TextBlock
+											VerticalAlignment="Center" Margin="5,0,0,0" Text="{Binding CurrentLocation.Container.Name}" />
+
+										<!--local:PathPresenter Margin="5,0,0,0" DataContext="{Binding CurrentLocation.Container.FullName}"/-->
 									</StackPanel>
 
 									<Rectangle Fill="{DynamicResource ForegroundBrush}" Grid.Row="1" IsVisible="{Binding IsSelected}"/>

@@ -77,7 +77,7 @@ namespace FileTime.Providers.Smb
             return Task.CompletedTask;
         }
 
-        public Task<IItem?> GetByPath(string path)
+        public Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
             throw new NotImplementedException();
         }
