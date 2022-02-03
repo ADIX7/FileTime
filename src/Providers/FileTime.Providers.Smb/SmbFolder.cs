@@ -88,7 +88,7 @@ namespace FileTime.Providers.Smb
             throw new NotImplementedException();
         }
 
-        public async Task Refresh()
+        public async Task RefreshAsync(CancellationToken token = default)
         {
             var containers = new List<IContainer>();
             var elements = new List<IElement>();
@@ -96,7 +96,7 @@ namespace FileTime.Providers.Smb
             try
             {
                 var path = FullName![(_smbShare.FullName!.Length + 1)..];
-                (containers, elements) = await _smbShare.ListFolder(this, _smbShare.Name, path);
+                (containers, elements) = await _smbShare.ListFolder(this, _smbShare.Name, path, token);
             }
             catch { }
 
@@ -104,22 +104,22 @@ namespace FileTime.Providers.Smb
             _elements = elements.AsReadOnly();
 
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
-            if (_items == null) await Refresh();
+            if (_items == null) await RefreshAsync();
             return _items;
         }
         public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
-            if (_containers == null) await Refresh();
+            if (_containers == null) await RefreshAsync();
             return _containers;
         }
         public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
         {
-            if (_elements == null) await Refresh();
+            if (_elements == null) await RefreshAsync();
             return _elements;
         }
         public Task<bool> CanOpen() => Task.FromResult(true);

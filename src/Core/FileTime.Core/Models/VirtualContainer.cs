@@ -35,11 +35,11 @@ namespace FileTime.Core.Models
 
         public AsyncEventHandler Refreshed { get; }
 
-        private void RefreshAddBase(Func<object?, AsyncEventArgs, Task> handler)
+        private void RefreshAddBase(Func<object?, AsyncEventArgs, CancellationToken, Task> handler)
         {
             BaseContainer.Refreshed.Add(handler);
         }
-        private void RefreshRemoveBase(Func<object?, AsyncEventArgs, Task> handler)
+        private void RefreshRemoveBase(Func<object?, AsyncEventArgs, CancellationToken, Task> handler)
         {
             BaseContainer.Refreshed.Add(handler);
         }
@@ -52,7 +52,7 @@ namespace FileTime.Core.Models
             bool isTransitive = false,
             string? virtualContainerName = null)
         {
-            Refreshed = new (RefreshAddBase, RefreshRemoveBase);
+            Refreshed = new(RefreshAddBase, RefreshRemoveBase);
             BaseContainer = baseContainer;
             _containerTransformators = containerTransformators;
             _elementTransformators = elementTransformators;
@@ -67,10 +67,10 @@ namespace FileTime.Core.Models
             await InitItems();
         }
 
-        private async Task InitItems()
+        private async Task InitItems(CancellationToken token = default)
         {
-            Containers = _containerTransformators.Aggregate((await BaseContainer.GetContainers())?.AsEnumerable(), (a, t) => t(a!))?.ToList()?.AsReadOnly();
-            Elements = _elementTransformators.Aggregate((await BaseContainer.GetElements())?.AsEnumerable(), (a, t) => t(a!))?.ToList()?.AsReadOnly();
+            Containers = _containerTransformators.Aggregate((await BaseContainer.GetContainers(token))?.AsEnumerable(), (a, t) => t(a!))?.ToList()?.AsReadOnly();
+            Elements = _elementTransformators.Aggregate((await BaseContainer.GetElements(token))?.AsEnumerable(), (a, t) => t(a!))?.ToList()?.AsReadOnly();
 
             Items = (Elements != null
                     ? Containers?.Cast<IItem>().Concat(Elements)
@@ -82,10 +82,10 @@ namespace FileTime.Core.Models
 
         public IContainer? GetParent() => BaseContainer.GetParent();
 
-        public async Task Refresh()
+        public async Task RefreshAsync(CancellationToken token = default)
         {
-            await BaseContainer.Refresh();
-            await InitItems();
+            await BaseContainer.RefreshAsync(token);
+            await InitItems(token);
         }
 
         public IContainer GetRealContainer() =>

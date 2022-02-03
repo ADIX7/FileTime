@@ -6,6 +6,7 @@ using System.Linq;
 using FileTime.App.Core.Tab;
 using System.Threading.Tasks;
 using FileTime.Core.Models;
+using System.Threading;
 
 namespace FileTime.Avalonia.Application
 {
@@ -71,12 +72,13 @@ namespace FileTime.Avalonia.Application
             }
         }
 
-        private async Task TabItemMarked(TabState tabState, AbsolutePath item)
+        private async Task TabItemMarked(TabState tabState, AbsolutePath item, CancellationToken token = default)
         {
             var tabContainer = Tabs.FirstOrDefault(t => t.TabState == tabState);
             if (tabContainer != null)
             {
-                var item2 = (await tabContainer.CurrentLocation.GetItems()).FirstOrDefault(i => i.Item.FullName == item.Path);
+                var item2 = (await tabContainer.CurrentLocation.GetItems(token)).FirstOrDefault(i => i.Item.FullName == item.Path);
+                if (token.IsCancellationRequested) return;
                 if (item2 != null)
                 {
                     item2.IsMarked = true;
@@ -84,12 +86,13 @@ namespace FileTime.Avalonia.Application
             }
         }
 
-        private async Task TabItemUnmarked(TabState tabState, AbsolutePath item)
+        private async Task TabItemUnmarked(TabState tabState, AbsolutePath item, CancellationToken token = default)
         {
             var tabContainer = Tabs.FirstOrDefault(t => t.TabState == tabState);
             if (tabContainer != null)
             {
-                var item2 = (await tabContainer.CurrentLocation.GetItems()).FirstOrDefault(i => i.Item.FullName == item.Path);
+                var item2 = (await tabContainer.CurrentLocation.GetItems(token)).FirstOrDefault(i => i.Item.FullName == item.Path);
+                if (token.IsCancellationRequested) return;
                 if (item2 != null)
                 {
                     item2.IsMarked = false;

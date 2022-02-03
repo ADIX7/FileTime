@@ -59,7 +59,7 @@ namespace FileTime.Providers.Local
             if (_parent is LocalFolder parentFolder)
             {
                 System.IO.File.Move(File.FullName, Path.Combine(parentFolder.Directory.FullName, newName));
-                await _parent.Refresh();
+                await _parent.RefreshAsync();
             }
         }
 

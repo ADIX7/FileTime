@@ -43,7 +43,7 @@ namespace FileTime.ConsoleUI.App.UI
             if (paneState == null) throw new Exception($"{nameof(paneState)} can not be null");
 
             Tab = pane;
-            Tab.CurrentLocationChanged.Add((_, _) => { _currentDisplayStartY = 0; return Task.CompletedTask; });
+            Tab.CurrentLocationChanged.Add((_, _, _) => { _currentDisplayStartY = 0; return Task.CompletedTask; });
 
             TabState = paneState;
         }
@@ -70,7 +70,7 @@ namespace FileTime.ConsoleUI.App.UI
 
             if (currentLocation.GetParent() is var parentContainer && parentContainer is not null)
             {
-                await parentContainer.Refresh();
+                await parentContainer.RefreshAsync();
 
                 await PrintColumn(
                     currentVirtualContainer != null
@@ -96,7 +96,7 @@ namespace FileTime.ConsoleUI.App.UI
 
             if (token.IsCancellationRequested) return;
 
-            await currentLocation.Refresh();
+            await currentLocation.RefreshAsync();
 
             await CheckAndSetCurrentDisplayStartY();
             await PrintColumn(
@@ -112,7 +112,7 @@ namespace FileTime.ConsoleUI.App.UI
 
             if (currentSelectedItem is IContainer selectedContainer)
             {
-                await selectedContainer.Refresh();
+                await selectedContainer.RefreshAsync();
 
                 selectedContainer = currentVirtualContainer != null
                     ? currentVirtualContainer.CloneVirtualChainFor(selectedContainer, v => v.IsTransitive)

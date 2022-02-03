@@ -84,7 +84,7 @@ namespace FileTime.Core.Timeline
             throw new NotImplementedException();
         }
 
-        public Task Refresh() => Task.CompletedTask;
+        public Task RefreshAsync(CancellationToken token = default) => Task.CompletedTask;
 
         public Task Rename(string newName) => throw new NotSupportedException();
 

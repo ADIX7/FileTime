@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FileTime.Avalonia.Application;
+using System.Threading;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -130,21 +131,22 @@ namespace FileTime.Avalonia.ViewModels
 
         public void InvalidateDisplayName() => OnPropertyChanged(nameof(DisplayName));
 
-        public async Task Init(bool initializeChildren = true)
+        public async Task Init(bool initializeChildren = true, CancellationToken token = default)
         {
-            await Refresh(initializeChildren);
+            await Refresh(initializeChildren, token);
         }
 
-        private async Task Container_Refreshed(object? sender, AsyncEventArgs e)
+        private async Task Container_Refreshed(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            await Refresh(false);
+            await Refresh(false, token);
         }
 
+        [Obsolete($"Use the parametrizable version of {nameof(Refresh)}.")]
         private async Task Refresh()
         {
             await Refresh(true);
         }
-        private async Task Refresh(bool initializeChildren)
+        private async Task Refresh(bool initializeChildren, CancellationToken token = default)
         {
             if (_isRefreshing) return;
 
@@ -157,6 +159,9 @@ namespace FileTime.Avalonia.ViewModels
 
                 var containers = (await _container.GetContainers())!.Select(c => AdoptOrReuseOrCreateItem(c, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
                 var elements = (await _container.GetElements())!.Select(e => AdoptOrReuseOrCreateItem(e, (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
+
+                if (token.IsCancellationRequested) return;
+
                 Exceptions = new List<Exception>(_container.Exceptions);
 
                 foreach (var containerToRemove in _containers.Except(containers))
@@ -168,7 +173,8 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     foreach (var container in containers)
                     {
-                        await container.Init(false);
+                        if (token.IsCancellationRequested) return;
+                        await container.Init(false, token);
                     }
                 }
 
@@ -220,21 +226,21 @@ namespace FileTime.Avalonia.ViewModels
             _items = new ObservableCollection<IItemViewModel>();
         }
 
-        public async Task<ObservableCollection<ContainerViewModel>> GetContainers()
+        public async Task<ObservableCollection<ContainerViewModel>> GetContainers(CancellationToken token = default)
         {
-            if (!_isInitialized) await Task.Run(Refresh);
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token), token);
             return _containers;
         }
 
-        public async Task<ObservableCollection<ElementViewModel>> GetElements()
+        public async Task<ObservableCollection<ElementViewModel>> GetElements(CancellationToken token = default)
         {
-            if (!_isInitialized) await Task.Run(Refresh);
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token), token);
             return _elements;
         }
 
-        public async Task<ObservableCollection<IItemViewModel>> GetItems()
+        public async Task<ObservableCollection<IItemViewModel>> GetItems(CancellationToken token = default)
         {
-            if (!_isInitialized) await Task.Run(Refresh);
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token), token);
             return _items;
         }
 

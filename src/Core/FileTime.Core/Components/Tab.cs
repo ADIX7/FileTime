@@ -11,6 +11,9 @@ namespace FileTime.Core.Components
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private string? _lastPath;
 
+        private readonly object _guardSetCurrentSelectedItemCTS = new object();
+        private CancellationTokenSource? _setCurrentSelectedItemCTS;
+
         public int CurrentSelectedIndex { get; private set; }
 
         public AsyncEventHandler CurrentLocationChanged = new();
@@ -21,7 +24,7 @@ namespace FileTime.Core.Components
             await SetCurrentLocation(currentPath);
         }
 
-        public Task<IContainer> GetCurrentLocation()
+        public Task<IContainer> GetCurrentLocation(CancellationToken token = default)
         {
             return Task.FromResult(_currentLocation);
         }
@@ -49,24 +52,36 @@ namespace FileTime.Core.Components
             return Task.FromResult(_currentSelectedItem);
         }
 
-        public async Task SetCurrentSelectedItem(IItem? value)
+        public async Task SetCurrentSelectedItem(IItem? value, bool secondary = false)
         {
             if (_currentSelectedItem != value)
             {
                 IItem? itemToSelect = null;
                 if (value != null)
                 {
-                    itemToSelect = (await _currentLocation.GetItems())?.FirstOrDefault(i => 
-                        i.FullName == null && value?.FullName == null 
+                    itemToSelect = (await _currentLocation.GetItems())?.FirstOrDefault(i =>
+                        i.FullName == null && value?.FullName == null
                         ? i.Name == value?.Name
                         : i.FullName == value?.FullName);
                     if (itemToSelect == null) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
                 }
 
+                CancellationToken newToken;
+                lock (_guardSetCurrentSelectedItemCTS)
+                {
+                    _setCurrentSelectedItemCTS?.Cancel();
+                    _setCurrentSelectedItemCTS = new CancellationTokenSource();
+                    newToken = _setCurrentSelectedItemCTS.Token;
+                }
+
                 _currentSelectedItem = itemToSelect;
                 _lastPath = GetCommonPath(_lastPath, itemToSelect?.FullName);
-                CurrentSelectedIndex = await GetItemIndex(itemToSelect);
-                await CurrentSelectedItemChanged.InvokeAsync(this, AsyncEventArgs.Empty);
+
+                var newCurrentSelectedIndex = await GetItemIndex(itemToSelect, newToken);
+                if (newToken.IsCancellationRequested) return;
+                CurrentSelectedIndex = newCurrentSelectedIndex;
+
+                await CurrentSelectedItemChanged.InvokeAsync(this, AsyncEventArgs.Empty, newToken);
             }
         }
         public async Task<IItem?> GetItemByLastPath(IContainer? container = null)
@@ -85,21 +100,16 @@ namespace FileTime.Core.Components
 
             var itemNameToSelect = _lastPath
                 .Split(Constants.SeparatorChar)
-                .Skip(
-                    containerFullName == null
-                    ? 0
-                    : containerFullName
-                        .Split(Constants.SeparatorChar)
-                        .Count())
+                .Skip((containerFullName?.Split(Constants.SeparatorChar).Length) ?? 0)
                 .FirstOrDefault();
 
             return (await container.GetItems())?.FirstOrDefault(i => i.Name == itemNameToSelect);
         }
 
-        private string GetCommonPath(string? oldPath, string? newPath)
+        private static string GetCommonPath(string? oldPath, string? newPath)
         {
-            var oldPathParts = oldPath?.Split(Constants.SeparatorChar) ?? new string[0];
-            var newPathParts = newPath?.Split(Constants.SeparatorChar) ?? new string[0];
+            var oldPathParts = oldPath?.Split(Constants.SeparatorChar) ?? Array.Empty<string>();
+            var newPathParts = newPath?.Split(Constants.SeparatorChar) ?? Array.Empty<string>();
 
             var commonPathParts = new List<string>();
 
@@ -126,13 +136,13 @@ namespace FileTime.Core.Components
             return string.Join(Constants.SeparatorChar, commonPathParts);
         }
 
-        private async Task HandleCurrentLocationRefresh(object? sender, AsyncEventArgs e)
+        private async Task HandleCurrentLocationRefresh(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
             var currentSelectedName = (await GetCurrentSelectedItem())?.FullName ?? (await GetItemByLastPath())?.FullName;
-            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            var currentLocationItems = (await (await GetCurrentLocation(token)).GetItems(token))!;
             if (currentSelectedName != null)
             {
-                await SetCurrentSelectedItem(currentLocationItems.FirstOrDefault(i => i.FullName == currentSelectedName) ?? currentLocationItems.FirstOrDefault());
+                await SetCurrentSelectedItem(currentLocationItems.FirstOrDefault(i => i.FullName == currentSelectedName) ?? currentLocationItems[0]);
             }
             else if (currentLocationItems.Count > 0)
             {
@@ -184,7 +194,7 @@ namespace FileTime.Core.Components
 
             if (await GetCurrentSelectedItem() != null)
             {
-                (await GetCurrentLocation())?.Refresh();
+                (await GetCurrentLocation())?.RefreshAsync();
 
                 IItem? newSelectedItem = null;
                 foreach (var item in currentPossibleItems)
@@ -197,7 +207,7 @@ namespace FileTime.Core.Components
                     }
                 }
 
-                if(newSelectedItem != null)
+                if (newSelectedItem != null)
                 {
                     newSelectedItem = (await (await GetCurrentLocation()).GetItems())?.FirstOrDefault(i => i.Name == newSelectedItem.Name);
                 }
@@ -272,11 +282,12 @@ namespace FileTime.Core.Components
 
         public async Task OpenContainer(IContainer container) => await SetCurrentLocation(container);
 
-        private async Task<int> GetItemIndex(IItem? item)
+        private async Task<int> GetItemIndex(IItem? item, CancellationToken token)
         {
             if (item == null) return -1;
-            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            var currentLocationItems = (await (await GetCurrentLocation(token)).GetItems(token))!;
 
+            if (token.IsCancellationRequested) return -1;
             for (var i = 0; i < currentLocationItems.Count; i++)
             {
                 if (currentLocationItems[i] == item) return i;

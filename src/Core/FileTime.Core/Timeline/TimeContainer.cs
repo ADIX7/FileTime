@@ -103,7 +103,7 @@ namespace FileTime.Core.Timeline
 
         public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
 
-        public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+        public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
         public Task Rename(string newName) => Task.CompletedTask;
 

@@ -43,17 +43,17 @@ namespace FileTime.Providers.Smb
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
-            if (_items == null) await Refresh();
+            if (_items == null) await RefreshAsync();
             return _items;
         }
         public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
-            if (_containers == null) await Refresh();
+            if (_containers == null) await RefreshAsync();
             return _containers;
         }
         public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
         {
-            if (_elements == null) await Refresh();
+            if (_elements == null) await RefreshAsync();
             return _elements;
         }
 
@@ -100,14 +100,14 @@ namespace FileTime.Providers.Smb
             throw new NotImplementedException();
         }
 
-        public async Task Refresh()
+        public async Task RefreshAsync(CancellationToken token = default)
         {
             var containers = new List<IContainer>();
             var elements = new List<IElement>();
 
             try
             {
-                (containers, elements) = await ListFolder(this, Name, string.Empty);
+                (containers, elements) = await ListFolder(this, Name, string.Empty, token);
             }
             catch { }
 
@@ -115,10 +115,10 @@ namespace FileTime.Providers.Smb
             _elements = elements.AsReadOnly();
 
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
 
-        public async Task<(List<IContainer> containers, List<IElement> elements)> ListFolder(IContainer parent, string shareName, string folderName)
+        public async Task<(List<IContainer> containers, List<IElement> elements)> ListFolder(IContainer parent, string shareName, string folderName, CancellationToken token = default)
         {
             return await _smbClientContext.RunWithSmbClientAsync(client =>
             {

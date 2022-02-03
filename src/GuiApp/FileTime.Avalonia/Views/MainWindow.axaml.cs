@@ -105,7 +105,7 @@ namespace FileTime.Avalonia.Views
                 && sender is StyledElement control
                 && control.DataContext is PlaceInfo placeInfo)
             {
-                ViewModel.OpenContainer(placeInfo.Container).Wait();
+                ViewModel.OpenContainer(placeInfo.Container);
                 e.Handled = true;
             }
         }

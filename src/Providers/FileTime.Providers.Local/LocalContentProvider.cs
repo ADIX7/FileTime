@@ -69,7 +69,7 @@ namespace FileTime.Providers.Local
             return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath, acceptDeepestMatch);
         }
 
-        public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+        public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
 

@@ -51,7 +51,7 @@ namespace FileTime.Providers.Smb
                 _items = _rootContainers.OrderBy(c => c.Name).ToList().AsReadOnly();
             }
 
-            await Refresh();
+            await RefreshAsync();
 
             return container;
         }
@@ -89,7 +89,7 @@ namespace FileTime.Providers.Smb
 
         public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
 
-        public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+        public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
         public bool CanHandlePath(string path) => path.StartsWith("smb://") || path.StartsWith(@"\\");
 

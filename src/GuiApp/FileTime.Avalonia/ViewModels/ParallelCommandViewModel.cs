@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AsyncEvent;
 using FileTime.Core.Command;
@@ -27,7 +28,7 @@ namespace FileTime.Avalonia.ViewModels
             _commandTimeState.Command.ProgressChanged.Add(HandleProgressChange);
         }
 
-        private Task HandleProgressChange(object? sender, AsyncEventArgs e)
+        private Task HandleProgressChange(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
             Progress = _commandTimeState.Command.Progress;
             return Task.CompletedTask;

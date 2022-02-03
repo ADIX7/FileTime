@@ -51,12 +51,12 @@ namespace FileTime.Providers.Smb
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
-            if (_shares == null) await Refresh();
+            if (_shares == null) await RefreshAsync();
             return _shares;
         }
         public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
-            if (_shares == null) await Refresh();
+            if (_shares == null) await RefreshAsync();
             return _shares;
         }
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
@@ -91,7 +91,7 @@ namespace FileTime.Providers.Smb
             throw new NotImplementedException();
         }
 
-        public async Task Refresh()
+        public async Task RefreshAsync(CancellationToken token = default)
         {
             List<string> shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status));
 

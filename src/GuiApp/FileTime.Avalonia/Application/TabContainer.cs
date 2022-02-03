@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FileTime.App.Core.Tab;
-using System.Collections.Generic;
+using System.Threading;
 
 namespace FileTime.Avalonia.Application
 {
@@ -40,18 +40,27 @@ namespace FileTime.Avalonia.Application
 
         private IItemViewModel? _selectedItem;
 
+        [Obsolete($"Use {nameof(SetSelectedItemAsync)} instead.")]
         public IItemViewModel? SelectedItem
         {
             get => _selectedItem;
             set
             {
-                if (_selectedItem != value)// && value != null
+                if (value != null)
                 {
-                    _selectedItem = value;
-
-                    OnPropertyChanged("SelectedItem");
-                    SelectedItemChanged().Wait();
+                    SetSelectedItemAsync(value, true).Wait();
                 }
+            }
+        }
+
+        public async Task SetSelectedItemAsync(IItemViewModel? value, bool fromDataBinding = false)
+        {
+            if (_selectedItem != value)
+            {
+                _selectedItem = value;
+
+                OnPropertyChanged(nameof(SelectedItem));
+                await Tab.SetCurrentSelectedItem(SelectedItem?.Item, fromDataBinding);
             }
         }
 
@@ -96,18 +105,20 @@ namespace FileTime.Avalonia.Application
             return parent;
         }
 
-        private async Task Tab_CurrentLocationChanged(object? sender, AsyncEventArgs e)
+        private async Task Tab_CurrentLocationChanged(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            var currentLocation = await Tab.GetCurrentLocation();
+            var currentLocation = await Tab.GetCurrentLocation(token);
             var parent = GenerateParent(currentLocation);
             CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService);
-            await CurrentLocation.Init();
+            await CurrentLocation.Init(token: token);
+
+            if (token.IsCancellationRequested) return;
 
             if (parent != null)
             {
                 parent.ChildrenToAdopt.Add(CurrentLocation);
                 Parent = parent;
-                await Parent.Init();
+                await Parent.Init(token: token);
             }
             else
             {
@@ -115,41 +126,46 @@ namespace FileTime.Avalonia.Application
             }
         }
 
-        private async Task Tab_CurrentSelectedItemChanged(object? sender, AsyncEventArgs e)
+        private async Task Tab_CurrentSelectedItemChanged(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            await UpdateCurrentSelectedItem();
+            await UpdateCurrentSelectedItem(token);
         }
 
-        public async Task UpdateCurrentSelectedItem()
+        public async Task UpdateCurrentSelectedItem(CancellationToken token = default)
         {
             try
             {
                 var tabCurrentSelectenItem = await Tab.GetCurrentSelectedItem();
+
+                if (token.IsCancellationRequested) return;
+
                 IItemViewModel? currentSelectenItem = null;
                 if (tabCurrentSelectenItem == null)
                 {
-                    SelectedItem = null;
+                    await SetSelectedItemAsync(null);
                     ChildContainer = null;
                 }
                 else
                 {
-                    currentSelectenItem = (await _currentLocation.GetItems()).FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
+                    currentSelectenItem = (await _currentLocation.GetItems(token)).FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
                     if (currentSelectenItem is ContainerViewModel currentSelectedContainer)
                     {
-                        SelectedItem = currentSelectedContainer;
+                        await SetSelectedItemAsync(currentSelectedContainer);
                         ChildContainer = currentSelectedContainer;
                     }
                     else if (currentSelectenItem is ElementViewModel element)
                     {
-                        SelectedItem = element;
+                        await SetSelectedItemAsync(element);
                         ChildContainer = null;
                     }
                     else
                     {
-                        SelectedItem = null;
+                        await SetSelectedItemAsync(null);
                         ChildContainer = null;
                     }
                 }
+
+                if (token.IsCancellationRequested) return;
 
                 var items = await _currentLocation.GetItems();
                 if (items?.Count > 0)
@@ -173,6 +189,7 @@ namespace FileTime.Avalonia.Application
                                 var child = item;
                                 while (child is ContainerViewModel containerViewModel && containerViewModel.Container.IsLoaded)
                                 {
+                                    if (token.IsCancellationRequested) return;
                                     var activeChildItem = await Tab.GetItemByLastPath(containerViewModel.Container);
                                     child = (await containerViewModel.GetItems()).FirstOrDefault(i => i.Item == activeChildItem);
                                     if (child != null)
@@ -199,20 +216,11 @@ namespace FileTime.Avalonia.Application
                     }
                 }
             }
-            catch 
+            catch
             {
                 //INFO collection modified exception on: currentSelectenItem = (await _currentLocation.GetItems()).FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
                 //TODO: handle or error message
             }
-        }
-
-        private async Task SelectedItemChanged()
-        {
-            try
-            {
-                await Tab.SetCurrentSelectedItem(SelectedItem?.Item);
-            }
-            catch { }
         }
 
         public async Task SetCurrentSelectedItem(IItem newItem)
@@ -309,13 +317,14 @@ namespace FileTime.Avalonia.Application
             await _tabState.MakrCurrentItem();
         }
 
-        public async Task UpdateMarkedItems(ContainerViewModel containerViewModel)
+        public async Task UpdateMarkedItems(ContainerViewModel containerViewModel, CancellationToken token = default)
         {
             if (containerViewModel == CurrentLocation && containerViewModel.Container.IsLoaded)
             {
+                if (token.IsCancellationRequested) return;
                 var selectedItems = TabState.GetCurrentMarkedItems(containerViewModel.Container);
 
-                foreach (var item in await containerViewModel.GetItems())
+                foreach (var item in await containerViewModel.GetItems(token))
                 {
                     item.IsMarked = selectedItems.Any(c => c.Path == item.Item.FullName);
                 }

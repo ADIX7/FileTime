@@ -59,16 +59,22 @@ namespace FileTime.Providers.Local
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)new LocalFolder(Directory, Provider, _parent));
 
-        public Task Refresh()
+        public Task RefreshAsync(CancellationToken token = default)
         {
             _containers = new List<IContainer>();
             _elements = new List<IElement>();
+            _items = new List<IItem>();
             _exceptions.Clear();
 
             try
             {
+                if (token.IsCancellationRequested) return Task.CompletedTask;
                 _containers = Directory.GetDirectories().Select(d => new LocalFolder(d, Provider, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
+
+                if (token.IsCancellationRequested) return Task.CompletedTask;
                 _elements = Directory.GetFiles().Select(f => new LocalFile(f, this, Provider)).OrderBy(f => f.Name).ToList().AsReadOnly();
+
+                if (token.IsCancellationRequested) return Task.CompletedTask;
             }
             catch (Exception e)
             {
@@ -76,24 +82,24 @@ namespace FileTime.Providers.Local
             }
 
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty);
+            Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
             return Task.CompletedTask;
         }
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
-            if (_items == null) await Refresh();
+            if (_items == null) await RefreshAsync(token);
             return _items;
         }
         public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
-            if (_containers == null) await Refresh();
+            if (_containers == null) await RefreshAsync(token);
             return _containers;
         }
         public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
         {
-            if (_elements == null) await Refresh();
+            if (_elements == null) await RefreshAsync(token);
             return _elements;
         }
 
@@ -118,7 +124,7 @@ namespace FileTime.Providers.Local
         public async Task<IContainer> CreateContainer(string name)
         {
             Directory.CreateSubdirectory(name);
-            await Refresh();
+            await RefreshAsync();
 
             return _containers!.FirstOrDefault(c => Provider.NormalizePath(c.Name) == Provider.NormalizePath(name))!;
         }
@@ -126,7 +132,7 @@ namespace FileTime.Providers.Local
         public async Task<IElement> CreateElement(string name)
         {
             using (File.Create(Path.Combine(Directory.FullName, name))) { }
-            await Refresh();
+            await RefreshAsync();
 
             return _elements!.FirstOrDefault(e => Provider.NormalizePath(e.Name) == Provider.NormalizePath(name))!;
         }
@@ -150,7 +156,7 @@ namespace FileTime.Providers.Local
             if (_parent is LocalFolder parentFolder)
             {
                 System.IO.Directory.Move(Directory.FullName, Path.Combine(parentFolder.Directory.FullName, newName));
-                await _parent.Refresh();
+                await _parent.RefreshAsync();
             }
         }
 

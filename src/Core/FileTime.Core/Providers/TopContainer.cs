@@ -57,7 +57,7 @@ namespace FileTime.Core.Providers
 
         public Task<bool> IsExists(string name) => throw new NotImplementedException();
 
-        public async Task Refresh() => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+        public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
 
         public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
         public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult(_containers);

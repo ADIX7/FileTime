@@ -605,7 +605,7 @@ namespace FileTime.Avalonia.ViewModels
 
         private async Task RefreshCurrentLocation()
         {
-            await AppState.SelectedTab.CurrentLocation.Container.Refresh();
+            await AppState.SelectedTab.CurrentLocation.Container.RefreshAsync();
             await AppState.SelectedTab.UpdateCurrentSelectedItem();
         }
 
@@ -640,7 +640,7 @@ namespace FileTime.Avalonia.ViewModels
                             var possibleContainer = await contentProvider.GetByPath(path);
                             if (possibleContainer is IContainer container)
                             {
-                                AppState.SelectedTab.OpenContainer(container).Wait();
+                                await AppState.SelectedTab.OpenContainer(container);
                             }
                             //TODO: multiple possible content provider handler
                             return;
@@ -873,7 +873,7 @@ namespace FileTime.Avalonia.ViewModels
 
                     var selectedItemName = AppState.SelectedTab.SelectedItem?.Item.Name;
                     var currentLocationItems = await AppState.SelectedTab.CurrentLocation.GetItems();
-                    if (currentLocationItems.FirstOrDefault(i => i.Item.Name.ToLower() == AppState.RapidTravelText.ToLower()) is IItemViewModel matchItem)
+                    if (currentLocationItems.FirstOrDefault(i => string.Equals(i.Item.Name, AppState.RapidTravelText, StringComparison.OrdinalIgnoreCase)) is IItemViewModel matchItem)
                     {
                         await AppState.SelectedTab.SetCurrentSelectedItem(matchItem.Item);
                     }
@@ -882,7 +882,6 @@ namespace FileTime.Avalonia.ViewModels
                         await AppState.SelectedTab.MoveCursorToFirst();
                     }
                 }
-
             }
 
             return true;
@@ -899,7 +898,7 @@ namespace FileTime.Avalonia.ViewModels
         }
         private void ReadInputs(List<Core.Interactions.InputElement> inputs, Func<Task> inputHandler)
         {
-            Inputs = inputs.Select(i => new InputElementWrapper(i, i.DefaultValue)).ToList();
+            Inputs = inputs.ConvertAll(i => new InputElementWrapper(i, i.DefaultValue));
             _inputHandler = inputHandler;
         }
 
