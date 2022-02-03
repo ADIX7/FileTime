@@ -27,7 +27,7 @@
 					<Rectangle Fill="#01000000"/>
 					<TextBlock Margin="15,10" Text="FileTime"/>
 				</Grid>
-				
+
 				<Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
 					<Rectangle Fill="#01000000"/>
 
@@ -53,8 +53,8 @@
 								Items="{Binding RootDriveInfos}">
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
-										<Grid Margin="0,5" ColumnDefinitions="20,*,Auto" RowDefinitions="Auto,Auto">
-											<Image												
+										<Grid Margin="0,5" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+											<Image
 												Grid.RowSpan="2"
 												Width="20"
 												Height="20"
@@ -63,23 +63,25 @@
 												Source="{SvgImage /Assets/material/folder.svg}" />
 
 											<StackPanel
-													Grid.Column="1"
-													VerticalAlignment="Center"
-													HorizontalAlignment="Stretch"
-													Orientation="Horizontal">
+												Grid.Column="1"
+												VerticalAlignment="Center"
+												HorizontalAlignment="Stretch"
+												Orientation="Horizontal">
 
 												<TextBlock
+													Margin="5,0,0,0"
 													VerticalAlignment="Center"
 													Text="{Binding FullName}" />
 
 												<TextBlock
 													Margin="5,0,0,0"
 													VerticalAlignment="Center"
-													Classes="SmallText"
+													Classes="ExtraSmallText"
 													Text="{Binding Label}" IsVisible="{Binding Label,Converter={StaticResource IsNotEmptyConverter}}" />
 											</StackPanel>
 
-											<StackPanel HorizontalAlignment="Right"
+											<StackPanel
+												HorizontalAlignment="Right"
 												Grid.Column="2"
 												Orientation="Horizontal"
 												VerticalAlignment="Center">
@@ -95,12 +97,16 @@
 											</StackPanel>
 
 											<ProgressBar
+												Margin="5,0,0,0"
 												Grid.Column="1"
 												Grid.ColumnSpan="2"
-												Grid.Row="2"
+												Grid.Row="1"	
+												MinWidth="100"
+												HorizontalAlignment="Stretch"
 												Maximum="100"
 												Value="{Binding UsedPercentage}" />
 										</Grid>
+
 									</DataTemplate>
 								</ItemsRepeater.ItemTemplate>
 							</ItemsRepeater>
