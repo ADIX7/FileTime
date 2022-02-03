@@ -12,7 +12,7 @@ namespace FileTime.Core.Timeline
 
         private bool _resourceIsInUse;
         private readonly List<Thread> _commandRunners = new();
-        private bool _enableRunning = false;//true
+        private bool _enableRunning = true;
 
         public bool EnableRunning
         {
