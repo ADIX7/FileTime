@@ -4,6 +4,7 @@ using FileTime.Providers.Local;
 using Syroot.Windows.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace FileTime.Avalonia.IconProviders
 {
@@ -23,13 +24,16 @@ namespace FileTime.Avalonia.IconProviders
 
         public MaterialIconProvider()
         {
-            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Desktop.Path, GetAssetPath("desktop.svg")));
-            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Documents.Path, GetAssetPath("folder-resource.svg")));
-            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.DownloadsLocalized.Path, GetAssetPath("folder-download.svg")));
-            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.MusicLocalized.Path, GetAssetPath("folder-music.svg")));
-            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Pictures.Path, GetAssetPath("folder-images.svg")));
-            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Profile.Path, GetAssetPath("folder-home.svg")));
-            _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Videos.Path, GetAssetPath("folder-video.svg")));
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Desktop.Path, GetAssetPath("desktop.svg")));
+                _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Documents.Path, GetAssetPath("folder-resource.svg")));
+                _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.DownloadsLocalized.Path, GetAssetPath("folder-download.svg")));
+                _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.MusicLocalized.Path, GetAssetPath("folder-music.svg")));
+                _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Pictures.Path, GetAssetPath("folder-images.svg")));
+                _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Profile.Path, GetAssetPath("folder-home.svg")));
+                _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Videos.Path, GetAssetPath("folder-video.svg")));
+            }
         }
 
         public ImagePath GetImage(IItem item)
@@ -63,7 +67,7 @@ namespace FileTime.Avalonia.IconProviders
                     if (_iconsByFileName.TryGetValue(fileName, out var value)) possibleIcon = value;
                     else if (_iconsByExtension.FirstOrDefault(k => fileName.EndsWith("." + k.Key)) is KeyValuePair<string, string> matchingExtension && matchingExtension.Key != null) possibleIcon = matchingExtension.Value;
 
-                    if(possibleIcon != null)
+                    if (possibleIcon != null)
                     {
                         icon = possibleIcon + ".svg";
                     }

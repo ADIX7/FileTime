@@ -1,9 +1,8 @@
 ﻿using FileTime.Core.Models;
+using FileTime.Providers.Local;
 using MvvmGen;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Runtime.InteropServices;
 
 namespace FileTime.Avalonia.Models
 {
@@ -33,7 +32,7 @@ namespace FileTime.Avalonia.Models
 
         [PropertyInvalidate(nameof(Used))]
         [PropertyInvalidate(nameof(Size))]
-        public long UsedPercentage => Used * 100 / Size;
+        public long UsedPercentage => Size == 0 ? 0 : Used * 100 / Size;
 
         public RootDriveInfo(DriveInfo driveInfo, IContainer container)
         {
@@ -46,8 +45,8 @@ namespace FileTime.Avalonia.Models
         private void Refresh()
         {
             Name = _container.Name;
-            FullName = _container.FullName;
-            Label = _driveInfo.VolumeLabel;
+            FullName = _container is LocalContentProvider ? "/" : _container.FullName;
+            Label = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? _driveInfo.VolumeLabel : null;
             Size = _driveInfo.TotalSize;
             Free = _driveInfo.AvailableFreeSpace;
             Used = _driveInfo.TotalSize - _driveInfo.AvailableFreeSpace;

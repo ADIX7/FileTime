@@ -1,4 +1,4 @@
-﻿using FileTime.Core.Components;
+using FileTime.Core.Components;
 using FileTime.Core.Extensions;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
@@ -122,7 +122,15 @@ namespace FileTime.Avalonia.ViewModels
             }
 
             var driveInfos = new List<RootDriveInfo>();
-            foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
+            var drives = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed)
+                : DriveInfo.GetDrives().Where(d => 
+                    d.DriveType == DriveType.Fixed
+                    && d.DriveFormat != "pstorefs"
+                    && d.DriveFormat != "bpf_fs"
+                    && d.DriveFormat != "tracefs"
+                    && !d.RootDirectory.FullName.StartsWith("/snap/"));
+            foreach (var drive in drives)
             {
                 var container = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? await GetContainerForWindowsDrive(drive)
