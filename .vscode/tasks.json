@@ -14,6 +14,18 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "build gui",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/GuiApp/FileTime.Avalonia/FileTime.Avalonia.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "publish cli",
       "command": "dotnet",
       "type": "process",

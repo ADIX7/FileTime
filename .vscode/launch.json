@@ -16,6 +16,17 @@
       "stopAtEntry": false
     },
     {
+      "name": "GUI",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build gui",
+      "program": "${workspaceFolder}/src/GuiApp/FileTime.Avalonia/bin/Debug/net6.0/FileTime.Avalonia.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/GuiApp/FileTime.Avalonia/bin/Debug/net6.0",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"
