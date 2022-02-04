@@ -85,7 +85,10 @@ namespace FileTime.Providers.Local
         public bool CanHandlePath(string path)
         {
             var normalizedPath = NormalizePath(path);
-            return _rootContainers.Any(r => normalizedPath.StartsWith(NormalizePath(r.Name)));
+            Func<IContainer, bool> match = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? c => normalizedPath.StartsWith(NormalizePath(c.Name))
+                : c => normalizedPath.StartsWith(NormalizePath("/" + c.Name));
+            return _rootContainers.Any(match);
         }
 
         public void SetParent(IContainer container) => _parent = container;

@@ -58,7 +58,7 @@ namespace FileTime.Avalonia.Services
             catch { }
         }
 
-        public void SaveStatesAsync()
+        public void SaveStates()
         {
             var state = new PersistenceRoot
             {

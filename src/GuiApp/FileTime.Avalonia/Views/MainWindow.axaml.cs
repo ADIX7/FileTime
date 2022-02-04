@@ -114,7 +114,7 @@ namespace FileTime.Avalonia.Views
         {
             try
             {
-                ViewModel?.StatePersistence.SaveStatesAsync();
+                ViewModel?.StatePersistence.SaveStates();
             }
             catch { }
         }

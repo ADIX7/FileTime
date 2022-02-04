@@ -48,7 +48,14 @@ namespace FileTime.Avalonia.Application
             {
                 if (value != null)
                 {
-                    SetSelectedItemAsync(value, true).Wait();
+                    try
+                    {
+                        SetSelectedItemAsync(value, true).Wait();
+                    }
+                    catch 
+                    { 
+                        //TODO: Debug, linux start after restore 3 tabs
+                    }
                 }
             }
         }

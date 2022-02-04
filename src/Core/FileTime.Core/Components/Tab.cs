@@ -63,7 +63,7 @@ namespace FileTime.Core.Components
                         i.FullName == null && value?.FullName == null
                         ? i.Name == value?.Name
                         : i.FullName == value?.FullName);
-                    if (itemToSelect == null) throw new IndexOutOfRangeException("Provided item does not exists in the current container.");
+                    if (itemToSelect == null) throw new IndexOutOfRangeException($"Provided item ({value.FullName ?? "unknwon"}) does not exists in the current container ({_currentLocation.FullName ?? "unknwon"}).");
                 }
 
                 CancellationToken newToken;
