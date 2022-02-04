@@ -60,6 +60,12 @@ namespace FileTime.Avalonia
             {
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
+#if DEBUG
+            catch
+            {
+                throw;
+            }
+#else
             catch (Exception e)
             {
                 var message = $"Ciritcal error cought in {nameof(Program)}";
@@ -79,6 +85,7 @@ namespace FileTime.Avalonia
                 using var streamWriter = new StreamWriter(fileWriter);
                 streamWriter.WriteLine(DateTime.Now.ToString() + ": " + message + "\n" + e.ToString() + "\n\n");
             }
+#endif
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

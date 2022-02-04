@@ -20,6 +20,7 @@ namespace FileTime.Avalonia.Application
     [Inject(typeof(Tab))]
     public partial class TabContainer : INewItemProcessor
     {
+        private bool _updateFromCode;
         [Property]
         private TabState _tabState;
 
@@ -46,19 +47,24 @@ namespace FileTime.Avalonia.Application
             get => _selectedItem;
             set
             {
-                if (value != null)
+                if (!_updateFromCode && value != null)
                 {
                     try
                     {
-                        SetSelectedItemAsync(value, true).Wait();
+                        /*var task = SetSelectedItemAsync(value, true);
+                        Task.WaitAll(new Task[] { task }, 100);*/
+                        SetSelectedItemAsync(value, true);
                     }
-                    catch 
-                    { 
+                    catch
+                    {
                         //TODO: Debug, linux start after restore 3 tabs
                     }
                 }
             }
         }
+
+        [Property]
+        private ElementPreviewViewModel? _elementPreview;
 
         public async Task SetSelectedItemAsync(IItemViewModel? value, bool fromDataBinding = false)
         {
@@ -66,8 +72,19 @@ namespace FileTime.Avalonia.Application
             {
                 _selectedItem = value;
 
-                OnPropertyChanged(nameof(SelectedItem));
+                if (value is ElementViewModel elementViewModel)
+                {
+                    var elementPreview = new ElementPreviewViewModel();
+                    await elementPreview.Init(elementViewModel.Element);
+                    ElementPreview = elementPreview;
+                }
+                else
+                {
+                    ElementPreview = null;
+                }
+
                 await Tab.SetCurrentSelectedItem(SelectedItem?.Item, fromDataBinding);
+                OnPropertyChanged(nameof(SelectedItem));
             }
         }
 
@@ -174,7 +191,7 @@ namespace FileTime.Avalonia.Application
 
                 if (token.IsCancellationRequested) return;
 
-                var items = await _currentLocation.GetItems();
+                var items = await _currentLocation.GetItems(token);
                 if (items?.Count > 0)
                 {
                     foreach (var item in items)
@@ -198,7 +215,7 @@ namespace FileTime.Avalonia.Application
                                 {
                                     if (token.IsCancellationRequested) return;
                                     var activeChildItem = await Tab.GetItemByLastPath(containerViewModel.Container);
-                                    child = (await containerViewModel.GetItems()).FirstOrDefault(i => i.Item == activeChildItem);
+                                    child = (await containerViewModel.GetItems(token)).FirstOrDefault(i => i.Item == activeChildItem);
                                     if (child != null)
                                     {
                                         child.IsSelected = true;
@@ -239,59 +256,71 @@ namespace FileTime.Avalonia.Application
             catch { }
         }
 
+        private async Task RunFromCode(Func<Task> task)
+        {
+            _updateFromCode = true;
+            try
+            {
+                await task();
+            }
+            catch
+            {
+                _updateFromCode = false;
+                throw;
+            }
+        }
+
         public async Task Open()
         {
             if (ChildContainer != null)
             {
-                await Tab.Open();
-                await UpdateCurrentSelectedItem();
+                await RunFromCode(Tab.Open);
             }
         }
 
         public async Task GoUp()
         {
-            await Tab.GoUp();
-            await UpdateCurrentSelectedItem();
+            await RunFromCode(Tab.GoUp);
         }
 
         public async Task MoveCursorDown()
         {
-            await Tab.SelectNextItem();
+            await RunFromCode(async () => await Tab.SelectNextItem());
         }
 
         public async Task MoveCursorDownPage()
         {
-            await Tab.SelectNextItem(10);
+            await RunFromCode(async () => await Tab.SelectNextItem(10));
         }
 
         public async Task MoveCursorUp()
         {
-            await Tab.SelectPreviousItem();
+            await RunFromCode(async () => await Tab.SelectPreviousItem());
         }
 
         public async Task MoveCursorUpPage()
         {
-            await Tab.SelectPreviousItem(10);
+            await RunFromCode(async () => await Tab.SelectPreviousItem(10));
         }
 
         public async Task MoveCursorToFirst()
         {
-            await Tab.SelectFirstItem();
+            await RunFromCode(Tab.SelectFirstItem);
         }
 
         public async Task MoveCursorToLast()
         {
-            await Tab.SelectLastItem();
+            await RunFromCode(Tab.SelectLastItem);
         }
 
         public async Task GotToProvider()
         {
-            await Tab.GoToProvider();
+            await RunFromCode(Tab.GoToProvider);
         }
 
         public async Task GotToRoot()
         {
-            await Tab.GoToRoot();
+            await RunFromCode(Tab.GoToRoot);
         }
 
         public async Task GotToHome()
@@ -300,28 +329,42 @@ namespace FileTime.Avalonia.Application
             var resolvedPath = await LocalContentProvider.GetByPath(path);
             if (resolvedPath is IContainer homeFolder)
             {
-                await Tab.OpenContainer(homeFolder);
+                await OpenContainer(homeFolder);
             }
         }
 
         public async Task CreateContainer(string name)
         {
-            (await Tab.GetCurrentLocation())?.CreateContainer(name);
+            await RunFromCode(async () =>
+            {
+                var currentLocation = await Tab.GetCurrentLocation();
+                if (currentLocation != null)
+                {
+                    await currentLocation.CreateContainer(name);
+                }
+            });
         }
 
         public async Task CreateElement(string name)
         {
-            (await Tab.GetCurrentLocation())?.CreateElement(name);
+            await RunFromCode(async () =>
+            {
+                var currentLocation = await Tab.GetCurrentLocation();
+                if (currentLocation != null)
+                {
+                    await currentLocation.CreateElement(name);
+                }
+            });
         }
 
         public async Task OpenContainer(IContainer container)
         {
-            await Tab.OpenContainer(container);
+            await RunFromCode(async () => await Tab.OpenContainer(container));
         }
 
         public async Task MarkCurrentItem()
         {
-            await _tabState.MakrCurrentItem();
+            await _tabState.MarkCurrentItem();
         }
 
         public async Task UpdateMarkedItems(ContainerViewModel containerViewModel, CancellationToken token = default)

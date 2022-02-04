@@ -29,6 +29,8 @@ namespace FileTime.Core.Timeline
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
+        public bool IsDisposed { get; private set; }
+
         public TimeContainer(string name, IContainer parent, IContentProvider contentProvider, IContentProvider virtualContentProvider, PointInTime pointInTime)
         {
             _parent = parent;
@@ -121,5 +123,7 @@ namespace FileTime.Core.Timeline
             return new TimeElement(elementDiff.Name, this, Provider, elementDiff.AbsolutePath.VirtualContentProvider ?? elementDiff.AbsolutePath.ContentProvider);
         }
         public Task<bool> CanOpen() => Task.FromResult(true);
+
+        public void Dispose() => IsDisposed = true;
     }
 }

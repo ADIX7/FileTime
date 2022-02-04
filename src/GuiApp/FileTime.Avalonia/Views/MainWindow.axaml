@@ -6,12 +6,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileTime.Avalonia.ViewModels"
 	xmlns:local="using:FileTime.Avalonia.Views"
+	xmlns:models="using:FileTime.Avalonia.Models"
     Title="FileTime"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Icon="/Assets/filetime.ico"
 	InputElement.KeyDown="OnKeyDown"
-	InputElement.KeyUp="OnKeyUp"
 	TransparencyLevelHint="Blur"
 	Background="Transparent"
 	ExtendClientAreaToDecorationsHint="True"
@@ -100,7 +100,7 @@
 												Margin="5,0,0,0"
 												Grid.Column="1"
 												Grid.ColumnSpan="2"
-												Grid.Row="1"	
+												Grid.Row="1"
 												MinWidth="100"
 												HorizontalAlignment="Stretch"
 												Maximum="100"
@@ -269,123 +269,65 @@
 								VerticalAlignment="Stretch"
 								Fill="{DynamicResource ContentSeparatorBrush}" />
 
-							<Grid Grid.Column="4" IsVisible="{Binding AppState.SelectedTab.ChildContainer,Converter={StaticResource IsNotNullConverter}}">
-								<ListBox
-									Classes="ContentListView"
-									IsEnabled="False"
-									x:Name="ChildItems"
-									Items="{Binding AppState.SelectedTab.ChildContainer.Items}"
-									IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<local:ItemView/>
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
+							<Grid Grid.Column="4">
+								<Grid IsVisible="{Binding AppState.SelectedTab.ChildContainer,Converter={StaticResource IsNotNullConverter}}">
+									<ListBox
+										Classes="ContentListView"
+										IsEnabled="False"
+										x:Name="ChildItems"
+										Items="{Binding AppState.SelectedTab.ChildContainer.Items}"
+										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<local:ItemView/>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
 
-								<Grid
-									IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
-
-									<TextBlock
-										x:Name="ChildEmpty"
-										Margin="10"
-										HorizontalAlignment="Center"
-										FontWeight="Bold"
-										Foreground="{DynamicResource ErrorBrush}"
-										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
-										Empty
-									</TextBlock>
-
-									<Grid
-										RowDefinitions="Auto, Auto"
-										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+									<Grid IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 
 										<TextBlock
-											Margin="0,0,0,10"
+											x:Name="ChildEmpty"
+											Margin="10"
 											HorizontalAlignment="Center"
-											TextWrapping="Wrap"
-											Text="There were some errors while opening container."
-											Foreground="{DynamicResource ErrorBrush}" />
+											FontWeight="Bold"
+											Foreground="{DynamicResource ErrorBrush}"
+											IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+											Empty
+										</TextBlock>
 
-										<ItemsRepeater Grid.Row="1" Items="{Binding AppState.SelectedTab.ChildContainer.Exceptions}">
-											<ItemsRepeater.ItemTemplate>
-												<DataTemplate>
-													<TextBlock Text="{Binding, Converter={StaticResource ExceptionToStringConverter}}"/>
-												</DataTemplate>
-											</ItemsRepeater.ItemTemplate>
-										</ItemsRepeater>
-									</Grid>
-								</Grid>
-							</Grid>
-						</Grid>
-
-						<Grid
-							HorizontalAlignment="Center"
-							VerticalAlignment="Center"
-							IsVisible="{Binding Inputs, Converter={StaticResource IsNotNullConverter}}">
-							<Grid.RowDefinitions>
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-							</Grid.RowDefinitions>
-
-							<ItemsControl
-								x:Name="InputList"
-								Items="{Binding Inputs}">
-								<ItemsControl.ItemTemplate>
-									<DataTemplate>
-										<Grid MinWidth="400">
-											<Grid.ColumnDefinitions>
-												<ColumnDefinition MinWidth="200" />
-												<ColumnDefinition Width="*" />
-											</Grid.ColumnDefinitions>
+										<Grid
+											RowDefinitions="Auto, Auto"
+											IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
 
 											<TextBlock
-												HorizontalAlignment="Left"
-												VerticalAlignment="Center"
-												Text="{Binding InputElement.Text}" />
-											<TextBox
-												AttachedToVisualTree="InputText_AttachedToVisualTree"
-												Grid.Column="1"
-												GotFocus="InputText_GotFocus"
-												LostFocus="InputText_LostFocus"
-												KeyDown="InputText_KeyDown"
-												Text="{Binding Value, Mode=TwoWay}" />
+												Margin="0,0,0,10"
+												HorizontalAlignment="Center"
+												TextWrapping="Wrap"
+												Text="There were some errors while opening container."
+												Foreground="{DynamicResource ErrorBrush}" />
+
+											<ItemsRepeater Grid.Row="1" Items="{Binding AppState.SelectedTab.ChildContainer.Exceptions}">
+												<ItemsRepeater.ItemTemplate>
+													<DataTemplate>
+														<TextBlock Text="{Binding, Converter={StaticResource ExceptionToStringConverter}}"/>
+													</DataTemplate>
+												</ItemsRepeater.ItemTemplate>
+											</ItemsRepeater>
 										</Grid>
-									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
-							<StackPanel
-								Grid.Row="1"
-								Orientation="Horizontal">
-								<Button
-									Command="{Binding ProcessInputsCommand}"
-									Content="Ok" />
-								<Button
-									Command="{Binding CancelInputsCommand}"
-									Content="Cancel" />
-							</StackPanel>
-						</Grid>
+									</Grid>
+								</Grid>
 
-						<Grid
-							HorizontalAlignment="Center"
-							VerticalAlignment="Center"
-							IsVisible="{Binding MessageBoxText, Converter={StaticResource IsNotNullConverter}}">
-							<Grid.RowDefinitions>
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-							</Grid.RowDefinitions>
-
-							<TextBlock Text="{Binding MessageBoxText}"/>
-							<StackPanel
-								Grid.Row="1"
-								Orientation="Horizontal">
-								<Button
-									Command="{Binding ProcessMessageBoxCommand}"
-									Content="Yes" />
-								<Button
-									Command="{Binding CancelMessageBoxCommand}"
-									Content="No" />
-							</StackPanel>
+								<Grid IsVisible="{Binding AppState.SelectedTab.ElementPreview, Converter={StaticResource IsNotNullConverter}}">
+									<TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this file" IsVisible="{Binding AppState.SelectedTab.ElementPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ElementPreviewMode.Unknown}}"/>
+									<TextBlock HorizontalAlignment="Center" Text="Empty" IsVisible="{Binding AppState.SelectedTab.ElementPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ElementPreviewMode.Empty}}"/>
+									<ScrollViewer IsVisible="{Binding AppState.SelectedTab.ElementPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ElementPreviewMode.Text}}">
+										<TextBox
+											IsReadOnly="True"
+											Text="{Binding AppState.SelectedTab.ElementPreview.TextContent}" />
+									</ScrollViewer>
+								</Grid>
+							</Grid>
 						</Grid>
 
 						<ItemsRepeater Items="{Binding PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="{Binding PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
@@ -496,7 +438,99 @@
 				</Grid>
 			</Grid>
 
-			<Border Background="{DynamicResource TransparentContainerBackgroundBrush}" Margin="20" HorizontalAlignment="Center" IsVisible="{Binding ShowAllShortcut}">
+			<Border
+				Background="{DynamicResource BarelyTransparentBackgroundColor}"
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch"
+				IsVisible="{Binding Inputs, Converter={StaticResource IsNotNullConverter}}">
+				<Border
+					Background="{DynamicResource ContainerBackgroundBrush}"
+					Padding="20"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+					<Grid RowDefinitions="Auto,Auto">
+
+						<ItemsControl
+							x:Name="InputList"
+							Items="{Binding Inputs}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Grid MinWidth="500" ColumnDefinitions="250,*" Margin="10,5">
+										<TextBlock
+											HorizontalAlignment="Left"
+											VerticalAlignment="Center"
+											Text="{Binding InputElement.Text}" />
+										<TextBox
+											PasswordChar="{Binding PasswordChar}"
+											AttachedToVisualTree="InputText_AttachedToVisualTree"
+											IsTabStop="True"
+											Grid.Column="1"
+											GotFocus="InputText_GotFocus"
+											LostFocus="InputText_LostFocus"
+											KeyDown="InputText_KeyDown"
+											Text="{Binding Value, Mode=TwoWay}" />
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+						<StackPanel
+							Grid.Row="1"
+							Orientation="Horizontal"
+							Margin="0,10,0,0">
+							<Button
+								HorizontalContentAlignment="Center"
+								Width="80"
+								Command="{Binding ProcessInputsCommand}"
+								Content="Ok" />
+							<Button
+								HorizontalContentAlignment="Center"
+								Width="80"
+								Margin="10,0,0,0"
+								Command="{Binding CancelInputsCommand}"
+								Content="Cancel" />
+						</StackPanel>
+					</Grid>
+				</Border>
+			</Border>
+
+			<Border
+				Background="{DynamicResource BarelyTransparentBackgroundColor}"
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch"
+				IsVisible="{Binding MessageBoxText, Converter={StaticResource IsNotNullConverter}}">
+				<Border
+					Background="{DynamicResource ContainerBackgroundBrush}"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Padding="20">
+					<Grid RowDefinitions="Auto,Auto">
+
+						<TextBlock Text="{Binding MessageBoxText}"/>
+						<StackPanel
+							Grid.Row="1"
+							Orientation="Horizontal"
+							Margin="0,10,0,0">
+							<Button
+								HorizontalContentAlignment="Center"
+								Width="80"
+								Command="{Binding ProcessMessageBoxCommand}"
+								Content="Yes" />
+							<Button
+								HorizontalContentAlignment="Center"
+								Width="80"
+								Margin="10,0,0,0"
+								Command="{Binding CancelMessageBoxCommand}"
+								Content="No" />
+						</StackPanel>
+					</Grid>
+				</Border>
+			</Border>
+
+			<Border
+				Background="{DynamicResource TransparentContainerBackgroundBrush}"
+				Margin="20"
+				HorizontalAlignment="Center"
+				IsVisible="{Binding IsAllShortcutVisible}">
 				<Grid RowDefinitions="Auto, *" Margin="30,10">
 					<TextBlock Text="Shortcuts" Margin="0,0,0,20"/>
 					<ScrollViewer

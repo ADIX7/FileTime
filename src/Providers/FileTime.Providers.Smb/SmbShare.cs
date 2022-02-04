@@ -29,6 +29,8 @@ namespace FileTime.Providers.Smb
         public AsyncEventHandler Refreshed { get; } = new();
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
+        public bool IsDisposed => false;
+
         public bool SupportsDirectoryLevelSoftDelete => false;
 
         public SmbShare(string name, SmbContentProvider contentProvider, IContainer parent, SmbClientContext smbClientContext)
@@ -111,6 +113,14 @@ namespace FileTime.Providers.Smb
             }
             catch { }
 
+            if (_items != null)
+            {
+                foreach (var item in _items)
+                {
+                    item.Dispose();
+                }
+            }
+
             _containers = containers.AsReadOnly();
             _elements = elements.AsReadOnly();
 
@@ -160,5 +170,7 @@ namespace FileTime.Providers.Smb
 
         public Task Rename(string newName) => throw new NotSupportedException();
         public Task<bool> CanOpen() => Task.FromResult(true);
+
+        public void Dispose() { }
     }
 }

@@ -29,6 +29,8 @@ namespace FileTime.Providers.Smb
         public AsyncEventHandler Refreshed { get; } = new();
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
+        public bool IsDisposed { get; private set; }
+
         public bool SupportsDirectoryLevelSoftDelete => false;
 
         public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent)
@@ -103,6 +105,14 @@ namespace FileTime.Providers.Smb
             _containers = containers.AsReadOnly();
             _elements = elements.AsReadOnly();
 
+            if (_items != null)
+            {
+                foreach (var item in _items)
+                {
+                    item.Dispose();
+                }
+            }
+
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
             await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
@@ -123,5 +133,7 @@ namespace FileTime.Providers.Smb
             return _elements;
         }
         public Task<bool> CanOpen() => Task.FromResult(true);
+
+        public void Dispose() => IsDisposed = true;
     }
 }

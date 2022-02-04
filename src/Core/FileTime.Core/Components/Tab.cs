@@ -11,7 +11,9 @@ namespace FileTime.Core.Components
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private string? _lastPath;
 
-        private readonly object _guardSetCurrentSelectedItemCTS = new object();
+        private bool _currentlySelecting = false;
+
+        private readonly object _guardSetCurrentSelectedItemCTS = new();
         private CancellationTokenSource? _setCurrentSelectedItemCTS;
 
         public int CurrentSelectedIndex { get; private set; }
@@ -54,6 +56,8 @@ namespace FileTime.Core.Components
 
         public async Task SetCurrentSelectedItem(IItem? value, bool secondary = false)
         {
+            if (_currentlySelecting) return;
+
             if (_currentSelectedItem != value)
             {
                 IItem? itemToSelect = null;
@@ -190,11 +194,13 @@ namespace FileTime.Core.Components
         {
             if (!currentPossibleItems.Any()) return;
 
-            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+            var currentLocation = await GetCurrentLocation();
+            var currentLocationItems = (await currentLocation.GetItems())!;
 
             if (await GetCurrentSelectedItem() != null)
             {
-                (await GetCurrentLocation())?.RefreshAsync();
+                _currentlySelecting = true;
+                currentLocation?.RefreshAsync();
 
                 IItem? newSelectedItem = null;
                 foreach (var item in currentPossibleItems)
@@ -212,6 +218,7 @@ namespace FileTime.Core.Components
                     newSelectedItem = (await (await GetCurrentLocation()).GetItems())?.FirstOrDefault(i => i.Name == newSelectedItem.Name);
                 }
 
+                _currentlySelecting = false;
                 await SetCurrentSelectedItem(newSelectedItem ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null));
             }
             else
@@ -260,6 +267,11 @@ namespace FileTime.Core.Components
                     await SetCurrentLocation(parent);
                     var newCurrentLocation = (await (await GetCurrentLocation()).GetItems())?.FirstOrDefault(i => i.Name == lastCurrentLocation.Name);
                     await SetCurrentSelectedItem(newCurrentLocation);
+                }
+
+                foreach(var lastLocationItem in currentLocationItems.OfType<IContainer>())
+                {
+                    lastLocationItem.Dispose();
                 }
             }
         }

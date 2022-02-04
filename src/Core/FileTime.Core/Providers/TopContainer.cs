@@ -33,6 +33,8 @@ namespace FileTime.Core.Providers
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
+        public bool IsDisposed => false;
+
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {
             _contentProviders = new List<IContentProvider>(contentProviders);
@@ -57,7 +59,7 @@ namespace FileTime.Core.Providers
 
         public Task<bool> IsExists(string name) => throw new NotImplementedException();
 
-        public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+        public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
         public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default) => Task.FromResult(_items);
         public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult(_containers);
@@ -68,5 +70,7 @@ namespace FileTime.Core.Providers
         public Task Rename(string newName) => throw new NotSupportedException();
 
         public Task<bool> CanOpen() => Task.FromResult(true);
+
+        public void Dispose() { }
     }
 }

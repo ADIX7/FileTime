@@ -27,7 +27,7 @@ namespace FileTime.Core.Command
             if (itemToRename != null)
             {
                 await itemToRename.Rename(Target);
-                timeRunner.RefreshContainer?.InvokeAsync(this, new AbsolutePath(itemToRename.GetParent()!));
+                if(timeRunner.RefreshContainer != null) await timeRunner.RefreshContainer.InvokeAsync(this, new AbsolutePath(itemToRename.GetParent()!));
             }
         }
 

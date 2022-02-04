@@ -45,19 +45,11 @@ namespace FileTime.Avalonia.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        public async void OnKeyDown(object sender, KeyEventArgs e)
+        public void OnKeyDown(object sender, KeyEventArgs e)
         {
             if (_inputElementWrapper == null)
             {
-                e.Handled = e.Handled || await ViewModel!.ProcessKeyDown(e.Key, e.KeyModifiers);
-            }
-        }
-
-        public async void OnKeyUp(object sender, KeyEventArgs e)
-        {
-            if (_inputElementWrapper == null)
-            {
-                e.Handled = e.Handled || await ViewModel!.ProcessKeyUp(e.Key, e.KeyModifiers);
+                ViewModel!.ProcessKeyDown(e.Key, e.KeyModifiers, h => e.Handled = h);
             }
         }
 
@@ -87,7 +79,7 @@ namespace FileTime.Avalonia.Views
 
         private void InputText_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox inputText && inputText.DataContext is InputElementWrapper inputElementWrapper)
+            if (sender is TextBox inputText && inputText.DataContext is InputElementWrapper)
             {
                 _inputElementWrapper = null;
             }

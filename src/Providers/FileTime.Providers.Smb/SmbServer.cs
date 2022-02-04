@@ -40,6 +40,8 @@ namespace FileTime.Providers.Smb
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
+        public bool IsDisposed => false;
+
         public SmbServer(string path, SmbContentProvider contentProvider, IInputInterface inputInterface)
         {
             _inputInterface = inputInterface;
@@ -97,7 +99,7 @@ namespace FileTime.Providers.Smb
 
             _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, _smbClientContext)).AsReadOnly();
             _items = _shares.Cast<IItem>().ToList().AsReadOnly();
-            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty);
+            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
@@ -190,5 +192,7 @@ namespace FileTime.Providers.Smb
 
         public Task Rename(string newName) => throw new NotSupportedException();
         public Task<bool> CanOpen() => Task.FromResult(true);
+
+        public void Dispose() { }
     }
 }

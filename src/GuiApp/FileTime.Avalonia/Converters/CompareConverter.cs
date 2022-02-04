@@ -42,11 +42,16 @@ namespace FileTime.Avalonia.Converters
                 else if (value is double valueDouble && (parameter is double parameterDouble || double.TryParse(parameter?.ToString(), out parameterDouble))) return valueDouble != parameterDouble;
                 return value != parameter;
             }
-            if (ComparisonCondition == ComparisonCondition.Equal)
+            else if (ComparisonCondition == ComparisonCondition.Equal)
             {
                 if (value is int valueInt && (parameter is int parameterInt || int.TryParse(parameter?.ToString(), out parameterInt))) return valueInt == parameterInt;
                 else if (value is double valueDouble && (parameter is double parameterDouble || double.TryParse(parameter?.ToString(), out parameterDouble))) return valueDouble == parameterDouble;
-                else if (value?.GetType().IsEnum ?? false && Enum.TryParse(value.GetType(), parameter?.ToString(), out var _)) return value.ToString() == parameter?.ToString();
+                else if (value?.GetType().IsEnum ?? false && Enum.TryParse(value.GetType(), parameter?.ToString(), out var _))
+                {
+                    var s1 = value.ToString();
+                    var s2 = parameter?.ToString();
+                    return s1 == s2;
+                }
             }
 
             return value == parameter;

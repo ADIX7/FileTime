@@ -74,10 +74,10 @@ namespace FileTime.Avalonia.ViewModels
         private string _messageBoxText;
 
         [Property]
-        private ObservableCollection<string> _popupTexts = new ObservableCollection<string>();
+        private ObservableCollection<string> _popupTexts = new();
 
         [Property]
-        private bool _showAllShortcut;
+        private bool _isAllShortcutVisible;
 
         [Property]
         private List<CommandBinding> _allShortcut;
@@ -127,7 +127,7 @@ namespace FileTime.Avalonia.ViewModels
             var driveInfos = new List<RootDriveInfo>();
             var drives = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed)
-                : DriveInfo.GetDrives().Where(d => 
+                : DriveInfo.GetDrives().Where(d =>
                     d.DriveType == DriveType.Fixed
                     && d.DriveFormat != "pstorefs"
                     && d.DriveFormat != "bpf_fs"
@@ -716,9 +716,58 @@ namespace FileTime.Avalonia.ViewModels
             }
         }
 
-        private Task ShowAllShortcut2()
+        private Task ShowAllShortcut()
         {
-            ShowAllShortcut = true;
+            IsAllShortcutVisible = true;
+            return Task.CompletedTask;
+        }
+
+        private Task RunCommandInContainer()
+        {
+            var handler = () =>
+            {
+                if (Inputs != null)
+                {
+                    var input = Inputs[0].Value;
+                    string? path = null;
+                    string? arguments = null;
+
+                    if (input.StartsWith("\""))
+                    {
+                        var pathEnd = input.IndexOf('\"', 1);
+
+                        path = input.Substring(1, pathEnd);
+                        arguments = input.Substring(pathEnd + 1).Trim();
+                    }
+                    else
+                    {
+                        var inputParts = input.Split(' ');
+                        path = inputParts[0];
+                        arguments = inputParts.Length > 1 ? string.Join(' ', inputParts[1..]).Trim() : null;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(path))
+                    {
+                        var process = new Process();
+                        process.StartInfo.FileName = path;
+
+                        if (!string.IsNullOrWhiteSpace(arguments))
+                        {
+                            process.StartInfo.Arguments = arguments;
+                        }
+                        if (AppState.SelectedTab.CurrentLocation.Container is LocalFolder localFolder)
+                        {
+                            process.StartInfo.WorkingDirectory = localFolder.Directory.FullName;
+                        }
+                        process.Start();
+                    }
+                }
+
+                return Task.CompletedTask;
+            };
+
+            ReadInputs(new List<Core.Interactions.InputElement>() { new Core.Interactions.InputElement("Command", InputType.Text) }, handler);
+
             return Task.CompletedTask;
         }
 
@@ -757,14 +806,14 @@ namespace FileTime.Avalonia.ViewModels
             _inputHandler = null;
         }
 
-        public async Task<bool> ProcessKeyDown(Key key, KeyModifiers keyModifiers)
+        public async void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
         {
             if (key == Key.LeftAlt
                 || key == Key.RightAlt
                 || key == Key.LeftShift
                 || key == Key.RightShift
                 || key == Key.LeftCtrl
-                || key == Key.RightCtrl) return false;
+                || key == Key.RightCtrl) return;
 
             NoCommandFound = false;
 
@@ -782,12 +831,14 @@ namespace FileTime.Avalonia.ViewModels
 
                 if (key == Key.Escape)
                 {
-                    ShowAllShortcut = false;
+                    IsAllShortcutVisible = false;
                     _previousKeys.Clear();
                     PossibleCommands = new();
+                    setHandled(true);
                 }
                 else if (selectedCommandBinding != null)
                 {
+                    setHandled(true);
                     await selectedCommandBinding.InvokeAsync();
                     _previousKeys.Clear();
                     PossibleCommands = new();
@@ -796,10 +847,11 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     _previousKeys.Clear();
                     PossibleCommands = new();
-                    return false;
+                    return;
                 }
                 else if (_previousKeys.Count == 2)
                 {
+                    setHandled(true);
                     NoCommandFound = true;
                     _previousKeys.Clear();
                     PossibleCommands = new();
@@ -817,6 +869,7 @@ namespace FileTime.Avalonia.ViewModels
                     {
                         PossibleCommands = possibleCommands;
                     }
+                    setHandled(true);
                 }
             }
             else
@@ -826,9 +879,10 @@ namespace FileTime.Avalonia.ViewModels
 
                 if (key == Key.Escape)
                 {
-                    if (ShowAllShortcut)
+                    setHandled(true);
+                    if (IsAllShortcutVisible)
                     {
-                        ShowAllShortcut = false;
+                        IsAllShortcutVisible = false;
                     }
                     else
                     {
@@ -839,12 +893,14 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     if (AppState.RapidTravelText.Length > 0)
                     {
+                        setHandled(true);
                         AppState.RapidTravelText = AppState.RapidTravelText.Substring(0, AppState.RapidTravelText.Length - 1);
                         updateRapidTravelFilter = true;
                     }
                 }
                 else if (keyString.Length == 1)
                 {
+                    setHandled(true);
                     AppState.RapidTravelText += keyString.ToString().ToLower();
                     updateRapidTravelFilter = true;
                 }
@@ -854,12 +910,8 @@ namespace FileTime.Avalonia.ViewModels
                     var selectedCommandBinding = _universalCommandBindings.Find(c => AreKeysEqual(c.Keys, currentKeyAsList));
                     if (selectedCommandBinding != null)
                     {
+                        setHandled(true);
                         await selectedCommandBinding.InvokeAsync();
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
                     }
                 }
 
@@ -895,13 +947,6 @@ namespace FileTime.Avalonia.ViewModels
                     }
                 }
             }
-
-            return true;
-        }
-
-        public Task<bool> ProcessKeyUp(Key key, KeyModifiers keyModifiers)
-        {
-            return Task.FromResult(false);
         }
 
         private void ReadInputs(List<Core.Interactions.InputElement> inputs, Action inputHandler)
@@ -1144,7 +1189,12 @@ namespace FileTime.Avalonia.ViewModels
                     "show all shortcut",
                     FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[] { new KeyWithModifiers(Key.F1) },
-                    ShowAllShortcut2),
+                    ShowAllShortcut),
+                new CommandBinding(
+                    "run command",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.D4, shift: true) },
+                    RunCommandInContainer),
                 //TODO REMOVE
                 new CommandBinding(
                     "open in default file browser",

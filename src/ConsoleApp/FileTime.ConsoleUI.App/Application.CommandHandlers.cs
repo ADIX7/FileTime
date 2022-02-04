@@ -67,7 +67,7 @@ namespace FileTime.ConsoleUI.App
         {
             if (_selectedTab != null)
             {
-                await _tabStates[_selectedTab].MakrCurrentItem();
+                await _tabStates[_selectedTab].MarkCurrentItem();
             }
         }
 

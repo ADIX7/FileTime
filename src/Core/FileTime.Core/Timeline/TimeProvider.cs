@@ -28,6 +28,8 @@ namespace FileTime.Core.Timeline
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
+        public bool IsDisposed => false;
+
         public TimeProvider(PointInTime pointInTime)
         {
             _pointInTime = pointInTime;
@@ -90,5 +92,7 @@ namespace FileTime.Core.Timeline
 
         public void SetParent(IContainer container) { }
         public Task<bool> CanOpen() => Task.FromResult(true);
+
+        public void Dispose() { }
     }
 }

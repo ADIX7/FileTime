@@ -133,12 +133,13 @@ namespace FileTime.Avalonia.ViewModels
 
         public async Task Init(bool initializeChildren = true, CancellationToken token = default)
         {
-            await Refresh(initializeChildren, token);
+            if (_isInitialized) return;
+            await Refresh(initializeChildren, token: token);
         }
 
         private async Task Container_Refreshed(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            await Refresh(false, token);
+            await Refresh(false, false, token);
         }
 
         [Obsolete($"Use the parametrizable version of {nameof(Refresh)}.")]
@@ -146,7 +147,7 @@ namespace FileTime.Avalonia.ViewModels
         {
             await Refresh(true);
         }
-        private async Task Refresh(bool initializeChildren, CancellationToken token = default)
+        private async Task Refresh(bool initializeChildren, bool alloweReuse = true, CancellationToken token = default)
         {
             if (_isRefreshing) return;
 
@@ -157,17 +158,12 @@ namespace FileTime.Avalonia.ViewModels
             {
                 _isRefreshing = true;
 
-                var containers = (await _container.GetContainers())!.Select(c => AdoptOrReuseOrCreateItem(c, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
-                var elements = (await _container.GetElements())!.Select(e => AdoptOrReuseOrCreateItem(e, (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
+                var containers = (await _container.GetContainers())!.Select(c => AdoptOrReuseOrCreateItem(c, alloweReuse , (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
+                var elements = (await _container.GetElements())!.Select(e => AdoptOrReuseOrCreateItem(e, alloweReuse , (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
 
                 if (token.IsCancellationRequested) return;
 
                 Exceptions = new List<Exception>(_container.Exceptions);
-
-                foreach (var containerToRemove in _containers.Except(containers))
-                {
-                    containerToRemove?.Dispose();
-                }
 
                 if (initializeChildren)
                 {
@@ -178,14 +174,53 @@ namespace FileTime.Avalonia.ViewModels
                     }
                 }
 
-                for (var i = 0; i < _items.Count; i++)
+                /*var containersToAdd = containers.Except(_containers).ToList();
+                var containersToRemove = _containers.Except(containers).ToList();
+
+                var elementsToAdd = elements.Except(_elements).ToList();
+                var elementsToRemove = _elements.Except(elements).ToList();
+
+                foreach (var containerToRemove in containersToRemove)
                 {
-                    _items[i].IsAlternative = i % 2 == 1;
+                    Containers.Remove(containerToRemove);
+                    Items.Remove(containerToRemove);
+                    containerToRemove?.Dispose();
+                }
+
+                foreach (var elementToRemove in elementsToRemove)
+                {
+                    Elements.Remove(elementToRemove);
+                    Items.Remove(elementToRemove);
+                }
+
+                foreach (var containerToAdd in containersToAdd)
+                {
+                    Containers.Insert(GetNewItemPosition(containerToAdd, Containers), containerToAdd);
+                    Items.Insert(GetNewItemPosition(containerToAdd, Items), containerToAdd);
+                }
+
+                foreach (var elementToAdd in elementsToAdd)
+                {
+                    Elements.Insert(GetNewItemPosition(elementToAdd, Elements), elementToAdd);
+                    Items.Insert(GetNewItemPosition(elementToAdd, Items), elementToAdd);
+                }*/
+
+
+
+                var containersToRemove = _containers.Except(containers).ToList();
+                foreach (var containerToRemove in containersToRemove)
+                {
+                    containerToRemove?.Dispose();
                 }
 
                 Containers = new ObservableCollection<ContainerViewModel>(containers);
                 Elements = new ObservableCollection<ElementViewModel>(elements);
                 Items = new ObservableCollection<IItemViewModel>(containers.Cast<IItemViewModel>().Concat(elements));
+
+                for (var i = 0; i < Items.Count; i++)
+                {
+                    Items[i].IsAlternative = i % 2 == 1;
+                }
             }
             catch (Exception e)
             {
@@ -197,13 +232,31 @@ namespace FileTime.Avalonia.ViewModels
             _isRefreshing = false;
         }
 
-        private TResult AdoptOrReuseOrCreateItem<T, TResult>(T item, Func<T, TResult> generator) where T : class, IItem
+        private int GetNewItemPosition<TItem, T>(TItem itemToAdd, IList<T> items) where TItem : IItemViewModel where T : IItemViewModel
+        {
+            var i = 0;
+            for (; i < items.Count; i++)
+            {
+                var item = items[i];
+                if (item is TItem && itemToAdd.Item.Name.CompareTo(item.Item.Name) < 0)
+                {
+                    return i - 1;
+                }
+            }
+
+            return i;
+        }
+
+        private TResult AdoptOrReuseOrCreateItem<T, TResult>(T item, bool allowResuse, Func<T, TResult> generator) where T : class, IItem
         {
             var itemToAdopt = ChildrenToAdopt.Find(i => i.Item == item);
             if (itemToAdopt is TResult itemViewModel) return itemViewModel;
 
+            if (allowResuse)
+            {
             var existingViewModel = _items?.FirstOrDefault(i => i.Item == item);
             if (existingViewModel is TResult itemViewModelToReuse) return itemViewModelToReuse;
+            }
 
             return generator(item);
         }
@@ -221,26 +274,26 @@ namespace FileTime.Avalonia.ViewModels
                 }
             }
 
-            _containers = new ObservableCollection<ContainerViewModel>();
-            _elements = new ObservableCollection<ElementViewModel>();
-            _items = new ObservableCollection<IItemViewModel>();
+            _containers.Clear();
+            _elements.Clear();
+            _items.Clear();
         }
 
         public async Task<ObservableCollection<ContainerViewModel>> GetContainers(CancellationToken token = default)
         {
-            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token), token);
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
             return _containers;
         }
 
         public async Task<ObservableCollection<ElementViewModel>> GetElements(CancellationToken token = default)
         {
-            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token), token);
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
             return _elements;
         }
 
         public async Task<ObservableCollection<IItemViewModel>> GetItems(CancellationToken token = default)
         {
-            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token), token);
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
             return _items;
         }
 

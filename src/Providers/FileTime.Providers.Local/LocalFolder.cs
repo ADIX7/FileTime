@@ -11,7 +11,7 @@ namespace FileTime.Providers.Local
         private IReadOnlyList<IItem>? _items;
         private IReadOnlyList<IContainer>? _containers;
         private IReadOnlyList<IElement>? _elements;
-        private List<Exception> _exceptions;
+        private readonly List<Exception> _exceptions;
         private readonly IContainer? _parent;
 
         public bool IsHidden => (Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
@@ -33,6 +33,8 @@ namespace FileTime.Providers.Local
 
         public DateTime CreatedAt => Directory.CreationTime;
         public IReadOnlyList<Exception> Exceptions { get; }
+
+        public bool IsDisposed { get; private set; }
 
         public bool SupportsDirectoryLevelSoftDelete { get; }
 
@@ -59,8 +61,16 @@ namespace FileTime.Providers.Local
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)new LocalFolder(Directory, Provider, _parent));
 
-        public Task RefreshAsync(CancellationToken token = default)
+        public async Task RefreshAsync(CancellationToken token = default)
         {
+            if (_items != null)
+            {
+                foreach (var item in _items)
+                {
+                    item.Dispose();
+                }
+            }
+
             _containers = new List<IContainer>();
             _elements = new List<IElement>();
             _items = new List<IItem>();
@@ -68,13 +78,13 @@ namespace FileTime.Providers.Local
 
             try
             {
-                if (token.IsCancellationRequested) return Task.CompletedTask;
+                if (token.IsCancellationRequested) return;
                 _containers = Directory.GetDirectories().Select(d => new LocalFolder(d, Provider, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
 
-                if (token.IsCancellationRequested) return Task.CompletedTask;
+                if (token.IsCancellationRequested) return;
                 _elements = Directory.GetFiles().Select(f => new LocalFile(f, this, Provider)).OrderBy(f => f.Name).ToList().AsReadOnly();
 
-                if (token.IsCancellationRequested) return Task.CompletedTask;
+                if (token.IsCancellationRequested) return;
             }
             catch (Exception e)
             {
@@ -82,9 +92,7 @@ namespace FileTime.Providers.Local
             }
 
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            Refreshed?.InvokeAsync(this, AsyncEventArgs.Empty, token);
-
-            return Task.CompletedTask;
+            if (Refreshed != null) await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
@@ -176,5 +184,13 @@ namespace FileTime.Providers.Local
             }
         }
         public Task<bool> CanOpen() => Task.FromResult(true);
+
+        public void Dispose()
+        {
+            _items = null;
+            _containers = null;
+            _elements = null;
+            IsDisposed = true;
+        }
     }
 }

@@ -101,7 +101,7 @@ namespace FileTime.App.Core.Tab
                 : new List<AbsolutePath>().AsReadOnly();
         }
 
-        public async Task MakrCurrentItem()
+        public async Task MarkCurrentItem()
         {
             var currentLocation = await Tab!.GetCurrentLocation();
             if (currentLocation != null)
