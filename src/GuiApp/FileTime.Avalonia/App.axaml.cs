@@ -1,26 +1,32 @@
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FileTime.App.Core;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace FileTime.Avalonia
 {
     public class App : global::Avalonia.Application
     {
-        public static IServiceProvider ServiceProvider { get; private set; }
+        public static IServiceProvider ServiceProvider { get; }
 
         static App()
         {
             ServiceProvider ??= DependencyInjection
                 .RegisterDefaultServices()
+                .AddConfiguration()
+                .InitSerilog()
+                .RegisterLogging()
                 .AddViewModels()
                 .AddServices()
                 .RegisterCommandHandlers()
                 .BuildServiceProvider();
+
+            var _logger = ServiceProvider.GetService<ILogger<App>>();
+            _logger?.LogInformation("App initialization completed.");
         }
 
         public override void Initialize()

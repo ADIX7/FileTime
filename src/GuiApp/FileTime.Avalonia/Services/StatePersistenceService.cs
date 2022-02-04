@@ -34,7 +34,7 @@ namespace FileTime.Avalonia.Services
             _itemNameConverterService = itemNameConverterService;
             _contentProviders = contentProviders;
             _localContentProvider = localContentProvider;
-            _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FileTime", "savedState.json");
+            _settingsPath = Path.Combine(Program.AppDataRoot, "savedState.json");
 
             _jsonOptions = new JsonSerializerOptions()
             {

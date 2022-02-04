@@ -26,6 +26,7 @@ using FileTime.Core.Providers;
 using Syroot.Windows.IO;
 using FileTime.Avalonia.IconProviders;
 using Avalonia.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -34,6 +35,7 @@ namespace FileTime.Avalonia.ViewModels
     [Inject(typeof(AppState), PropertyAccessModifier = AccessModifier.Public)]
     [Inject(typeof(StatePersistenceService), PropertyName = "StatePersistence", PropertyAccessModifier = AccessModifier.Public)]
     [Inject(typeof(ItemNameConverterService))]
+    [Inject(typeof(ILogger<MainPageViewModel>), PropertyName = "_logger")]
     public partial class MainPageViewModel : IMainPageViewModelBase
     {
         const string RAPIDTRAVEL = "rapidTravel";
@@ -87,6 +89,7 @@ namespace FileTime.Avalonia.ViewModels
 
         async partial void OnInitialize()
         {
+            _logger?.LogInformation($"Starting {nameof(MainPageViewModel)} initialization...");
             _clipboard = App.ServiceProvider.GetService<IClipboard>()!;
             _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
             _contentProviders = App.ServiceProvider.GetService<IEnumerable<IContentProvider>>()!;
@@ -205,6 +208,7 @@ namespace FileTime.Avalonia.ViewModels
             Places = places;
             await Task.Delay(100);
             Loading = false;
+            _logger?.LogInformation($"{nameof(MainPageViewModel)} initialized.");
         }
 
         private void UpdateParalellCommands(object? sender, EventArgs e)

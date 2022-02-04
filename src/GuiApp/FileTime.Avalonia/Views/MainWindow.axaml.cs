@@ -7,6 +7,7 @@ using FileTime.Avalonia.Misc;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
@@ -14,6 +15,7 @@ namespace FileTime.Avalonia.Views
 {
     public partial class MainWindow : Window
     {
+        private readonly ILogger<MainWindow>? _logger;
         public MainPageViewModel? ViewModel
         {
             get => DataContext as MainPageViewModel;
@@ -30,6 +32,8 @@ namespace FileTime.Avalonia.Views
 
         public MainWindow()
         {
+            _logger = App.ServiceProvider.GetService<ILogger<MainWindow>>();
+            _logger?.LogInformation($"Starting {nameof(MainWindow)} initialization...");
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
@@ -123,6 +127,7 @@ namespace FileTime.Avalonia.Views
         {
             if (ViewModel is not MainPageViewModel)
             {
+                _logger?.LogInformation($"{nameof(MainWindow)} opened, starting {nameof(MainPageViewModel)} initialization...");
                 ViewModel = App.ServiceProvider.GetService<MainPageViewModel>();
             }
         }

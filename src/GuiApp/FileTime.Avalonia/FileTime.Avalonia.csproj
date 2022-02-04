@@ -8,6 +8,7 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <Folder Include="Configuration\" />
     <None Remove=".gitignore" />
   </ItemGroup>
   <ItemGroup>
@@ -21,9 +22,14 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.12" />
     <PackageReference Include="Avalonia.Svg.Skia" Version="0.10.12" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.12" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="MvvmGen" Version="1.1.2" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Syroot.Windows.IO.KnownFolders" Version="1.2.3" />
   </ItemGroup>
   <ItemGroup>

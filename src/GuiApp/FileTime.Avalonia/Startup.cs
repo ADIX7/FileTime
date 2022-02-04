@@ -1,11 +1,15 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.IO;
+using System.Runtime.InteropServices;
 using FileTime.Avalonia.Application;
+using FileTime.Avalonia.Configuration;
 using FileTime.Avalonia.IconProviders;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Interactions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace FileTime.Avalonia
 {
@@ -21,7 +25,6 @@ namespace FileTime.Avalonia
         internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)
         {
             serviceCollection = serviceCollection
-                .AddLogging()
                 .AddSingleton<ItemNameConverterService>()
                 .AddSingleton<StatePersistenceService>()
                 .AddSingleton<IIconProvider, MaterialIconProvider>();
@@ -39,10 +42,45 @@ namespace FileTime.Avalonia
         }
         internal static IServiceCollection RegisterCommandHandlers(this IServiceCollection serviceCollection)
         {
-            foreach (var commandHandler in FileTime.Providers.Local.Startup.GetCommandHandlers())
+            foreach (var commandHandler in Providers.Local.Startup.GetCommandHandlers())
             {
                 serviceCollection.AddTransient(typeof(ICommandHandler), commandHandler);
             }
+
+            return serviceCollection;
+        }
+
+        internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)
+        {
+            return serviceCollection.AddLogging(loggingBuilder =>
+                loggingBuilder.AddSerilog(dispose: true)
+            );
+        }
+
+        internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(MainConfiguration.Configuration)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{Program.EnvironmentName}.json", true, true)
+                .Build();
+
+            return serviceCollection
+                //.Configure<SzopiAPIConfig>(configuration.GetSection("server"))
+                .AddSingleton<IConfiguration>(configuration);
+        }
+
+        internal static IServiceCollection InitSerilog(this IServiceCollection serviceCollection)
+        {
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(serviceCollection.BuildServiceProvider().GetService<IConfiguration>())
+                .Enrich.FromLogContext()
+                .WriteTo.File(
+                    Path.Combine(Program.AppDataRoot, "logs", "appLog.log"), 
+                    fileSizeLimitBytes: 10*1024*1024, 
+                    rollOnFileSizeLimit: true, 
+                    rollingInterval: RollingInterval.Day)
+                .CreateLogger();
 
             return serviceCollection;
         }
