@@ -12,10 +12,15 @@ namespace FileTime.Avalonia.ViewModels
     public partial class ParallelCommandViewModel : IDisposable
     {
         private bool _disposed;
-        private readonly ReadOnlyCommandTimeState _commandTimeState;
+
+        [Property]
+        private ReadOnlyCommandTimeState _commandTimeState;
 
         [Property]
         private int _progress;
+
+        [Property]
+        private bool _isSelected;
 
         public CanCommandRun CanRun => _commandTimeState.CanRun;
         public bool ForceRun => _commandTimeState.ForceRun;

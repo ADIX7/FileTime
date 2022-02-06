@@ -106,6 +106,18 @@ namespace FileTime.Avalonia.Views
             }
         }
 
+        private void OnRootDrivePointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            if (!e.Handled
+                && ViewModel != null
+                && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+                && sender is StyledElement control
+                && control.DataContext is RootDriveInfo rootDriveInfo)
+            {
+                ViewModel.OpenContainer(rootDriveInfo.Container);
+                e.Handled = true;
+            }
+        }
         private void OnWindowClosed(object sender, EventArgs e)
         {
             try

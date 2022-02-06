@@ -12,6 +12,8 @@ namespace FileTime.Avalonia.Models
         private readonly DriveInfo _driveInfo;
         private readonly IContainer _container;
 
+        public IContainer Container => _container;
+
         [Property]
         private string _name;
 

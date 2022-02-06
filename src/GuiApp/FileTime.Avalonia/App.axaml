@@ -163,12 +163,24 @@
 			</Setter>
 		</Style>
 
+		<Style Selector="Grid.RootDriveInfo">
+			<Setter Property="Background" Value="#01000000"/>
+		</Style>
+
+		<Style Selector="Grid.RootDriveInfo:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AppBackgroundColor}"/>
+		</Style>
+
 		<Style Selector="Grid.PlacesItem">
 			<Setter Property="Background" Value="#01000000"/>
 		</Style>
 
 		<Style Selector="Grid.PlacesItem:pointerover">
 			<Setter Property="Background" Value="{DynamicResource AppBackgroundColor}"/>
+		</Style>
+		
+		<Style Selector="Border.SelectedTimelineCommand">
+			<Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}"/>
 		</Style>
 	</Application.Styles>
 </Application>

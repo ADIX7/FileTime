@@ -27,6 +27,8 @@ using Syroot.Windows.IO;
 using FileTime.Avalonia.IconProviders;
 using Avalonia.Threading;
 using Microsoft.Extensions.Logging;
+using AsyncEvent;
+using System.Threading;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -99,7 +101,7 @@ namespace FileTime.Avalonia.ViewModels
             App.ServiceProvider.GetService<TopContainer>();
             await StatePersistence.LoadStatesAsync();
 
-            _timeRunner.CommandsChanged += UpdateParalellCommands;
+            _timeRunner.CommandsChangedAsync.Add(UpdateParalellCommands);
             InitCommandBindings();
 
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.Up) });
@@ -211,9 +213,11 @@ namespace FileTime.Avalonia.ViewModels
             _logger?.LogInformation($"{nameof(MainPageViewModel)} initialized.");
         }
 
-        private void UpdateParalellCommands(object? sender, EventArgs e)
+        private async Task UpdateParalellCommands(object? sender, AsyncEventArgs e, CancellationToken token)
         {
-            foreach (var parallelCommand in _timeRunner.ParallelCommands)
+            var parallelCommands = await _timeRunner.GetParallelCommandsAsync();
+
+            foreach (var parallelCommand in parallelCommands)
             {
                 if (!TimelineCommands.Any(c => c.Id == parallelCommand.Id))
                 {
@@ -223,7 +227,7 @@ namespace FileTime.Avalonia.ViewModels
             var itemsToRemove = new List<ParallelCommandsViewModel>();
             foreach (var parallelCommandVm in TimelineCommands)
             {
-                if (!_timeRunner.ParallelCommands.Any(c => c.Id == parallelCommandVm.Id))
+                if (!parallelCommands.Any(c => c.Id == parallelCommandVm.Id))
                 {
                     itemsToRemove.Add(parallelCommandVm);
                 }
@@ -233,6 +237,33 @@ namespace FileTime.Avalonia.ViewModels
             {
                 itemsToRemove[i].Dispose();
                 TimelineCommands.Remove(itemsToRemove[i]);
+            }
+
+            foreach (var parallelCommand in parallelCommands)
+            {
+                var parallelCommandsVM = TimelineCommands.First(t => t.Id == parallelCommand.Id);
+                foreach (var command in parallelCommand.Commands)
+                {
+                    if (!parallelCommandsVM.ParallelCommands.Any(c => c.CommandTimeState.Command == command.Command))
+                    {
+                        parallelCommandsVM.ParallelCommands.Add(new ParallelCommandViewModel(command));
+                    }
+                }
+
+                var commandVMsToRemove = new List<ParallelCommandViewModel>();
+                foreach (var commandVM in parallelCommandsVM.ParallelCommands)
+                {
+                    if (!parallelCommand.Commands.Any(c => c.Command == commandVM.CommandTimeState.Command))
+                    {
+                        commandVMsToRemove.Add(commandVM);
+                    }
+                }
+
+                for (var i = 0; i < commandVMsToRemove.Count; i++)
+                {
+                    commandVMsToRemove[i].Dispose();
+                    parallelCommandsVM.ParallelCommands.Remove(commandVMsToRemove[i]);
+                }
             }
         }
 
@@ -771,6 +802,66 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
+        private Task SelectPreviousTimelineBlock()
+        {
+            return Task.CompletedTask;
+        }
+
+        private Task SelectNextTimelineCommand()
+        {
+            var currentSelected = GetSelectedTimelineCommandOrSelectFirst();
+            if (currentSelected == null) return Task.CompletedTask;
+
+            ParallelCommandViewModel? lastCommand = null;
+            var any = false;
+            foreach (var command in TimelineCommands.SelectMany(t => t.ParallelCommands))
+            {
+                var isSelected = lastCommand == currentSelected;
+                command.IsSelected = isSelected;
+                any = any || isSelected;
+                lastCommand = command;
+            }
+            if (!any && lastCommand != null) lastCommand.IsSelected = true;
+            return Task.CompletedTask;
+        }
+
+        private Task SelectPreviousTimelineCommand()
+        {
+            var currentSelected = GetSelectedTimelineCommandOrSelectFirst();
+            if (currentSelected == null) return Task.CompletedTask;
+
+            ParallelCommandViewModel? lastCommand = null;
+            foreach (var command in TimelineCommands.SelectMany(t => t.ParallelCommands))
+            {
+                if (lastCommand != null)
+                {
+                    lastCommand.IsSelected = command == currentSelected;
+                }
+                lastCommand = command;
+            }
+            if (lastCommand != null) lastCommand.IsSelected = false;
+            return Task.CompletedTask;
+        }
+
+        private Task SelectNextTimelineBlock()
+        {
+            return Task.CompletedTask;
+        }
+
+        private ParallelCommandViewModel? GetSelectedTimelineCommandOrSelectFirst()
+        {
+            var currentSelected = TimelineCommands.SelectMany(t => t.ParallelCommands).FirstOrDefault(c => c.IsSelected);
+            if (currentSelected != null) return currentSelected;
+
+            var firstCommand = TimelineCommands.SelectMany(t => t.ParallelCommands).FirstOrDefault();
+            if (firstCommand != null)
+            {
+                firstCommand.IsSelected = true;
+            }
+
+            return null;
+        }
+
         [Command]
         public async void ProcessInputs()
         {
@@ -1195,18 +1286,37 @@ namespace FileTime.Avalonia.ViewModels
                     FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[] { new KeyWithModifiers(Key.D4, shift: true) },
                     RunCommandInContainer),
+                new CommandBinding(
+                    "copy path",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.C), new KeyWithModifiers(Key.P) },
+                    CopyPath),
+                new CommandBinding(
+                    "select previous timeline block",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.H) },
+                    SelectPreviousTimelineBlock),
+                new CommandBinding(
+                    "select next timeline command",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.J) },
+                    SelectNextTimelineCommand),
+                new CommandBinding(
+                    "select previous timeline command",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.K) },
+                    SelectPreviousTimelineCommand),
+                new CommandBinding(
+                    "select next timeline block",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.L) },
+                    SelectNextTimelineBlock),
                 //TODO REMOVE
                 new CommandBinding(
                     "open in default file browser",
                     FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[] { new KeyWithModifiers(Key.O), new KeyWithModifiers(Key.E) },
                     OpenInDefaultFileExplorer),
-                //TODO REMOVE
-                new CommandBinding(
-                    "copy path",
-                    FileTime.App.Core.Command.Commands.Dummy,
-                    new KeyWithModifiers[] { new KeyWithModifiers(Key.C), new KeyWithModifiers(Key.P) },
-                    CopyPath),
             };
             var universalCommandBindings = new List<CommandBinding>()
             {

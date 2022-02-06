@@ -2,18 +2,23 @@
 using System.Collections.Generic;
 using System;
 using FileTime.Core.Timeline;
+using MvvmGen;
+using System.Collections.ObjectModel;
 
 namespace FileTime.Avalonia.ViewModels
 {
-    public class ParallelCommandsViewModel : IDisposable
+    [ViewModel]
+    public partial class ParallelCommandsViewModel : IDisposable
     {
         private bool _disposed;
-        public IReadOnlyCollection<ParallelCommandViewModel> ParallelCommands { get; }
+
+        [Property]
+        private ObservableCollection<ParallelCommandViewModel> _parallelCommands;
         public ushort Id { get; }
 
         public ParallelCommandsViewModel(ReadOnlyParallelCommands parallelCommands)
         {
-            ParallelCommands = parallelCommands.Commands.Select(c => new ParallelCommandViewModel(c)).ToList().AsReadOnly();
+            _parallelCommands = new ObservableCollection<ParallelCommandViewModel>(parallelCommands.Commands.Select(c => new ParallelCommandViewModel(c)));
             Id = parallelCommands.Id;
         }
 
