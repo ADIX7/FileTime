@@ -999,7 +999,7 @@ namespace FileTime.Avalonia.ViewModels
             key1.Key == key2.Key
             && key1.Alt == key2.Alt
             && key1.Shift == key2.Shift
-            && key1.Ctrl == key1.Ctrl;
+            && key1.Ctrl == key2.Ctrl;
 
         private void InitCommandBindings()
         {
