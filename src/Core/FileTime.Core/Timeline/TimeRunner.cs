@@ -1,6 +1,7 @@
 using AsyncEvent;
 using FileTime.Core.Command;
 using FileTime.Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.Core.Timeline
 {
@@ -9,10 +10,11 @@ namespace FileTime.Core.Timeline
         private readonly CommandExecutor _commandExecutor;
         private readonly List<ParallelCommands> _commandsToRun = new();
         private readonly object _guard = new();
+        private readonly ILogger<TimeRunner> _logger;
 
         private bool _resourceIsInUse;
-        private readonly List<Thread> _commandRunners = new();
-        private bool _enableRunning; //= true;
+        private readonly List<CommandRunner> _commandRunners = new();
+        private bool _enableRunning = true;
 
         private IReadOnlyList<ReadOnlyParallelCommands> _parallelCommands = new List<ReadOnlyParallelCommands>();
 
@@ -41,14 +43,15 @@ namespace FileTime.Core.Timeline
 
         public AsyncEventHandler<AbsolutePath> RefreshContainer { get; } = new AsyncEventHandler<AbsolutePath>();
 
-        public AsyncEventHandler CommandsChangedAsync { get; } = new();
+        public AsyncEventHandler<IReadOnlyList<ReadOnlyParallelCommands>> CommandsChangedAsync { get; } = new();
 
-        public TimeRunner(CommandExecutor commandExecutor)
+        public TimeRunner(CommandExecutor commandExecutor, ILogger<TimeRunner> logger)
         {
             _commandExecutor = commandExecutor;
+            _logger = logger;
         }
 
-        public async Task AddCommand(ICommand command, ParallelCommands? batch = null, bool toNewBatch = false)
+        public async Task AddCommand(ICommand command, int? batchId = null, bool toNewBatch = false)
         {
             await RunWithLockAsync(async () =>
             {
@@ -64,9 +67,9 @@ namespace FileTime.Core.Timeline
                     batchToAdd = new ParallelCommands(_commandsToRun.Last().Result);
                     _commandsToRun.Add(batchToAdd);
                 }
-                else if (batch != null && _commandsToRun.Contains(batch))
+                else if (batchId != null && _commandsToRun.Find(b => b.Id == batchId) is ParallelCommands parallelCommands)
                 {
-                    batchToAdd = batch;
+                    batchToAdd = parallelCommands;
                 }
                 else
                 {
@@ -80,20 +83,14 @@ namespace FileTime.Core.Timeline
                 {
                     StartCommandRunner();
                 }
-            });
 
-            await UpdateReadOnlyCommands();
+                await UpdateReadOnlyCommands();
+            });
         }
 
         public async Task TryStartCommandRunner()
         {
-            await RunWithLockAsync(() =>
-            {
-                if (_commandRunners.Count == 0 && _commandsToRun.Count > 0)
-                {
-                    StartCommandRunner();
-                }
-            });
+            await RunWithLockAsync(() => StartCommandRunner());
         }
 
         private void StartCommandRunner()
@@ -112,9 +109,15 @@ namespace FileTime.Core.Timeline
             {
                 foreach (var command in _commandsToRun[0].Commands)
                 {
-                    if (command.CanRun == CanCommandRun.True || (command.CanRun == CanCommandRun.Forceable && command.ForceRun))
+                    if (_commandRunners.Find(r => r.Command == command) != null)
                     {
+                        continue;
+                    }
+                    else if (command.CanRun == CanCommandRun.True || (command.CanRun == CanCommandRun.Forceable && command.ForceRun))
+                    {
+                        _logger.LogDebug("Starting command: {0}", command.Command.DisplayLabel);
                         var thread = new Thread(new ParameterizedThreadStart(RunCommand));
+                        _commandRunners.Add(new CommandRunner(thread, command));
                         thread.Start(command);
                     }
                     else
@@ -144,28 +147,33 @@ namespace FileTime.Core.Timeline
 
         private async Task DisposeCommandThread(Thread thread, CommandTimeState? command)
         {
-            await RunWithLockAsync(() =>
+            await RunWithLockAsync(async () =>
             {
                 if (command != null)
                 {
+                    _logger.LogDebug("Command finished running: {0}", command.Command.DisplayLabel);
                     _commandsToRun[0].Remove(command);
                     if (_commandsToRun[0].Commands.Count == 0)
                     {
+                        _logger.LogDebug("Removing empty command array. {0} batch left.", _commandsToRun.Count - 1);
                         _commandsToRun.RemoveAt(0);
                     }
                 }
 
-                _commandRunners.Remove(thread);
+                var currentCommandRunner = _commandRunners.Find(r => r.Thread == thread);
+                if (currentCommandRunner != null) _commandRunners.Remove(currentCommandRunner);
+                await UpdateReadOnlyCommands();
+                StartCommandRunner();
             });
-            await UpdateReadOnlyCommands();
-
-            await TryStartCommandRunner();
         }
 
         public async Task Refresh()
         {
-            await RunWithLockAsync(async () => await RefreshCommands(PointInTime.CreateEmpty()));
-            await UpdateReadOnlyCommands();
+            await RunWithLockAsync(async () =>
+            {
+                await RefreshCommands(PointInTime.CreateEmpty());
+                await UpdateReadOnlyCommands();
+            });
         }
 
         private async Task RefreshCommands(PointInTime? fullStartTime = null)
@@ -181,11 +189,10 @@ namespace FileTime.Core.Timeline
 
         private async Task UpdateReadOnlyCommands()
         {
-            var wait = false;
-            await RunWithLockAsync(() => wait = _commandsToRun.Count == 1);
+            var wait = _commandsToRun.Count == 1;
             if (wait) await Task.Delay(100);
-            await RunWithLockAsync(() => _parallelCommands = _commandsToRun.ConvertAll(c => new ReadOnlyParallelCommands(c)).AsReadOnly());
-            await CommandsChangedAsync.InvokeAsync(this, AsyncEventArgs.Empty);
+            _parallelCommands = _commandsToRun.ConvertAll(c => new ReadOnlyParallelCommands(c)).AsReadOnly();
+            await CommandsChangedAsync.InvokeAsync(this, _parallelCommands);
         }
 
         private async Task RunWithLockAsync(Action action)

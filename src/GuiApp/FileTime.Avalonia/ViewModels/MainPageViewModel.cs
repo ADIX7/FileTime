@@ -51,6 +51,7 @@ namespace FileTime.Avalonia.ViewModels
         private TimeRunner _timeRunner;
         private IEnumerable<IContentProvider> _contentProviders;
         private IIconProvider _iconProvider;
+        private bool _addCommandToNextBatch;
 
         private Func<Task>? _inputHandler;
 
@@ -101,7 +102,7 @@ namespace FileTime.Avalonia.ViewModels
             App.ServiceProvider.GetService<TopContainer>();
             await StatePersistence.LoadStatesAsync();
 
-            _timeRunner.CommandsChangedAsync.Add(UpdateParalellCommands);
+            _timeRunner.CommandsChangedAsync.Add(UpdateParallelCommands);
             InitCommandBindings();
 
             _keysToSkip.Add(new KeyWithModifiers[] { new KeyWithModifiers(Key.Up) });
@@ -213,10 +214,8 @@ namespace FileTime.Avalonia.ViewModels
             _logger?.LogInformation($"{nameof(MainPageViewModel)} initialized.");
         }
 
-        private async Task UpdateParalellCommands(object? sender, AsyncEventArgs e, CancellationToken token)
+        private Task UpdateParallelCommands(object? sender, IReadOnlyList<ReadOnlyParallelCommands> parallelCommands, CancellationToken token)
         {
-            var parallelCommands = await _timeRunner.GetParallelCommandsAsync();
-
             foreach (var parallelCommand in parallelCommands)
             {
                 if (!TimelineCommands.Any(c => c.Id == parallelCommand.Id))
@@ -265,6 +264,8 @@ namespace FileTime.Avalonia.ViewModels
                     parallelCommandsVM.ParallelCommands.Remove(commandVMsToRemove[i]);
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task<IContainer?> GetContainerForWindowsDrive(DriveInfo drive)
@@ -441,7 +442,7 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     var container = AppState.SelectedTab.CurrentLocation.Container;
                     var createContainerCommand = new CreateContainerCommand(new Core.Models.AbsolutePath(container), Inputs[0].Value);
-                    await _timeRunner.AddCommand(createContainerCommand);
+                    await AddCommand(createContainerCommand);
                     Inputs = null;
                 }
             };
@@ -459,7 +460,7 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     var container = AppState.SelectedTab.CurrentLocation.Container;
                     var createElementCommand = new CreateElementCommand(new Core.Models.AbsolutePath(container), Inputs[0].Value);
-                    await _timeRunner.AddCommand(createElementCommand);
+                    await AddCommand(createElementCommand);
                     Inputs = null;
                 }
             };
@@ -516,12 +517,14 @@ namespace FileTime.Avalonia.ViewModels
             var askForDelete = false;
             var questionText = "";
             var shouldDelete = false;
+            var shouldClearMarkedItems = false;
 
             var currentSelectedItems = await AppState.SelectedTab.TabState.GetCurrentMarkedItems();
             var currentSelectedItem = AppState.SelectedTab.SelectedItem?.Item;
             if (currentSelectedItems.Count > 0)
             {
-                itemsToDelete = currentSelectedItems.Cast<Core.Models.AbsolutePath>().ToList();
+                itemsToDelete = new List<AbsolutePath>(currentSelectedItems);
+                shouldClearMarkedItems = true;
 
                 //FIXME: check 'is Container'
                 if (currentSelectedItems.Count == 1)
@@ -545,9 +548,9 @@ namespace FileTime.Avalonia.ViewModels
             }
             else if (currentSelectedItem != null)
             {
-                itemsToDelete = new List<Core.Models.AbsolutePath>()
+                itemsToDelete = new List<AbsolutePath>()
                 {
-                    new Core.Models.AbsolutePath(currentSelectedItem)
+                    new AbsolutePath(currentSelectedItem)
                 };
 
                 if (currentSelectedItem is IContainer container && (await container.GetItems())?.Count > 0)
@@ -575,16 +578,22 @@ namespace FileTime.Avalonia.ViewModels
 
             async Task HandleDelete()
             {
-                var deleteCommand = new DeleteCommand();
-                deleteCommand.HardDelete = hardDelete;
+                var deleteCommand = new DeleteCommand
+                {
+                    HardDelete = hardDelete
+                };
 
                 foreach (var itemToDelete in itemsToDelete!)
                 {
                     deleteCommand.ItemsToDelete.Add(itemToDelete);
                 }
 
-                await _timeRunner.AddCommand(deleteCommand);
+                await AddCommand(deleteCommand);
                 _clipboard.Clear();
+                if (shouldClearMarkedItems)
+                {
+                    await AppState.SelectedTab.TabState.ClearCurrentMarkedItems();
+                }
             }
         }
 
@@ -621,7 +630,7 @@ namespace FileTime.Avalonia.ViewModels
                     ? virtualContainer.BaseContainer
                     : currentLocation;
 
-                await _timeRunner.AddCommand(command);
+                await AddCommand(command);
 
                 _clipboard.Clear();
             }
@@ -637,7 +646,7 @@ namespace FileTime.Avalonia.ViewModels
                     if (Inputs != null)
                     {
                         var renameCommand = new RenameCommand(new Core.Models.AbsolutePath(selectedItem), Inputs[0].Value);
-                        await _timeRunner.AddCommand(renameCommand);
+                        await AddCommand(renameCommand);
                     }
                 };
 
@@ -667,6 +676,21 @@ namespace FileTime.Avalonia.ViewModels
         private async Task RefreshTimeline()
         {
             await _timeRunner.Refresh();
+        }
+
+        private Task ChangeTimelineMode()
+        {
+            _addCommandToNextBatch = !_addCommandToNextBatch;
+            var text = "Timeline mode: " + (_addCommandToNextBatch ? "Continuous" : "Parallel");
+            _popupTexts.Add(text);
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                await Dispatcher.UIThread.InvokeAsync(() => _popupTexts.Remove(text));
+            });
+
+            return Task.CompletedTask;
         }
 
         private Task GoToContainer()
@@ -804,6 +828,34 @@ namespace FileTime.Avalonia.ViewModels
 
         private Task SelectPreviousTimelineBlock()
         {
+            var currentSelected = GetSelectedTimelineCommandOrSelectFirst();
+            if (currentSelected == null) return Task.CompletedTask;
+
+            ParallelCommandsViewModel? newBlockVM = null;
+            ParallelCommandsViewModel? previousBlockVM = null;
+
+            foreach (var timelineBlock in TimelineCommands)
+            {
+
+                foreach (var command in timelineBlock.ParallelCommands)
+                {
+                    if (command.IsSelected)
+                    {
+                        newBlockVM = previousBlockVM;
+                        break;
+                    }
+                }
+
+                previousBlockVM = timelineBlock;
+            }
+
+            if (newBlockVM == null) return Task.CompletedTask;
+
+            foreach (var val in TimelineCommands.Select(t => t.ParallelCommands.Select((c, i) => (ParalellCommandVM: t, CommandVM: c, Index: i))).SelectMany(t => t))
+            {
+                val.CommandVM.IsSelected = val.ParalellCommandVM == newBlockVM && val.Index == 0;
+            }
+
             return Task.CompletedTask;
         }
 
@@ -845,6 +897,35 @@ namespace FileTime.Avalonia.ViewModels
 
         private Task SelectNextTimelineBlock()
         {
+            var currentSelected = GetSelectedTimelineCommandOrSelectFirst();
+            if (currentSelected == null) return Task.CompletedTask;
+
+            ParallelCommandsViewModel? newBlockVM = null;
+            var select = false;
+            foreach (var timelineBlock in TimelineCommands)
+            {
+                if (select)
+                {
+                    newBlockVM = timelineBlock;
+                    break;
+                }
+                foreach (var command in timelineBlock.ParallelCommands)
+                {
+                    if (command.IsSelected)
+                    {
+                        select = true;
+                        break;
+                    }
+                }
+            }
+
+            if (newBlockVM == null) return Task.CompletedTask;
+
+            foreach (var val in TimelineCommands.Select(t => t.ParallelCommands.Select((c, i) => (ParalellCommandVM: t, CommandVM: c, Index: i))).SelectMany(t => t))
+            {
+                val.CommandVM.IsSelected = val.ParalellCommandVM == newBlockVM && val.Index == 0;
+            }
+
             return Task.CompletedTask;
         }
 
@@ -860,6 +941,35 @@ namespace FileTime.Avalonia.ViewModels
             }
 
             return null;
+        }
+
+        private async Task AddCommand(ICommand command)
+        {
+            if (_addCommandToNextBatch)
+            {
+                await _timeRunner.AddCommand(command, toNewBatch: true);
+            }
+            else
+            {
+                ParallelCommandsViewModel? batchToAdd = null;
+                foreach (var val in TimelineCommands.Select(t => t.ParallelCommands.Select(c => (ParalellCommandVM: t, CommandVM: c))).SelectMany(t => t))
+                {
+                    if (val.CommandVM.IsSelected)
+                    {
+                        batchToAdd = val.ParalellCommandVM;
+                        break;
+                    }
+                }
+
+                if (batchToAdd != null)
+                {
+                    await _timeRunner.AddCommand(command, batchToAdd.Id);
+                }
+                else
+                {
+                    await _timeRunner.AddCommand(command);
+                }
+            }
         }
 
         [Command]
@@ -882,7 +992,7 @@ namespace FileTime.Avalonia.ViewModels
         }
 
         [Command]
-        public void ProcessMessageBoxCommand()
+        public void ProcessMessageBox()
         {
             _inputHandler?.Invoke();
 
@@ -891,7 +1001,7 @@ namespace FileTime.Avalonia.ViewModels
         }
 
         [Command]
-        public void CancelMessageBoxCommand()
+        public void CancelMessageBox()
         {
             MessageBoxText = null;
             _inputHandler = null;
@@ -923,8 +1033,16 @@ namespace FileTime.Avalonia.ViewModels
                 if (key == Key.Escape)
                 {
                     IsAllShortcutVisible = false;
+                    MessageBoxText = null;
                     _previousKeys.Clear();
                     PossibleCommands = new();
+                    setHandled(true);
+                }
+                else if (key == Key.Enter
+                    && MessageBoxText != null)
+                {
+                    _previousKeys.Clear();
+                    ProcessMessageBox();
                     setHandled(true);
                 }
                 else if (selectedCommandBinding != null)
@@ -974,6 +1092,10 @@ namespace FileTime.Avalonia.ViewModels
                     if (IsAllShortcutVisible)
                     {
                         IsAllShortcutVisible = false;
+                    }
+                    else if (MessageBoxText != null)
+                    {
+                        MessageBoxText = null;
                     }
                     else
                     {
@@ -1311,6 +1433,11 @@ namespace FileTime.Avalonia.ViewModels
                     FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[] { new KeyWithModifiers(Key.L) },
                     SelectNextTimelineBlock),
+                new CommandBinding(
+                    "command running mode",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.T), new KeyWithModifiers(Key.M) },
+                    ChangeTimelineMode),
                 //TODO REMOVE
                 new CommandBinding(
                     "open in default file browser",

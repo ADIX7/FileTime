@@ -157,19 +157,21 @@
 							</ItemsControl.ItemsPanel>
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
-									<Border Background="{DynamicResource ContainerBackgroundColor}" Padding="5">
-										<ItemsControl Items="{Binding ParallelCommands}">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<Border BorderThickness="1" Classes="TimelineCommand" Classes.SelectedTimelineCommand="{Binding IsSelected}">
-														<StackPanel>
-															<TextBlock Text="{Binding Name}"/>
-															<ProgressBar Margin="0,5,0,0" Maximum="100" Value="{Binding Progress}"/>
-														</StackPanel>
-													</Border>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
+									<Border MaxHeight="200" Background="{DynamicResource ContainerBackgroundColor}" CornerRadius="10" Padding="5" Margin="0,0,10,0">
+										<ScrollViewer>
+											<ItemsControl Items="{Binding ParallelCommands}">
+												<ItemsControl.ItemTemplate>
+													<DataTemplate>
+														<Border BorderThickness="1" Classes="TimelineCommand" Classes.SelectedTimelineCommand="{Binding IsSelected}">
+															<StackPanel>
+																<TextBlock Text="{Binding Name}"/>
+																<ProgressBar Margin="0,5,0,0" Maximum="100" Value="{Binding Progress}"/>
+															</StackPanel>
+														</Border>
+													</DataTemplate>
+												</ItemsControl.ItemTemplate>
+											</ItemsControl>
+										</ScrollViewer>
 									</Border>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>

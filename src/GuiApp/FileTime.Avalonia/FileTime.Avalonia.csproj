@@ -46,4 +46,9 @@
       <DependentUpon>MainWindow.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
