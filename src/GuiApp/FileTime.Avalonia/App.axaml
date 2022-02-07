@@ -129,7 +129,9 @@
 			<converters:IsEmptyConverter x:Key="IsNotEmptyConverter" Inverse="true"/>
 			<converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter"/>
 			<converters:BoolInverter x:Key="BoolInverter"/>
-			<converters:IsElementConverter x:Key="IsElementConverter"/>
+			<converters:DateTimeConverter x:Key="DateTimeConverter"/>
+			<converters:IsTypeConverter x:Key="IsTypeConverter"/>
+			<converters:ItemViewModelIsAttibuteTypeConverter x:Key="ItemViewModelIsAttibuteTypeConverter"/>
 
 		</ResourceDictionary>
 	</Application.Resources>

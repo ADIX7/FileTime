@@ -3,6 +3,7 @@ using FileTime.Avalonia.Models;
 using FileTime.Avalonia.Services;
 using MvvmGen;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -27,6 +28,9 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private ContainerViewModel? _parent;
 
+        [Property]
+        private long _size;
+
         [PropertyInvalidate(nameof(IsSelected))]
         [PropertyInvalidate(nameof(IsAlternative))]
         [PropertyInvalidate(nameof(IsMarked))]
@@ -50,5 +54,10 @@ namespace FileTime.Avalonia.ViewModels
         }
 
         public void InvalidateDisplayName() => OnPropertyChanged(nameof(DisplayName));
+
+        public async Task Init()
+        {
+            Size = await _element.GetElementSize();
+        }
     }
 }

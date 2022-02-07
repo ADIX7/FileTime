@@ -72,7 +72,7 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "publish windows gui",
+      "label": "publish gui",
       "command": "dotnet",
       "type": "process",
       "args": [
@@ -80,8 +80,6 @@
         "${workspaceFolder}/src/GuiApp/FileTime.Avalonia/FileTime.Avalonia.csproj",
         "-c",
         "Release",
-        "-r",
-        "win-x64"
       ],
       "problemMatcher": "$msCompile"
     },

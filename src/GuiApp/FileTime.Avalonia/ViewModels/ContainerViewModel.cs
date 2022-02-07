@@ -158,8 +158,31 @@ namespace FileTime.Avalonia.ViewModels
             {
                 _isRefreshing = true;
 
-                var containers = (await _container.GetContainers())!.Select(c => AdoptOrReuseOrCreateItem(c, alloweReuse , (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService))).ToList();
-                var elements = (await _container.GetElements())!.Select(e => AdoptOrReuseOrCreateItem(e, alloweReuse , (e2) => new ElementViewModel(e2, this, ItemNameConverterService))).ToList();
+                List<ContainerViewModel> newContainers = new List<ContainerViewModel>();
+                List<ElementViewModel> newElements = new List<ElementViewModel>();
+
+                if (await _container.GetContainers() is IReadOnlyList<IContainer> containers)
+                {
+                    foreach (var container in containers)
+                    {
+                        newContainers.Add(await AdoptOrReuseOrCreateItem(container, alloweReuse, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService)));
+                    }
+                }
+
+                if(await _container.GetElements() is IReadOnlyList<IElement> elements)
+                {
+                    foreach(var element in elements)
+                    {
+                        var generator = async (IElement e) =>
+                        {
+                            var element = new ElementViewModel(e, this, ItemNameConverterService);
+                            await element.Init();
+                            return element;
+                        };
+
+                        newElements.Add(await AdoptOrReuseOrCreateItem(element, alloweReuse, generator));
+                    }
+                }
 
                 if (token.IsCancellationRequested) return;
 
@@ -167,55 +190,22 @@ namespace FileTime.Avalonia.ViewModels
 
                 if (initializeChildren)
                 {
-                    foreach (var container in containers)
+                    foreach (var container in newContainers)
                     {
                         if (token.IsCancellationRequested) return;
                         await container.Init(false, token);
                     }
                 }
 
-                /*var containersToAdd = containers.Except(_containers).ToList();
-                var containersToRemove = _containers.Except(containers).ToList();
-
-                var elementsToAdd = elements.Except(_elements).ToList();
-                var elementsToRemove = _elements.Except(elements).ToList();
-
-                foreach (var containerToRemove in containersToRemove)
-                {
-                    Containers.Remove(containerToRemove);
-                    Items.Remove(containerToRemove);
-                    containerToRemove?.Dispose();
-                }
-
-                foreach (var elementToRemove in elementsToRemove)
-                {
-                    Elements.Remove(elementToRemove);
-                    Items.Remove(elementToRemove);
-                }
-
-                foreach (var containerToAdd in containersToAdd)
-                {
-                    Containers.Insert(GetNewItemPosition(containerToAdd, Containers), containerToAdd);
-                    Items.Insert(GetNewItemPosition(containerToAdd, Items), containerToAdd);
-                }
-
-                foreach (var elementToAdd in elementsToAdd)
-                {
-                    Elements.Insert(GetNewItemPosition(elementToAdd, Elements), elementToAdd);
-                    Items.Insert(GetNewItemPosition(elementToAdd, Items), elementToAdd);
-                }*/
-
-
-
-                var containersToRemove = _containers.Except(containers).ToList();
+                var containersToRemove = _containers.Except(newContainers).ToList();
                 foreach (var containerToRemove in containersToRemove)
                 {
                     containerToRemove?.Dispose();
                 }
 
-                Containers = new ObservableCollection<ContainerViewModel>(containers);
-                Elements = new ObservableCollection<ElementViewModel>(elements);
-                Items = new ObservableCollection<IItemViewModel>(containers.Cast<IItemViewModel>().Concat(elements));
+                Containers = new ObservableCollection<ContainerViewModel>(newContainers);
+                Elements = new ObservableCollection<ElementViewModel>(newElements);
+                Items = new ObservableCollection<IItemViewModel>(newContainers.Cast<IItemViewModel>().Concat(newElements));
 
                 for (var i = 0; i < Items.Count; i++)
                 {
@@ -247,18 +237,27 @@ namespace FileTime.Avalonia.ViewModels
             return i;
         }
 
-        private TResult AdoptOrReuseOrCreateItem<T, TResult>(T item, bool allowResuse, Func<T, TResult> generator) where T : class, IItem
+        private async Task<TResult> AdoptOrReuseOrCreateItem<T, TResult>(T item, bool allowResuse, Func<T, TResult> generator) where T : class, IItem
+        {
+            return await AdoptOrReuseOrCreateItem(item, allowResuse, Helper);
+
+            Task<TResult> Helper(T item)
+            {
+                return Task.FromResult(generator(item));
+            }
+        }
+        private async Task<TResult> AdoptOrReuseOrCreateItem<T, TResult>(T item, bool allowResuse, Func<T, Task<TResult>> generator) where T : class, IItem
         {
             var itemToAdopt = ChildrenToAdopt.Find(i => i.Item == item);
             if (itemToAdopt is TResult itemViewModel) return itemViewModel;
 
             if (allowResuse)
             {
-            var existingViewModel = _items?.FirstOrDefault(i => i.Item == item);
-            if (existingViewModel is TResult itemViewModelToReuse) return itemViewModelToReuse;
+                var existingViewModel = _items?.FirstOrDefault(i => i.Item == item);
+                if (existingViewModel is TResult itemViewModelToReuse) return itemViewModelToReuse;
             }
 
-            return generator(item);
+            return await generator(item);
         }
 
         public void Unload(bool recursive = true)

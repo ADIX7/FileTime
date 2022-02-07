@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FileTime.Avalonia.Views.ItemView"
+			 xmlns:models="using:FileTime.Avalonia.Models"
 			 x:Name="ItemRoot" Background="{Binding ViewMode,Converter={StaticResource ItemViewModeToBackgroundConverter}}">
 	<Grid ColumnDefinitions="Auto,*,Auto" Margin="3">
 		<Grid.Styles>
@@ -40,9 +41,27 @@
 		</ItemsControl>
 
 		<Grid Grid.Column="2" IsVisible="{Binding ShowAttributes,ElementName=ItemRoot}">
-			<Grid ColumnDefinitions="180,45">
-				<TextBlock Text="{Binding Item.CreatedAt}"/>
-				<TextBlock Grid.Column="1" Text="{Binding Item.Attributes}"/>
+			<Grid ColumnDefinitions="90,90,40,45" 
+				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.LocalFile}}">
+
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="1" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="2" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="3" Text="{Binding Item.Attributes}"/>
+			</Grid>
+			<Grid ColumnDefinitions="90,40,45" 
+				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.Container}}">
+				
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="1" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="2" Text="{Binding Item.Attributes}"/>
+			</Grid>
+			<Grid ColumnDefinitions="90,40,45" 
+				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.Element}}">
+				
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="1" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="2" Text="{Binding Item.Attributes}"/>
 			</Grid>
 		</Grid>
 	</Grid>
