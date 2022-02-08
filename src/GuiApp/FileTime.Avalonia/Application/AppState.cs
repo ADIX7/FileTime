@@ -7,6 +7,10 @@ using FileTime.App.Core.Tab;
 using System.Threading.Tasks;
 using FileTime.Core.Models;
 using System.Threading;
+using FileTime.Avalonia.Configuration;
+using FileTime.Avalonia.Misc;
+using FileTime.Core.Extensions;
+using FileTime.Avalonia.ViewModels;
 
 namespace FileTime.Avalonia.Application
 {
@@ -25,6 +29,28 @@ namespace FileTime.Avalonia.Application
 
         [Property]
         private string _rapidTravelText = "";
+
+        [Property]
+        private List<CommandBindingConfiguration> _possibleCommands = new();
+
+        [Property]
+        private List<InputElementWrapper> _inputs;
+
+        [Property]
+        private string _messageBoxText;
+
+        [Property]
+        private ObservableCollection<string> _popupTexts = new();
+
+        [Property]
+        private bool _isAllShortcutVisible;
+
+        [Property]
+        private bool _noCommandFound;
+
+        public List<KeyConfig> PreviousKeys { get; } = new();
+        
+        public ObservableCollection<ParallelCommandsViewModel> TimelineCommands { get; } = new();
 
         partial void OnInitialize()
         {
@@ -66,7 +92,7 @@ namespace FileTime.Avalonia.Application
 
         private void SelectedTabChanged()
         {
-            foreach(var tab in Tabs)
+            foreach (var tab in Tabs)
             {
                 tab.IsSelected = tab == SelectedTab;
             }
@@ -98,6 +124,17 @@ namespace FileTime.Avalonia.Application
                     item2.IsMarked = false;
                 }
             }
+        }
+
+        public async Task ExitRapidTravelMode()
+        {
+            ViewMode = ViewMode.Default;
+
+            PreviousKeys.Clear();
+            PossibleCommands = new();
+            RapidTravelText = "";
+
+            await SelectedTab.OpenContainer(await SelectedTab.CurrentLocation.Container.WithoutVirtualContainer(MainPageViewModel.RAPIDTRAVEL));
         }
     }
 }

@@ -90,7 +90,7 @@ namespace FileTime.ConsoleUI.App
                 new CommandBinding("open", Commands.Open, new[] { new ConsoleKeyInfo('→', ConsoleKey.RightArrow, false, false, false) }, Open),
                 new CommandBinding(
                     "go to top",
-                    Commands.MoveToTop,
+                    Commands.MoveToFirst,
                     new[]
                     {
                         new ConsoleKeyInfo('g', ConsoleKey.G, false, false, false),
@@ -99,7 +99,7 @@ namespace FileTime.ConsoleUI.App
                     MoveCursorToTop),
                 new CommandBinding(
                     "go to bottom",
-                    Commands.MoveToBottom,
+                    Commands.MoveToLast,
                     new[]
                     {
                         new ConsoleKeyInfo('G', ConsoleKey.G, true, false, false)
@@ -114,7 +114,7 @@ namespace FileTime.ConsoleUI.App
                         new ConsoleKeyInfo('h', ConsoleKey.H, false, false, false)
                     },
                     ToggleHidden),
-                new CommandBinding("select", Commands.Select, new[] { new ConsoleKeyInfo(' ', ConsoleKey.Spacebar, false, false, false) }, Select),
+                new CommandBinding("select", Commands.Mark, new[] { new ConsoleKeyInfo(' ', ConsoleKey.Spacebar, false, false, false) }, Select),
                 new CommandBinding(
                     "copy",
                     Commands.Copy,

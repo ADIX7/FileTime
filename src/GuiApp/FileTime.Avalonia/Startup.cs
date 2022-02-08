@@ -27,6 +27,10 @@ namespace FileTime.Avalonia
             serviceCollection = serviceCollection
                 .AddSingleton<ItemNameConverterService>()
                 .AddSingleton<StatePersistenceService>()
+                .AddSingleton<CommandHandlerService>()
+                .AddSingleton<KeyboardConfigurationService>()
+                .AddSingleton<KeyInputHandlerService>()
+                .AddSingleton<DialogService>()
                 .AddSingleton<IIconProvider, MaterialIconProvider>();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -66,19 +70,20 @@ namespace FileTime.Avalonia
                 .Build();
 
             return serviceCollection
-                //.Configure<SzopiAPIConfig>(configuration.GetSection("server"))
+                .Configure<KeyBindingConfiguration>(configuration.GetSection(MainConfiguration.KeybindingBaseConfigKey))
                 .AddSingleton<IConfiguration>(configuration);
         }
 
         internal static IServiceCollection InitSerilog(this IServiceCollection serviceCollection)
         {
+            using var serviceProvider = serviceCollection.BuildServiceProvider();
             Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(serviceCollection.BuildServiceProvider().GetService<IConfiguration>())
+                .ReadFrom.Configuration(serviceProvider.GetService<IConfiguration>())
                 .Enrich.FromLogContext()
                 .WriteTo.File(
-                    Path.Combine(Program.AppDataRoot, "logs", "appLog.log"), 
-                    fileSizeLimitBytes: 10*1024*1024, 
-                    rollOnFileSizeLimit: true, 
+                    Path.Combine(Program.AppDataRoot, "logs", "appLog.log"),
+                    fileSizeLimitBytes: 10 * 1024 * 1024,
+                    rollOnFileSizeLimit: true,
                     rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 

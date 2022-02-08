@@ -1,31 +1,44 @@
-﻿/* using FileTime.App.Core.Command;
-using FileTime.Avalonia.Misc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Avalonia.Input;
+using FileTime.App.Core.Command;
 
-namespace FileTime.Avalonia.Command
+namespace FileTime.Avalonia.Configuration
 {
-    public class CommandBinding
+    public class CommandBindingConfiguration
     {
-        private readonly Func<Task> _commandHandler;
+        public List<KeyConfig> Keys { get; set; } = new List<KeyConfig>();
 
-        public string Name { get; }
-        public Commands? Command { get; }
-        public KeyConfig[] Keys { get; }
+        public Commands Command { get; set; } = Commands.None;
 
         public string KeysDisplayText => GetKeysDisplayText();
 
-        public CommandBinding(string name, Commands? command, KeyConfig[] keys, Func<Task> commandHandler)
+        public CommandBindingConfiguration() { }
+
+        public CommandBindingConfiguration(Commands command, IEnumerable<KeyConfig> keys)
         {
-            _commandHandler = commandHandler;
-            Name = name;
+            Keys = new List<KeyConfig>(keys);
             Command = command;
-            Keys = keys;
         }
-        public async Task InvokeAsync() => await _commandHandler();
+
+        public CommandBindingConfiguration(Commands command, KeyConfig key)
+        {
+            Keys = new List<KeyConfig>() { key };
+            Command = command;
+        }
+
+        public CommandBindingConfiguration(Commands command, IEnumerable<Key> keys)
+        {
+            Keys = keys.Select(k => new KeyConfig(k)).ToList();
+            Command = command;
+        }
+
+        public CommandBindingConfiguration(Commands command, Key key)
+        {
+            Keys = new List<KeyConfig>() { new KeyConfig(key) };
+            Command = command;
+        }
 
         public string GetKeysDisplayText()
         {
@@ -37,7 +50,7 @@ namespace FileTime.Avalonia.Command
 
                 if (keyString.Length == 1)
                 {
-                    s += AddKeyWithCtrlOrAlt(k, s, (_, _, _) => k.Shift ?? false ? keyString.ToUpper() : keyString.ToLower());
+                    s += AddKeyWithCtrlOrAlt(k, s, (_, _, _) => k.Shift ? keyString.ToUpper() : keyString.ToLower());
                 }
                 else
                 {
@@ -52,12 +65,12 @@ namespace FileTime.Avalonia.Command
         {
             var s = "";
 
-            bool ctrlOrAlt = (key.Ctrl ?? false) || (key.Alt ?? false);
+            bool ctrlOrAlt = key.Ctrl || key.Alt;
 
             if (ctrlOrAlt && currentText.Length > 0 && currentText.Last() != ' ') s += " ";
 
-            if (key.Ctrl ?? false) s += "CTRL+";
-            if (key.Alt ?? false) s += "ALT+";
+            if (key.Ctrl) s += "CTRL+";
+            if (key.Alt) s += "ALT+";
             s += keyProcessor(key, currentText, ctrlOrAlt);
 
             if (ctrlOrAlt) s += " ";
@@ -77,4 +90,3 @@ namespace FileTime.Avalonia.Command
         }
     }
 }
- */

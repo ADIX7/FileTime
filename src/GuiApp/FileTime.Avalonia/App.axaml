@@ -134,6 +134,7 @@
 			<converters:ItemViewModelIsAttibuteTypeConverter x:Key="ItemViewModelIsAttibuteTypeConverter"/>
 			<converters:ItemViewModelIsAttibuteTypeConverter x:Key="ItemViewModelIsNotAttibuteTypeConverter" Invert="true"/>
 			<converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter"/>
+			<converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter"/>
 
 		</ResourceDictionary>
 	</Application.Resources>
@@ -186,15 +187,5 @@
 		<Style Selector="Border.SelectedTimelineCommand">
 			<Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}"/>
 		</Style>
-
-		<!--Style Selector="MenuItem">
-			<Setter Property="Template">
-				<DataTemplate>
-					<Grid ColumnDefinitions="20,*">
-						<TextBlock Grid.Column="1" Text="{Binding Header}" />
-					</Grid>
-				</DataTemplate>
-			</Setter>
-		</Style-->
 	</Application.Styles>
 </Application>

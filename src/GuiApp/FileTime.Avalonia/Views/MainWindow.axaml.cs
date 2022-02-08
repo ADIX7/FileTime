@@ -55,13 +55,13 @@ namespace FileTime.Avalonia.Views
 
         private void InputText_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && _inputElementWrapper == ViewModel!.Inputs.Last())
+            if (e.Key == Key.Enter && _inputElementWrapper == ViewModel!.AppState.Inputs.Last())
             {
                 ViewModel.ProcessInputs();
                 _inputElementWrapper = null;
                 e.Handled = true;
             }
-            else if (e.Key == Key.Escape && _inputElementWrapper == ViewModel!.Inputs.Last())
+            else if (e.Key == Key.Escape && _inputElementWrapper == ViewModel!.AppState.Inputs.Last())
             {
                 ViewModel.CancelInputs();
                 _inputElementWrapper = null;
@@ -87,7 +87,7 @@ namespace FileTime.Avalonia.Views
 
         private void InputText_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            if (sender is TextBox inputText && inputText.DataContext is InputElementWrapper inputElementWrapper && inputElementWrapper == ViewModel!.Inputs.First())
+            if (sender is TextBox inputText && inputText.DataContext is InputElementWrapper inputElementWrapper && inputElementWrapper == ViewModel!.AppState.Inputs.First())
             {
                 inputText.Focus();
             }
@@ -101,7 +101,7 @@ namespace FileTime.Avalonia.Views
                 && sender is StyledElement control
                 && control.DataContext is PlaceInfo placeInfo)
             {
-                ViewModel.OpenContainer(placeInfo.Container);
+                ViewModel.CommandHandlerService.OpenContainer(placeInfo.Container);
                 e.Handled = true;
             }
         }
@@ -114,7 +114,7 @@ namespace FileTime.Avalonia.Views
                 && sender is StyledElement control
                 && control.DataContext is RootDriveInfo rootDriveInfo)
             {
-                ViewModel.OpenContainer(rootDriveInfo.Container);
+                ViewModel.CommandHandlerService.OpenContainer(rootDriveInfo.Container);
                 e.Handled = true;
             }
         }

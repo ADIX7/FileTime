@@ -17,6 +17,8 @@
 	ExtendClientAreaToDecorationsHint="True"
 	Opened="OnWindowOpened"
 	Closed="OnWindowClosed"
+	x:DataType="vm:MainPageViewModel"
+	x:CompileBindings="True"
     mc:Ignorable="d">
 
 	<Grid Background="{DynamicResource AppBackgroundBrush}">
@@ -149,7 +151,7 @@
 
 				<Grid Grid.Column="1" Grid.Row="1" RowDefinitions="Auto,40,*,Auto">
 					<Grid>
-						<ItemsControl Items="{Binding TimelineCommands}">
+						<ItemsControl Items="{Binding AppState.TimelineCommands}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Horizontal" />
@@ -335,7 +337,7 @@
 							</Grid>
 						</Grid>
 
-						<ItemsRepeater Items="{Binding PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="{Binding PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+						<ItemsRepeater Items="{Binding AppState.PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="{Binding AppState.PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
 							<ItemsRepeater.Styles>
 								<Style Selector="TextBlock">
 									<Style.Animations>
@@ -387,7 +389,7 @@
 							</StackPanel>
 						</Grid>
 
-						<Grid IsVisible="{Binding NoCommandFound}">
+						<Grid IsVisible="{Binding AppState.NoCommandFound}">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="1" />
 								<RowDefinition Height="Auto" />
@@ -408,7 +410,7 @@
 								Text="No command found" />
 						</Grid>
 
-						<Grid IsVisible="{Binding PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+						<Grid IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="1" />
 								<RowDefinition Height="Auto" />
@@ -423,7 +425,7 @@
 
 							<ItemsRepeater
 								Grid.Row="1"
-								Items="{Binding PossibleCommands}">
+								Items="{Binding AppState.PossibleCommands}">
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
 										<Grid>
@@ -433,7 +435,7 @@
 											</Grid.ColumnDefinitions>
 
 											<TextBlock Text="{Binding KeysDisplayText}" />
-											<TextBlock Grid.Column="1" Text="{Binding Name}" />
+											<TextBlock Grid.Column="1" Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
 										</Grid>
 									</DataTemplate>
 								</ItemsRepeater.ItemTemplate>
@@ -447,7 +449,7 @@
 				Background="{DynamicResource BarelyTransparentBackgroundColor}"
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Stretch"
-				IsVisible="{Binding Inputs, Converter={StaticResource IsNotNullConverter}}">
+				IsVisible="{Binding AppState.Inputs, Converter={StaticResource IsNotNullConverter}}">
 				<Border
 					Background="{DynamicResource ContainerBackgroundBrush}"
 					Padding="20"
@@ -457,7 +459,7 @@
 
 						<ItemsControl
 							x:Name="InputList"
-							Items="{Binding Inputs}">
+							Items="{Binding AppState.Inputs}">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<Grid MinWidth="500" ColumnDefinitions="250,*" Margin="10,5">
@@ -502,7 +504,7 @@
 				Background="{DynamicResource BarelyTransparentBackgroundColor}"
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Stretch"
-				IsVisible="{Binding MessageBoxText, Converter={StaticResource IsNotNullConverter}}">
+				IsVisible="{Binding AppState.MessageBoxText, Converter={StaticResource IsNotNullConverter}}">
 				<Border
 					Background="{DynamicResource ContainerBackgroundBrush}"
 					HorizontalAlignment="Center"
@@ -510,7 +512,7 @@
 					Padding="20">
 					<Grid RowDefinitions="Auto,Auto">
 
-						<TextBlock Text="{Binding MessageBoxText}"/>
+						<TextBlock Text="{Binding AppState.MessageBoxText}"/>
 						<StackPanel
 							Grid.Row="1"
 							Orientation="Horizontal"
@@ -535,14 +537,14 @@
 				Background="{DynamicResource TransparentContainerBackgroundBrush}"
 				Margin="20"
 				HorizontalAlignment="Center"
-				IsVisible="{Binding IsAllShortcutVisible}">
+				IsVisible="{Binding AppState.IsAllShortcutVisible}">
 				<Grid RowDefinitions="Auto, *" Margin="30,10">
 					<TextBlock Text="Shortcuts" Margin="0,0,0,20"/>
 					<ScrollViewer
 							Grid.Row="1"
 							HorizontalScrollBarVisibility="Disabled">
 						<ItemsControl
-							Items="{Binding AllShortcut}">
+							Items="{Binding KeyboardConfigurationService.AllShortcut}">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<Grid Margin="0,5,10,5">
@@ -552,7 +554,7 @@
 										</Grid.ColumnDefinitions>
 
 										<TextBlock Text="{Binding KeysDisplayText}" />
-										<TextBlock Grid.Column="1" Text="{Binding Name}" />
+										<TextBlock Grid.Column="1" Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
