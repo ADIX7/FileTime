@@ -21,6 +21,7 @@
 			Source="{Binding Converter={StaticResource ItemToImageConverter}}" />
 
 		<ItemsControl
+			Margin="5,0,0,0"
 			Grid.Column="1"
 			VerticalAlignment="Center"
 			Items="{Binding DisplayName}">
@@ -41,13 +42,14 @@
 		</ItemsControl>
 
 		<Grid Grid.Column="2" IsVisible="{Binding ShowAttributes,ElementName=ItemRoot}">
-			<Grid ColumnDefinitions="90,90,40,45" 
+			<Grid ColumnDefinitions="30,50,90,40,45" 
 				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.LocalFile}}">
 
-				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}"/>
-				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="1" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"/>
-				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="2" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"/>
-				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="3" Text="{Binding Item.Attributes}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Item.Name, Converter={StaticResource GetFileExtensionConverter}}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="1" Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="2" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="3" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"/>
+				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="4" Text="{Binding Item.Attributes}"/>
 			</Grid>
 			<Grid ColumnDefinitions="90,40,45" 
 				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.Container}}">

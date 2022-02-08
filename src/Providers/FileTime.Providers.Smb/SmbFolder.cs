@@ -119,21 +119,28 @@ namespace FileTime.Providers.Smb
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
-            if (_items == null) await RefreshAsync();
+            if (_items == null) await RefreshAsync(token);
             return _items;
         }
         public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
-            if (_containers == null) await RefreshAsync();
+            if (_containers == null) await RefreshAsync(token);
             return _containers;
         }
         public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
         {
-            if (_elements == null) await RefreshAsync();
+            if (_elements == null) await RefreshAsync(token);
             return _elements;
         }
         public Task<bool> CanOpen() => Task.FromResult(true);
 
         public void Dispose() => IsDisposed = true;
+
+        public void Unload()
+        {
+            _items = null;
+            _containers = null;
+            _elements = null;
+        }
     }
 }

@@ -202,7 +202,9 @@ namespace FileTime.Avalonia.ViewModels
                         }
                         places.Add(new PlaceInfo(name, container));
                     }
+
                 }
+                LocalContentProvider.Unload();
             }
             else
             {
@@ -972,6 +974,22 @@ namespace FileTime.Avalonia.ViewModels
             }
         }
 
+        private Task ToggleAutoRefresh()
+        {
+            var tab = AppState.SelectedTab.TabState.Tab;
+            tab.AutoRefresh = !tab.AutoRefresh;
+
+            var text = "Auto refresh is: " + (tab.AutoRefresh ? "ON" : "OFF");
+            _popupTexts.Add(text);
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                await Dispatcher.UIThread.InvokeAsync(() => _popupTexts.Remove(text));
+            });
+            return Task.CompletedTask;
+        }
+
         [Command]
         public async void ProcessInputs()
         {
@@ -1438,6 +1456,11 @@ namespace FileTime.Avalonia.ViewModels
                     FileTime.App.Core.Command.Commands.Dummy,
                     new KeyWithModifiers[] { new KeyWithModifiers(Key.T), new KeyWithModifiers(Key.M) },
                     ChangeTimelineMode),
+                new CommandBinding(
+                    "toggle auto refresh",
+                    FileTime.App.Core.Command.Commands.Dummy,
+                    new KeyWithModifiers[] { new KeyWithModifiers(Key.R, shift: true) },
+                    ToggleAutoRefresh),
                 //TODO REMOVE
                 new CommandBinding(
                     "open in default file browser",

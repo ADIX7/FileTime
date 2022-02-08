@@ -34,7 +34,14 @@ namespace FileTime.Avalonia.ViewModels
             }
             else if (elementSize < MAXTEXTPREVIEWSIZE)
             {
-                TextContent = await element.GetContent();
+                try
+                {
+                    TextContent = await element.GetContent();
+                }
+                catch(Exception e)
+                {
+                    TextContent = $"Error while getting content of {element.FullName}. " + e.ToString();
+                }
                 Mode = ElementPreviewMode.Text;
             }
             else

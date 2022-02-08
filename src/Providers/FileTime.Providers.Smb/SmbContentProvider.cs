@@ -106,5 +106,7 @@ namespace FileTime.Providers.Smb
         public Task<bool> CanOpen() => Task.FromResult(true);
 
         public void Dispose() { }
+
+        public void Unload() { }
     }
 }

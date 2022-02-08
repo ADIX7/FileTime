@@ -10,14 +10,12 @@ namespace FileTime.Avalonia.Converters
 {
     public class ContextMenuGenerator : IValueConverter
     {
-        private readonly IContextMenuProvider _contextMenuProvider;
+        private IContextMenuProvider? _contextMenuProvider;
 
-        public ContextMenuGenerator()
-        {
-            _contextMenuProvider = App.ServiceProvider.GetService<IContextMenuProvider>() ?? throw new Exception($"No {nameof(IContextMenuProvider)} is registered.");
-        }
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
+            _contextMenuProvider ??= App.ServiceProvider.GetService<IContextMenuProvider>() ?? throw new Exception($"No {nameof(IContextMenuProvider)} is registered.");
+
             if (value is ContainerViewModel containerViewModel)
             {
                 return _contextMenuProvider.GetContextMenuForFolder(containerViewModel.Container);

@@ -172,5 +172,12 @@ namespace FileTime.Providers.Smb
         public Task<bool> CanOpen() => Task.FromResult(true);
 
         public void Dispose() { }
+
+        public void Unload()
+        {
+            _items = null;
+            _containers = null;
+            _elements = null;
+        }
     }
 }

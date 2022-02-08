@@ -72,7 +72,7 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!_isInitialized) Task.Run(Refresh);
+                if (!_isInitialized) Task.Run(Refresh).Wait();
                 return _containers;
             }
             set
@@ -90,7 +90,7 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!_isInitialized) Task.Run(Refresh);
+                if (!_isInitialized) Task.Run(Refresh).Wait();
                 return _elements;
             }
             set
@@ -107,7 +107,7 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!_isInitialized) Task.Run(Refresh);
+                if (!_isInitialized) Task.Run(Refresh).Wait();
                 return _items;
             }
             set
@@ -139,15 +139,15 @@ namespace FileTime.Avalonia.ViewModels
 
         private async Task Container_Refreshed(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            await Refresh(false, false, token);
+            await Refresh(false, false, token: token);
         }
 
         [Obsolete($"Use the parametrizable version of {nameof(Refresh)}.")]
         private async Task Refresh()
         {
-            await Refresh(true);
+            await Refresh(true, silent: true);
         }
-        private async Task Refresh(bool initializeChildren, bool alloweReuse = true, CancellationToken token = default)
+        private async Task Refresh(bool initializeChildren, bool alloweReuse = true, bool silent = false, CancellationToken token = default)
         {
             if (_isRefreshing) return;
 
@@ -169,9 +169,9 @@ namespace FileTime.Avalonia.ViewModels
                     }
                 }
 
-                if(await _container.GetElements() is IReadOnlyList<IElement> elements)
+                if (await _container.GetElements() is IReadOnlyList<IElement> elements)
                 {
-                    foreach(var element in elements)
+                    foreach (var element in elements)
                     {
                         var generator = async (IElement e) =>
                         {
@@ -203,9 +203,18 @@ namespace FileTime.Avalonia.ViewModels
                     containerToRemove?.Dispose();
                 }
 
-                Containers = new ObservableCollection<ContainerViewModel>(newContainers);
-                Elements = new ObservableCollection<ElementViewModel>(newElements);
-                Items = new ObservableCollection<IItemViewModel>(newContainers.Cast<IItemViewModel>().Concat(newElements));
+                if (silent)
+                {
+                    _containers = new ObservableCollection<ContainerViewModel>(newContainers);
+                    _elements = new ObservableCollection<ElementViewModel>(newElements);
+                    _items = new ObservableCollection<IItemViewModel>(newContainers.Cast<IItemViewModel>().Concat(newElements));
+                }
+                else
+                {
+                    Containers = new ObservableCollection<ContainerViewModel>(newContainers);
+                    Elements = new ObservableCollection<ElementViewModel>(newElements);
+                    Items = new ObservableCollection<IItemViewModel>(newContainers.Cast<IItemViewModel>().Concat(newElements));
+                }
 
                 for (var i = 0; i < Items.Count; i++)
                 {
@@ -260,17 +269,33 @@ namespace FileTime.Avalonia.ViewModels
             return await generator(item);
         }
 
-        public void Unload(bool recursive = true)
+        public void Unload(bool recursive = true, bool unloadParent = true, bool unloadEvents = false)
         {
             _isInitialized = false;
             if (recursive)
             {
                 foreach (var container in _containers)
                 {
-                    container.Unload(true);
+                    container.Unload(true, false, true);
                     container.Dispose();
                     container.ChildrenToAdopt.Clear();
                 }
+            }
+
+            if (unloadParent)
+            {
+                var parent = Parent;
+                while (parent != null)
+                {
+                    var lastParent = parent;
+                    parent = parent.Parent;
+                    lastParent.Unload();
+                }
+            }
+
+            if(unloadEvents)
+            {
+                Container.Refreshed.Remove(Container_Refreshed);
             }
 
             _containers.Clear();

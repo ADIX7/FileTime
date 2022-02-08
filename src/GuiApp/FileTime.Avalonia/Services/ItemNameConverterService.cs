@@ -2,6 +2,7 @@
 using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Core.Models;
 using MvvmGen;
 using System;
 using System.Collections.Generic;
@@ -17,9 +18,10 @@ namespace FileTime.Avalonia.Services
             var nameParts = new List<ItemNamePart>();
             var rapidTravelText = AppState.RapidTravelText.ToLower();
 
+            var name = itemViewModel.Item is IElement ? GetFileName(itemViewModel.Item.Name) : itemViewModel.Item.Name;
             if (AppState.ViewMode == ViewMode.RapidTravel && rapidTravelText.Length > 0)
             {
-                var nameLeft = itemViewModel.Item.Name;
+                var nameLeft = name;
 
                 while (nameLeft.ToLower().IndexOf(rapidTravelText, StringComparison.Ordinal) is int rapidTextStart && rapidTextStart != -1)
                 {
@@ -43,9 +45,22 @@ namespace FileTime.Avalonia.Services
             }
             else
             {
-                nameParts.Add(new ItemNamePart(itemViewModel.Item.Name));
+                nameParts.Add(new ItemNamePart(name));
             }
             return nameParts;
+        }
+
+        public string GetFileName(string fullName)
+        {
+            var parts = fullName.Split('.');
+            var fileName = string.Join('.', parts[..^1]);
+            return fileName == "." ? fullName : fileName;
+        }
+
+        public string GetFileExtension(string fullName)
+        {
+            var parts = fullName.Split('.');
+            return parts.Length > 1 ? parts[^1] : "";
         }
     }
 }

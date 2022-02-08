@@ -21,6 +21,8 @@ namespace FileTime.Avalonia.Application
     public partial class TabContainer : INewItemProcessor
     {
         private bool _updateFromCode;
+        private CancellationTokenSource? _moveCancellationTokenSource;
+
         [Property]
         private TabState _tabState;
 
@@ -70,6 +72,10 @@ namespace FileTime.Avalonia.Application
         {
             if (_selectedItem != value)
             {
+                if(_selectedItem is ContainerViewModel containerVM)
+                {
+                    containerVM.Unload(unloadParent: false);
+                }
                 _selectedItem = value;
 
                 if (value is ElementViewModel elementViewModel)
@@ -83,8 +89,10 @@ namespace FileTime.Avalonia.Application
                     ElementPreview = null;
                 }
 
-                await Tab.SetCurrentSelectedItem(SelectedItem?.Item, fromDataBinding);
-                OnPropertyChanged(nameof(SelectedItem));
+                if (await Tab.SetCurrentSelectedItem(SelectedItem?.Item, fromDataBinding))
+                {
+                    OnPropertyChanged(nameof(SelectedItem));
+                }
             }
         }
 
@@ -131,6 +139,7 @@ namespace FileTime.Avalonia.Application
 
         private async Task Tab_CurrentLocationChanged(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
+            CurrentLocation.Unload(true);
             var currentLocation = await Tab.GetCurrentLocation(token);
             var parent = GenerateParent(currentLocation);
             CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService);
@@ -270,6 +279,13 @@ namespace FileTime.Avalonia.Application
             }
         }
 
+        private CancellationToken CancelAndGenerateNextMovementToken()
+        {
+            if(_moveCancellationTokenSource != null) _moveCancellationTokenSource.Cancel();
+            _moveCancellationTokenSource = new CancellationTokenSource();
+            return _moveCancellationTokenSource.Token;
+        }
+
         public async Task Open()
         {
             if (ChildContainer != null)
@@ -285,32 +301,32 @@ namespace FileTime.Avalonia.Application
 
         public async Task MoveCursorDown()
         {
-            await RunFromCode(async () => await Tab.SelectNextItem());
+            await RunFromCode(async () => await Tab.SelectNextItem(token: CancelAndGenerateNextMovementToken()));
         }
 
         public async Task MoveCursorDownPage()
         {
-            await RunFromCode(async () => await Tab.SelectNextItem(10));
+            await RunFromCode(async () => await Tab.SelectNextItem(10, token: CancelAndGenerateNextMovementToken()));
         }
 
         public async Task MoveCursorUp()
         {
-            await RunFromCode(async () => await Tab.SelectPreviousItem());
+            await RunFromCode(async () => await Tab.SelectPreviousItem(token: CancelAndGenerateNextMovementToken()));
         }
 
         public async Task MoveCursorUpPage()
         {
-            await RunFromCode(async () => await Tab.SelectPreviousItem(10));
+            await RunFromCode(async () => await Tab.SelectPreviousItem(10, token: CancelAndGenerateNextMovementToken()));
         }
 
         public async Task MoveCursorToFirst()
         {
-            await RunFromCode(Tab.SelectFirstItem);
+            await RunFromCode(async () => await Tab.SelectFirstItem(token: CancelAndGenerateNextMovementToken()));
         }
 
         public async Task MoveCursorToLast()
         {
-            await RunFromCode(Tab.SelectLastItem);
+            await RunFromCode(async () => await Tab.SelectLastItem(token: CancelAndGenerateNextMovementToken()));
         }
 
         public async Task GotToProvider()

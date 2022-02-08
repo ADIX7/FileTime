@@ -125,5 +125,6 @@ namespace FileTime.Core.Timeline
         public Task<bool> CanOpen() => Task.FromResult(true);
 
         public void Dispose() => IsDisposed = true;
+        public void Unload() { }
     }
 }

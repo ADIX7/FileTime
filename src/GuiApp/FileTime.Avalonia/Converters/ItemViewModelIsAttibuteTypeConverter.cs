@@ -9,9 +9,12 @@ namespace FileTime.Avalonia.Converters
 {
     public class ItemViewModelIsAttibuteTypeConverter : IValueConverter
     {
+        public bool Invert { get; set; }
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            return parameter is AttibuteType targetAttribute && GetAttibuteType(value) == targetAttribute;
+            var result = parameter is AttibuteType targetAttribute && GetAttibuteType(value) == targetAttribute;
+            if (Invert && parameter is AttibuteType) result = !result;
+            return result;
         }
 
         private static AttibuteType? GetAttibuteType(object? value)

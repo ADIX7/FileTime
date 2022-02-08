@@ -72,5 +72,7 @@ namespace FileTime.Core.Providers
         public Task<bool> CanOpen() => Task.FromResult(true);
 
         public void Dispose() { }
+
+        public void Unload() { }
     }
 }

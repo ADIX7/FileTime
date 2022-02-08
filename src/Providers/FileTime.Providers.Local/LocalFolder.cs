@@ -27,7 +27,7 @@ namespace FileTime.Providers.Local
         public SupportsDelete CanDelete { get; }
         public bool CanRename => true;
 
-        public AsyncEventHandler Refreshed { get; } = new();
+        public AsyncEventHandler Refreshed { get; private set; } = new();
 
         public string Attributes => GetAttributes();
 
@@ -191,6 +191,14 @@ namespace FileTime.Providers.Local
             _containers = null;
             _elements = null;
             IsDisposed = true;
+            Refreshed = new AsyncEventHandler();
+        }
+
+        public void Unload()
+        {
+            _items = null;
+            _containers = null;
+            _elements = null;
         }
     }
 }

@@ -175,5 +175,10 @@ namespace FileTime.Core.Models
         {
             BaseContainer.Dispose();
         }
+
+        public void Unload()
+        {
+            BaseContainer.Unload();
+        }
     }
 }

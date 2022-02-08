@@ -18,6 +18,7 @@ namespace FileTime.Core.Models
 
         Task<IContainer> Clone();
         Task<bool> CanOpen();
+        void Unload();
 
         bool IsLoaded { get; }
         bool SupportsDirectoryLevelSoftDelete { get; }

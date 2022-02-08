@@ -132,6 +132,8 @@
 			<converters:DateTimeConverter x:Key="DateTimeConverter"/>
 			<converters:IsTypeConverter x:Key="IsTypeConverter"/>
 			<converters:ItemViewModelIsAttibuteTypeConverter x:Key="ItemViewModelIsAttibuteTypeConverter"/>
+			<converters:ItemViewModelIsAttibuteTypeConverter x:Key="ItemViewModelIsNotAttibuteTypeConverter" Invert="true"/>
+			<converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter"/>
 
 		</ResourceDictionary>
 	</Application.Resources>

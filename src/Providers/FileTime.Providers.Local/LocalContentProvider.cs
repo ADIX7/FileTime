@@ -103,6 +103,20 @@ namespace FileTime.Providers.Local
         public Task Rename(string newName) => throw new NotSupportedException();
         public Task<bool> CanOpen() => Task.FromResult(true);
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            foreach (var c in _rootContainers)
+            {
+                c.Unload();
+            }
+        }
+
+        public void Unload()
+        {
+            foreach (var c in _rootContainers)
+            {
+                c.Unload();
+            }
+        }
     }
 }
