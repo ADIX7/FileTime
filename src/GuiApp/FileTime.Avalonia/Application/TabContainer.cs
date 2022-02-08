@@ -72,10 +72,6 @@ namespace FileTime.Avalonia.Application
         {
             if (_selectedItem != value)
             {
-                if(_selectedItem is ContainerViewModel containerVM)
-                {
-                    containerVM.Unload(unloadParent: false);
-                }
                 _selectedItem = value;
 
                 if (value is ElementViewModel elementViewModel)
@@ -139,7 +135,6 @@ namespace FileTime.Avalonia.Application
 
         private async Task Tab_CurrentLocationChanged(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            CurrentLocation.Unload(true);
             var currentLocation = await Tab.GetCurrentLocation(token);
             var parent = GenerateParent(currentLocation);
             CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService);
