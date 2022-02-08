@@ -30,7 +30,7 @@ namespace FileTime.Providers.Local
 
         private readonly LocalFolder _parent;
 
-        public bool IsDisposed { get; private set; }
+        public bool IsDestroyed { get; private set; }
 
         public LocalFile(FileInfo file, LocalFolder parent, IContentProvider contentProvider)
         {
@@ -86,6 +86,6 @@ namespace FileTime.Providers.Local
         public async Task<string> GetContent(CancellationToken token = default) => await System.IO.File.ReadAllTextAsync(File.FullName, token);
         public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(File.Length);
 
-        public void Dispose() => IsDisposed = true;
+        public void Destroy() => IsDestroyed = true;
     }
 }

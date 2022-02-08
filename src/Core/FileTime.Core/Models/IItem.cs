@@ -2,15 +2,16 @@ using FileTime.Core.Providers;
 
 namespace FileTime.Core.Models
 {
-    public interface IItem : IDisposable
+    public interface IItem
     {
         string Name { get; }
         string? FullName { get; }
         bool IsHidden { get; }
-        bool IsDisposed { get; }
+        bool IsDestroyed { get; }
         SupportsDelete CanDelete { get; }
         bool CanRename { get; }
         IContentProvider Provider { get; }
+        void Destroy();
         Task Delete(bool hardDelete = false);
         Task Rename(string newName);
         IContainer? GetParent();

@@ -61,10 +61,7 @@ namespace FileTime.Avalonia
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
 #if DEBUG
-            catch
-            {
-                throw;
-            }
+            finally { }
 #else
             catch (Exception e)
             {

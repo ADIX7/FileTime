@@ -9,7 +9,7 @@ using MvvmGen;
 namespace FileTime.Avalonia.ViewModels
 {
     [ViewModel]
-    public partial class ParallelCommandViewModel : IDisposable
+    public partial class ParallelCommandViewModel
     {
         private bool _disposed;
 
@@ -39,20 +39,9 @@ namespace FileTime.Avalonia.ViewModels
             return Task.CompletedTask;
         }
 
-        ~ParallelCommandViewModel()
+        public void Destroy()
         {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!_disposed && disposing)
+            if (!_disposed)
             {
                 _commandTimeState.Command.ProgressChanged.Remove(HandleProgressChange);
             }

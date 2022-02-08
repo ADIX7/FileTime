@@ -35,7 +35,7 @@ namespace FileTime.Core.Models
 
         public AsyncEventHandler Refreshed { get; }
 
-        public bool IsDisposed => BaseContainer.IsDisposed;
+        public bool IsDestroyed => BaseContainer.IsDestroyed;
 
         private void RefreshAddBase(Func<object?, AsyncEventArgs, CancellationToken, Task> handler)
         {
@@ -171,9 +171,9 @@ namespace FileTime.Core.Models
         public async Task Rename(string newName) => await BaseContainer.Rename(newName);
         public async Task<bool> CanOpen() => await BaseContainer.CanOpen();
 
-        public void Dispose()
+        public void Destroy()
         {
-            BaseContainer.Dispose();
+            BaseContainer.Destroy();
         }
 
         public void Unload()

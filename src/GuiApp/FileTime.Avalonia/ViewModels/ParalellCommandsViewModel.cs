@@ -1,6 +1,4 @@
 ﻿using System.Linq;
-using System.Collections.Generic;
-using System;
 using FileTime.Core.Timeline;
 using MvvmGen;
 using System.Collections.ObjectModel;
@@ -8,7 +6,7 @@ using System.Collections.ObjectModel;
 namespace FileTime.Avalonia.ViewModels
 {
     [ViewModel]
-    public partial class ParallelCommandsViewModel : IDisposable
+    public partial class ParallelCommandsViewModel
     {
         private bool _disposed;
 
@@ -22,24 +20,13 @@ namespace FileTime.Avalonia.ViewModels
             Id = parallelCommands.Id;
         }
 
-        ~ParallelCommandsViewModel()
+        public void Destroy()
         {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!_disposed && disposing)
+            if (!_disposed)
             {
                 foreach(var commandVm in ParallelCommands)
                 {
-                    commandVm.Dispose();
+                    commandVm.Destroy();
                 }
             }
             _disposed = true;

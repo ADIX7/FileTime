@@ -19,7 +19,7 @@ namespace FileTime.Providers.Smb
         public IContentProvider Provider { get; }
         private IContainer _parent;
 
-        public bool IsDisposed { get; private set; }
+        public bool IsDestroyed { get; private set; }
 
         public SmbFile(string name, SmbContentProvider provider, IContainer parent)
         {
@@ -48,6 +48,6 @@ namespace FileTime.Providers.Smb
         public Task<string> GetContent(CancellationToken token = default) => Task.FromResult("NotImplemented");
         public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(-1L);
 
-        public void Dispose() => IsDisposed = true;
+        public void Destroy() => IsDestroyed = true;
     }
 }

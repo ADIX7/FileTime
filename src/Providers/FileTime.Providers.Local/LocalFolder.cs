@@ -34,7 +34,7 @@ namespace FileTime.Providers.Local
         public DateTime CreatedAt => Directory.CreationTime;
         public IReadOnlyList<Exception> Exceptions { get; }
 
-        public bool IsDisposed { get; private set; }
+        public bool IsDestroyed { get; private set; }
 
         public bool SupportsDirectoryLevelSoftDelete { get; }
 
@@ -67,7 +67,7 @@ namespace FileTime.Providers.Local
             {
                 foreach (var item in _items)
                 {
-                    item.Dispose();
+                    item.Destroy();
                 }
             }
 
@@ -185,12 +185,12 @@ namespace FileTime.Providers.Local
         }
         public Task<bool> CanOpen() => Task.FromResult(true);
 
-        public void Dispose()
+        public void Destroy()
         {
             _items = null;
             _containers = null;
             _elements = null;
-            IsDisposed = true;
+            IsDestroyed = true;
             Refreshed = new AsyncEventHandler();
         }
 

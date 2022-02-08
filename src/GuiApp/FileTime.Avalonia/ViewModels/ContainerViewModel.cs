@@ -16,7 +16,7 @@ namespace FileTime.Avalonia.ViewModels
 {
     [ViewModel]
     [Inject(typeof(ItemNameConverterService))]
-    public partial class ContainerViewModel : IItemViewModel, IDisposable
+    public partial class ContainerViewModel : IItemViewModel
     {
         private bool _disposed;
         private bool _isRefreshing;
@@ -321,20 +321,9 @@ namespace FileTime.Avalonia.ViewModels
             return _items;
         }
 
-        ~ContainerViewModel()
+        private void Dispose()
         {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!_disposed && disposing)
+            if (!_disposed)
             {
                 Container.Refreshed.Remove(Container_Refreshed);
             }

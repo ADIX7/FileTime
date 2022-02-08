@@ -29,7 +29,7 @@ namespace FileTime.Core.Timeline
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
-        public bool IsDisposed { get; private set; }
+        public bool IsDestroyed { get; private set; }
 
         public TimeContainer(string name, IContainer parent, IContentProvider contentProvider, IContentProvider virtualContentProvider, PointInTime pointInTime)
         {
@@ -124,7 +124,7 @@ namespace FileTime.Core.Timeline
         }
         public Task<bool> CanOpen() => Task.FromResult(true);
 
-        public void Dispose() => IsDisposed = true;
+        public void Destroy() => IsDestroyed = true;
         public void Unload() { }
     }
 }

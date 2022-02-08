@@ -6,10 +6,12 @@ using FileTime.Providers.Local;
 using System.Runtime.InteropServices;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.IO;
 using FileTime.Avalonia.Misc;
+using FileTime.Avalonia.IconProviders;
+using Avalonia.Svg.Skia;
+using Avalonia.Media;
 
 #pragma warning disable CA1416
 namespace FileTime.Avalonia.Services
@@ -24,15 +26,16 @@ namespace FileTime.Avalonia.Services
 
             if (container is LocalFolder localFolder)
             {
-                ProcessKey(Registry.ClassesRoot.OpenSubKey("Directory"), menuItems, localFolder.Directory.FullName);
+                using var directoryKey = Registry.ClassesRoot.OpenSubKey("Directory");
+                ProcessRegistryKey(directoryKey, menuItems, localFolder.Directory.FullName);
             }
 
             return menuItems;
         }
 
-        private void ProcessKey(RegistryKey? contextMenuContainer, List<object> menuItems, string folderPath)
+        private void ProcessRegistryKey(RegistryKey? contextMenuContainer, List<object> menuItems, string folderPath)
         {
-            var shell = contextMenuContainer?.OpenSubKey("shell");
+            using var shell = contextMenuContainer?.OpenSubKey("shell");
             if (shell == null) return;
 
             var shellSubKeys = shell.GetSubKeyNames();
@@ -63,18 +66,36 @@ namespace FileTime.Avalonia.Services
                 {
                     text = text.Replace("&", "");
 
-                    if (shellKey.GetSubKeyNames().Contains("command") && shellKey.OpenSubKey("command")?.GetValue(null) is string commandString)
+                    object? image = null;
+                    try
                     {
-                        var item = new MenuItem() { Header = text };
+                        if (shellKey.GetValue("Icon") is string iconPath)
+                        {
+                            var imagePath = WindowsSystemIconHelper.GetImagePathByIconPath(iconPath);
+                            if (imagePath.Type == Models.ImagePathType.Raw)
+                            {
+                                image = new Image()
+                                {
+                                    Source = (IImage)imagePath.Image!
+                                };
+                            }
+                        }
+                    }
+                    catch { }
+
+                    using var commandKey = shellKey.OpenSubKey("command");
+                    if (shellKey.GetSubKeyNames().Contains("command") && commandKey?.GetValue(null) is string commandString)
+                    {
+                        var item = new MenuItem() { Header = text, Icon = image };
                         item.Click += (o, e) => MenuItemClick(folderPath, commandString);
                         menuItems.Add(item);
                     }
                     else if (shellKey.GetValue("ExtendedSubCommandsKey") is string extendedCommands)
                     {
-                        var rootMenu = new MenuItem() { Header = text };
+                        var rootMenu = new MenuItem() { Header = text, Icon = image };
                         var rootMenuItems = new List<object>();
 
-                        ProcessKey(Registry.ClassesRoot.OpenSubKey(extendedCommands), rootMenuItems, folderPath);
+                        ProcessRegistryKey(Registry.ClassesRoot.OpenSubKey(extendedCommands), rootMenuItems, folderPath);
 
                         rootMenu.Items = rootMenuItems.ToArray();
                         menuItems.Add(rootMenu);
@@ -104,10 +125,6 @@ namespace FileTime.Avalonia.Services
             {
                 for (var i2 = 0; i2 < commandParts[i].Count; i2++)
                 {
-                    /*var commandPart = commandParts[i][i2];
-
-                    if (commandPart == "%1" || commandPart == "%V") commandParts[i][i2] = folderPath;*/
-
                     commandParts[i][i2] = commandParts[i][i2].Replace("%1", folderPath).Replace("%V", folderPath);
                 }
             }
@@ -145,7 +162,7 @@ namespace FileTime.Avalonia.Services
 
                 try
                 {
-                    var process = new Process();
+                    using var process = new Process();
                     process.StartInfo.FileName = commandPartsWithoutEmpty[0];
                     process.StartInfo.Arguments = arguments;
                     process.Start();
@@ -170,7 +187,7 @@ namespace FileTime.Avalonia.Services
                                 var (paramStartX, paramStartY) = GetCoordinatesFrom(commandParts, 1, 0, lastExecutablePart);
                                 arguments = SumList(commandParts, paramStartX, paramStartY);
 
-                                var process = new Process();
+                                using var process = new Process();
                                 process.StartInfo.FileName = executable;
                                 process.StartInfo.Arguments = arguments;
                                 process.Start();

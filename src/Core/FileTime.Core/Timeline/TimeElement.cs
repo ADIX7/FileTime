@@ -31,7 +31,7 @@ namespace FileTime.Core.Timeline
         public IContentProvider Provider { get; }
         public IContentProvider VirtualProvider { get; }
 
-        public bool IsDisposed { get; private set; }
+        public bool IsDestroyed { get; private set; }
 
         public Task Delete(bool hardDelete = false) => Task.CompletedTask;
 
@@ -44,6 +44,6 @@ namespace FileTime.Core.Timeline
         public Task<string> GetContent(CancellationToken token = default) => Task.FromResult("");
         public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(-1L);
 
-        public void Dispose() => IsDisposed = true;
+        public void Destroy() => IsDestroyed = true;
     }
 }

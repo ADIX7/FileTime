@@ -236,7 +236,7 @@ namespace FileTime.Avalonia.ViewModels
 
             for (var i = 0; i < itemsToRemove.Count; i++)
             {
-                itemsToRemove[i].Dispose();
+                itemsToRemove[i].Destroy();
                 TimelineCommands.Remove(itemsToRemove[i]);
             }
 
@@ -262,7 +262,7 @@ namespace FileTime.Avalonia.ViewModels
 
                 for (var i = 0; i < commandVMsToRemove.Count; i++)
                 {
-                    commandVMsToRemove[i].Dispose();
+                    commandVMsToRemove[i].Destroy();
                     parallelCommandsVM.ParallelCommands.Remove(commandVMsToRemove[i]);
                 }
             }

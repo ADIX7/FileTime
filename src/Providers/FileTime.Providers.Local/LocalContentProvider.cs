@@ -33,7 +33,7 @@ namespace FileTime.Providers.Local
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
-        public bool IsDisposed => false;
+        public bool IsDestroyed => false;
 
         public LocalContentProvider(ILogger<LocalContentProvider> logger)
         {
@@ -103,7 +103,7 @@ namespace FileTime.Providers.Local
         public Task Rename(string newName) => throw new NotSupportedException();
         public Task<bool> CanOpen() => Task.FromResult(true);
 
-        public void Dispose()
+        public void Destroy()
         {
             foreach (var c in _rootContainers)
             {

@@ -31,7 +31,7 @@ namespace FileTime.Providers.Smb
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
-        public bool IsDisposed => false;
+        public bool IsDestroyed => false;
 
         public SmbContentProvider(IInputInterface inputInterface)
         {
@@ -105,7 +105,7 @@ namespace FileTime.Providers.Smb
         public Task Rename(string newName) => throw new NotSupportedException();
         public Task<bool> CanOpen() => Task.FromResult(true);
 
-        public void Dispose() { }
+        public void Destroy() { }
 
         public void Unload() { }
     }

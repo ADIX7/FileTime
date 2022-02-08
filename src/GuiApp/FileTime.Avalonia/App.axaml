@@ -37,8 +37,8 @@
 				<GradientStop Offset="0.5" Color="#93a1a1" />
 				<GradientStop Offset="1" Color="#0093a1a1" />
 			</LinearGradientBrush>
-			
-			
+
+
 
 			<SolidColorBrush
 				x:Key="AppBackgroundBrush"
@@ -105,8 +105,8 @@
 			<converters:CompareConverter x:Key="EqualityConverter"/>
 			<converters:CompareConverter x:Key="NotEqualsConverter" ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}"/>
 			<converters:SplitStringConverter x:Key="SplitStringConverter" />
-			<converters:ItemViewModeToBrushConverter 
-				x:Key="ItemViewModeToForegroundConverter" 
+			<converters:ItemViewModeToBrushConverter
+				x:Key="ItemViewModeToForegroundConverter"
 				DefaultBrush="{StaticResource ForegroundBrush}"
 				AlternativeBrush="{StaticResource AlternativeItemForegroundBrush}"
 				SelectedBrush="{StaticResource SelectedItemForegroundBrush}"
@@ -182,9 +182,19 @@
 		<Style Selector="Grid.PlacesItem:pointerover">
 			<Setter Property="Background" Value="{DynamicResource AppBackgroundColor}"/>
 		</Style>
-		
+
 		<Style Selector="Border.SelectedTimelineCommand">
 			<Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}"/>
 		</Style>
+
+		<!--Style Selector="MenuItem">
+			<Setter Property="Template">
+				<DataTemplate>
+					<Grid ColumnDefinitions="20,*">
+						<TextBlock Grid.Column="1" Text="{Binding Header}" />
+					</Grid>
+				</DataTemplate>
+			</Setter>
+		</Style-->
 	</Application.Styles>
 </Application>

@@ -33,7 +33,7 @@ namespace FileTime.Core.Providers
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
-        public bool IsDisposed => false;
+        public bool IsDestroyed => false;
 
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {
@@ -71,7 +71,7 @@ namespace FileTime.Core.Providers
 
         public Task<bool> CanOpen() => Task.FromResult(true);
 
-        public void Dispose() { }
+        public void Destroy() { }
 
         public void Unload() { }
     }

@@ -29,7 +29,7 @@ namespace FileTime.Providers.Smb
         public AsyncEventHandler Refreshed { get; } = new();
         public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
 
-        public bool IsDisposed { get; private set; }
+        public bool IsDestroyed { get; private set; }
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
@@ -109,7 +109,7 @@ namespace FileTime.Providers.Smb
             {
                 foreach (var item in _items)
                 {
-                    item.Dispose();
+                    item.Destroy();
                 }
             }
 
@@ -134,7 +134,7 @@ namespace FileTime.Providers.Smb
         }
         public Task<bool> CanOpen() => Task.FromResult(true);
 
-        public void Dispose() => IsDisposed = true;
+        public void Destroy() => IsDestroyed = true;
 
         public void Unload()
         {

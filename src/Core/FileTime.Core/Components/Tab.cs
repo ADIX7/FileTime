@@ -287,7 +287,7 @@ namespace FileTime.Core.Components
 
                 foreach (var lastLocationItem in currentLocationItems.OfType<IContainer>())
                 {
-                    lastLocationItem.Dispose();
+                    lastLocationItem.Destroy();
                 }
             }
         }

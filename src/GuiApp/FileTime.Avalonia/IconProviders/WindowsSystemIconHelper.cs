@@ -1,4 +1,5 @@
 using System;
+using System.Drawing.Imaging;
 using System.IO;
 using Avalonia.Media.Imaging;
 using FileTime.Avalonia.Misc;
@@ -18,32 +19,64 @@ namespace FileTime.Avalonia.IconProviders
                 if (Array.Find(lines, l => l.StartsWith("iconresource", StringComparison.OrdinalIgnoreCase)) is string iconLine)
                 {
                     var nameLineValue = string.Join('=', iconLine.Split('=')[1..]);
-                    var environemntVariables = Environment.GetEnvironmentVariables();
-                    foreach (var keyo in environemntVariables.Keys)
-                    {
-                        if (keyo is string key && environemntVariables[key] is string value)
-                        {
-                            nameLineValue = nameLineValue.Replace($"%{key}%", value);
-                        }
-                    }
-
-                    var parts = nameLineValue.Split(',');
-                    if (parts.Length >= 2 && long.TryParse(parts[^1], out var parsedResourceId))
-                    {
-                        if (parsedResourceId < 0) parsedResourceId *= -1;
-
-                        var extractedIcon = NativeMethodHelpers.GetIconResource(string.Join(',', parts[..^1]), (uint)parsedResourceId);
-
-                        var extractedIconAsStream = new MemoryStream();
-                        extractedIcon.Save(extractedIconAsStream);
-                        extractedIconAsStream.Position = 0;
-
-                        return new ImagePath(ImagePathType.Raw, new Bitmap(extractedIconAsStream));
-                    }
+                    return GetImagePathByIconPath(nameLineValue);
                 }
             }
 
             return null;
+        }
+
+        public static ImagePath GetImagePathByIconPath(string path)
+        {
+            var environemntVariables = Environment.GetEnvironmentVariables();
+            foreach (var keyo in environemntVariables.Keys)
+            {
+                if (keyo is string key && environemntVariables[key] is string value)
+                {
+                    path = path.Replace($"%{key}%", value);
+                }
+            }
+
+            var parts = path.Split(',');
+            (var parsedResourceId, var path2) = parts.Length >= 2 && long.TryParse(parts[^1], out var id) 
+                ? (id, NormalizePath(string.Join(',', parts[..^1]))) 
+                : (0, NormalizePath(path));
+
+            if (parsedResourceId == 0)
+            {
+                using var extractedIconAsStream = new MemoryStream();
+                using var extractedIcon = System.Drawing.Icon.ExtractAssociatedIcon(path2).ToBitmap();
+                extractedIcon.Save(extractedIconAsStream, ImageFormat.Png);
+                extractedIconAsStream.Position = 0;
+#pragma warning disable IDISP004 // Don't ignore created IDisposable
+                return new ImagePath(ImagePathType.Raw, new Bitmap(extractedIconAsStream));
+#pragma warning restore IDISP004 // Don't ignore created IDisposable
+            }
+            else
+            {
+                if (parsedResourceId < 0) parsedResourceId *= -1;
+
+                using var extractedIcon = NativeMethodHelpers.GetIconResource(path2, (uint)parsedResourceId).ToBitmap();
+
+                using var extractedIconAsStream = new MemoryStream();
+                extractedIcon.Save(extractedIconAsStream, ImageFormat.Png);
+                extractedIconAsStream.Position = 0;
+
+#pragma warning disable IDISP004 // Don't ignore created IDisposable
+                return new ImagePath(ImagePathType.Raw, new Bitmap(extractedIconAsStream));
+#pragma warning restore IDISP004 // Don't ignore created IDisposable
+
+            }
+        }
+
+        private static string NormalizePath(string path)
+        {
+            if (path.StartsWith('\"') && path.EndsWith('\"'))
+            {
+                return path[1..^1];
+            }
+
+            return path;
         }
     }
 }
