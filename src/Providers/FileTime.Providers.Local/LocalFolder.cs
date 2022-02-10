@@ -124,7 +124,8 @@ namespace FileTime.Providers.Local
 
             if (item is IContainer container)
             {
-                return await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
+                var result = await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
+                return result == null && acceptDeepestMatch ? this : result;
             }
 
             return null;

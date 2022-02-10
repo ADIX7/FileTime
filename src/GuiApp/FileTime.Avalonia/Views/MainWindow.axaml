@@ -34,7 +34,6 @@
 					<Rectangle Fill="#01000000"/>
 
 					<StackPanel Margin="20,10" Orientation="Horizontal">
-						<!--TextBlock Text="{Binding AppState.SelectedTab.TabNumber,StringFormat=({0})}" /-->
 						<local:PathPresenter DataContext="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName}"/>
 						<TextBlock
 							Text="{Binding AppState.SelectedTab.SelectedItem.Item.Name}" Foreground="{StaticResource AccentForegroundBrush}" />
@@ -222,9 +221,10 @@
 
 							<Grid>
 								<ListBox
+									x:CompileBindings="False"
 									Classes="ContentListView"
 									IsEnabled="False"
-									Items="{Binding AppState.SelectedTab.Parent.Items}">
+									Items="{Binding AppState.SelectedTab.Parent.Items^}">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<local:ItemView ShowAttributes="False"/>
@@ -244,8 +244,9 @@
 							<Grid Grid.Column="2">
 								<ListBox
 									x:Name="CurrentItems"
+									x:CompileBindings="False"
 									IsTabStop="True"
-									Items="{Binding AppState.SelectedTab.CurrentLocation.Items}"
+									Items="{Binding AppState.SelectedTab.CurrentLocation.Items^}"
 									ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 									ScrollViewer.VerticalScrollBarVisibility="Hidden"
 									SelectedItem="{Binding AppState.SelectedTab.SelectedItem, Mode=TwoWay}"
@@ -258,12 +259,13 @@
 								</ListBox>
 
 								<TextBlock
+									x:CompileBindings="False"
 									x:Name="CurrentEmpty"
 									Margin="10"
 									HorizontalAlignment="Center"
 									FontWeight="Bold"
 									Foreground="{DynamicResource ErrorBrush}"
-									IsVisible="{Binding AppState.SelectedTab.CurrentLocation.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+									IsVisible="{Binding AppState.SelectedTab.CurrentLocation.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 									Empty
 								</TextBlock>
 							</Grid>
@@ -282,8 +284,9 @@
 										Classes="ContentListView"
 										IsEnabled="False"
 										x:Name="ChildItems"
-										Items="{Binding AppState.SelectedTab.ChildContainer.Items}"
-										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+										x:CompileBindings="False"
+										Items="{Binding AppState.SelectedTab.ChildContainer.Items^}"
+										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items^.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
 										<ListBox.ItemTemplate>
 											<DataTemplate>
 												<local:ItemView/>
@@ -291,7 +294,9 @@
 										</ListBox.ItemTemplate>
 									</ListBox>
 
-									<Grid IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+									<Grid
+										x:CompileBindings="False" 
+										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 
 										<TextBlock
 											x:Name="ChildEmpty"

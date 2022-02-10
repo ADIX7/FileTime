@@ -12,6 +12,7 @@ using FileTime.Core.Components;
 using FileTime.Core.Providers;
 using FileTime.Providers.Local;
 using FileTime.Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.Avalonia.Services
 {
@@ -23,22 +24,26 @@ namespace FileTime.Avalonia.Services
         private readonly string _settingsPath;
         private readonly IEnumerable<IContentProvider> _contentProviders;
         private readonly LocalContentProvider _localContentProvider;
+        private readonly ILogger<StatePersistenceService> _logger;
 
         public StatePersistenceService(
             AppState appState,
             ItemNameConverterService itemNameConverterService,
             IEnumerable<IContentProvider> contentProviders,
-            LocalContentProvider localContentProvider)
+            LocalContentProvider localContentProvider,
+            ILogger<StatePersistenceService> logger)
         {
             _appState = appState;
             _itemNameConverterService = itemNameConverterService;
             _contentProviders = contentProviders;
             _localContentProvider = localContentProvider;
+            _logger = logger;
             _settingsPath = Path.Combine(Program.AppDataRoot, "savedState.json");
 
             _jsonOptions = new JsonSerializerOptions()
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                WriteIndented = true
             };
         }
 
@@ -55,7 +60,10 @@ namespace FileTime.Avalonia.Services
                     await RestoreTabs(state.TabStates);
                 }
             }
-            catch { }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Unkown exception while restoring app state.");
+            }
         }
 
         public void SaveStates()
@@ -97,33 +105,48 @@ namespace FileTime.Avalonia.Services
 
                 foreach (var tab in tabStates.Tabs)
                 {
-                    if (tab.Path == null) continue;
-
-                    IItem? pathItem = null;
-                    foreach (var contentProvider in _contentProviders)
+                    try
                     {
-                        if (contentProvider.CanHandlePath(tab.Path))
+                        if (tab.Path == null) continue;
+
+                        IItem? pathItem = null;
+                        if (tab.Path.StartsWith(Constants.ContentProviderProtocol))
                         {
-                            pathItem = await contentProvider.GetByPath(tab.Path, true);
-                            if (pathItem != null) break;
+                            var contentProviderName = tab.Path.Substring(Constants.ContentProviderProtocol.Length);
+                            pathItem = _contentProviders.FirstOrDefault(c => c.Name == contentProviderName);
                         }
+                        else
+                        {
+                            foreach (var contentProvider in _contentProviders)
+                            {
+                                if (contentProvider.CanHandlePath(tab.Path))
+                                {
+                                    pathItem = await contentProvider.GetByPath(tab.Path, true);
+                                    if (pathItem != null) break;
+                                }
+                            }
+                        }
+
+                        var container = pathItem switch
+                        {
+                            IContainer c => c,
+                            IElement e => e.GetParent(),
+                            _ => null
+                        };
+
+                        if (container == null) continue;
+
+                        var newTab = new Tab();
+                        await newTab.Init(container);
+
+                        var newTabContainer = new TabContainer(newTab, _localContentProvider, _itemNameConverterService);
+                        await newTabContainer.Init(tab.Number);
+                        _appState.Tabs.Add(newTabContainer);
                     }
-
-                    var container = pathItem switch
+                    catch (Exception e)
                     {
-                        IContainer c => c,
-                        IElement e => e.GetParent(),
-                        _ => null
-                    };
-
-                    if (container == null) continue;
-
-                    var newTab = new Tab();
-                    await newTab.Init(container);
-
-                    var newTabContainer = new TabContainer(newTab, _localContentProvider, _itemNameConverterService);
-                    await newTabContainer.Init(tab.Number);
-                    _appState.Tabs.Add(newTabContainer);
+                        _logger.LogError(e, "Unkown exception while restoring tab. {0}", JsonSerializer.Serialize(tab, _jsonOptions));
+                    }
                 }
 
                 if (_appState.Tabs.FirstOrDefault(t => t.TabNumber == tabStates.ActiveTabNumber) is TabContainer tabContainer)
@@ -133,7 +156,10 @@ namespace FileTime.Avalonia.Services
 
                 return true;
             }
-            catch { }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Unkown exception while restoring tabs.");
+            }
             return false;
         }
     }

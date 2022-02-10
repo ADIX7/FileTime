@@ -7,6 +7,8 @@ using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Interactions;
+using FileTime.Core.Persistence;
+using FileTime.Providers.Smb;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -31,6 +33,8 @@ namespace FileTime.Avalonia
                 .AddSingleton<KeyboardConfigurationService>()
                 .AddSingleton<KeyInputHandlerService>()
                 .AddSingleton<DialogService>()
+                .AddSingleton(new PersistenceSettings(Program.AppDataRoot))
+                .AddSmbServices()
                 .AddSingleton<IIconProvider, MaterialIconProvider>();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

@@ -10,17 +10,18 @@ namespace FileTime.Providers.Smb
 {
     public class SmbServer : IContainer
     {
-        private string? _username;
-        private string? _password;
+        private bool _reenterCredentials;
 
         private IReadOnlyList<IContainer>? _shares;
         private IReadOnlyList<IItem>? _items;
         private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
         private ISMBClient? _client;
-        private readonly object _clientGuard = new object();
+        private readonly object _clientGuard = new();
         private bool _refreshingClient;
         private readonly IInputInterface _inputInterface;
         private readonly SmbClientContext _smbClientContext;
+        public string? Username { get; private set; }
+        public string? Password { get; private set; }
 
         public string Name { get; }
 
@@ -42,10 +43,12 @@ namespace FileTime.Providers.Smb
 
         public bool IsDestroyed => false;
 
-        public SmbServer(string path, SmbContentProvider contentProvider, IInputInterface inputInterface)
+        public SmbServer(string path, SmbContentProvider contentProvider, IInputInterface inputInterface, string? username = null, string? password = null)
         {
             _inputInterface = inputInterface;
             _smbClientContext = new SmbClientContext(GetSmbClient, DisposeSmbClient);
+            Username = username;
+            Password = password;
 
             Provider = contentProvider;
             FullName = Name = path;
@@ -53,12 +56,12 @@ namespace FileTime.Providers.Smb
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
-            if (_shares == null) await RefreshAsync();
+            if (_shares == null) await RefreshAsync(token);
             return _shares;
         }
         public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
-            if (_shares == null) await RefreshAsync();
+            if (_shares == null) await RefreshAsync(token);
             return _shares;
         }
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
@@ -81,9 +84,24 @@ namespace FileTime.Providers.Smb
             return Task.CompletedTask;
         }
 
-        public Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
+        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
-            throw new NotImplementedException();
+            var paths = path.Split(Constants.SeparatorChar);
+
+            var item = (await GetItems())!.FirstOrDefault(i => i.Name == paths[0]);
+
+            if (paths.Length == 1)
+            {
+                return item;
+            }
+
+            if (item is IContainer container)
+            {
+                var result = await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
+                return result == null && acceptDeepestMatch ? this : result;
+            }
+
+            return null;
         }
 
         public IContainer? GetParent() => Provider;
@@ -152,30 +170,32 @@ namespace FileTime.Providers.Smb
 
                 if (connected)
                 {
-                    if (_username == null && _password == null)
+                    if (_reenterCredentials || Username == null || Password == null)
                     {
                         var inputs = await _inputInterface.ReadInputs(
                             new InputElement[]
                             {
-                                new InputElement($"Username for '{Name}'", InputType.Text),
-                                new InputElement($"Password for '{Name}'", InputType.Password)
+                                new InputElement($"Username for '{Name}'", InputType.Text, Username ?? ""),
+                                new InputElement($"Password for '{Name}'", InputType.Password, Password ?? "")
                             });
 
-                        _username = inputs[0];
-                        _password = inputs[1];
+                        Username = inputs[0];
+                        Password = inputs[1];
                     }
 
-                    if (client.Login(string.Empty, _username, _password) != NTStatus.STATUS_SUCCESS)
+                    if (client.Login(string.Empty, Username, Password) != NTStatus.STATUS_SUCCESS)
                     {
-                        _username = null;
-                        _password = null;
+                        _reenterCredentials = true;
                     }
                     else
                     {
+                        _reenterCredentials = false;
                         lock (_clientGuard)
                         {
                             _client = client;
                         }
+
+                        await Provider.SaveServers();
                     }
                 }
             }

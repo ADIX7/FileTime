@@ -67,12 +67,16 @@ namespace FileTime.Avalonia.ViewModels
 
         public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
 
-        [Obsolete($"This property is for databinding only, use {nameof(GetContainers)} method instead.")]
+        /*[Obsolete($"This property is for databinding only, use {nameof(GetContainers)} method instead.")]
         public ObservableCollection<ContainerViewModel> Containers
         {
             get
             {
-                if (!_isInitialized) Task.Run(Refresh).Wait();
+                try
+                {
+                    if (!_isInitialized) Task.Run(Refresh).Wait();
+                }
+                catch(Exception e) { }
                 return _containers;
             }
             set
@@ -90,7 +94,11 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!_isInitialized) Task.Run(Refresh).Wait();
+                try
+                {
+                    if (!_isInitialized) Task.Run(Refresh).Wait();
+                }
+                catch(Exception e) { }
                 return _elements;
             }
             set
@@ -107,7 +115,11 @@ namespace FileTime.Avalonia.ViewModels
         {
             get
             {
-                if (!_isInitialized) Task.Run(Refresh).Wait();
+                try
+                {
+                    if (!_isInitialized) Task.Run(Refresh).Wait();
+                }
+                catch(Exception e) { }
                 return _items;
             }
             set
@@ -117,6 +129,55 @@ namespace FileTime.Avalonia.ViewModels
                     _items = value;
                     OnPropertyChanged(nameof(Items));
                 }
+            }
+        }*/
+
+        public Task Containers => GetContainers();
+        public Task Elements => GetElements();
+        public Task Items => GetItems();
+
+        public async Task<ObservableCollection<ContainerViewModel>> GetContainers(CancellationToken token = default)
+        {
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
+            return _containers;
+        }
+
+        public async Task<ObservableCollection<ElementViewModel>> GetElements(CancellationToken token = default)
+        {
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
+            return _elements;
+        }
+
+        public async Task<ObservableCollection<IItemViewModel>> GetItems(CancellationToken token = default)
+        {
+            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
+            return _items;
+        }
+
+        private void SetContainers(ObservableCollection<ContainerViewModel> value)
+        {
+            if (value != _containers)
+            {
+                _containers = value;
+                OnPropertyChanged(nameof(Containers));
+            }
+        }
+
+        private void SetElements(ObservableCollection<ElementViewModel> value)
+        {
+            if (value != _elements)
+            {
+                _elements = value;
+                OnPropertyChanged(nameof(Elements));
+            }
+        }
+
+        private void SetItems(ObservableCollection<IItemViewModel> value)
+        {
+            if (value != _items)
+            {
+                _items = value;
+                OnPropertyChanged(nameof(Items));
             }
         }
 
@@ -211,14 +272,14 @@ namespace FileTime.Avalonia.ViewModels
                 }
                 else
                 {
-                    Containers = new ObservableCollection<ContainerViewModel>(newContainers);
-                    Elements = new ObservableCollection<ElementViewModel>(newElements);
-                    Items = new ObservableCollection<IItemViewModel>(newContainers.Cast<IItemViewModel>().Concat(newElements));
+                    SetContainers(new ObservableCollection<ContainerViewModel>(newContainers));
+                    SetElements(new ObservableCollection<ElementViewModel>(newElements));
+                    SetItems(new ObservableCollection<IItemViewModel>(newContainers.Cast<IItemViewModel>().Concat(newElements)));
                 }
 
-                for (var i = 0; i < Items.Count; i++)
+                for (var i = 0; i < _items.Count; i++)
                 {
-                    Items[i].IsAlternative = i % 2 == 1;
+                    _items[i].IsAlternative = i % 2 == 1;
                 }
             }
             catch (Exception e)
@@ -293,7 +354,7 @@ namespace FileTime.Avalonia.ViewModels
                 }
             }
 
-            if(unloadEvents)
+            if (unloadEvents)
             {
                 Container.Refreshed.Remove(Container_Refreshed);
             }
@@ -301,24 +362,6 @@ namespace FileTime.Avalonia.ViewModels
             _containers.Clear();
             _elements.Clear();
             _items.Clear();
-        }
-
-        public async Task<ObservableCollection<ContainerViewModel>> GetContainers(CancellationToken token = default)
-        {
-            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
-            return _containers;
-        }
-
-        public async Task<ObservableCollection<ElementViewModel>> GetElements(CancellationToken token = default)
-        {
-            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
-            return _elements;
-        }
-
-        public async Task<ObservableCollection<IItemViewModel>> GetItems(CancellationToken token = default)
-        {
-            if (!_isInitialized) await Task.Run(async () => await Refresh(false, token: token), token);
-            return _items;
         }
 
         private void Dispose()

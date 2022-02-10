@@ -55,25 +55,6 @@ namespace FileTime.Providers.Smb
 
         public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
 
-        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
-        {
-            var paths = path.Split(Constants.SeparatorChar);
-
-            var item = (await GetItems())?.FirstOrDefault(i => i.Name == paths[0]);
-
-            if (paths.Length == 1)
-            {
-                return item;
-            }
-
-            if (item is IContainer container)
-            {
-                return await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
-            }
-
-            return null;
-        }
-
         public IContainer? GetParent() => _parent;
 
         public Task<bool> IsExists(string name)

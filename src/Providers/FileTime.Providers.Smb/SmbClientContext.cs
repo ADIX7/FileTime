@@ -7,7 +7,7 @@ namespace FileTime.Providers.Smb
         private readonly Func<Task<ISMBClient>> _getSmbClient;
         private readonly Action _disposeClient;
         private bool _isRunning;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         public SmbClientContext(Func<Task<ISMBClient>> getSmbClient, Action disposeClient)
         {

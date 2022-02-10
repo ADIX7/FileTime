@@ -1,4 +1,6 @@
 using FileTime.Avalonia.Application;
+using FileTime.Core.Models;
+using FileTime.Core.Providers;
 
 namespace FileTime.Avalonia.Models.Persistence
 {
@@ -11,7 +13,8 @@ namespace FileTime.Avalonia.Models.Persistence
 
         public TabState(TabContainer tab)
         {
-            Path = tab.CurrentLocation.Item.FullName;
+            var item = tab.CurrentLocation.Item;
+            Path = item is IContentProvider contentProvider ? Constants.ContentProviderProtocol + contentProvider.Name : item.FullName;
             Number = tab.TabNumber;
         }
     }

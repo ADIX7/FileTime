@@ -11,7 +11,7 @@ namespace FileTime.Providers.Smb
         private IReadOnlyList<IItem>? _items;
         private IReadOnlyList<IContainer>? _containers;
         private IReadOnlyList<IElement>? _elements;
-        private SmbClientContext _smbClientContext;
+        private readonly SmbClientContext _smbClientContext;
         private readonly IContainer? _parent;
 
         public string Name { get; }
@@ -45,17 +45,17 @@ namespace FileTime.Providers.Smb
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
-            if (_items == null) await RefreshAsync();
+            if (_items == null) await RefreshAsync(token);
             return _items;
         }
         public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
-            if (_containers == null) await RefreshAsync();
+            if (_containers == null) await RefreshAsync(token);
             return _containers;
         }
         public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
         {
-            if (_elements == null) await RefreshAsync();
+            if (_elements == null) await RefreshAsync(token);
             return _elements;
         }
 
@@ -72,25 +72,6 @@ namespace FileTime.Providers.Smb
         public Task Delete(bool hardDelete = false)
         {
             throw new NotImplementedException();
-        }
-
-        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
-        {
-            var paths = path.Split(Constants.SeparatorChar);
-
-            var item = (await GetItems())?.FirstOrDefault(i => i.Name == paths[0]);
-
-            if (paths.Length == 1)
-            {
-                return item;
-            }
-
-            if (item is IContainer container)
-            {
-                return await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
-            }
-
-            return null;
         }
 
         public IContainer? GetParent() => _parent;
