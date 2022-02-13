@@ -54,13 +54,13 @@ namespace FileTime.Avalonia.Services
         {
             var parts = fullName.Split('.');
             var fileName = string.Join('.', parts[..^1]);
-            return fileName == "." ? fullName : fileName;
+            return string.IsNullOrEmpty(fileName) ? fullName : fileName;
         }
 
         public string GetFileExtension(string fullName)
         {
             var parts = fullName.Split('.');
-            return parts.Length > 1 ? parts[^1] : "";
+            return parts.Length == 1 || (parts.Length == 2 && string.IsNullOrEmpty(parts[0])) ? "" : parts[^1];
         }
     }
 }
