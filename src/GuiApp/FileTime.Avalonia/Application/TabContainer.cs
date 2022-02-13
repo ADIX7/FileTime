@@ -33,7 +33,7 @@ namespace FileTime.Avalonia.Application
         private ContainerViewModel _currentLocation;
 
         [Property]
-        private ContainerViewModel _childContainer;
+        private ContainerViewModel? _childContainer;
 
         [Property]
         private int _tabNumber;
@@ -51,16 +51,16 @@ namespace FileTime.Avalonia.Application
             {
                 if (!_updateFromCode && value != null)
                 {
-                    try
-                    {
-                        /*var task = SetSelectedItemAsync(value, true);
-                        Task.WaitAll(new Task[] { task }, 100);*/
-                        SetSelectedItemAsync(value, true);
-                    }
+                    /*try
+                    {*/
+                    /*var task = SetSelectedItemAsync(value, true);
+                    Task.WaitAll(new Task[] { task }, 100);*/
+                    SetSelectedItemAsync(value, true);
+                    /*}
                     catch
                     {
                         //TODO: Debug, linux start after restore 3 tabs
-                    }
+                    }*/
                 }
             }
         }
@@ -74,21 +74,8 @@ namespace FileTime.Avalonia.Application
             {
                 _selectedItem = value;
 
-                if (value is ElementViewModel elementViewModel)
-                {
-                    var elementPreview = new ElementPreviewViewModel();
-                    await elementPreview.Init(elementViewModel.Element);
-                    ElementPreview = elementPreview;
-                }
-                else
-                {
-                    ElementPreview = null;
-                }
-
-                if (await Tab.SetCurrentSelectedItem(SelectedItem?.Item, fromDataBinding))
-                {
-                    OnPropertyChanged(nameof(SelectedItem));
-                }
+                await Tab.SetCurrentSelectedItem(SelectedItem?.Item, fromDataBinding);
+                OnPropertyChanged(nameof(SelectedItem));
             }
         }
 
@@ -161,40 +148,68 @@ namespace FileTime.Avalonia.Application
 
         public async Task UpdateCurrentSelectedItem(CancellationToken token = default)
         {
-            try
+            /*try
+            {*/
+
+            if (token.IsCancellationRequested) return;
+
+            var tabCurrentSelectenItem = await Tab.GetCurrentSelectedItem();
+            ContainerViewModel? newChildContainer = null;
+
+            IItemViewModel? currentSelectenItem = null;
+            if (tabCurrentSelectenItem == null)
             {
-                var tabCurrentSelectenItem = await Tab.GetCurrentSelectedItem();
-
-                if (token.IsCancellationRequested) return;
-
-                IItemViewModel? currentSelectenItem = null;
-                if (tabCurrentSelectenItem == null)
+                await SetSelectedItemAsync(null);
+            }
+            else
+            {
+                currentSelectenItem = (await _currentLocation.GetItems(token)).FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
+                if (currentSelectenItem is ContainerViewModel currentSelectedContainer)
                 {
-                    await SetSelectedItemAsync(null);
-                    ChildContainer = null;
+                    await SetSelectedItemAsync(currentSelectedContainer);
+                    newChildContainer = currentSelectedContainer;
+                }
+                else if (currentSelectenItem is ElementViewModel element)
+                {
+                    await SetSelectedItemAsync(element);
                 }
                 else
                 {
-                    currentSelectenItem = (await _currentLocation.GetItems(token)).FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
-                    if (currentSelectenItem is ContainerViewModel currentSelectedContainer)
-                    {
-                        await SetSelectedItemAsync(currentSelectedContainer);
-                        ChildContainer = currentSelectedContainer;
-                    }
-                    else if (currentSelectenItem is ElementViewModel element)
-                    {
-                        await SetSelectedItemAsync(element);
-                        ChildContainer = null;
-                    }
-                    else
-                    {
-                        await SetSelectedItemAsync(null);
-                        ChildContainer = null;
-                    }
+                    await SetSelectedItemAsync(null);
                 }
+            }
 
+            await UpdateParents(token);
+
+            var start = DateTime.Now;
+            while (true)
+            {
+                await Task.Delay(1);
                 if (token.IsCancellationRequested) return;
+                if ((DateTime.Now - start).Milliseconds > 500) break;
+            }
 
+            ChildContainer = newChildContainer;
+
+            if (currentSelectenItem is ElementViewModel elementViewModel)
+            {
+                var elementPreview = new ElementPreviewViewModel();
+                await elementPreview.Init(elementViewModel.Element);
+                ElementPreview = elementPreview;
+            }
+            else
+            {
+                ElementPreview = null;
+            }
+            /*}
+            catch
+            {
+                //INFO collection modified exception on: currentSelectenItem = (await _currentLocation.GetItems()).FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
+                //TODO: handle or error message
+            }*/
+
+            async Task UpdateParents(CancellationToken token = default)
+            {
                 var items = await _currentLocation.GetItems(token);
                 if (items?.Count > 0)
                 {
@@ -244,11 +259,6 @@ namespace FileTime.Avalonia.Application
                     }
                 }
             }
-            catch
-            {
-                //INFO collection modified exception on: currentSelectenItem = (await _currentLocation.GetItems()).FirstOrDefault(i => i.Item.Name == tabCurrentSelectenItem.Name);
-                //TODO: handle or error message
-            }
         }
 
         public async Task SetCurrentSelectedItem(IItem newItem)
@@ -269,14 +279,17 @@ namespace FileTime.Avalonia.Application
             }
             catch
             {
-                _updateFromCode = false;
                 throw;
+            }
+            finally
+            {
+                _updateFromCode = false;
             }
         }
 
         private CancellationToken CancelAndGenerateNextMovementToken()
         {
-            if(_moveCancellationTokenSource != null) _moveCancellationTokenSource.Cancel();
+            if (_moveCancellationTokenSource != null) _moveCancellationTokenSource.Cancel();
             _moveCancellationTokenSource = new CancellationTokenSource();
             return _moveCancellationTokenSource.Token;
         }

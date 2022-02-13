@@ -80,9 +80,9 @@ namespace FileTime.Avalonia.Services
                 else if (selectedCommandBinding != null)
                 {
                     setHandled(true);
-                    await _commandHandlerService.HandleCommandAsync(selectedCommandBinding.Command);
                     _appState.PreviousKeys.Clear();
                     _appState.PossibleCommands = new();
+                    await _commandHandlerService.HandleCommandAsync(selectedCommandBinding.Command);
                 }
                 else if (_keysToSkip.Any(k => AreKeysEqual(k, _appState.PreviousKeys)))
                 {
@@ -99,6 +99,7 @@ namespace FileTime.Avalonia.Services
                 }
                 else
                 {
+                    setHandled(true);
                     var possibleCommands = _keyboardConfigurationService.AllShortcut.Where(c => AreKeysEqual(c.Keys[0], keyWithModifiers)).ToList();
 
                     if (possibleCommands.Count == 0)
@@ -110,7 +111,6 @@ namespace FileTime.Avalonia.Services
                     {
                         _appState.PossibleCommands = possibleCommands;
                     }
-                    setHandled(true);
                 }
             }
             else

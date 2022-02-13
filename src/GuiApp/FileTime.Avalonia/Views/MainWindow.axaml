@@ -248,9 +248,10 @@
 									AutoScrollToSelectedItem="True"
 									IsTabStop="True"
 									Items="{Binding AppState.SelectedTab.CurrentLocation.Items^}"
-									ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+									ScrollViewer.HorizontalScrollBarVisibility="Hidden"
 									ScrollViewer.VerticalScrollBarVisibility="Hidden"
 									SelectedItem="{Binding AppState.SelectedTab.SelectedItem, Mode=TwoWay}"
+									SelectionChanged="OnCurrentItemsSelectionChanged"
 									Classes="ContentListView">
 									<ListBox.ItemTemplate>
 										<DataTemplate>

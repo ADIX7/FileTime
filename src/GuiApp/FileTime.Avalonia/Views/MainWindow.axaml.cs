@@ -154,5 +154,11 @@ namespace FileTime.Avalonia.Views
                 BeginMoveDrag(e);
             }
         }
+
+        private void OnCurrentItemsSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var listBox = this.FindControl<ListBox>("CurrentItems");
+            listBox.ScrollIntoView(listBox.SelectedIndex);
+        }
     }
 }
