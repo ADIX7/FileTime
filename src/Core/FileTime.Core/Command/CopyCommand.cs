@@ -6,10 +6,11 @@ namespace FileTime.Core.Command
 {
     public class CopyCommand : ITransportationCommand
     {
-        private Func<AbsolutePath, AbsolutePath, Task>? _copyOperation;
-        private Dictionary<AbsolutePath, OperationProgress> _operationStatuses = new();
+        private Func<AbsolutePath, AbsolutePath, OperationProgress?, CopyCommandContext, Task>? _copyOperation;
+        private Dictionary<AbsolutePath, List<OperationProgress>> _operationStatuses = new();
         private Func<IContainer, string, Task<IContainer>>? _createContainer;
         private Func<AbsolutePath, Task>? _containerCopyDone;
+        private OperationProgress? _currentOperationProgress;
 
         public IList<AbsolutePath> Sources { get; } = new List<AbsolutePath>();
 
@@ -18,6 +19,7 @@ namespace FileTime.Core.Command
         public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
 
         public int Progress { get; private set; }
+        public int CurrentProgress { get; private set; }
 
         public AsyncEventHandler ProgressChanged { get; } = new();
 
@@ -26,16 +28,27 @@ namespace FileTime.Core.Command
 
         private async Task UpdateProgress()
         {
-            var total = 0;
-            var current = 0;
+            var total = 0L;
+            var current = 0L;
 
-            foreach (var item in _operationStatuses.Values)
+            foreach (var folder in _operationStatuses.Values)
             {
-                current += item.Progress;
-                total += item.TotalCount;
+                foreach (var item in folder)
+                {
+                    current += item.Progress;
+                    total += item.TotalCount;
+                }
             }
 
-            Progress = current * 100 / total;
+            Progress = (int)(current * 100 / total);
+            if (_currentOperationProgress == null)
+            {
+                CurrentProgress = 0;
+            }
+            else
+            {
+                CurrentProgress = (int)(_currentOperationProgress.Progress * 100 / _currentOperationProgress.TotalCount);
+            }
             await ProgressChanged.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
@@ -47,7 +60,7 @@ namespace FileTime.Core.Command
 
             var newDiffs = new List<Difference>();
 
-            _copyOperation = (_, to) =>
+            _copyOperation = (_, to, _, _) =>
             {
                 var target = to.GetParentAsAbsolutePath().Resolve();
                 newDiffs.Add(new Difference(
@@ -79,7 +92,7 @@ namespace FileTime.Core.Command
             return startPoint.WithDifferences(newDiffs);
         }
 
-        public async Task Execute(Action<AbsolutePath, AbsolutePath> copy, TimeRunner timeRunner)
+        public async Task Execute(Func<AbsolutePath, AbsolutePath, OperationProgress?, CopyCommandContext, Task> copy, TimeRunner timeRunner)
         {
             if (Sources == null) throw new ArgumentException(nameof(Sources) + " can not be null");
             if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");
@@ -87,13 +100,12 @@ namespace FileTime.Core.Command
 
             await CalculateProgress();
 
-            _copyOperation = async (from, to) =>
+            _copyOperation = async (from, to, operation, context) =>
             {
-                copy(from, to);
-                var parentPath = to.GetParentAsAbsolutePath();
-                if (_operationStatuses.ContainsKey(parentPath))
+                await copy(from, to, operation, context);
+                if (operation != null)
                 {
-                    _operationStatuses[parentPath].Progress++;
+                    operation.Progress = operation.TotalCount;
                 }
                 await UpdateProgress();
             };
@@ -101,7 +113,11 @@ namespace FileTime.Core.Command
             _createContainer = async (IContainer target, string name) => await target.CreateContainer(name);
             _containerCopyDone = async (path) =>
             {
-                _operationStatuses[path].Progress = _operationStatuses[path].TotalCount;
+                foreach (var item in _operationStatuses[path])
+                {
+                    item.Progress = item.TotalCount;
+                }
+
                 if (timeRunner != null)
                 {
                     await timeRunner.RefreshContainer.InvokeAsync(this, path);
@@ -117,24 +133,23 @@ namespace FileTime.Core.Command
             if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");
             if (TransportMode == null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
 
-            var operationStatuses = new Dictionary<AbsolutePath, OperationProgress>();
+            var operationStatuses = new Dictionary<AbsolutePath, List<OperationProgress>>();
 
-            _copyOperation = (_, to) =>
+            _copyOperation = async (from, to, _, _) =>
             {
                 var parentPath = to.GetParentAsAbsolutePath();
-                OperationProgress operation;
+                List<OperationProgress> operationsByFolder;
                 if (operationStatuses.ContainsKey(parentPath))
                 {
-                    operation = operationStatuses[parentPath];
+                    operationsByFolder = operationStatuses[parentPath];
                 }
                 else
                 {
-                    operation = new OperationProgress();
-                    operationStatuses.Add(parentPath, operation);
+                    var resolvedFrom = await from.Resolve();
+                    operationsByFolder = new List<OperationProgress>();
+                    operationStatuses.Add(parentPath, operationsByFolder);
+                    operationsByFolder.Add(new OperationProgress(from.Path, resolvedFrom is IElement element ? await element.GetElementSize() : 0L));
                 }
-                operation.TotalCount++;
-
-                return Task.CompletedTask;
             };
 
             await TraverseTree(Sources, Target, TransportMode.Value);
@@ -180,7 +195,25 @@ namespace FileTime.Core.Command
                         continue;
                     }
 
-                    _copyOperation?.Invoke(new AbsolutePath(element), AbsolutePath.FromParentAndChildName(target, targetName));
+                    OperationProgress? operation = null;
+                    var targetFolderPath = new AbsolutePath(target);
+                    var targetElementPath = AbsolutePath.FromParentAndChildName(target, targetName);
+
+                    foreach(var asd in _operationStatuses.Keys)
+                    {
+                        var hash1 = asd.GetHashCode();
+                        var hash2 = targetFolderPath.GetHashCode();
+                        var eq = asd == targetFolderPath;
+                    }
+
+                    if (_operationStatuses.TryGetValue(targetFolderPath, out var targetPathOperations))
+                    {
+                        var path = new AbsolutePath(element).Path;
+                        operation = targetPathOperations.Find(o => o.Key == path);
+                    }
+                    _currentOperationProgress = operation;
+
+                    if (_copyOperation != null) await _copyOperation.Invoke(new AbsolutePath(element), targetElementPath, operation, new CopyCommandContext(UpdateProgress));
                 }
             }
         }

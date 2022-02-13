@@ -56,6 +56,7 @@ namespace FileTime.Avalonia.Services
                 || keyMapping.Command == Commands.Open
                 || keyMapping.Command == Commands.OpenOrRun
                 || keyMapping.Command == Commands.MoveCursorUp
+                || keyMapping.Command == Commands.MoveCursorDown
                 || keyMapping.Command == Commands.MoveCursorUpPage
                 || keyMapping.Command == Commands.MoveCursorDownPage;
         }

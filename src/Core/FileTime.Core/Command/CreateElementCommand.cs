@@ -10,6 +10,7 @@ namespace FileTime.Core.Command
         public string NewElementName { get; }
 
         public int Progress => 100;
+        public int CurrentProgress => 100;
         public AsyncEventHandler ProgressChanged { get; } = new();
         public string DisplayLabel { get; }
         public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();

@@ -1,5 +1,4 @@
 using AsyncEvent;
-using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -11,6 +10,7 @@ namespace FileTime.Core.Command
         private Func<IElement, Task>? _deleteElement;
 
         public int Progress => 100;
+        public int CurrentProgress => 100;
 
         public AsyncEventHandler ProgressChanged { get; } = new();
 
@@ -85,7 +85,6 @@ namespace FileTime.Core.Command
 
                     if (_deleteContainer != null) await _deleteContainer.Invoke(container);
                 }
-
             }
             else if (item is IElement element)
             {

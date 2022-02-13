@@ -10,6 +10,7 @@ namespace FileTime.Core.Command
         Task<CanCommandRun> CanRun(PointInTime startPoint);
         Task<PointInTime> SimulateCommand(PointInTime startPoint);
         int Progress { get; }
+        int CurrentProgress { get; }
         AsyncEventHandler ProgressChanged { get; }
     }
 }

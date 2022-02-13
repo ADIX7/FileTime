@@ -245,6 +245,7 @@
 								<ListBox
 									x:Name="CurrentItems"
 									x:CompileBindings="False"
+									AutoScrollToSelectedItem="True"
 									IsTabStop="True"
 									Items="{Binding AppState.SelectedTab.CurrentLocation.Items^}"
 									ScrollViewer.HorizontalScrollBarVisibility="Disabled"

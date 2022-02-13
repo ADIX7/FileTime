@@ -10,10 +10,12 @@ namespace FileTime.Core.Command
         public string NewContainerName { get; }
 
         public int Progress => 100;
+        public int CurrentProgress => 100;
 
         public AsyncEventHandler ProgressChanged { get; } = new();
         public string DisplayLabel { get; }
         public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();
+
 
         public CreateContainerCommand(AbsolutePath container, string newContainerName)
         {

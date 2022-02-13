@@ -24,7 +24,7 @@ namespace FileTime.Providers.Local.CommandHandlers
             await copyCommand.Execute(CopyElement, timeRunner);
         }
 
-        public static void CopyElement(AbsolutePath sourcePath, AbsolutePath targetPath)
+        public static async Task CopyElement(AbsolutePath sourcePath, AbsolutePath targetPath, OperationProgress? operationProgress, CopyCommandContext copyCommandContext)
         {
             using var sourceStream = File.OpenRead(sourcePath.Path);
             using var sourceReader = new BinaryReader(sourceStream);
@@ -40,6 +40,8 @@ namespace FileTime.Providers.Local.CommandHandlers
                 dataRead = sourceReader.ReadBytes(bufferSize);
                 targetWriter.Write(dataRead);
                 targetWriter.Flush();
+                if (operationProgress != null) operationProgress.Progress += dataRead.LongLength;
+                await copyCommandContext.UpdateProgress();
             }
             while (dataRead.Length > 0);
         }
