@@ -258,12 +258,6 @@ namespace FileTime.Avalonia.ViewModels
                     }
                 }
 
-                var containersToRemove = _containers.Except(newContainers).ToList();
-                foreach (var containerToRemove in containersToRemove)
-                {
-                    containerToRemove?.Dispose();
-                }
-
                 if (silent)
                 {
                     _containers = new ObservableCollection<ContainerViewModel>(newContainers);
