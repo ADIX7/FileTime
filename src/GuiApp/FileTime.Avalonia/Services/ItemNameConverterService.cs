@@ -35,7 +35,7 @@ namespace FileTime.Avalonia.Services
                         nameParts.Add(new ItemNamePart(before));
                     }
 
-                    nameParts.Add(new ItemNamePart(rapidTravel) { TextDecorations = TextDecorations.Underline });
+                    nameParts.Add(new ItemNamePart(rapidTravel, true));
                 }
 
                 if (nameLeft.Length > 0)

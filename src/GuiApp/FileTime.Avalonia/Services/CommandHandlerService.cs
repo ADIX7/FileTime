@@ -64,6 +64,7 @@ namespace FileTime.Avalonia.Services
                 {Commands.CreateElement, CreateElement},
                 {Commands.Cut, Cut},
                 {Commands.EnterRapidTravel, EnterRapidTravelMode},
+                {Commands.Edit, Edit},
                 {Commands.GoToHome, GotToHome},
                 {Commands.GoToPath, GoToContainer},
                 {Commands.GoToProvider, GotToProvider},
@@ -777,6 +778,11 @@ namespace FileTime.Avalonia.Services
 
             _dialogService.ShowToastMessage("Auto refresh is: " + (tab.AutoRefresh ? "ON" : "OFF"));
 
+            return Task.CompletedTask;
+        }
+
+        private Task Edit()
+        {
             return Task.CompletedTask;
         }
     }

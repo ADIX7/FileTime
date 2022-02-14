@@ -135,6 +135,7 @@
 			<converters:ItemViewModelIsAttibuteTypeConverter x:Key="ItemViewModelIsNotAttibuteTypeConverter" Invert="true"/>
 			<converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter"/>
 			<converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter"/>
+			<converters:NamePartShrinkerConverter x:Key="NamePartShrinkerConverter"/>
 
 		</ResourceDictionary>
 	</Application.Resources>
@@ -158,11 +159,14 @@
 		</Style>
 		<Style Selector="ListBox.ContentListView">
 			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
 		</Style>
 		<Style Selector="ListBox.ContentListView > ListBoxItem">
 			<Setter Property="Margin" Value="0"/>
 			<Setter Property="Padding" Value="0"/>
 			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
 			<Setter Property="ContextMenu">
 				<ContextMenu Items="{Binding Converter={StaticResource ContextMenuGenerator}}"/>
 			</Setter>

@@ -5,15 +5,17 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FileTime.Avalonia.Views.ItemView"
 			 xmlns:models="using:FileTime.Avalonia.Models"
-			 x:Name="ItemRoot" Background="{Binding ViewMode,Converter={StaticResource ItemViewModeToBackgroundConverter}}">
-	<Grid ColumnDefinitions="Auto,*,Auto" Margin="3">
+			 x:Name="ItemRoot" 
+			 HorizontalContentAlignment="Stretch"
+			 HorizontalAlignment="Stretch"
+			 Background="{Binding ViewMode,Converter={StaticResource ItemViewModeToBackgroundConverter}}">
+	<Grid ColumnDefinitions="20,*,300" Margin="3" x:Name="RootGrid">
 		<Grid.Styles>
 			<Style Selector="TextBlock">
 				<Setter Property="Foreground" Value="{Binding DataContext.ViewMode,Converter={StaticResource ItemViewModeToForegroundConverter},ElementName=ItemRoot}"/>
 			</Style>
 		</Grid.Styles>
 		<Image
-			Grid.RowSpan="2"
 			Width="18"
 			Height="18"
 			HorizontalAlignment="Left"
@@ -24,7 +26,15 @@
 			Margin="5,0,0,0"
 			Grid.Column="1"
 			VerticalAlignment="Center"
-			Items="{Binding DisplayName}">
+			HorizontalAlignment="Stretch">
+			<ItemsControl.Items>
+				<MultiBinding Converter="{StaticResource NamePartShrinkerConverter}">
+					<MultiBinding.Bindings>
+						<Binding Path="DisplayName"/>
+						<Binding ElementName="RootGrid" Path="Bounds.Width"/>
+					</MultiBinding.Bindings>
+				</MultiBinding>
+			</ItemsControl.Items>
 			<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
 					<StackPanel Orientation="Horizontal" />
@@ -42,7 +52,8 @@
 		</ItemsControl>
 
 		<Grid Grid.Column="2" IsVisible="{Binding ShowAttributes,ElementName=ItemRoot}">
-			<Grid ColumnDefinitions="30,50,90,40,45" 
+			<Grid ColumnDefinitions="50,50,90,40,45"
+				  HorizontalAlignment="Right"
 				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.LocalFile}}">
 
 				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Item.Name, Converter={StaticResource GetFileExtensionConverter}}"/>
@@ -52,6 +63,7 @@
 				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="4" Text="{Binding Item.Attributes}"/>
 			</Grid>
 			<Grid ColumnDefinitions="90,40,45" 
+				  HorizontalAlignment="Right"
 				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.Container}}">
 				
 				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"/>
@@ -59,6 +71,7 @@
 				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Grid.Column="2" Text="{Binding Item.Attributes}"/>
 			</Grid>
 			<Grid ColumnDefinitions="90,40,45" 
+				  HorizontalAlignment="Right"
 				  IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttibuteTypeConverter},ConverterParameter={x:Static models:AttibuteType.Element}}">
 				
 				<TextBlock HorizontalAlignment="Right" Classes="SmallText" Text="{Binding Item.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"/>

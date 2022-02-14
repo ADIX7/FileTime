@@ -21,6 +21,7 @@ using FileTime.Avalonia.IconProviders;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using Avalonia.Input;
+using System.Reflection;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -52,9 +53,24 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private bool _loading = true;
 
+        public string Title { get; private set; }
+
         async partial void OnInitialize()
         {
             _logger?.LogInformation($"Starting {nameof(MainPageViewModel)} initialization...");
+
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            var versionString = "Unknwon version";
+            if (version != null)
+            {
+                versionString = $"{version.Major}.{version.Minor}.{version.Build}";
+                if (version.Revision != 0)
+                {
+                    versionString += $" ({version.Revision})";
+                }
+            }
+            Title = "FileTime " + versionString;
+
             _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
             var inputInterface = (BasicInputHandler)App.ServiceProvider.GetService<IInputInterface>()!;
             inputInterface.InputHandler = DialogService.ReadInputs;

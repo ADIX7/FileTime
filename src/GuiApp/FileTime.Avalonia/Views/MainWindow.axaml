@@ -27,7 +27,7 @@
 
 				<Grid PointerPressed="HeaderPointerPressed">
 					<Rectangle Fill="#01000000"/>
-					<TextBlock Margin="15,10" Text="FileTime"/>
+					<TextBlock Margin="15,10" Text="{Binding Title}"/>
 				</Grid>
 
 				<Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
@@ -249,13 +249,12 @@
 									IsTabStop="True"
 									Items="{Binding AppState.SelectedTab.CurrentLocation.Items^}"
 									ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-									ScrollViewer.VerticalScrollBarVisibility="Hidden"
+									ScrollViewer.VerticalScrollBarVisibility="Visible"
 									SelectedItem="{Binding AppState.SelectedTab.SelectedItem, Mode=TwoWay}"
-									SelectionChanged="OnCurrentItemsSelectionChanged"
 									Classes="ContentListView">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
-											<local:ItemView/>
+											<local:ItemView HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch"/>
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
