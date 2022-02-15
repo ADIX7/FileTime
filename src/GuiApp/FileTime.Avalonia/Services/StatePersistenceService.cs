@@ -145,7 +145,7 @@ namespace FileTime.Avalonia.Services
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, "Unkown exception while restoring tab. {0}", JsonSerializer.Serialize(tab, _jsonOptions));
+                        _logger.LogError(e, "Unkown exception while restoring tab. {TabState}", JsonSerializer.Serialize(tab, _jsonOptions));
                     }
                 }
 

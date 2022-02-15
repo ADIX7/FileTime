@@ -810,7 +810,7 @@ namespace FileTime.Avalonia.Services
                     }
                     catch (System.ComponentModel.Win32Exception e)
                     {
-                        _logger.LogError(e, "Error while running editor program, possible the executable path does not exists. {0}", execPath);
+                        _logger.LogError(e, "Error while running editor program, possible the executable path does not exists. {ExecutablePath}", execPath);
                     }
                     catch (Exception e)
                     {

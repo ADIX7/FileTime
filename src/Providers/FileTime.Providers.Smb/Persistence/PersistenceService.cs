@@ -91,7 +91,7 @@ namespace FileTime.Providers.Smb.Persistence
                     }
                     catch(Exception e)
                     {
-                        _logger.LogError(e, "Unkown error while decrypting password for {0}", server.Name);
+                        _logger.LogError(e, "Unkown error while decrypting password for {ServerName}", server.Name);
                     }
                 }
             }

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using FileTime.App.Core.Command;
 using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Configuration;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.Avalonia.Services
 {
@@ -18,17 +20,20 @@ namespace FileTime.Avalonia.Services
         private readonly KeyboardConfigurationService _keyboardConfigurationService;
         private readonly CommandHandlerService _commandHandlerService;
         private readonly IDialogService _dialogService;
+        private readonly ILogger<KeyInputHandlerService> _logger;
 
         public KeyInputHandlerService(
             AppState appState,
             KeyboardConfigurationService keyboardConfigurationService,
             CommandHandlerService commandHandlerService,
-            IDialogService dialogService)
+            IDialogService dialogService,
+            ILogger<KeyInputHandlerService> logger)
         {
             _appState = appState;
             _keyboardConfigurationService = keyboardConfigurationService;
             _commandHandlerService = commandHandlerService;
             _dialogService = dialogService;
+            _logger = logger;
 
             _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Up) });
             _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Down) });
@@ -82,7 +87,7 @@ namespace FileTime.Avalonia.Services
                     setHandled(true);
                     _appState.PreviousKeys.Clear();
                     _appState.PossibleCommands = new();
-                    await _commandHandlerService.HandleCommandAsync(selectedCommandBinding.Command);
+                    await CallCommandAsync(selectedCommandBinding.Command);
                 }
                 else if (_keysToSkip.Any(k => AreKeysEqual(k, _appState.PreviousKeys)))
                 {
@@ -156,7 +161,7 @@ namespace FileTime.Avalonia.Services
                     if (selectedCommandBinding != null)
                     {
                         setHandled(true);
-                        await _commandHandlerService.HandleCommandAsync(selectedCommandBinding.Command);
+                        await CallCommandAsync(selectedCommandBinding.Command);
                     }
                 }
 
@@ -191,6 +196,18 @@ namespace FileTime.Avalonia.Services
                         await _appState.SelectedTab.MoveCursorToFirst();
                     }
                 }
+            }
+        }
+
+        private async Task CallCommandAsync(Commands command)
+        {
+            try
+            {
+                await _commandHandlerService.HandleCommandAsync(command);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Unknown error while running commnad. {Command}", command);
             }
         }
 
