@@ -783,6 +783,7 @@ namespace FileTime.Avalonia.Services
                 var getNext = false;
                 while (true)
                 {
+                    string? execPath = null;
                     try
                     {
                         var editorProgram = _programsService.GetEditorProgram(getNext);
@@ -792,6 +793,7 @@ namespace FileTime.Avalonia.Services
                         }
                         else if (editorProgram.Path is string executablePath)
                         {
+                            execPath = executablePath;
                             if (string.IsNullOrWhiteSpace(editorProgram.Arguments))
                             {
                                 Process.Start(executablePath, "\"" + filePath + "\"");
@@ -808,7 +810,7 @@ namespace FileTime.Avalonia.Services
                     }
                     catch (System.ComponentModel.Win32Exception e)
                     {
-                        _logger.LogError(e, "Error while running editor program, possible the executable path does not exists.");
+                        _logger.LogError(e, "Error while running editor program, possible the executable path does not exists. {0}", execPath);
                     }
                     catch (Exception e)
                     {

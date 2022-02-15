@@ -36,7 +36,7 @@
 					<StackPanel Margin="20,10" Orientation="Horizontal">
 						<local:PathPresenter DataContext="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName}"/>
 						<TextBlock
-							Text="{Binding AppState.SelectedTab.SelectedItem.Item.Name}" Foreground="{StaticResource AccentForegroundBrush}" />
+							Text="{Binding AppState.SelectedTab.SelectedItem.Item.Name}" Foreground="{StaticResource AccentBrush}" />
 					</StackPanel>
 				</Grid>
 
@@ -296,7 +296,7 @@
 									</ListBox>
 
 									<Grid
-										x:CompileBindings="False" 
+										x:CompileBindings="False"
 										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 
 										<TextBlock
@@ -343,7 +343,7 @@
 							</Grid>
 						</Grid>
 
-						<ItemsRepeater Items="{Binding AppState.PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="{Binding AppState.PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+						<ItemsRepeater Items="{Binding AppState.PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Top" IsVisible="{Binding AppState.PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
 							<ItemsRepeater.Styles>
 								<Style Selector="TextBlock">
 									<Style.Animations>
@@ -360,7 +360,9 @@
 							</ItemsRepeater.Styles>
 							<ItemsRepeater.ItemTemplate>
 								<DataTemplate>
-									<TextBlock Text="{Binding}" HorizontalAlignment="Center"/>
+									<Border Background="{DynamicResource ContainerGradientBackgroundBrush}" Margin="5" Padding="5">
+										<TextBlock Text="{Binding}" Foreground="{DynamicResource AccentComplementBrush}" HorizontalAlignment="Center"/>
+									</Border>
 								</DataTemplate>
 							</ItemsRepeater.ItemTemplate>
 						</ItemsRepeater>

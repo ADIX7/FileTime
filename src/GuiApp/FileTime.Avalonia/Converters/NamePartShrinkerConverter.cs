@@ -6,7 +6,6 @@ using Avalonia.Data.Converters;
 using Avalonia.Media;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
-using FileTime.Avalonia.Views;
 
 namespace FileTime.Avalonia.Converters
 {
@@ -17,11 +16,11 @@ namespace FileTime.Avalonia.Converters
         {
             if (values.Count > 0 && values[0] is IList<ItemNamePart> nameParts)
             {
+                var attributeWidth = values[2] is bool b && b ? 340 : 0;
                 var newNameParts = nameParts;
-                //if (values.Count > 1 && values[1] is ItemView itemView && itemView.ShowAttributes && itemView.Bounds.Width > 0)
                 if (values.Count > 1 && values[1] is double width && width > 0)
                 {
-                    newNameParts = GetNamePartsForWidth(nameParts, width - 340);
+                    newNameParts = GetNamePartsForWidth(nameParts, width - attributeWidth);
                 }
 
                 return newNameParts.Select(p => new ItemNamePartViewModel(p.Text, p.IsSpecial ? TextDecorations.Underline : null)).ToList();

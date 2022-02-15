@@ -9,7 +9,7 @@
 			 HorizontalContentAlignment="Stretch"
 			 HorizontalAlignment="Stretch"
 			 Background="{Binding ViewMode,Converter={StaticResource ItemViewModeToBackgroundConverter}}">
-	<Grid ColumnDefinitions="20,*,300" Margin="3" x:Name="RootGrid">
+	<Grid ColumnDefinitions="20,*,Auto" Margin="3" x:Name="RootGrid">
 		<Grid.Styles>
 			<Style Selector="TextBlock">
 				<Setter Property="Foreground" Value="{Binding DataContext.ViewMode,Converter={StaticResource ItemViewModeToForegroundConverter},ElementName=ItemRoot}"/>
@@ -32,6 +32,7 @@
 					<MultiBinding.Bindings>
 						<Binding Path="DisplayName"/>
 						<Binding ElementName="RootGrid" Path="Bounds.Width"/>
+						<Binding ElementName="ItemRoot" Path="ShowAttributes"/>
 					</MultiBinding.Bindings>
 				</MultiBinding>
 			</ItemsControl.Items>

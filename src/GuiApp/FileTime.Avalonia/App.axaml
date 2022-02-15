@@ -22,7 +22,8 @@
 			<Color x:Key="MarkedSelectedItemBackgroundColor">#b58900</Color>
 
 			<Color x:Key="ForegroundColor">#93a1a1</Color>
-			<Color x:Key="AccentForegroundColor">#268bd2</Color>
+			<Color x:Key="AccentColor">#268bd2</Color>
+			<Color x:Key="AccentComplementColor">#fdf6e3</Color>
 			<Color x:Key="LightForegroundColor">#7793a1a1</Color>
 			<Color x:Key="AlternativeItemForegroundColor">#93a1a1</Color>
 			<Color x:Key="SelectedItemForegroundColor">#073642</Color>
@@ -36,6 +37,13 @@
 				<GradientStop Offset="0" Color="#0093a1a1" />
 				<GradientStop Offset="0.5" Color="#93a1a1" />
 				<GradientStop Offset="1" Color="#0093a1a1" />
+			</LinearGradientBrush>
+
+			<LinearGradientBrush x:Key="ContainerGradientBackgroundBrush">
+				<GradientStop Offset="0" Color="#00b58900" />
+				<GradientStop Offset="0.4" Color="#CCb58900" />
+				<GradientStop Offset="0.6" Color="#CCb58900" />
+				<GradientStop Offset="1" Color="#00b58900" />
 			</LinearGradientBrush>
 
 
@@ -73,8 +81,11 @@
 				x:Key="ForegroundBrush"
 				Color="{DynamicResource ForegroundColor}" />
 			<SolidColorBrush
-				x:Key="AccentForegroundBrush"
-				Color="{DynamicResource AccentForegroundColor}" />
+				x:Key="AccentBrush"
+				Color="{DynamicResource AccentColor}" />
+			<SolidColorBrush
+				x:Key="AccentComplementBrush"
+				Color="{DynamicResource AccentComplementColor}" />
 			<SolidColorBrush
 				x:Key="LightForegroundBrush"
 				Color="{DynamicResource LightForegroundColor}" />

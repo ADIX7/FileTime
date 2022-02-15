@@ -103,7 +103,7 @@ namespace FileTime.Avalonia.Configuration
         {
             var editorPrograms = new List<ProgramConfiguration>()
             {
-                new ProgramConfiguration(@"c:\Program Files\Notepad++\notepad++1.exe"),
+                new ProgramConfiguration(@"c:\Program Files\Notepad++\notepad++.exe"),
                 new ProgramConfiguration("notepad.exe"),
             };
 
