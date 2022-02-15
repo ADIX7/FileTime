@@ -148,13 +148,13 @@ namespace FileTime.ConsoleUI.App
 
                 if (!string.IsNullOrWhiteSpace(newContainerName))
                 {
-                    await currentLocation.CreateContainer(newContainerName);
+                    await currentLocation.CreateContainerAsync(newContainerName);
                 }
             }
 
             async Task Validator(string newPath)
             {
-                if (await currentLocation.IsExists(newPath))
+                if (await currentLocation.IsExistsAsync(newPath))
                 {
                     _coloredConsoleRenderer.ForegroundColor = _styles.ErrorColor;
                 }
@@ -169,7 +169,7 @@ namespace FileTime.ConsoleUI.App
         {
             IList<AbsolutePath>? itemsToDelete = null;
 
-            var currentSelectedItems = (await _tabStates[_selectedTab!].GetCurrentMarkedItems()).Select(p => p.Resolve()).ToList();
+            var currentSelectedItems = (await _tabStates[_selectedTab!].GetCurrentMarkedItems()).Select(p => p.ResolveAsync()).ToList();
             var currentSelectedItem = await _selectedTab?.GetCurrentSelectedItem();
             if (currentSelectedItems.Count > 0)
             {

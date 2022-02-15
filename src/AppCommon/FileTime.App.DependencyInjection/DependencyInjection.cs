@@ -1,5 +1,6 @@
 using FileTime.App.Core.Clipboard;
 using FileTime.Core.Command;
+using FileTime.Core.CommandHandlers;
 using FileTime.Core.Providers;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
@@ -21,7 +22,23 @@ namespace FileTime.App.Core
                 .AddSingleton<IContentProvider, LocalContentProvider>(sp => sp.GetService<LocalContentProvider>() ?? throw new Exception($"No {nameof(LocalContentProvider)} instance found"))
                 .AddSingleton<IContentProvider, SmbContentProvider>()
                 .AddSingleton<CommandExecutor>()
-                .AddSingleton<TimeRunner>();
+                .AddSingleton<TimeRunner>()
+                .RegisterCommandHandlers();
+        }
+
+        internal static IServiceCollection RegisterCommandHandlers(this IServiceCollection serviceCollection)
+        {
+            var commandHandlers = new List<Type>()
+            {
+                typeof(StreamCopyCommandHandler)
+            };
+
+            foreach (var commandHandler in commandHandlers)
+            {
+                serviceCollection.AddTransient(typeof(ICommandHandler), commandHandler);
+            }
+
+            return serviceCollection;
         }
     }
 }

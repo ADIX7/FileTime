@@ -69,12 +69,12 @@ namespace FileTime.Providers.Smb
             return Task.FromResult(_elements);
         }
 
-        public Task<IContainer> CreateContainer(string name)
+        public Task<IContainer> CreateContainerAsync(string name)
         {
             throw new NotSupportedException();
         }
 
-        public Task<IElement> CreateElement(string name)
+        public Task<IElement> CreateElementAsync(string name)
         {
             throw new NotSupportedException();
         }
@@ -106,7 +106,7 @@ namespace FileTime.Providers.Smb
 
         public IContainer? GetParent() => Provider;
 
-        public Task<bool> IsExists(string name)
+        public Task<bool> IsExistsAsync(string name)
         {
             throw new NotImplementedException();
         }
@@ -120,7 +120,7 @@ namespace FileTime.Providers.Smb
             await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
         private void DisposeSmbClient()
         {
@@ -211,7 +211,7 @@ namespace FileTime.Providers.Smb
         }
 
         public Task Rename(string newName) => throw new NotSupportedException();
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy() { }
 

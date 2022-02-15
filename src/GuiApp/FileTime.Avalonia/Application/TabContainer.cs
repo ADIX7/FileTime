@@ -364,7 +364,7 @@ namespace FileTime.Avalonia.Application
                 var currentLocation = await Tab.GetCurrentLocation();
                 if (currentLocation != null)
                 {
-                    await currentLocation.CreateContainer(name);
+                    await currentLocation.CreateContainerAsync(name);
                 }
             });
         }
@@ -376,7 +376,7 @@ namespace FileTime.Avalonia.Application
                 var currentLocation = await Tab.GetCurrentLocation();
                 if (currentLocation != null)
                 {
-                    await currentLocation.CreateElement(name);
+                    await currentLocation.CreateElementAsync(name);
                 }
             });
         }

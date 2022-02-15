@@ -62,7 +62,7 @@ namespace FileTime.Core.Command
 
             _copyOperation = (_, to, _, _) =>
             {
-                var target = to.GetParentAsAbsolutePath().Resolve();
+                var target = to.GetParent().ResolveAsync();
                 newDiffs.Add(new Difference(
                     target is IElement
                         ? DifferenceItemType.Element
@@ -79,12 +79,12 @@ namespace FileTime.Core.Command
                 var newContainerDiff = new Difference(
                     DifferenceItemType.Container,
                     DifferenceActionType.Create,
-                    AbsolutePath.FromParentAndChildName(target, name)
+                    AbsolutePath.FromParentAndChildName(target, name, AbsolutePathType.Container)
                 );
 
                 newDiffs.Add(newContainerDiff);
 
-                return (IContainer)(await newContainerDiff.AbsolutePath.Resolve())!;
+                return (IContainer)(await newContainerDiff.AbsolutePath.ResolveAsync())!;
             };
 
             await TraverseTree(Sources, Target, TransportMode.Value);
@@ -110,7 +110,7 @@ namespace FileTime.Core.Command
                 await UpdateProgress();
             };
 
-            _createContainer = async (IContainer target, string name) => await target.CreateContainer(name);
+            _createContainer = async (IContainer target, string name) => await target.CreateContainerAsync(name);
             _containerCopyDone = async (path) =>
             {
                 foreach (var item in _operationStatuses[path])
@@ -137,7 +137,7 @@ namespace FileTime.Core.Command
 
             _copyOperation = async (from, to, _, _) =>
             {
-                var parentPath = to.GetParentAsAbsolutePath();
+                var parentPath = to.GetParent();
                 List<OperationProgress> operationsByFolder;
                 if (operationStatuses.ContainsKey(parentPath))
                 {
@@ -145,7 +145,7 @@ namespace FileTime.Core.Command
                 }
                 else
                 {
-                    var resolvedFrom = await from.Resolve();
+                    var resolvedFrom = await from.ResolveAsync();
                     operationsByFolder = new List<OperationProgress>();
                     operationStatuses.Add(parentPath, operationsByFolder);
                     operationsByFolder.Add(new OperationProgress(from.Path, resolvedFrom is IElement element ? await element.GetElementSize() : 0L));
@@ -166,7 +166,7 @@ namespace FileTime.Core.Command
 
             foreach (var source in sources)
             {
-                var item = await source.Resolve();
+                var item = await source.ResolveAsync();
 
                 if (item is IContainer container)
                 {
@@ -182,7 +182,7 @@ namespace FileTime.Core.Command
                 {
                     var targetName = element.Name;
 
-                    var targetNameExists = await target.IsExists(targetName);
+                    var targetNameExists = await target.IsExistsAsync(targetName);
                     if (transportMode == Command.TransportMode.Merge)
                     {
                         for (var i = 0; targetNameExists; i++)
@@ -197,7 +197,7 @@ namespace FileTime.Core.Command
 
                     OperationProgress? operation = null;
                     var targetFolderPath = new AbsolutePath(target);
-                    var targetElementPath = AbsolutePath.FromParentAndChildName(target, targetName);
+                    var targetElementPath = AbsolutePath.FromParentAndChildName(target, targetName, AbsolutePathType.Element);
 
                     foreach(var asd in _operationStatuses.Keys)
                     {

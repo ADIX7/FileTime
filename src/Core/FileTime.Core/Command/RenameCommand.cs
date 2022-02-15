@@ -24,7 +24,7 @@ namespace FileTime.Core.Command
 
         public async Task Execute(TimeRunner timeRunner)
         {
-            var itemToRename = await Source.Resolve();
+            var itemToRename = await Source.ResolveAsync();
             if (itemToRename != null)
             {
                 await itemToRename.Rename(Target);
@@ -34,7 +34,7 @@ namespace FileTime.Core.Command
 
         public async Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {
-            var item = await Source.Resolve();
+            var item = await Source.ResolveAsync();
             if (item == null) throw new FileNotFoundException();
             var newDifferences = new List<Difference>()
             {
@@ -50,7 +50,7 @@ namespace FileTime.Core.Command
 
         public Task<CanCommandRun> CanRun(PointInTime startPoint)
         {
-            return Task.FromResult(Source.Resolve() != null ? CanCommandRun.True : CanCommandRun.False);
+            return Task.FromResult(Source.ResolveAsync() != null ? CanCommandRun.True : CanCommandRun.False);
         }
     }
 }

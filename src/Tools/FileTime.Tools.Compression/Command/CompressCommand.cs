@@ -13,6 +13,7 @@ namespace FileTime.Tools.Compression.Command
         public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();
 
         public int Progress { get; }
+        public int CurrentProgress { get; }
 
         public AsyncEventHandler ProgressChanged { get; } = new AsyncEventHandler();
 

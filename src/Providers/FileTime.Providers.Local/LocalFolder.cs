@@ -60,7 +60,7 @@ namespace FileTime.Providers.Local
 
         public IContainer? GetParent() => _parent;
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)new LocalFolder(Directory, Provider, _parent));
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)new LocalFolder(Directory, Provider, _parent));
 
         public async Task RefreshAsync(CancellationToken token = default)
         {
@@ -131,7 +131,7 @@ namespace FileTime.Providers.Local
 
             return null;
         }
-        public async Task<IContainer> CreateContainer(string name)
+        public async Task<IContainer> CreateContainerAsync(string name)
         {
             Directory.CreateSubdirectory(name);
             await RefreshAsync();
@@ -139,7 +139,7 @@ namespace FileTime.Providers.Local
             return _containers!.FirstOrDefault(c => Provider.NormalizePath(c.Name) == Provider.NormalizePath(name))!;
         }
 
-        public async Task<IElement> CreateElement(string name)
+        public async Task<IElement> CreateElementAsync(string name)
         {
             using (File.Create(Path.Combine(Directory.FullName, name))) { }
             await RefreshAsync();
@@ -147,7 +147,7 @@ namespace FileTime.Providers.Local
             return _elements!.FirstOrDefault(e => Provider.NormalizePath(e.Name) == Provider.NormalizePath(name))!;
         }
 
-        public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(name)) ?? false;
+        public async Task<bool> IsExistsAsync(string name) => (await GetItems())?.Any(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(name)) ?? false;
 
         public Task Delete(bool hardDelete = false)
         {
@@ -185,7 +185,7 @@ namespace FileTime.Providers.Local
                     + ((Directory.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
             }
         }
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy()
         {

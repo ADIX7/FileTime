@@ -9,7 +9,7 @@ namespace FileTime.Providers.Smb
 {
     public class SmbContentProvider : IContentProvider
     {
-        private readonly object _initializationGuard = new object();
+        private readonly object _initializationGuard = new();
         private bool _initialized;
         private bool _initializing;
         private IContainer? _parent;
@@ -39,6 +39,7 @@ namespace FileTime.Providers.Smb
         public bool SupportsDirectoryLevelSoftDelete => false;
 
         public bool IsDestroyed => false;
+        public bool SupportsContentStreams => true;
 
         public SmbContentProvider(IInputInterface inputInterface, Persistence.PersistenceService persistenceService, ILogger<SmbContentProvider> logger)
         {
@@ -50,7 +51,7 @@ namespace FileTime.Providers.Smb
             _logger = logger;
         }
 
-        public async Task<IContainer> CreateContainer(string name)
+        public async Task<IContainer> CreateContainerAsync(string name)
         {
             var fullName = "\\\\" + name;
             var container = _rootContainers.Find(c => c.Name == name);
@@ -69,7 +70,7 @@ namespace FileTime.Providers.Smb
             return container;
         }
 
-        public Task<IElement> CreateElement(string name)
+        public Task<IElement> CreateElementAsync(string name)
         {
             throw new NotSupportedException();
         }
@@ -98,9 +99,9 @@ namespace FileTime.Providers.Smb
 
         public IContainer? GetParent() => _parent;
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
-        public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
+        public async Task<bool> IsExistsAsync(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
 
         public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
@@ -124,7 +125,7 @@ namespace FileTime.Providers.Smb
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult((IReadOnlyList<IElement>?)_elements);
 
         public Task Rename(string newName) => throw new NotSupportedException();
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy() { }
 

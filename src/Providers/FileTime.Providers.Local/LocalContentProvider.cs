@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System;
 using System.Runtime.InteropServices;
 using AsyncEvent;
@@ -35,6 +36,7 @@ namespace FileTime.Providers.Local
         public bool SupportsDirectoryLevelSoftDelete => false;
 
         public bool IsDestroyed => false;
+        public bool SupportsContentStreams => true;
 
         public LocalContentProvider(ILogger<LocalContentProvider> logger)
         {
@@ -64,7 +66,7 @@ namespace FileTime.Providers.Local
 
             if (rootContainer == null)
             {
-                _logger.LogWarning("No root container found with name '{0}'", path[0]);
+                _logger.LogWarning("No root container found with name '{RootContainerName}'", path[0]);
                 return null;
             }
 
@@ -74,12 +76,12 @@ namespace FileTime.Providers.Local
 
         public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
         public IContainer? GetParent() => _parent;
-        public Task<IContainer> CreateContainer(string name) => throw new NotSupportedException();
-        public Task<IElement> CreateElement(string name) => throw new NotSupportedException();
-        public Task<bool> IsExists(string name) => Task.FromResult(_rootContainers.Any(i => i.Name == name));
+        public Task<IContainer> CreateContainerAsync(string name) => throw new NotSupportedException();
+        public Task<IElement> CreateElementAsync(string name) => throw new NotSupportedException();
+        public Task<bool> IsExistsAsync(string name) => Task.FromResult(_rootContainers.Any(i => i.Name == name));
 
         public Task Delete(bool hardDelete = false) => throw new NotSupportedException();
 
@@ -102,7 +104,7 @@ namespace FileTime.Providers.Local
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
 
         public Task Rename(string newName) => throw new NotSupportedException();
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy()
         {

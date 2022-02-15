@@ -9,7 +9,6 @@ namespace FileTime.Providers.Smb
         private IReadOnlyList<IItem>? _items;
         private IReadOnlyList<IContainer>? _containers;
         private IReadOnlyList<IElement>? _elements;
-        private readonly SmbShare _smbShare;
         private readonly IContainer? _parent;
 
         public string Name { get; }
@@ -22,6 +21,7 @@ namespace FileTime.Providers.Smb
 
         public SmbContentProvider Provider { get; }
         IContentProvider IItem.Provider => Provider;
+        public SmbShare SmbShare { get; }
         public SupportsDelete CanDelete => SupportsDelete.True;
         public bool CanRename => true;
 
@@ -35,7 +35,7 @@ namespace FileTime.Providers.Smb
         public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent)
         {
             _parent = parent;
-            _smbShare = smbShare;
+            SmbShare = smbShare;
 
             Name = name;
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
@@ -43,21 +43,21 @@ namespace FileTime.Providers.Smb
             Provider = contentProvider;
         }
 
-        public Task<IContainer> CreateContainer(string name)
+        public Task<IContainer> CreateContainerAsync(string name)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IElement> CreateElement(string name)
+        public Task<IElement> CreateElementAsync(string name)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
         public IContainer? GetParent() => _parent;
 
-        public Task<bool> IsExists(string name)
+        public Task<bool> IsExistsAsync(string name)
         {
             throw new NotImplementedException();
         }
@@ -78,8 +78,8 @@ namespace FileTime.Providers.Smb
 
             try
             {
-                var path = FullName![(_smbShare.FullName!.Length + 1)..];
-                (containers, elements) = await _smbShare.ListFolder(this, _smbShare.Name, path, token);
+                var path = FullName![(SmbShare.FullName!.Length + 1)..];
+                (containers, elements) = await SmbShare.ListFolder(this, path, token);
             }
             catch { }
 
@@ -113,7 +113,7 @@ namespace FileTime.Providers.Smb
             if (_elements == null) await RefreshAsync(token);
             return _elements;
         }
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy() => IsDestroyed = true;
 

@@ -30,6 +30,7 @@ namespace FileTime.Core.Timeline
         public bool SupportsDirectoryLevelSoftDelete => false;
 
         public bool IsDestroyed => false;
+        public bool SupportsContentStreams => false;
 
         public TimeProvider(PointInTime pointInTime)
         {
@@ -41,14 +42,14 @@ namespace FileTime.Core.Timeline
             throw new NotImplementedException();
         }
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
-        public Task<IContainer> CreateContainer(string name)
+        public Task<IContainer> CreateContainerAsync(string name)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IElement> CreateElement(string name)
+        public Task<IElement> CreateElementAsync(string name)
         {
             throw new NotImplementedException();
         }
@@ -82,7 +83,7 @@ namespace FileTime.Core.Timeline
             throw new NotImplementedException();
         }
 
-        public Task<bool> IsExists(string name)
+        public Task<bool> IsExistsAsync(string name)
         {
             throw new NotImplementedException();
         }
@@ -92,10 +93,20 @@ namespace FileTime.Core.Timeline
         public Task Rename(string newName) => throw new NotSupportedException();
 
         public void SetParent(IContainer container) { }
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy() { }
 
         public void Unload() { }
+
+        public Task<IContentReader> GetContentReaderAsync(IElement element)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<IContentWriter> GetContentWriterAsync(IElement element)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

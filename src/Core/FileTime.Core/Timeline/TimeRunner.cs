@@ -139,6 +139,10 @@ namespace FileTime.Core.Timeline
                     _commandExecutor.ExecuteCommandAsync(commandToRun.Command, this).Wait();
                 }
             }
+            catch(Exception e)
+            {
+                _logger.LogError(e, "Error while running command: {CommandType} ({Command}).", commandToRun?.Command.GetType().Name, commandToRun?.Command.DisplayLabel);
+            }
             finally
             {
                 DisposeCommandThread(Thread.CurrentThread, commandToRun).Wait();
@@ -151,11 +155,11 @@ namespace FileTime.Core.Timeline
             {
                 if (command != null)
                 {
-                    _logger.LogDebug("Command finished running: {0}", command.Command.DisplayLabel);
+                    _logger.LogDebug("Command finished running: {Command}", command.Command.DisplayLabel);
                     _commandsToRun[0].Remove(command);
                     if (_commandsToRun[0].Commands.Count == 0)
                     {
-                        _logger.LogDebug("Removing empty command array. {0} batch left.", _commandsToRun.Count - 1);
+                        _logger.LogDebug("Removing empty command array. {RemainingBatchNumber} batch left.", _commandsToRun.Count - 1);
                         _commandsToRun.RemoveAt(0);
                     }
                 }

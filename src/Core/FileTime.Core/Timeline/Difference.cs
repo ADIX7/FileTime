@@ -24,7 +24,7 @@ namespace FileTime.Core.Timeline
             return new Difference(
                 Type,
                 Action,
-                new AbsolutePath(AbsolutePath.ContentProvider, AbsolutePath.Path, virtualContentProvider)
+                new AbsolutePath(AbsolutePath.ContentProvider, AbsolutePath.Path, AbsolutePath.Type, virtualContentProvider)
             );
         }
     }

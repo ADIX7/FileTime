@@ -48,5 +48,9 @@ namespace FileTime.Core.Timeline
         public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(-1L);
 
         public void Destroy() => IsDestroyed = true;
+
+        public Task<IContentReader> GetContentReaderAsync() => throw new NotSupportedException();
+
+        public Task<IContentWriter> GetContentWriterAsync() => throw new NotSupportedException();
     }
 }

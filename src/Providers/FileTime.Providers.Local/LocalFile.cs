@@ -88,5 +88,10 @@ namespace FileTime.Providers.Local
         public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(File.Length);
 
         public void Destroy() => IsDestroyed = true;
+
+        public Task<IContentReader> GetContentReaderAsync() =>
+            Task.FromResult((IContentReader)new LocalContentReader(System.IO.File.OpenRead(File.FullName)));
+        public Task<IContentWriter> GetContentWriterAsync() =>
+            Task.FromResult((IContentWriter)new LocalContentWriter(System.IO.File.OpenWrite(File.FullName)));
     }
 }

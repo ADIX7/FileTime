@@ -4,6 +4,8 @@ namespace FileTime.Core.Providers
 {
     public interface IContentProvider : IContainer
     {
+        bool SupportsContentStreams { get; }
+
         Task<IReadOnlyList<IContainer>> GetRootContainers(CancellationToken token = default);
 
         bool CanHandlePath(string path);

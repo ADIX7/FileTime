@@ -47,7 +47,7 @@ namespace FileTime.Core.Command
 
             foreach (var item in ItemsToDelete)
             {
-                await TraverseTree((await item.Resolve())!);
+                await TraverseTree((await item.ResolveAsync())!);
             }
 
             return startPoint.WithDifferences(newDifferences);
@@ -64,7 +64,7 @@ namespace FileTime.Core.Command
 
             foreach (var item in ItemsToDelete)
             {
-                await TraverseTree((await item.Resolve())!);
+                await TraverseTree((await item.ResolveAsync())!);
             }
         }
 
@@ -97,7 +97,7 @@ namespace FileTime.Core.Command
             var result = CanCommandRun.True;
             foreach (var itemPath in ItemsToDelete)
             {
-                var resolvedItem = await itemPath.Resolve();
+                var resolvedItem = await itemPath.ResolveAsync();
                 if (resolvedItem != null
                     && (
                         resolvedItem.CanDelete == SupportsDelete.False

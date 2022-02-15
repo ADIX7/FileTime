@@ -139,9 +139,9 @@ namespace FileTime.Core.Models
                 : baseContainer;
         }
 
-        public async Task<IContainer> CreateContainer(string name) => await BaseContainer.CreateContainer(name);
-        public async Task<IElement> CreateElement(string name) => await BaseContainer.CreateElement(name);
-        public async Task<bool> IsExists(string name) => await BaseContainer.IsExists(name);
+        public async Task<IContainer> CreateContainerAsync(string name) => await BaseContainer.CreateContainerAsync(name);
+        public async Task<IElement> CreateElementAsync(string name) => await BaseContainer.CreateElementAsync(name);
+        public async Task<bool> IsExistsAsync(string name) => await BaseContainer.IsExistsAsync(name);
 
         public Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
         {
@@ -157,10 +157,10 @@ namespace FileTime.Core.Models
         }
 
         public async Task Delete(bool hardDelete = false) => await BaseContainer.Delete();
-        public async Task<IContainer> Clone()
+        public async Task<IContainer> CloneAsync()
         {
             return new VirtualContainer(
-                await BaseContainer.Clone(),
+                await BaseContainer.CloneAsync(),
                 _containerTransformators,
                 _elementTransformators,
                 IsPermanent,
@@ -170,7 +170,7 @@ namespace FileTime.Core.Models
         }
 
         public async Task Rename(string newName) => await BaseContainer.Rename(newName);
-        public async Task<bool> CanOpen() => await BaseContainer.CanOpen();
+        public async Task<bool> CanOpenAsync() => await BaseContainer.CanOpenAsync();
 
         public void Destroy()
         {

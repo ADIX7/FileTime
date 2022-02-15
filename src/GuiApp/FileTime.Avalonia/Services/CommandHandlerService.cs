@@ -219,7 +219,7 @@ namespace FileTime.Avalonia.Services
             }
             else if (tabContainer == null)
             {
-                var newContainer = await _appState.SelectedTab.CurrentLocation.Container.Clone();
+                var newContainer = await _appState.SelectedTab.CurrentLocation.Container.CloneAsync();
 
                 var newTab = new Tab();
                 await newTab.Init(newContainer);
@@ -351,7 +351,7 @@ namespace FileTime.Avalonia.Services
                 //FIXME: check 'is Container'
                 if (currentSelectedItems.Count == 1)
                 {
-                    if ((await currentSelectedItems[0].Resolve()) is IContainer container
+                    if ((await currentSelectedItems[0].ResolveAsync()) is IContainer container
                         && (await container.GetItems())?.Count > 0)
                     {
                         askForDelete = true;

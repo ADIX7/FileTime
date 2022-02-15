@@ -45,11 +45,11 @@ namespace FileTime.Core.Timeline
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
         }
 
-        public async Task<IContainer> Clone() => new TimeContainer(Name, await _parent!.Clone(), Provider, VirtualProvider, _pointInTime);
+        public async Task<IContainer> CloneAsync() => new TimeContainer(Name, await _parent!.CloneAsync(), Provider, VirtualProvider, _pointInTime);
 
-        public Task<IContainer> CreateContainer(string name) => Task.FromResult((IContainer)new TimeContainer(name, this, Provider, VirtualProvider, _pointInTime));
+        public Task<IContainer> CreateContainerAsync(string name) => Task.FromResult((IContainer)new TimeContainer(name, this, Provider, VirtualProvider, _pointInTime));
 
-        public Task<IElement> CreateElement(string name) => Task.FromResult((IElement)new TimeElement(name, this, Provider, VirtualProvider));
+        public Task<IElement> CreateElementAsync(string name) => Task.FromResult((IElement)new TimeElement(name, this, Provider, VirtualProvider));
 
         public Task Delete(bool hardDelete = false) => Task.CompletedTask;
 
@@ -106,7 +106,7 @@ namespace FileTime.Core.Timeline
 
         public IContainer? GetParent() => _parent;
 
-        public async Task<bool> IsExists(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
+        public async Task<bool> IsExistsAsync(string name) => (await GetItems())?.Any(i => i.Name == name) ?? false;
 
         public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
@@ -125,7 +125,7 @@ namespace FileTime.Core.Timeline
             if (elementDiff.Type != DifferenceItemType.Container) throw new ArgumentException($"{elementDiff}'s {nameof(Difference.Type)} property is not {DifferenceItemType.Element}.");
             return new TimeElement(elementDiff.Name, this, Provider, elementDiff.AbsolutePath.VirtualContentProvider ?? elementDiff.AbsolutePath.ContentProvider);
         }
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy() => IsDestroyed = true;
         public void Unload() { }

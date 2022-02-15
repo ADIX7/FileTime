@@ -61,12 +61,12 @@ namespace FileTime.Providers.Smb
             return _elements;
         }
 
-        public Task<IContainer> CreateContainer(string name)
+        public Task<IContainer> CreateContainerAsync(string name)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IElement> CreateElement(string name)
+        public Task<IElement> CreateElementAsync(string name)
         {
             throw new NotImplementedException();
         }
@@ -78,9 +78,9 @@ namespace FileTime.Providers.Smb
 
         public IContainer? GetParent() => _parent;
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
-        public Task<bool> IsExists(string name)
+        public Task<bool> IsExistsAsync(string name)
         {
             throw new NotImplementedException();
         }
@@ -92,7 +92,7 @@ namespace FileTime.Providers.Smb
 
             try
             {
-                (containers, elements) = await ListFolder(this, Name, string.Empty, token);
+                (containers, elements) = await ListFolder(this, string.Empty, token);
             }
             catch { }
 
@@ -111,14 +111,15 @@ namespace FileTime.Providers.Smb
             await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
 
-        public async Task<(List<IContainer> containers, List<IElement> elements)> ListFolder(IContainer parent, string shareName, string folderName, CancellationToken token = default)
+        public async Task<(List<IContainer> containers, List<IElement> elements)> ListFolder(IContainer parent, string folderName, CancellationToken token = default)
         {
             return await _smbClientContext.RunWithSmbClientAsync(client =>
             {
                 var containers = new List<IContainer>();
                 var elements = new List<IElement>();
-                NTStatus status = NTStatus.STATUS_DATA_ERROR;
-                ISMBFileStore fileStore = client.TreeConnect(shareName, out status);
+                var status = NTStatus.STATUS_DATA_ERROR;
+                var fileStore = TreeConnect(client, out status);
+
                 if (status == NTStatus.STATUS_SUCCESS)
                 {
                     status = fileStore.CreateFile(out object directoryHandle, out FileStatus fileStatus, folderName, AccessMask.GENERIC_READ, SMBLibrary.FileAttributes.Directory, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
@@ -137,7 +138,7 @@ namespace FileTime.Providers.Smb
                                 }
                                 else
                                 {
-                                    elements.Add(new SmbFile(fileDirectoryInformation.FileName, Provider, parent));
+                                    elements.Add(new SmbFile(fileDirectoryInformation.FileName, Provider, this, parent, _smbClientContext));
                                 }
                             }
                         }
@@ -151,8 +152,13 @@ namespace FileTime.Providers.Smb
             });
         }
 
+        internal ISMBFileStore TreeConnect(ISMBClient client, out NTStatus status)
+        {
+            return client.TreeConnect(Name, out status);
+        }
+
         public Task Rename(string newName) => throw new NotSupportedException();
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy() { }
 

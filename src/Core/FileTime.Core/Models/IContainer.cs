@@ -30,13 +30,13 @@ namespace FileTime.Core.Models
             return null;
         }
 
-        Task<IContainer> CreateContainer(string name);
-        Task<IElement> CreateElement(string name);
+        Task<IContainer> CreateContainerAsync(string name);
+        Task<IElement> CreateElementAsync(string name);
 
-        Task<bool> IsExists(string name);
+        Task<bool> IsExistsAsync(string name);
 
-        Task<IContainer> Clone();
-        Task<bool> CanOpen();
+        Task<IContainer> CloneAsync();
+        Task<bool> CanOpenAsync();
         void Unload();
 
         bool IsLoaded { get; }

@@ -24,10 +24,10 @@ namespace FileTime.Core.Command
 
         public async Task Execute(TimeRunner timeRunner)
         {
-            var possibleContainer = await Container.Resolve();
+            var possibleContainer = await Container.ResolveAsync();
             if (possibleContainer is IContainer container)
             {
-                await container.CreateElement(NewElementName);
+                await container.CreateElementAsync(NewElementName);
                 await timeRunner.RefreshContainer.InvokeAsync(this, new AbsolutePath(container));
             }
         }
@@ -36,18 +36,18 @@ namespace FileTime.Core.Command
         {
             var newDifferences = new List<Difference>()
             {
-                new Difference(DifferenceItemType.Element, DifferenceActionType.Create, new AbsolutePath(Container.ContentProvider, Container.Path + Constants.SeparatorChar + NewElementName, Container.VirtualContentProvider))
+                new Difference(DifferenceItemType.Element, DifferenceActionType.Create, Container.GetChild(NewElementName, AbsolutePathType.Element))
             };
             return Task.FromResult(startPoint.WithDifferences(newDifferences));
         }
 
         public async Task<CanCommandRun> CanRun(PointInTime startPoint)
         {
-            var resolvedContainer = Container.Resolve();
+            var resolvedContainer = Container.ResolveAsync();
             if (resolvedContainer == null) return CanCommandRun.Forceable;
 
             if (resolvedContainer is not IContainer container
-                || await container.IsExists(NewElementName))
+                || await container.IsExistsAsync(NewElementName))
             {
                 return CanCommandRun.False;
             }

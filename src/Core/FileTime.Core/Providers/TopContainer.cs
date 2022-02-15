@@ -48,9 +48,9 @@ namespace FileTime.Core.Providers
             }
         }
 
-        public Task<IContainer> CreateContainer(string name) => throw new NotImplementedException();
+        public Task<IContainer> CreateContainerAsync(string name) => throw new NotImplementedException();
 
-        public Task<IElement> CreateElement(string name) => throw new NotImplementedException();
+        public Task<IElement> CreateElementAsync(string name) => throw new NotImplementedException();
 
         public Task Delete(bool hardDelete = false) => throw new NotImplementedException();
 
@@ -58,7 +58,7 @@ namespace FileTime.Core.Providers
 
         public IContainer? GetParent() => null;
 
-        public Task<bool> IsExists(string name) => throw new NotImplementedException();
+        public Task<bool> IsExistsAsync(string name) => throw new NotImplementedException();
 
         public async Task RefreshAsync(CancellationToken token = default) => await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
 
@@ -66,11 +66,11 @@ namespace FileTime.Core.Providers
         public Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default) => Task.FromResult(_containers);
         public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default) => Task.FromResult(_elements);
 
-        public Task<IContainer> Clone() => Task.FromResult((IContainer)this);
+        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
         public Task Rename(string newName) => throw new NotSupportedException();
 
-        public Task<bool> CanOpen() => Task.FromResult(true);
+        public Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public void Destroy() { }
 

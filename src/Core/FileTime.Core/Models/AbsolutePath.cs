@@ -9,19 +9,22 @@ namespace FileTime.Core.Models
         public IContentProvider? VirtualContentProvider { get; }
 
         public string Path { get; }
+        public AbsolutePathType Type { get; }
 
         public AbsolutePath(AbsolutePath from)
         {
             ContentProvider = from.ContentProvider;
             Path = from.Path;
             VirtualContentProvider = from.VirtualContentProvider;
+            Type = from.Type;
         }
 
-        public AbsolutePath(IContentProvider contentProvider, string path, IContentProvider? virtualContentProvider)
+        public AbsolutePath(IContentProvider contentProvider, string path, AbsolutePathType type, IContentProvider? virtualContentProvider)
         {
             ContentProvider = contentProvider;
             Path = path;
             VirtualContentProvider = virtualContentProvider;
+            Type = type;
         }
 
         public AbsolutePath(IItem item)
@@ -43,33 +46,39 @@ namespace FileTime.Core.Models
                 ContentProvider = item.Provider;
                 Path = item.FullName!;
             }
+
+            Type = item switch
+            {
+                IContainer => AbsolutePathType.Container,
+                IElement => AbsolutePathType.Element,
+                _ => AbsolutePathType.Unknown
+            };
         }
 
-        public static AbsolutePath FromParentAndChildName(IContainer parent, string childName)
+        public static AbsolutePath FromParentAndChildName(IContainer parent, string childName, AbsolutePathType childType)
         {
-            IContentProvider? contentProvider;
-            IContentProvider? virtualContentProvider;
-            string? path;
+            var contentProvider = parent.Provider;
+            var path = parent.FullName! + Constants.SeparatorChar + childName;
 
-            if (parent is TimeContainer timeContainer)
+            var virtualContentProvider = parent switch
             {
-                contentProvider = timeContainer.Provider;
-                virtualContentProvider = timeContainer.VirtualProvider;
-                path = timeContainer.FullName! + Constants.SeparatorChar + childName;
-            }
-            else
-            {
-                contentProvider = parent.Provider;
-                path = parent.FullName! + Constants.SeparatorChar + childName;
-                virtualContentProvider = null;
-            }
+                TimeContainer timeContainer => timeContainer.VirtualProvider,
+                _ => null
+            };
 
-            return new AbsolutePath(contentProvider, path, virtualContentProvider);
+            return new AbsolutePath(contentProvider, path, childType, virtualContentProvider);
         }
 
-        public async Task<IItem?> Resolve()
+        public AbsolutePath GetChild(string childName, AbsolutePathType childType)
         {
-            var result = VirtualContentProvider != null && (await VirtualContentProvider.IsExists(Path))
+            var path = Path + Constants.SeparatorChar + childName;
+
+            return new AbsolutePath(ContentProvider, path, childType, VirtualContentProvider);
+        }
+
+        public async Task<IItem?> ResolveAsync()
+        {
+            var result = VirtualContentProvider != null && (await VirtualContentProvider.IsExistsAsync(Path))
                 ? await VirtualContentProvider.GetByPath(Path)
                 : null;
 
@@ -78,13 +87,13 @@ namespace FileTime.Core.Models
             return result;
         }
 
-        public string GetParent()
+        public string GetParentPath()
         {
             var pathParts = Path.Split(Constants.SeparatorChar);
             return string.Join(Constants.SeparatorChar, pathParts[..^1]);
         }
 
-        public AbsolutePath GetParentAsAbsolutePath() => new(ContentProvider, GetParent(), VirtualContentProvider);
+        public AbsolutePath GetParent() => new(ContentProvider, GetParentPath(), AbsolutePathType.Container, VirtualContentProvider);
 
         public string GetName() => Path.Split(Constants.SeparatorChar).Last();
 
