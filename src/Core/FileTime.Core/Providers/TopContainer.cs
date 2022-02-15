@@ -17,6 +17,7 @@ namespace FileTime.Core.Providers
 #pragma warning restore CS8603 // Possible null reference return.
 
         public string? FullName => null;
+        public string? NativePath => null;
 
         public bool IsHidden => false;
         public bool IsLoaded => true;

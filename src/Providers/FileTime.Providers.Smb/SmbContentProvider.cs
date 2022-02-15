@@ -24,6 +24,7 @@ namespace FileTime.Providers.Smb
         public string Name { get; } = "smb";
 
         public string? FullName { get; }
+        public string? NativePath => null;
 
         public bool IsHidden => false;
         public bool IsLoaded => true;
@@ -177,5 +178,7 @@ namespace FileTime.Providers.Smb
                 }
             }
         }
+
+        public static string GetNativePath(string fullName) => fullName.Replace("/", "\\");
     }
 }

@@ -8,32 +8,32 @@ namespace FileTime.Avalonia.Configuration
     public static class MainConfiguration
     {
         private static readonly Lazy<List<CommandBindingConfiguration>> _defaultKeybindings = new(InitDefaultKeyBindings);
-        internal const string KeybindingBaseConfigKey = "KeyBindings";
 
         public static Dictionary<string, string> Configuration { get; }
 
         static MainConfiguration()
         {
             Configuration = new();
-            PopulateDefaultKeyBindings(Configuration, _defaultKeybindings.Value, KeybindingBaseConfigKey + ":" + nameof(KeyBindingConfiguration.DefaultKeyBindings));
+            PopulateDefaultEditorPrograms(Configuration);
+            PopulateDefaultKeyBindings(Configuration, _defaultKeybindings.Value, SectionNames.KeybindingSectionName + ":" + nameof(KeyBindingConfiguration.DefaultKeyBindings));
         }
 
-        private static void PopulateDefaultKeyBindings(Dictionary<string, string> keybindings, List<CommandBindingConfiguration> commandBindingConfigs, string basePath)
+        private static void PopulateDefaultKeyBindings(Dictionary<string, string> configuration, List<CommandBindingConfiguration> commandBindingConfigs, string basePath)
         {
             for (var i = 0; i < commandBindingConfigs.Count; i++)
             {
                 var baseKey = basePath + $":[{i}]:";
                 var commandBindingConfig = commandBindingConfigs[i];
-                keybindings.Add(baseKey + nameof(CommandBindingConfiguration.Command), commandBindingConfig.Command.ToString());
+                configuration.Add(baseKey + nameof(CommandBindingConfiguration.Command), commandBindingConfig.Command.ToString());
 
                 for (var j = 0; j < commandBindingConfig.Keys.Count; j++)
                 {
                     var key = commandBindingConfig.Keys[j];
                     var keyBaseKey = baseKey + $"keys:[{j}]:";
-                    keybindings.Add(keyBaseKey + nameof(KeyConfig.Key), key.Key.ToString());
-                    keybindings.Add(keyBaseKey + nameof(KeyConfig.Shift), key.Shift.ToString());
-                    keybindings.Add(keyBaseKey + nameof(KeyConfig.Alt), key.Alt.ToString());
-                    keybindings.Add(keyBaseKey + nameof(KeyConfig.Ctrl), key.Ctrl.ToString());
+                    configuration.Add(keyBaseKey + nameof(KeyConfig.Key), key.Key.ToString());
+                    configuration.Add(keyBaseKey + nameof(KeyConfig.Shift), key.Shift.ToString());
+                    configuration.Add(keyBaseKey + nameof(KeyConfig.Alt), key.Alt.ToString());
+                    configuration.Add(keyBaseKey + nameof(KeyConfig.Ctrl), key.Ctrl.ToString());
                 }
             }
         }
@@ -51,6 +51,7 @@ namespace FileTime.Avalonia.Configuration
                 new CommandBindingConfiguration(Commands.CreateContainer, new[] { Key.C, Key.C }),
                 new CommandBindingConfiguration(Commands.CreateElement, new[] { Key.C, Key.E }),
                 new CommandBindingConfiguration(Commands.Cut, new[] { Key.D, Key.D }),
+                new CommandBindingConfiguration(Commands.Edit, new KeyConfig(Key.F4)),
                 new CommandBindingConfiguration(Commands.EnterRapidTravel, new KeyConfig(Key.OemComma, shift: true)),
                 new CommandBindingConfiguration(Commands.GoToHome, new[] { Key.G, Key.H }),
                 new CommandBindingConfiguration(Commands.GoToPath, new KeyConfig(Key.OemComma, ctrl: true)),
@@ -96,6 +97,26 @@ namespace FileTime.Avalonia.Configuration
                 new CommandBindingConfiguration(Commands.MoveCursorUpPage, Key.PageUp),
                 new CommandBindingConfiguration(Commands.MoveCursorDownPage, Key.PageDown),
             };
+        }
+
+        private static void PopulateDefaultEditorPrograms(Dictionary<string, string> configuration)
+        {
+            var editorPrograms = new List<ProgramConfiguration>()
+            {
+                new ProgramConfiguration(@"c:\Program Files\Notepad++\notepad++1.exe"),
+                new ProgramConfiguration("notepad.exe"),
+            };
+
+            for (var i = 0; i < editorPrograms.Count; i++)
+            {
+                if (editorPrograms[i].Path is not string path) continue;
+                configuration.Add($"{SectionNames.ProgramsSectionName}:{nameof(ProgramsConfiguration.DefaultEditorPrograms)}:[{i}]:{nameof(ProgramConfiguration.Path)}", path);
+
+                if (editorPrograms[i].Arguments is string arguments)
+                {
+                    configuration.Add($"{SectionNames.ProgramsSectionName}:{nameof(ProgramsConfiguration.DefaultEditorPrograms)}:[{i}]:{nameof(ProgramConfiguration.Arguments)}", arguments);
+                }
+            }
         }
     }
 }

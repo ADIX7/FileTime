@@ -22,6 +22,7 @@ namespace FileTime.Core.Models
         public string Name => BaseContainer.Name;
 
         public string? FullName => BaseContainer.FullName;
+        public string? NativePath => BaseContainer.NativePath;
 
         public bool IsHidden => BaseContainer.IsHidden;
         public bool IsLoaded => BaseContainer.IsLoaded;

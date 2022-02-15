@@ -33,7 +33,7 @@ namespace FileTime.Avalonia.ViewModels
     [Inject(typeof(ILogger<MainPageViewModel>), PropertyName = "_logger")]
     [Inject(typeof(KeyboardConfigurationService))]
     [Inject(typeof(CommandHandlerService), PropertyAccessModifier = AccessModifier.Public)]
-    [Inject(typeof(DialogService))]
+    [Inject(typeof(IDialogService), PropertyName = "_dialogService")]
     [Inject(typeof(KeyInputHandlerService))]
     public partial class MainPageViewModel : IMainPageViewModelBase
     {
@@ -73,7 +73,7 @@ namespace FileTime.Avalonia.ViewModels
 
             _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
             var inputInterface = (BasicInputHandler)App.ServiceProvider.GetService<IInputInterface>()!;
-            inputInterface.InputHandler = DialogService.ReadInputs;
+            inputInterface.InputHandler = _dialogService.ReadInputs;
             App.ServiceProvider.GetService<TopContainer>();
             await StatePersistence.LoadStatesAsync();
 
@@ -246,25 +246,25 @@ namespace FileTime.Avalonia.ViewModels
         [Command]
         public async void ProcessInputs()
         {
-            await DialogService.ProcessInputs();
+            await _dialogService.ProcessInputs();
         }
 
         [Command]
         public void CancelInputs()
         {
-            DialogService.CancelInputs();
+            _dialogService.CancelInputs();
         }
 
         [Command]
         public void ProcessMessageBox()
         {
-            DialogService.ProcessMessageBox();
+            _dialogService.ProcessMessageBox();
         }
 
         [Command]
         public void CancelMessageBox()
         {
-            DialogService.CancelMessageBox();
+            _dialogService.CancelMessageBox();
         }
 
         public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)

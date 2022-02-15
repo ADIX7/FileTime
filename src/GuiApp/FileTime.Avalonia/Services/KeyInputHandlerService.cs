@@ -17,13 +17,13 @@ namespace FileTime.Avalonia.Services
         private readonly AppState _appState;
         private readonly KeyboardConfigurationService _keyboardConfigurationService;
         private readonly CommandHandlerService _commandHandlerService;
-        private readonly DialogService _dialogService;
+        private readonly IDialogService _dialogService;
 
         public KeyInputHandlerService(
             AppState appState,
             KeyboardConfigurationService keyboardConfigurationService,
             CommandHandlerService commandHandlerService,
-            DialogService dialogService)
+            IDialogService dialogService)
         {
             _appState = appState;
             _keyboardConfigurationService = keyboardConfigurationService;

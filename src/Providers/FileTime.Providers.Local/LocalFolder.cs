@@ -22,6 +22,7 @@ namespace FileTime.Providers.Local
         public string Name { get; }
 
         public string FullName { get; }
+        public string? NativePath => Directory.FullName;
 
         public bool IsLoaded => _items != null;
         public SupportsDelete CanDelete { get; }

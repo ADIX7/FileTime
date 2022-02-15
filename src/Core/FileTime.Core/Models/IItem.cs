@@ -6,6 +6,7 @@ namespace FileTime.Core.Models
     {
         string Name { get; }
         string? FullName { get; }
+        string? NativePath { get; }
         bool IsHidden { get; }
         bool IsDestroyed { get; }
         SupportsDelete CanDelete { get; }

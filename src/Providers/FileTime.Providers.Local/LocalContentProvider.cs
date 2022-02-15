@@ -19,6 +19,7 @@ namespace FileTime.Providers.Local
         public string Name { get; } = "local";
 
         public string? FullName { get; }
+        public string? NativePath => null;
         public bool IsHidden => false;
         public bool IsLoaded => true;
 

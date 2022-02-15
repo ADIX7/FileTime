@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using FileTime.App.Core.Clipboard;
 using FileTime.App.Core.Command;
 using FileTime.Avalonia.Application;
@@ -17,6 +16,7 @@ using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.Avalonia.Services
 {
@@ -27,22 +27,26 @@ namespace FileTime.Avalonia.Services
         private readonly AppState _appState;
         private readonly LocalContentProvider _localContentProvider;
         private readonly ItemNameConverterService _itemNameConverterService;
-        private readonly DialogService _dialogService;
+        private readonly IDialogService _dialogService;
         private readonly IClipboard _clipboard;
         private readonly TimeRunner _timeRunner;
         private readonly IIconProvider _iconProvider;
         private readonly IEnumerable<IContentProvider> _contentProviders;
         private readonly Dictionary<Commands, Func<Task>> _commandHandlers;
+        private readonly ProgramsService _programsService;
+        private readonly ILogger<CommandHandlerService> _logger;
 
         public CommandHandlerService(
             AppState appState,
             LocalContentProvider localContentProvider,
             ItemNameConverterService itemNameConverterService,
-            DialogService dialogService,
+            IDialogService dialogService,
             IClipboard clipboard,
             TimeRunner timeRunner,
             IIconProvider iconProvider,
-            IEnumerable<IContentProvider> contentProviders)
+            IEnumerable<IContentProvider> contentProviders,
+            ProgramsService programsService,
+            ILogger<CommandHandlerService> logger)
         {
             _appState = appState;
             _localContentProvider = localContentProvider;
@@ -52,6 +56,8 @@ namespace FileTime.Avalonia.Services
             _timeRunner = timeRunner;
             _iconProvider = iconProvider;
             _contentProviders = contentProviders;
+            _programsService = programsService;
+            _logger = logger;
 
             _commandHandlers = new Dictionary<Commands, Func<Task>>
             {
@@ -541,7 +547,7 @@ namespace FileTime.Avalonia.Services
         {
             if (_appState.SelectedTab.CurrentLocation.Container is LocalFolder localFolder)
             {
-                var path = localFolder.Directory.FullName;
+                var path = localFolder.NativePath;
                 if (path != null)
                 {
                     Process.Start("explorer.exe", "\"" + path + "\"");
@@ -553,23 +559,12 @@ namespace FileTime.Avalonia.Services
 
         private async Task CopyPath()
         {
-            string? textToCopy = null;
-            if (_appState.SelectedTab.CurrentLocation.Container is LocalFolder localFolder)
-            {
-                textToCopy = localFolder.Directory.FullName;
-            }
-            if (_appState.SelectedTab.CurrentLocation.Container is LocalFile localFile)
-            {
-                textToCopy = localFile.File.FullName;
-            }
-            else if (_appState.SelectedTab.CurrentLocation.Container.FullName is string fullName)
-            {
-                textToCopy = fullName;
-            }
+            var currentContainer = _appState.SelectedTab.CurrentLocation.Container;
+            var textToCopy = currentContainer.NativePath;
 
-            if (textToCopy != null && global::Avalonia.Application.Current?.Clipboard is not null)
+            if (textToCopy != null && global::Avalonia.Application.Current?.Clipboard is global::Avalonia.Input.Platform.IClipboard clipboard)
             {
-                await global::Avalonia.Application.Current.Clipboard.SetTextAsync(textToCopy);
+                await clipboard.SetTextAsync(textToCopy);
             }
         }
 
@@ -783,6 +778,46 @@ namespace FileTime.Avalonia.Services
 
         private Task Edit()
         {
+            if (_appState.SelectedTab.SelectedItem?.Item is IElement element && element.NativePath is string filePath)
+            {
+                var getNext = false;
+                while (true)
+                {
+                    try
+                    {
+                        var editorProgram = _programsService.GetEditorProgram(getNext);
+                        if (editorProgram is null)
+                        {
+                            break;
+                        }
+                        else if (editorProgram.Path is string executablePath)
+                        {
+                            if (string.IsNullOrWhiteSpace(editorProgram.Arguments))
+                            {
+                                Process.Start(executablePath, "\"" + filePath + "\"");
+                            }
+                            else
+                            {
+                                var parts = editorProgram.Arguments.Split("%%1");
+                                var arguments = string.Join("%%1", parts.Select(p => p.Replace("%1", "\"" + filePath + "\""))).Replace("%%1", "%1");
+                                Process.Start(executablePath, arguments);
+                            }
+                        }
+                        //TODO: else
+                        break;
+                    }
+                    catch (System.ComponentModel.Win32Exception e)
+                    {
+                        _logger.LogError(e, "Error while running editor program, possible the executable path does not exists.");
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Unkown error while running editor program.");
+                    }
+                    getNext = true;
+                }
+            }
+            //TODO: else
             return Task.CompletedTask;
         }
     }

@@ -14,6 +14,7 @@ namespace FileTime.Providers.Local
         public string Name { get; }
 
         public string FullName { get; }
+        public string? NativePath => File.FullName;
 
         public IContentProvider Provider { get; }
 

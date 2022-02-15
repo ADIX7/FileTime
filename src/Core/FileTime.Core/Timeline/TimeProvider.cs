@@ -15,6 +15,7 @@ namespace FileTime.Core.Timeline
         public string Name => "time";
 
         public string? FullName => null;
+        public string? NativePath => null;
 
         public bool IsHidden => false;
 

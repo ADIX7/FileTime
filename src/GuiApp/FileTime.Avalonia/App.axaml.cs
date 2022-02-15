@@ -18,12 +18,12 @@ namespace FileTime.Avalonia
             ServiceProvider ??= DependencyInjection
                 .RegisterDefaultServices()
                 .AddConfiguration()
-                .InitSerilog()
+                .AddServices()
                 .RegisterLogging()
                 .AddViewModels()
-                .AddServices()
                 .RegisterCommandHandlers()
-                .BuildServiceProvider();
+                .BuildServiceProvider()
+                .InitSerilog();
 
             var _logger = ServiceProvider.GetService<ILogger<App>>();
             _logger?.LogInformation("App initialization completed.");

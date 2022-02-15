@@ -24,8 +24,8 @@ namespace FileTime.Providers.Smb
         public string? Password { get; private set; }
 
         public string Name { get; }
-
         public string? FullName { get; }
+        public string? NativePath { get; }
 
         public bool IsHidden => false;
         public bool IsLoaded => _items != null;
@@ -51,7 +51,7 @@ namespace FileTime.Providers.Smb
             Password = password;
 
             Provider = contentProvider;
-            FullName = Name = path;
+            NativePath = FullName = Name = path;
         }
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)

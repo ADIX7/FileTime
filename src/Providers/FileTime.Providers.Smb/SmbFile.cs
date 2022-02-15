@@ -1,6 +1,5 @@
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
-using SMBLibrary.Client;
 
 namespace FileTime.Providers.Smb
 {
@@ -11,6 +10,7 @@ namespace FileTime.Providers.Smb
         public string Name { get; }
 
         public string? FullName { get; }
+        public string? NativePath { get; }
 
         public bool IsHidden => false;
         public SupportsDelete CanDelete => SupportsDelete.True;
@@ -25,6 +25,7 @@ namespace FileTime.Providers.Smb
         {
             Name = name;
             FullName = parent.FullName + Constants.SeparatorChar + Name;
+            NativePath = SmbContentProvider.GetNativePath(FullName);
 
             Provider = provider;
             _parent = parent;

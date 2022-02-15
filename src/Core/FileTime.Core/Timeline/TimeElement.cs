@@ -22,6 +22,9 @@ namespace FileTime.Core.Timeline
 
         public string? FullName { get; }
 
+        //FIXME: currently this can be different of the real items NativePath, should be fixed
+        public string? NativePath => FullName;
+
         public bool IsHidden => false;
 
         public SupportsDelete CanDelete => SupportsDelete.True;

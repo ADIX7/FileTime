@@ -12,6 +12,7 @@ namespace FileTime.App.Core.Command
         CreateContainer,
         CreateElement,
         Cut,
+        Edit,
         EnterRapidTravel,
         GoToHome,
         GoToPath,

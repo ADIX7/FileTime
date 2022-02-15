@@ -9,7 +9,7 @@ using FileTime.Core.Interactions;
 
 namespace FileTime.Avalonia.Services
 {
-    public class DialogService
+    public class DialogService : IDialogService
     {
         private readonly AppState _appState;
 
@@ -93,10 +93,9 @@ namespace FileTime.Avalonia.Services
 
         public void ShowToastMessage(string text)
         {
-            _appState.PopupTexts.Add(text);
-
             Task.Run(async () =>
             {
+                await Dispatcher.UIThread.InvokeAsync(() => _appState.PopupTexts.Add(text));
                 await Task.Delay(5000);
                 await Dispatcher.UIThread.InvokeAsync(() => _appState.PopupTexts.Remove(text));
             });

@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Configuration;
 using FileTime.Avalonia.IconProviders;
+using FileTime.Avalonia.Logging;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
@@ -12,6 +14,7 @@ using FileTime.Providers.Smb;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Configuration;
 
 namespace FileTime.Avalonia
 {
@@ -20,20 +23,22 @@ namespace FileTime.Avalonia
         internal static IServiceCollection AddViewModels(this IServiceCollection serviceCollection)
         {
             return serviceCollection
-                .AddSingleton<AppState>()
                 .AddTransient<MainPageViewModel>()
                 .AddSingleton<IInputInterface, BasicInputHandler>();
         }
         internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)
         {
             serviceCollection = serviceCollection
+                .AddSingleton<AppState>()
                 .AddSingleton<ItemNameConverterService>()
                 .AddSingleton<StatePersistenceService>()
                 .AddSingleton<CommandHandlerService>()
                 .AddSingleton<KeyboardConfigurationService>()
                 .AddSingleton<KeyInputHandlerService>()
-                .AddSingleton<DialogService>()
+                .AddSingleton<IDialogService, DialogService>()
                 .AddSingleton(new PersistenceSettings(Program.AppDataRoot))
+                .AddSingleton<ProgramsService>()
+                .AddSingleton<ToastMessageSink>()
                 .AddSmbServices()
                 .AddSingleton<IIconProvider, MaterialIconProvider>();
 
@@ -74,13 +79,13 @@ namespace FileTime.Avalonia
                 .Build();
 
             return serviceCollection
-                .Configure<KeyBindingConfiguration>(configuration.GetSection(MainConfiguration.KeybindingBaseConfigKey))
+                .Configure<ProgramsConfiguration>(configuration.GetSection(SectionNames.ProgramsSectionName))
+                .Configure<KeyBindingConfiguration>(configuration.GetSection(SectionNames.KeybindingSectionName))
                 .AddSingleton<IConfiguration>(configuration);
         }
 
-        internal static IServiceCollection InitSerilog(this IServiceCollection serviceCollection)
+        internal static IServiceProvider InitSerilog(this IServiceProvider serviceProvider)
         {
-            using var serviceProvider = serviceCollection.BuildServiceProvider();
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(serviceProvider.GetService<IConfiguration>())
                 .Enrich.FromLogContext()
@@ -89,9 +94,17 @@ namespace FileTime.Avalonia
                     fileSizeLimitBytes: 10 * 1024 * 1024,
                     rollOnFileSizeLimit: true,
                     rollingInterval: RollingInterval.Day)
+                .WriteTo.MessageBoxSink(serviceProvider)
                 .CreateLogger();
 
-            return serviceCollection;
+            return serviceProvider;
+        }
+
+        public static LoggerConfiguration MessageBoxSink(
+            this LoggerSinkConfiguration loggerConfiguration,
+            IServiceProvider serviceProvider)
+        {
+            return loggerConfiguration.Sink(serviceProvider.GetService<ToastMessageSink>());
         }
     }
 }
