@@ -15,7 +15,6 @@ namespace FileTime.App.Core.Command
         Cut,
         Edit,
         EnterRapidTravel,
-        GetHash,
         GoToHome,
         GoToPath,
         GoToProvider,
