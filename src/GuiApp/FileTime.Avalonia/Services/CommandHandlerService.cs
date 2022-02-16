@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using FileTime.App.Core.Clipboard;
 using FileTime.App.Core.Command;
 using FileTime.Avalonia.Application;
 using FileTime.Avalonia.IconProviders;
 using FileTime.Avalonia.Misc;
+using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Components;
@@ -65,6 +67,7 @@ namespace FileTime.Avalonia.Services
                 {Commands.ChangeTimelineMode, ChangeTimelineMode},
                 {Commands.CloseTab, CloseTab},
                 {Commands.Copy, Copy},
+                {Commands.CopyHash, CopyHash},
                 {Commands.CopyPath, CopyPath},
                 {Commands.CreateContainer, CreateContainer},
                 {Commands.CreateElement, CreateElement},
@@ -276,13 +279,13 @@ namespace FileTime.Avalonia.Services
                     var createContainerCommand = new CreateContainerCommand(new AbsolutePath(container), containerName);
                     await AddCommand(createContainerCommand);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     _logger.LogError(e, "Error while creating container {Container}", containerName);
                 }
             };
 
-            _dialogService.ReadInputs(new List<InputElement>() { new InputElement("Container name", InputType.Text) }, handler);
+            _dialogService.ReadInputs(new List<InputElement>() { InputElement.ForText("Container name") }, handler);
 
             return Task.CompletedTask;
         }
@@ -299,13 +302,13 @@ namespace FileTime.Avalonia.Services
                     var createElementCommand = new CreateElementCommand(new AbsolutePath(container), elementName);
                     await AddCommand(createElementCommand);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     _logger.LogError(e, "Error while creating element {Element}", elementName);
                 }
             };
 
-            _dialogService.ReadInputs(new List<InputElement>() { new InputElement("Element name", InputType.Text) }, handler);
+            _dialogService.ReadInputs(new List<InputElement>() { InputElement.ForText("Element name") }, handler);
 
             return Task.CompletedTask;
         }
@@ -487,7 +490,7 @@ namespace FileTime.Avalonia.Services
                     await AddCommand(renameCommand);
                 };
 
-                _dialogService.ReadInputs(new List<InputElement>() { new InputElement("New name", InputType.Text, selectedItem.Name) }, handler);
+                _dialogService.ReadInputs(new List<InputElement>() { InputElement.ForText("New name", selectedItem.Name) }, handler);
             }
             return Task.CompletedTask;
         }
@@ -543,7 +546,7 @@ namespace FileTime.Avalonia.Services
                 }
             };
 
-            _dialogService.ReadInputs(new List<InputElement>() { new InputElement("Path", InputType.Text) }, handler);
+            _dialogService.ReadInputs(new List<InputElement>() { InputElement.ForText("Path") }, handler);
 
             return Task.CompletedTask;
         }
@@ -580,9 +583,17 @@ namespace FileTime.Avalonia.Services
             var currentContainer = _appState.SelectedTab.CurrentLocation.Container;
             var textToCopy = currentContainer.NativePath;
 
-            if (textToCopy != null && global::Avalonia.Application.Current?.Clipboard is global::Avalonia.Input.Platform.IClipboard clipboard)
+            if (textToCopy != null)
             {
-                await clipboard.SetTextAsync(textToCopy);
+                await CopyToClipboard(textToCopy);
+            }
+        }
+
+        private static async Task CopyToClipboard(string text)
+        {
+            if (global::Avalonia.Application.Current?.Clipboard is global::Avalonia.Input.Platform.IClipboard clipboard)
+            {
+                await clipboard.SetTextAsync(text);
             }
         }
 
@@ -633,7 +644,7 @@ namespace FileTime.Avalonia.Services
                 return Task.CompletedTask;
             };
 
-            _dialogService.ReadInputs(new List<InputElement>() { new InputElement("Command", InputType.Text) }, handler);
+            _dialogService.ReadInputs(new List<InputElement>() { InputElement.ForText("Command") }, handler);
 
             return Task.CompletedTask;
         }
@@ -838,6 +849,41 @@ namespace FileTime.Avalonia.Services
                 }
             }
             //TODO: else
+            return Task.CompletedTask;
+        }
+
+        private Task CopyHash()
+        {
+            var handler = async (List<InputElementWrapper> inputs) =>
+            {
+                var hashFunction = (HashFunction?)inputs[0].Option;
+                if (hashFunction != null && _appState.SelectedTab.SelectedItem?.Item is IElement element && element.Provider.SupportsContentStreams)
+                {
+                    using var stream = new ContentProviderStream(await element.GetContentReaderAsync());
+
+                    string? hashString = null;
+                    using HashAlgorithm hashFunc = hashFunction switch
+                    {
+                        HashFunction.MD5 => MD5.Create(),
+                        HashFunction.SHA256 => SHA256.Create(),
+                        HashFunction.SHA384 => SHA384.Create(),
+                        HashFunction.SHA512 => SHA512.Create(),
+                        _ => throw new NotImplementedException()
+                    };
+
+                    var hash = hashFunc.ComputeHash(stream);
+                    hashString = string.Concat(hash.Select(b => b.ToString("X2")));
+
+                    _dialogService.ShowToastMessage($"Hash copied ({hashString})");
+                    await CopyToClipboard(hashString);
+                }
+            };
+
+            _dialogService.ReadInputs(new List<InputElement>()
+            {
+                InputElement.ForOptions("Hash function", Enum.GetValues<HashFunction>().Cast<object>().ToList())
+            }, handler);
+
             return Task.CompletedTask;
         }
     }

@@ -21,11 +21,11 @@ namespace FileTime.Providers.Smb
             _client = client;
         }
 
-        public Task<byte[]> ReadBytesAsync(int bufferSize)
+        public Task<byte[]> ReadBytesAsync(int bufferSize, int? offset = null)
         {
             var max = bufferSize > 0 && bufferSize < (int)_client.MaxReadSize ? bufferSize : (int)_client.MaxReadSize;
 
-            var status = _smbFileStore.ReadFile(out byte[] data, _fileHandle, _bytesRead, max);
+            var status = _smbFileStore.ReadFile(out byte[] data, _fileHandle, offset ?? _bytesRead, max);
             if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE)
             {
                 throw new Exception("Failed to read from file");

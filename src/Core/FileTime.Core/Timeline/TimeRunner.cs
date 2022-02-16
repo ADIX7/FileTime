@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using AsyncEvent;
 using FileTime.Core.Command;
 using FileTime.Core.Models;
@@ -136,7 +137,7 @@ namespace FileTime.Core.Timeline
                 if (arg is CommandTimeState commandToRun2)
                 {
                     commandToRun = commandToRun2;
-                    _commandExecutor.ExecuteCommandAsync(commandToRun.Command, this).Wait();
+                    Task.Run(async () => await _commandExecutor.ExecuteCommandAsync(commandToRun.Command, this)).Wait();
                 }
             }
             catch (Exception e)
@@ -150,7 +151,7 @@ namespace FileTime.Core.Timeline
             }
             finally
             {
-                DisposeCommandThread(Thread.CurrentThread, commandToRun).Wait();
+                Task.Run(async () => await DisposeCommandThread(Thread.CurrentThread, commandToRun)).Wait();
             }
         }
 
@@ -238,6 +239,6 @@ namespace FileTime.Core.Timeline
             }
         }
 
-        private void RunWithLock(Action action) => RunWithLockAsync(action).Wait();
+        private void RunWithLock(Action action) => Task.Run(async () => await RunWithLockAsync(action)).Wait();
     }
 }

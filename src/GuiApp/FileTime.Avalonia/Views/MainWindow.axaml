@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileTime.Avalonia.ViewModels"
+	xmlns:interactions="using:FileTime.Core.Interactions"
 	xmlns:local="using:FileTime.Avalonia.Views"
 	xmlns:models="using:FileTime.Avalonia.Models"
     Title="FileTime"
@@ -470,20 +471,35 @@
 							Items="{Binding AppState.Inputs}">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
-									<Grid MinWidth="500" ColumnDefinitions="250,*" Margin="10,5">
+									<Grid MinWidth="500" ColumnDefinitions="250,*" Margin="10,5" x:Name="ItemRoot">
 										<TextBlock
 											HorizontalAlignment="Left"
-											VerticalAlignment="Center"
-											Text="{Binding InputElement.Text}" />
-										<TextBox
-											PasswordChar="{Binding PasswordChar}"
-											AttachedToVisualTree="InputText_AttachedToVisualTree"
-											IsTabStop="True"
-											Grid.Column="1"
-											GotFocus="InputText_GotFocus"
-											LostFocus="InputText_LostFocus"
-											KeyDown="InputText_KeyDown"
-											Text="{Binding Value, Mode=TwoWay}" />
+											VerticalAlignment="Top"
+											Text="{Binding InputElement.Label}" />
+										<Grid Grid.Column="1">
+											<TextBox
+												IsVisible="{Binding InputElement.InputType, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Text}}"
+												AttachedToVisualTree="InputText_AttachedToVisualTree"
+												GotFocus="InputText_GotFocus"
+												LostFocus="InputText_LostFocus"
+												KeyDown="InputText_KeyDown"
+												VerticalAlignment="Top"
+												Text="{Binding Value, Mode=TwoWay}" />
+											<TextBox
+												IsVisible="{Binding InputElement.InputType, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Password}}"
+												PasswordChar="{Binding PasswordChar}"
+												AttachedToVisualTree="InputText_AttachedToVisualTree"
+												GotFocus="InputText_GotFocus"
+												LostFocus="InputText_LostFocus"
+												KeyDown="InputText_KeyDown"
+												VerticalAlignment="Top"
+												Text="{Binding Value, Mode=TwoWay}" />
+											<ListBox 
+												Classes="RadioButtonListBox" 
+												IsVisible="{Binding InputElement.InputType, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
+												Items="{Binding InputElement.Options}" 
+												SelectedItem="{Binding Option}"/>
+										</Grid>
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>

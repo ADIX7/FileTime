@@ -2,8 +2,8 @@ namespace FileTime.Core.Interactions
 {
     public enum InputType
     {
-        Text,
+        Options,
         Password,
-        Bool
+        Text,
     }
 }

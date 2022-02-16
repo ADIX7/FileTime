@@ -4,6 +4,6 @@ namespace FileTime.Core.Providers
     {
         int PreferredBufferSize { get; }
 
-        Task<byte[]> ReadBytesAsync(int bufferSize);
+        Task<byte[]> ReadBytesAsync(int bufferSize, int? offset = null);
     }
 }

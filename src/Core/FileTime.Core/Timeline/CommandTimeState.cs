@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using FileTime.Core.Command;
 
 namespace FileTime.Core.Timeline
@@ -12,7 +13,7 @@ namespace FileTime.Core.Timeline
         public CommandTimeState(ICommand command, PointInTime? startTime)
         {
             Command = command;
-            UpdateState(startTime).Wait();
+            Task.Run(async () => await UpdateState(startTime)).Wait();
         }
 
         public async Task UpdateState(PointInTime? startPoint)

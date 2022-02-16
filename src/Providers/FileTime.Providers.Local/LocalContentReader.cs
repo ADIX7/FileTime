@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using FileTime.Core.Providers;
 
 namespace FileTime.Providers.Local
@@ -9,6 +10,7 @@ namespace FileTime.Providers.Local
         private bool disposed;
 
         public int PreferredBufferSize => 1024 * 1024;
+        private long? _bytesRead;
 
         public LocalContentReader(FileStream readerStream)
         {
@@ -16,11 +18,27 @@ namespace FileTime.Providers.Local
             _binaryReader = new BinaryReader(_readerStream);
         }
 
-        public Task<byte[]> ReadBytesAsync(int bufferSize)
+        public Task<byte[]> ReadBytesAsync(int bufferSize, int? offset = null)
         {
             var max = bufferSize > 0 && bufferSize < PreferredBufferSize ? bufferSize : PreferredBufferSize;
 
-            return Task.FromResult(_binaryReader.ReadBytes(max));
+            if (offset != null)
+            {
+                if (_bytesRead == null) _bytesRead = 0;
+                var buffer = new byte[max];
+                var bytesRead = _binaryReader.Read(buffer, offset.Value, max);
+                _bytesRead += bytesRead;
+
+                if (buffer.Length != bytesRead)
+                {
+                    Array.Resize(ref buffer, bytesRead);
+                }
+                return Task.FromResult(buffer);
+            }
+            else
+            {
+                return Task.FromResult(_binaryReader.ReadBytes(max));
+            }
         }
 
         ~LocalContentReader()

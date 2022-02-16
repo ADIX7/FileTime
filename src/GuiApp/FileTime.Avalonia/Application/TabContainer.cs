@@ -55,7 +55,7 @@ namespace FileTime.Avalonia.Application
                     {*/
                     /*var task = SetSelectedItemAsync(value, true);
                     Task.WaitAll(new Task[] { task }, 100);*/
-                    SetSelectedItemAsync(value, true);
+                    Task.Run(async () => await SetSelectedItemAsync(value, true)).Wait();
                     /*}
                     catch
                     {

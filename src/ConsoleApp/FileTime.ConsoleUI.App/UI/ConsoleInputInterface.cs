@@ -24,7 +24,7 @@ namespace FileTime.ConsoleUI.App.UI
             foreach (var input in fields)
             {
                 _application.MoveToIOLine();
-                _coloredConsoleRenderer.Write(input.Text + ": ");
+                _coloredConsoleRenderer.Write(input.Label + ": ");
 
                 results.Add(await _consoleReader.ReadText(placeHolder: input.InputType == InputType.Password ? '*' : null));
             }

@@ -8,6 +8,8 @@ namespace FileTime.Avalonia.Misc
 
         public string Value { get; set; }
 
+        public object? Option { get; set; }
+
         public char? PasswordChar { get; set; }
 
         public InputElementWrapper(InputElement inputElement, string? defaultValue = null)

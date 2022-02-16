@@ -195,8 +195,8 @@ namespace FileTime.Providers.Smb
                         var inputs = await _inputInterface.ReadInputs(
                             new InputElement[]
                             {
-                                new InputElement($"Username for '{Name}'", InputType.Text, Username ?? ""),
-                                new InputElement($"Password for '{Name}'", InputType.Password, Password ?? "")
+                                InputElement.ForText($"Username for '{Name}'", Username ?? ""),
+                                InputElement.ForPassword($"Password for '{Name}'", Password ?? "")
                             });
 
                         Username = inputs[0];
