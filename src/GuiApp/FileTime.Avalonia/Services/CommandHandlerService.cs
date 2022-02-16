@@ -268,9 +268,18 @@ namespace FileTime.Avalonia.Services
         {
             var handler = async (List<InputElementWrapper> inputs) =>
             {
-                var container = _appState.SelectedTab.CurrentLocation.Container;
-                var createContainerCommand = new CreateContainerCommand(new AbsolutePath(container), inputs[0].Value);
-                await AddCommand(createContainerCommand);
+                string? containerName = null;
+                try
+                {
+                    containerName = inputs[0].Value;
+                    var container = _appState.SelectedTab.CurrentLocation.Container;
+                    var createContainerCommand = new CreateContainerCommand(new AbsolutePath(container), containerName);
+                    await AddCommand(createContainerCommand);
+                }
+                catch(Exception e)
+                {
+                    _logger.LogError(e, "Error while creating container {Container}", containerName);
+                }
             };
 
             _dialogService.ReadInputs(new List<InputElement>() { new InputElement("Container name", InputType.Text) }, handler);
@@ -282,9 +291,18 @@ namespace FileTime.Avalonia.Services
         {
             var handler = async (List<InputElementWrapper> inputs) =>
             {
-                var container = _appState.SelectedTab.CurrentLocation.Container;
-                var createElementCommand = new CreateElementCommand(new AbsolutePath(container), inputs[0].Value);
-                await AddCommand(createElementCommand);
+                string? elementName = null;
+                try
+                {
+                    elementName = inputs[0].Value;
+                    var container = _appState.SelectedTab.CurrentLocation.Container;
+                    var createElementCommand = new CreateElementCommand(new AbsolutePath(container), elementName);
+                    await AddCommand(createElementCommand);
+                }
+                catch(Exception e)
+                {
+                    _logger.LogError(e, "Error while creating element {Element}", elementName);
+                }
             };
 
             _dialogService.ReadInputs(new List<InputElement>() { new InputElement("Element name", InputType.Text) }, handler);

@@ -37,9 +37,34 @@ namespace FileTime.Providers.Smb
             _smbShare = smbShare;
         }
 
-        public Task Delete(bool hardDelete = false)
+        public async Task Delete(bool hardDelete = false)
         {
-            throw new NotImplementedException();
+            await _smbClientContext.RunWithSmbClientAsync(client =>
+            {
+                var fileStore = _smbShare.TreeConnect(client, out var status);
+                status = fileStore.CreateFile(
+                    out object fileHandle,
+                    out FileStatus fileStatus,
+                    GetPathFromShare(),
+                    AccessMask.GENERIC_WRITE | AccessMask.DELETE | AccessMask.SYNCHRONIZE,
+                    SMBLibrary.FileAttributes.Normal,
+                    ShareAccess.None,
+                    CreateDisposition.FILE_OPEN,
+                    CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                    null);
+
+                if (status == NTStatus.STATUS_SUCCESS)
+                {
+                    var fileDispositionInformation = new FileDispositionInformation
+                    {
+                        DeletePending = true
+                    };
+                    status = fileStore.SetFileInformation(fileHandle, fileDispositionInformation);
+                    bool deleteSucceeded = status == NTStatus.STATUS_SUCCESS;
+                    status = fileStore.CloseFile(fileHandle);
+                }
+                status = fileStore.Disconnect();
+            });
         }
         public Task Rename(string newName)
         {
@@ -69,9 +94,16 @@ namespace FileTime.Providers.Smb
                     throw new Exception($"Could not open file {NativePath} for read.");
                 }
 
-                var path = NativePath!;
-                path = path[(_parent.NativePath!.Length + 1)..];
-                status = fileStore.CreateFile(out object fileHandle, out FileStatus fileStatus, path, AccessMask.GENERIC_READ | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.Read, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+                status = fileStore.CreateFile(
+                    out object fileHandle,
+                    out FileStatus fileStatus,
+                    GetPathFromShare(),
+                    AccessMask.GENERIC_READ | AccessMask.SYNCHRONIZE,
+                    SMBLibrary.FileAttributes.Normal,
+                    ShareAccess.Read,
+                    CreateDisposition.FILE_OPEN,
+                    CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                    null);
 
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
@@ -82,9 +114,38 @@ namespace FileTime.Providers.Smb
             });
         }
 
-        public Task<IContentWriter> GetContentWriterAsync()
+        public async Task<IContentWriter> GetContentWriterAsync()
         {
-            throw new NotImplementedException();
+            return await _smbClientContext.RunWithSmbClientAsync(client =>
+            {
+                NTStatus status = NTStatus.STATUS_DATA_ERROR;
+                var fileStore = _smbShare.TreeConnect(client, out status);
+
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    throw new Exception($"Could not open file {NativePath} for write.");
+                }
+
+                status = fileStore.CreateFile(
+                    out object fileHandle,
+                    out FileStatus fileStatus,
+                    GetPathFromShare(),
+                    AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE,
+                    SMBLibrary.FileAttributes.Normal,
+                    ShareAccess.None,
+                    CreateDisposition.FILE_OPEN_IF,
+                    CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                    null);
+
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    throw new Exception($"Could not open file {NativePath} for write.");
+                }
+
+                return new SmbContentWriter(fileStore, fileHandle, client);
+            });
         }
+
+        private string GetPathFromShare() => SmbContentProvider.GetNativePath(FullName![(_smbShare.FullName!.Length + 1)..]);
     }
 }

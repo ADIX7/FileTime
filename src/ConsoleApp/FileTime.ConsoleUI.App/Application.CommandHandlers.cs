@@ -169,8 +169,16 @@ namespace FileTime.ConsoleUI.App
         {
             IList<AbsolutePath>? itemsToDelete = null;
 
-            var currentSelectedItems = (await _tabStates[_selectedTab!].GetCurrentMarkedItems()).Select(p => p.ResolveAsync()).ToList();
-            var currentSelectedItem = await _selectedTab?.GetCurrentSelectedItem();
+            var currentSelectedItems = new List<IItem>();
+            foreach (var item in await _tabStates[_selectedTab!].GetCurrentMarkedItems())
+            {
+                var resolvedItem = await item.ResolveAsync();
+                if (resolvedItem != null) currentSelectedItems.Add(resolvedItem);
+            }
+
+            IItem? currentSelectedItem = null;
+            if (_selectedTab != null) currentSelectedItem = await _selectedTab.GetCurrentSelectedItem();
+
             if (currentSelectedItems.Count > 0)
             {
                 var delete = true;

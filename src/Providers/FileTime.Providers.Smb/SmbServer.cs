@@ -10,6 +10,8 @@ namespace FileTime.Providers.Smb
 {
     public class SmbServer : IContainer
     {
+        internal const int MAXRETRIES = 5;
+
         private bool _reenterCredentials;
 
         private IReadOnlyList<IContainer>? _shares;
@@ -20,6 +22,8 @@ namespace FileTime.Providers.Smb
         private bool _refreshingClient;
         private readonly IInputInterface _inputInterface;
         private readonly SmbClientContext _smbClientContext;
+        private readonly List<Exception> _exceptions = new();
+
         public string? Username { get; private set; }
         public string? Password { get; private set; }
 
@@ -35,7 +39,7 @@ namespace FileTime.Providers.Smb
         IContentProvider IItem.Provider => Provider;
         public SupportsDelete CanDelete => SupportsDelete.True;
         public bool CanRename => false;
-        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
+        public IReadOnlyList<Exception> Exceptions { get; }
 
         public AsyncEventHandler Refreshed { get; } = new();
 
@@ -47,6 +51,7 @@ namespace FileTime.Providers.Smb
         {
             _inputInterface = inputInterface;
             _smbClientContext = new SmbClientContext(GetSmbClient, DisposeSmbClient);
+            Exceptions = _exceptions.AsReadOnly();
             Username = username;
             Password = password;
 
@@ -113,11 +118,19 @@ namespace FileTime.Providers.Smb
 
         public async Task RefreshAsync(CancellationToken token = default)
         {
-            List<string> shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status));
+            try
+            {
+                _exceptions.Clear();
+                List<string> shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status), _shares == null ? 1 : MAXRETRIES);
 
-            _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, _smbClientContext)).AsReadOnly();
-            _items = _shares.Cast<IItem>().ToList().AsReadOnly();
-            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
+                _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, _smbClientContext)).AsReadOnly();
+                _items = _shares.Cast<IItem>().ToList().AsReadOnly();
+                await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
+            }
+            catch (Exception e)
+            {
+                _exceptions.Add(e);
+            }
         }
 
         public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
@@ -130,7 +143,7 @@ namespace FileTime.Providers.Smb
             }
         }
 
-        private async Task<ISMBClient> GetSmbClient()
+        private async Task<ISMBClient> GetSmbClient(int maxRetries = MAXRETRIES)
         {
             bool isClientNull;
             lock (_clientGuard)
@@ -138,6 +151,7 @@ namespace FileTime.Providers.Smb
                 isClientNull = _client == null;
             }
 
+            int reTries = 0;
             while (isClientNull)
             {
                 if (!await RefreshSmbClient())
@@ -149,6 +163,12 @@ namespace FileTime.Providers.Smb
                 {
                     isClientNull = _client == null;
                 }
+
+                if (reTries >= maxRetries)
+                {
+                    throw new Exception($"Could not connect to server {Name} after {reTries} retry");
+                }
+                reTries++;
             }
             return _client!;
         }

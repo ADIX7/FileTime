@@ -1,6 +1,7 @@
 using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
+using SMBLibrary;
 
 namespace FileTime.Providers.Smb
 {
@@ -10,6 +11,7 @@ namespace FileTime.Providers.Smb
         private IReadOnlyList<IContainer>? _containers;
         private IReadOnlyList<IElement>? _elements;
         private readonly IContainer? _parent;
+        private readonly SmbClientContext _smbClientContext;
 
         public string Name { get; }
 
@@ -32,7 +34,7 @@ namespace FileTime.Providers.Smb
 
         public bool SupportsDirectoryLevelSoftDelete => false;
 
-        public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent)
+        public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent, SmbClientContext smbClientContext)
         {
             _parent = parent;
             SmbShare = smbShare;
@@ -41,30 +43,65 @@ namespace FileTime.Providers.Smb
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
             NativePath = SmbContentProvider.GetNativePath(FullName);
             Provider = contentProvider;
+            _smbClientContext = smbClientContext;
         }
 
-        public Task<IContainer> CreateContainerAsync(string name)
+        public async Task<IContainer> CreateContainerAsync(string name)
         {
-            throw new NotImplementedException();
+            var path = FullName![(SmbShare.FullName!.Length + 1)..] + Constants.SeparatorChar + name;
+            await SmbShare.CreateContainerWithPathAsync(SmbContentProvider.GetNativePath(path));
+            await RefreshAsync();
+
+            return _containers!.FirstOrDefault(e => e.Name == name)!;
         }
 
-        public Task<IElement> CreateElementAsync(string name)
+        public async Task<IElement> CreateElementAsync(string name)
         {
-            throw new NotImplementedException();
+            var path = FullName![(SmbShare.FullName!.Length + 1)..] + Constants.SeparatorChar + name;
+            await SmbShare.CreateElementWithPathAsync(SmbContentProvider.GetNativePath(path));
+            await RefreshAsync();
+
+            return _elements!.FirstOrDefault(e => e.Name == name)!;
         }
 
         public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
         public IContainer? GetParent() => _parent;
 
-        public Task<bool> IsExistsAsync(string name)
+        public async Task<bool> IsExistsAsync(string name)
         {
-            throw new NotImplementedException();
+            var items = await GetItems();
+            return items?.Any(i => i.Name == name) ?? false;
         }
 
-        public Task Delete(bool hardDelete = false)
+        public async Task Delete(bool hardDelete = false)
         {
-            throw new NotImplementedException();
+            await _smbClientContext.RunWithSmbClientAsync(client =>
+            {
+                var fileStore = SmbShare.TreeConnect(client, out var status);
+                status = fileStore.CreateFile(
+                    out object fileHandle,
+                    out FileStatus fileStatus,
+                    GetPathFromShare(),
+                    AccessMask.GENERIC_WRITE | AccessMask.DELETE | AccessMask.SYNCHRONIZE,
+                    SMBLibrary.FileAttributes.Normal,
+                    ShareAccess.None,
+                    CreateDisposition.FILE_OPEN,
+                    CreateOptions.FILE_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                    null);
+
+                if (status == NTStatus.STATUS_SUCCESS)
+                {
+                    var fileDispositionInformation = new FileDispositionInformation
+                    {
+                        DeletePending = true
+                    };
+                    status = fileStore.SetFileInformation(fileHandle, fileDispositionInformation);
+                    bool deleteSucceeded = status == NTStatus.STATUS_SUCCESS;
+                    status = fileStore.CloseFile(fileHandle);
+                }
+                status = fileStore.Disconnect();
+            });
         }
         public Task Rename(string newName)
         {
@@ -123,5 +160,7 @@ namespace FileTime.Providers.Smb
             _containers = null;
             _elements = null;
         }
+
+        private string GetPathFromShare() => SmbContentProvider.GetNativePath(FullName![(SmbShare.FullName!.Length + 1)..]);
     }
 }

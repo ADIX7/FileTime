@@ -43,7 +43,7 @@ namespace FileTime.Core.Command
 
         public async Task<CanCommandRun> CanRun(PointInTime startPoint)
         {
-            var resolvedContainer = Container.ResolveAsync();
+            var resolvedContainer = await Container.ResolveAsync();
             if (resolvedContainer == null) return CanCommandRun.Forceable;
 
             if (resolvedContainer is not IContainer container

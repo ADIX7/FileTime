@@ -48,9 +48,9 @@ namespace FileTime.Core.Command
             return startPoint.WithDifferences(newDifferences);
         }
 
-        public Task<CanCommandRun> CanRun(PointInTime startPoint)
+        public async Task<CanCommandRun> CanRun(PointInTime startPoint)
         {
-            return Task.FromResult(Source.ResolveAsync() != null ? CanCommandRun.True : CanCommandRun.False);
+            return await Source.ResolveAsync() != null ? CanCommandRun.True : CanCommandRun.False;
         }
     }
 }

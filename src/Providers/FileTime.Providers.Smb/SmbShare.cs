@@ -61,28 +61,99 @@ namespace FileTime.Providers.Smb
             return _elements;
         }
 
-        public Task<IContainer> CreateContainerAsync(string name)
+        public async Task<IContainer> CreateContainerAsync(string name)
         {
-            throw new NotImplementedException();
+            await CreateContainerWithPathAsync(name);
+            await RefreshAsync();
+
+            return _containers!.FirstOrDefault(e => e.Name == name)!;
+        }
+        internal async Task CreateContainerWithPathAsync(string path)
+        {
+            await _smbClientContext.RunWithSmbClientAsync(client =>
+            {
+                NTStatus status = NTStatus.STATUS_DATA_ERROR;
+                var fileStore = TreeConnect(client, out status);
+
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    throw new Exception($"Could not create directory {path}.");
+                }
+
+                status = fileStore.CreateFile(
+                    out object fileHandle,
+                    out FileStatus fileStatus,
+                    path,
+                    AccessMask.GENERIC_ALL,
+                    SMBLibrary.FileAttributes.Directory,
+                    ShareAccess.Read,
+                    CreateDisposition.FILE_OPEN_IF,
+                    CreateOptions.FILE_DIRECTORY_FILE,
+                    null);
+
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    throw new Exception($"Could not create directory {path}.");
+                }
+
+                fileStore.CloseFile(fileHandle);
+                fileStore.Disconnect();
+            });
         }
 
-        public Task<IElement> CreateElementAsync(string name)
+        public async Task<IElement> CreateElementAsync(string name)
         {
-            throw new NotImplementedException();
+            await CreateElementWithPathAsync(name);
+            await RefreshAsync();
+
+            return _elements!.FirstOrDefault(e => e.Name == name)!;
+        }
+        internal async Task CreateElementWithPathAsync(string path)
+        {
+            await _smbClientContext.RunWithSmbClientAsync(client =>
+            {
+                NTStatus status = NTStatus.STATUS_DATA_ERROR;
+                var fileStore = TreeConnect(client, out status);
+
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    throw new Exception($"Could not create file {path}.");
+                }
+
+                status = fileStore.CreateFile(
+                    out object fileHandle,
+                    out FileStatus fileStatus,
+                    path,
+                    AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE,
+                    SMBLibrary.FileAttributes.Normal,
+                    ShareAccess.None,
+                    CreateDisposition.FILE_CREATE,
+                    CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+                    null);
+
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    throw new Exception($"Could not create file {path}.");
+                }
+
+                fileStore.CloseFile(fileHandle);
+                fileStore.Disconnect();
+            });
         }
 
         public Task Delete(bool hardDelete = false)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public IContainer? GetParent() => _parent;
 
         public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
-        public Task<bool> IsExistsAsync(string name)
+        public async Task<bool> IsExistsAsync(string name)
         {
-            throw new NotImplementedException();
+            var items = await GetItems();
+            return items?.Any(i => i.Name == name) ?? false;
         }
 
         public async Task RefreshAsync(CancellationToken token = default)
@@ -134,7 +205,7 @@ namespace FileTime.Providers.Smb
                             {
                                 if ((fileDirectoryInformation.FileAttributes & SMBLibrary.FileAttributes.Directory) == SMBLibrary.FileAttributes.Directory)
                                 {
-                                    containers.Add(new SmbFolder(fileDirectoryInformation.FileName, Provider, this, parent));
+                                    containers.Add(new SmbFolder(fileDirectoryInformation.FileName, Provider, this, parent, _smbClientContext));
                                 }
                                 else
                                 {

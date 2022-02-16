@@ -323,7 +323,7 @@
 											<ItemsRepeater Grid.Row="1" Items="{Binding AppState.SelectedTab.ChildContainer.Exceptions}">
 												<ItemsRepeater.ItemTemplate>
 													<DataTemplate>
-														<TextBlock Text="{Binding, Converter={StaticResource ExceptionToStringConverter}}"/>
+														<TextBlock Margin="5,0,5,10" Text="{Binding, Converter={StaticResource ExceptionToStringConverter}}"/>
 													</DataTemplate>
 												</ItemsRepeater.ItemTemplate>
 											</ItemsRepeater>

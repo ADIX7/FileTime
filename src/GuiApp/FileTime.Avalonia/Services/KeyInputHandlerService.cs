@@ -207,7 +207,7 @@ namespace FileTime.Avalonia.Services
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Unknown error while running commnad. {Command}", command);
+                _logger.LogError(e, "Unknown error while running command. {Command} {Error}", command, e);
             }
         }
 

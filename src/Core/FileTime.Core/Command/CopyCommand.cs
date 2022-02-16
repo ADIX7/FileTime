@@ -60,9 +60,9 @@ namespace FileTime.Core.Command
 
             var newDiffs = new List<Difference>();
 
-            _copyOperation = (_, to, _, _) =>
+            _copyOperation = async (_, to, _, _) =>
             {
-                var target = to.GetParent().ResolveAsync();
+                var target = await to.GetParent().ResolveAsync();
                 newDiffs.Add(new Difference(
                     target is IElement
                         ? DifferenceItemType.Element
@@ -70,8 +70,6 @@ namespace FileTime.Core.Command
                     DifferenceActionType.Create,
                     to
                 ));
-
-                return Task.CompletedTask;
             };
 
             _createContainer = async (IContainer target, string name) =>
@@ -188,6 +186,7 @@ namespace FileTime.Core.Command
                         for (var i = 0; targetNameExists; i++)
                         {
                             targetName = element.Name + (i == 0 ? "_" : $"_{i}");
+                            targetNameExists = await target.IsExistsAsync(targetName);
                         }
                     }
                     else if (transportMode == Command.TransportMode.Skip && targetNameExists)

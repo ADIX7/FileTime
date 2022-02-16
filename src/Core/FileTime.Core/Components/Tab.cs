@@ -45,7 +45,8 @@ namespace FileTime.Core.Components
                 _currentLocation = value;
                 await CurrentLocationChanged.InvokeAsync(this, AsyncEventArgs.Empty);
 
-                var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
+                var currentLocationItems = await (await GetCurrentLocation()).GetItems();
+                if (currentLocationItems == null) throw new Exception("Could not get current location items.");
                 await SetCurrentSelectedItem(await GetItemByLastPath() ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null));
                 _currentLocation.Refreshed.Add(HandleCurrentLocationRefresh);
             }
@@ -155,11 +156,11 @@ namespace FileTime.Core.Components
             var currentLocationItems = (await (await GetCurrentLocation(token)).GetItems(token))!;
             if (currentSelectedName != null)
             {
-                await SetCurrentSelectedItem(currentLocationItems.FirstOrDefault(i => i.FullName == currentSelectedName) ?? currentLocationItems[0]);
+                await SetCurrentSelectedItem(currentLocationItems.FirstOrDefault(i => i.FullName == currentSelectedName) ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null), token: token);
             }
             else if (currentLocationItems.Count > 0)
             {
-                await SetCurrentSelectedItem(currentLocationItems[0]);
+                await SetCurrentSelectedItem(currentLocationItems[0], token: token);
             }
         }
 

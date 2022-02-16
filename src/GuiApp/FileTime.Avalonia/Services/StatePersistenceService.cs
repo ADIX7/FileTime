@@ -137,7 +137,19 @@ namespace FileTime.Avalonia.Services
                         if (container == null) continue;
 
                         var newTab = new Tab();
-                        await newTab.Init(container);
+                        while (true)
+                        {
+                            try
+                            {
+                                if (container == null) throw new Exception($"Could not find an initializable path along {tab.Path}");
+                                await newTab.Init(container);
+                                break;
+                            }
+                            catch
+                            {
+                                container = container!.GetParent();
+                            }
+                        }
 
                         var newTabContainer = new TabContainer(newTab, _localContentProvider, _itemNameConverterService);
                         await newTabContainer.Init(tab.Number);

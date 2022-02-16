@@ -94,7 +94,22 @@ namespace FileTime.Providers.Smb
             }
 
             var remainingPath = string.Join(Constants.SeparatorChar, pathParts.Skip(1));
-            return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath, acceptDeepestMatch);
+            try
+            {
+                return remainingPath.Length == 0 ? rootContainer : await rootContainer.GetByPath(remainingPath, acceptDeepestMatch);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while getting path {Path}", path);
+                if (acceptDeepestMatch)
+                {
+                    return rootContainer ?? this;
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public IContainer? GetParent() => _parent;

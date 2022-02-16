@@ -139,9 +139,14 @@ namespace FileTime.Core.Timeline
                     _commandExecutor.ExecuteCommandAsync(commandToRun.Command, this).Wait();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                _logger.LogError(e, "Error while running command: {CommandType} ({Command}).", commandToRun?.Command.GetType().Name, commandToRun?.Command.DisplayLabel);
+                _logger.LogError(
+                    e,
+                    "Error while running command: {CommandType} ({Command}) {Error}.",
+                    commandToRun?.Command.GetType().Name,
+                    commandToRun?.Command.DisplayLabel,
+                    e.Message);
             }
             finally
             {

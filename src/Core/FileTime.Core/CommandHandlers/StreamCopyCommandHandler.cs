@@ -41,10 +41,13 @@ namespace FileTime.Core.CommandHandlers
             do
             {
                 dataRead = await reader.ReadBytesAsync(writer.PreferredBufferSize);
-                await writer.WriteBytesAsync(dataRead);
-                await writer.FlushAsync();
-                if (operationProgress != null) operationProgress.Progress += dataRead.LongLength;
-                await copyCommandContext.UpdateProgress();
+                if (dataRead.Length > 0)
+                {
+                    await writer.WriteBytesAsync(dataRead);
+                    await writer.FlushAsync();
+                    if (operationProgress != null) operationProgress.Progress += dataRead.LongLength;
+                    await copyCommandContext.UpdateProgress();
+                }
             }
             while (dataRead.Length > 0);
         }

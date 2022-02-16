@@ -9,7 +9,7 @@ namespace FileTime.Providers.Smb
         private readonly ISMBFileStore _smbFileStore;
         private readonly object _fileHandle;
         private readonly ISMBClient _client;
-        private bool disposed;
+        private bool _disposed;
         private long _bytesRead;
 
         public int PreferredBufferSize => (int)_client.MaxReadSize;
@@ -53,7 +53,7 @@ namespace FileTime.Providers.Smb
 
         private void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
@@ -61,7 +61,7 @@ namespace FileTime.Providers.Smb
                     _smbFileStore.Disconnect();
                 }
             }
-            disposed = true;
+            _disposed = true;
         }
     }
 }

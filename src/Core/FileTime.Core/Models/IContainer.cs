@@ -23,7 +23,12 @@ namespace FileTime.Core.Models
 
             if (item is IContainer container)
             {
-                var result = await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
+                IItem? result = null;
+                try
+                {
+                    result = await container.GetByPath(string.Join(Constants.SeparatorChar, paths.Skip(1)), acceptDeepestMatch);
+                }
+                catch { }
                 return result == null && acceptDeepestMatch ? this : result;
             }
 
