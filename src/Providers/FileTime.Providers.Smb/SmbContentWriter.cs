@@ -26,14 +26,16 @@ namespace FileTime.Providers.Smb
             return Task.CompletedTask;
         }
 
-        public Task WriteBytesAsync(byte[] data)
+        public Task WriteBytesAsync(byte[] data, int? index = null)
         {
-            var status = _smbFileStore.WriteFile(out int numberOfBytesWritten, _fileHandle, _writeOffset, data);
+            var status = _smbFileStore.WriteFile(out int numberOfBytesWritten, _fileHandle, index ?? _writeOffset, data);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 throw new Exception("Failed to write to file");
             }
-            _writeOffset += numberOfBytesWritten;
+            _writeOffset = index == null
+                ? _writeOffset + numberOfBytesWritten
+                : index.Value + numberOfBytesWritten;
 
             return Task.CompletedTask;
         }

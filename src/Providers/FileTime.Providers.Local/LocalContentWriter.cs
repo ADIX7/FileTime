@@ -15,9 +15,16 @@ namespace FileTime.Providers.Local
             _binaryWriter = new BinaryWriter(_writerStream);
         }
 
-        public Task WriteBytesAsync(byte[] data)
+        public Task WriteBytesAsync(byte[] data, int? index = null)
         {
-            _binaryWriter.Write(data);
+            if (index != null)
+            {
+                _binaryWriter.Write(data, index.Value, data.Length);
+            }
+            else
+            {
+                _binaryWriter.Write(data);
+            }
             return Task.CompletedTask;
         }
 

@@ -31,9 +31,9 @@ namespace FileTime.Core.Interactions
             return new InputElement(label, InputType.Password, defaultValue);
         }
 
-        public static InputElement ForOptions(string label, List<object> defaultValue)
+        public static InputElement ForOptions(string label, IEnumerable<object> defaultValue)
         {
-            return new InputElement(label, InputType.Options, defaultValue);
+            return new InputElement(label, InputType.Options, new List<object>(defaultValue));
         }
     }
 }

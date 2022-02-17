@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using FileTime.Core.Providers;
 
 namespace FileTime.Providers.Local
@@ -7,10 +6,10 @@ namespace FileTime.Providers.Local
     {
         private readonly FileStream _readerStream;
         private readonly BinaryReader _binaryReader;
-        private bool disposed;
+        private bool _disposed;
 
         public int PreferredBufferSize => 1024 * 1024;
-        private long? _bytesRead;
+        public long? Position { get; private set; }
 
         public LocalContentReader(FileStream readerStream)
         {
@@ -24,10 +23,10 @@ namespace FileTime.Providers.Local
 
             if (offset != null)
             {
-                if (_bytesRead == null) _bytesRead = 0;
+                if (Position == null) Position = 0;
                 var buffer = new byte[max];
                 var bytesRead = _binaryReader.Read(buffer, offset.Value, max);
-                _bytesRead += bytesRead;
+                Position += bytesRead;
 
                 if (buffer.Length != bytesRead)
                 {
@@ -39,6 +38,11 @@ namespace FileTime.Providers.Local
             {
                 return Task.FromResult(_binaryReader.ReadBytes(max));
             }
+        }
+
+        public void SetPosition(long position)
+        {
+            Position = position;
         }
 
         ~LocalContentReader()
@@ -54,7 +58,7 @@ namespace FileTime.Providers.Local
 
         private void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
@@ -62,7 +66,7 @@ namespace FileTime.Providers.Local
                     _binaryReader.Dispose();
                 }
             }
-            disposed = true;
+            _disposed = true;
         }
     }
 }

@@ -1,4 +1,5 @@
 using AsyncEvent;
+using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -14,7 +15,7 @@ namespace FileTime.Core.Command
 
         public IList<AbsolutePath> Sources { get; } = new List<AbsolutePath>();
 
-        public IContainer? Target { get; set; }
+        public AbsolutePath? Target { get; set; }
 
         public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
 
@@ -25,6 +26,9 @@ namespace FileTime.Core.Command
 
         public string DisplayLabel { get; } = "Copy";
         public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();
+        public bool TargetIsContainer => true;
+        public List<InputElement> Inputs { get; } = new();
+        public List<object>? InputResults { get; set; }
 
         private async Task UpdateProgress()
         {
@@ -85,7 +89,8 @@ namespace FileTime.Core.Command
                 return (IContainer)(await newContainerDiff.AbsolutePath.ResolveAsync())!;
             };
 
-            await TraverseTree(Sources, Target, TransportMode.Value);
+            var resolvedTarget = (IContainer)(await Target.ResolveAsync())!;
+            await TraverseTree(Sources, resolvedTarget, TransportMode.Value);
 
             return startPoint.WithDifferences(newDiffs);
         }
@@ -122,7 +127,8 @@ namespace FileTime.Core.Command
                 }
             };
 
-            await TraverseTree(Sources, Target, TransportMode.Value);
+            var resolvedTarget = (IContainer)(await Target.ResolveAsync())!;
+            await TraverseTree(Sources, resolvedTarget, TransportMode.Value);
         }
 
         private async Task CalculateProgress()
@@ -150,7 +156,8 @@ namespace FileTime.Core.Command
                 }
             };
 
-            await TraverseTree(Sources, Target, TransportMode.Value);
+            var resolvedTarget = (IContainer)(await Target.ResolveAsync())!;
+            await TraverseTree(Sources, resolvedTarget, TransportMode.Value);
             _operationStatuses = operationStatuses;
         }
 
@@ -198,7 +205,7 @@ namespace FileTime.Core.Command
                     var targetFolderPath = new AbsolutePath(target);
                     var targetElementPath = AbsolutePath.FromParentAndChildName(target, targetName, AbsolutePathType.Element);
 
-                    foreach(var asd in _operationStatuses.Keys)
+                    foreach (var asd in _operationStatuses.Keys)
                     {
                         var hash1 = asd.GetHashCode();
                         var hash2 = targetFolderPath.GetHashCode();

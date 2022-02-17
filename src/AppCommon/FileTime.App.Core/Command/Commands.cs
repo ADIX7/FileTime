@@ -7,6 +7,7 @@ namespace FileTime.App.Core.Command
         AutoRefresh,
         ChangeTimelineMode,
         CloseTab,
+        Compress,
         Copy,
         CopyHash,
         CopyPath,

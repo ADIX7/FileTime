@@ -1,16 +1,14 @@
-using System.Threading.Tasks;
 namespace FileTime.Core.Providers
 {
     public class ContentProviderStream : Stream
     {
-
         private readonly IContentReader? _contentReader;
         private readonly IContentWriter? _contentWriter;
-        public override bool CanRead => _contentReader == null;
+        public override bool CanRead => _contentReader != null;
 
-        public override bool CanSeek => false;
+        public override bool CanSeek => _contentReader != null;
 
-        public override bool CanWrite => _contentWriter == null;
+        public override bool CanWrite => _contentWriter != null;
 
         public override long Length => throw new NotImplementedException();
 
@@ -28,7 +26,8 @@ namespace FileTime.Core.Providers
 
         public override void Flush()
         {
-            throw new NotImplementedException();
+            if (_contentWriter == null) throw new NotSupportedException();
+            Task.Run(async () => await _contentWriter.FlushAsync()).Wait();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -45,7 +44,16 @@ namespace FileTime.Core.Providers
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            if (_contentReader == null) throw new NotSupportedException();
+
+            var newPosition = origin switch
+            {
+                SeekOrigin.Begin => offset,
+                SeekOrigin.Current => _contentReader.Position ?? 0 + offset,
+                _ => throw new NotSupportedException()
+            };
+            _contentReader.SetPosition(newPosition);
+            return newPosition;
         }
 
         public override void SetLength(long value)
@@ -55,7 +63,14 @@ namespace FileTime.Core.Providers
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            if (_contentWriter == null) throw new NotSupportedException();
+            var data = buffer;
+            if (buffer.Length != count)
+            {
+                data = new byte[count];
+                Array.Copy(buffer, data, count);
+            }
+            Task.Run(async () => await _contentWriter.WriteBytesAsync(data, offset)).Wait();
         }
     }
 }

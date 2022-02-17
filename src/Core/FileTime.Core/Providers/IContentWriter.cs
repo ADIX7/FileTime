@@ -4,7 +4,7 @@ namespace FileTime.Core.Providers
     {
         int PreferredBufferSize { get; }
 
-        Task WriteBytesAsync(byte[] data);
+        Task WriteBytesAsync(byte[] data, int? index = null);
         Task FlushAsync();
     }
 }

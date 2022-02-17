@@ -18,6 +18,7 @@ using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
+using FileTime.Tools.Compression.Command;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.Avalonia.Services
@@ -66,14 +67,15 @@ namespace FileTime.Avalonia.Services
                 {Commands.AutoRefresh, ToggleAutoRefresh},
                 {Commands.ChangeTimelineMode, ChangeTimelineMode},
                 {Commands.CloseTab, CloseTab},
+                {Commands.Compress, Compress},
                 {Commands.Copy, Copy},
                 {Commands.CopyHash, CopyHash},
                 {Commands.CopyPath, CopyPath},
                 {Commands.CreateContainer, CreateContainer},
                 {Commands.CreateElement, CreateElement},
                 {Commands.Cut, Cut},
-                {Commands.EnterRapidTravel, EnterRapidTravelMode},
                 {Commands.Edit, Edit},
+                {Commands.EnterRapidTravel, EnterRapidTravelMode},
                 {Commands.GoToHome, GotToHome},
                 {Commands.GoToPath, GoToContainer},
                 {Commands.GoToProvider, GotToProvider},
@@ -468,14 +470,37 @@ namespace FileTime.Avalonia.Services
                     command.Sources.Add(item);
                 }
 
+                _clipboard.Clear();
+
                 var currentLocation = _appState.SelectedTab.CurrentLocation.Container;
-                command.Target = currentLocation is VirtualContainer virtualContainer
+
+                currentLocation =
+                    currentLocation is VirtualContainer virtualContainer
                     ? virtualContainer.BaseContainer
                     : currentLocation;
 
-                await AddCommand(command);
+                if (!command.TargetIsContainer)
+                {
+                    var handler = async (List<InputElementWrapper> inputs) =>
+                    {
+                        command.Target = AbsolutePath.FromParentAndChildName(currentLocation, inputs[0].Value, AbsolutePathType.Element);
+                        command.InputResults = inputs.Skip(1).Select(i => i.Option ?? i.Value).ToList();
+                        await AddCommand(command);
+                    };
 
-                _clipboard.Clear();
+                    var inputs = new List<InputElement>()
+                    {
+                        InputElement.ForText("Compressed element name")
+                    };
+                    inputs.AddRange(command.Inputs);
+
+                    _dialogService.ReadInputs(inputs, handler);
+                }
+                else
+                {
+                    command.Target = new AbsolutePath(currentLocation);
+                    await AddCommand(command);
+                }
             }
         }
 
@@ -659,7 +684,6 @@ namespace FileTime.Avalonia.Services
 
             foreach (var timelineBlock in _appState.TimelineCommands)
             {
-
                 foreach (var command in timelineBlock.ParallelCommands)
                 {
                     if (command.IsSelected)
@@ -881,10 +905,34 @@ namespace FileTime.Avalonia.Services
 
             _dialogService.ReadInputs(new List<InputElement>()
             {
-                InputElement.ForOptions("Hash function", Enum.GetValues<HashFunction>().Cast<object>().ToList())
+                InputElement.ForOptions("Hash function", Enum.GetValues<HashFunction>().Cast<object>())
             }, handler);
 
             return Task.CompletedTask;
+        }
+
+        private async Task Compress()
+        {
+            _clipboard.Clear();
+            _clipboard.SetCommand<CompressCommand>();
+
+            var currentSelectedItems = await _appState.SelectedTab.TabState.GetCurrentMarkedItems();
+            if (currentSelectedItems.Count > 0)
+            {
+                foreach (var selectedItem in currentSelectedItems)
+                {
+                    _clipboard.AddContent(selectedItem);
+                }
+                await _appState.SelectedTab.TabState.ClearCurrentMarkedItems();
+            }
+            else
+            {
+                var currentSelectedItem = _appState.SelectedTab.SelectedItem?.Item;
+                if (currentSelectedItem != null)
+                {
+                    _clipboard.AddContent(new AbsolutePath(currentSelectedItem));
+                }
+            }
         }
     }
 }

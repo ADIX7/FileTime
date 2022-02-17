@@ -45,6 +45,7 @@ namespace FileTime.Avalonia.Configuration
                 new CommandBindingConfiguration(Commands.AutoRefresh, new KeyConfig(Key.R, shift: true)),
                 new CommandBindingConfiguration(Commands.ChangeTimelineMode, new[] { Key.T, Key.M }),
                 new CommandBindingConfiguration(Commands.CloseTab, Key.Q),
+                new CommandBindingConfiguration(Commands.Compress, new[] { Key.Y, Key.C }),
                 new CommandBindingConfiguration(Commands.Copy, new[] { Key.Y, Key.Y }),
                 new CommandBindingConfiguration(Commands.CopyHash, new[] { Key.C, Key.H }),
                 new CommandBindingConfiguration(Commands.CopyPath, new[] { Key.C, Key.P }),

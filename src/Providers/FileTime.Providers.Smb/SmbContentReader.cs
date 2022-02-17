@@ -10,7 +10,8 @@ namespace FileTime.Providers.Smb
         private readonly object _fileHandle;
         private readonly ISMBClient _client;
         private bool _disposed;
-        private long _bytesRead;
+        private long _position;
+        public long? Position => _position;
 
         public int PreferredBufferSize => (int)_client.MaxReadSize;
 
@@ -25,7 +26,7 @@ namespace FileTime.Providers.Smb
         {
             var max = bufferSize > 0 && bufferSize < (int)_client.MaxReadSize ? bufferSize : (int)_client.MaxReadSize;
 
-            var status = _smbFileStore.ReadFile(out byte[] data, _fileHandle, offset ?? _bytesRead, max);
+            var status = _smbFileStore.ReadFile(out byte[] data, _fileHandle, offset ?? _position, max);
             if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE)
             {
                 throw new Exception("Failed to read from file");
@@ -35,9 +36,14 @@ namespace FileTime.Providers.Smb
             {
                 return Task.FromResult(Array.Empty<byte>());
             }
-            _bytesRead += data.Length;
+            _position += data.Length;
 
             return Task.FromResult(data);
+        }
+
+        public void SetPosition(long position)
+        {
+            _position = position;
         }
 
         ~SmbContentReader()

@@ -151,11 +151,11 @@ namespace FileTime.Core.Timeline
             }
             finally
             {
-                Task.Run(async () => await DisposeCommandThread(Thread.CurrentThread, commandToRun)).Wait();
+                Task.Run(async () => await DisposeCommandThread(commandToRun)).Wait();
             }
         }
 
-        private async Task DisposeCommandThread(Thread thread, CommandTimeState? command)
+        private async Task DisposeCommandThread(CommandTimeState? command)
         {
             await RunWithLockAsync(async () =>
             {
@@ -170,7 +170,7 @@ namespace FileTime.Core.Timeline
                     }
                 }
 
-                var currentCommandRunner = _commandRunners.Find(r => r.Thread == thread);
+                var currentCommandRunner = _commandRunners.Find(r => r.Command == command);
                 if (currentCommandRunner != null) _commandRunners.Remove(currentCommandRunner);
                 await UpdateReadOnlyCommands();
                 StartCommandRunner();

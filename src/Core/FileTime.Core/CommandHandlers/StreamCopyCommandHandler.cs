@@ -10,7 +10,7 @@ namespace FileTime.Core.CommandHandlers
         {
             if (command is not CopyCommand copyCommand) return false;
 
-            return (copyCommand.Target?.Provider.SupportsContentStreams ?? false)
+            return (copyCommand.Target?.ContentProvider.SupportsContentStreams ?? false)
                     && copyCommand.Sources.All(p => p.ContentProvider.SupportsContentStreams);
         }
 
