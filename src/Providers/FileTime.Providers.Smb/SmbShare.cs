@@ -40,8 +40,8 @@ namespace FileTime.Providers.Smb
             _smbClientContext = smbClientContext;
 
             Name = name;
-            FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
-            NativePath = SmbContentProvider.GetNativePath(FullName);
+            FullName = parent.FullName! + Constants.SeparatorChar + Name;
+            NativePath = parent.NativePath + SmbContentProvider.GetNativePathSeparator() + name;
             Provider = contentProvider;
         }
 

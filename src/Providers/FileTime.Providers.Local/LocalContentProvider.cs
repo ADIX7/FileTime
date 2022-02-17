@@ -18,6 +18,7 @@ namespace FileTime.Providers.Local
         private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
 
         public string Name { get; } = "local";
+        public string Protocol { get; } = "local://";
 
         public string? FullName { get; }
         public string? NativePath => null;
@@ -59,7 +60,7 @@ namespace FileTime.Providers.Local
             path = path.Replace(Path.DirectorySeparatorChar, Constants.SeparatorChar).TrimEnd(Constants.SeparatorChar);
             var pathParts = (IsCaseInsensitive ? path.ToLower() : path).TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && pathParts.Length == 1 && pathParts[0] == "") return this;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && pathParts.Length == 1 && pathParts[0]?.Length == 0) return this;
 
             var normalizedRootContainerName = NormalizePath(pathParts[0]);
             var rootContainer = _rootContainers.FirstOrDefault(c => NormalizePath(c.Name) == normalizedRootContainerName);

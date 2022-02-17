@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using AsyncEvent;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
@@ -22,8 +23,9 @@ namespace FileTime.Providers.Smb
         private readonly ILogger<SmbContentProvider> _logger;
 
         public string Name { get; } = "smb";
+        public string Protocol { get; } = "smb://";
 
-        public string? FullName { get; }
+        public string? FullName => null;
         public string? NativePath => null;
 
         public bool IsHidden => false;
@@ -53,12 +55,11 @@ namespace FileTime.Providers.Smb
 
         public async Task<IContainer> CreateContainerAsync(string name)
         {
-            var fullName = "\\\\" + name;
             var container = _rootContainers.Find(c => c.Name == name);
 
             if (container == null)
             {
-                container = new SmbServer(fullName, this, _inputInterface);
+                container = new SmbServer(name, this, _inputInterface);
                 _rootContainers.Add(container);
                 _items = _rootContainers.OrderBy(c => c.Name).ToList().AsReadOnly();
             }
@@ -84,7 +85,10 @@ namespace FileTime.Providers.Smb
         {
             if (path == null) return this;
 
-            var pathParts = path.TrimStart(Constants.SeparatorChar).Split(Constants.SeparatorChar);
+            path = path.TrimStart(Constants.SeparatorChar);
+            if (path.StartsWith("\\\\")) path = path[2..];
+            else if (path.StartsWith("smb://")) path = path[6..];
+            var pathParts = path.Split(Constants.SeparatorChar);
 
             var rootContainer = (await GetContainers())?.FirstOrDefault(c => c.Name == pathParts[0]);
 
@@ -195,6 +199,6 @@ namespace FileTime.Providers.Smb
             }
         }
 
-        public static string GetNativePath(string fullName) => fullName.Replace("/", "\\");
+        public static string GetNativePathSeparator() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\\" : "/";
     }
 }

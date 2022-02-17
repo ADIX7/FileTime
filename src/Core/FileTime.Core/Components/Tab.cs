@@ -61,7 +61,6 @@ namespace FileTime.Core.Components
         {
             if (_currentlySelecting) return false;
 
-            if (_currentSelectedItem == value) return false;
             IItem? itemToSelect = null;
             if (value != null)
             {

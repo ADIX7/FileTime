@@ -10,7 +10,6 @@ using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Interactions;
 using FileTime.Core.Persistence;
-using FileTime.Providers.Smb;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -39,7 +38,6 @@ namespace FileTime.Avalonia
                 .AddSingleton(new PersistenceSettings(Program.AppDataRoot))
                 .AddSingleton<ProgramsService>()
                 .AddSingleton<ToastMessageSink>()
-                .AddSmbServices()
                 .AddSingleton<IIconProvider, MaterialIconProvider>();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -49,15 +47,6 @@ namespace FileTime.Avalonia
             else
             {
                 serviceCollection.AddSingleton<IContextMenuProvider, LinuxContextMenuProvider>();
-            }
-
-            return serviceCollection;
-        }
-        internal static IServiceCollection RegisterCommandHandlers(this IServiceCollection serviceCollection)
-        {
-            foreach (var commandHandler in Providers.Local.Startup.GetCommandHandlers())
-            {
-                serviceCollection.AddTransient(typeof(ICommandHandler), commandHandler);
             }
 
             return serviceCollection;

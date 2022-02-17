@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.InteropServices;
 using AsyncEvent;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
@@ -56,7 +57,11 @@ namespace FileTime.Providers.Smb
             Password = password;
 
             Provider = contentProvider;
-            NativePath = FullName = Name = path;
+            Name = path;
+            FullName = contentProvider.Protocol + Name;
+            NativePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? "\\\\" + Name
+                : contentProvider.Protocol + Name;
         }
 
         public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
@@ -182,11 +187,11 @@ namespace FileTime.Providers.Smb
             }
             try
             {
-                var couldParse = IPAddress.TryParse(Name[2..], out var ipAddress);
+                var couldParse = IPAddress.TryParse(Name, out var ipAddress);
                 var client = new SMB2Client();
                 var connected = couldParse
                     ? client.Connect(ipAddress, SMBTransportType.DirectTCPTransport)
-                    : client.Connect(Name[2..], SMBTransportType.DirectTCPTransport);
+                    : client.Connect(Name, SMBTransportType.DirectTCPTransport);
 
                 if (connected)
                 {

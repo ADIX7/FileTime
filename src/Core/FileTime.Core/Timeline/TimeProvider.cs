@@ -32,6 +32,8 @@ namespace FileTime.Core.Timeline
         public bool IsDestroyed => false;
         public bool SupportsContentStreams => false;
 
+        public string Protocol => "time2://";
+
         public TimeProvider(PointInTime pointInTime)
         {
             _pointInTime = pointInTime;

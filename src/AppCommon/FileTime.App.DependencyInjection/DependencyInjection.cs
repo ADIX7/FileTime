@@ -4,6 +4,7 @@ using FileTime.Core.CommandHandlers;
 using FileTime.Core.Providers;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
+using FileTime.Providers.Sftp;
 using FileTime.Providers.Smb;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,11 +19,11 @@ namespace FileTime.App.Core
             return serviceCollection
                 .AddSingleton<IClipboard, Clipboard.Clipboard>()
                 .AddSingleton<TopContainer>()
-                .AddSingleton<LocalContentProvider>()
-                .AddSingleton<IContentProvider, LocalContentProvider>(sp => sp.GetService<LocalContentProvider>() ?? throw new Exception($"No {nameof(LocalContentProvider)} instance found"))
-                .AddSingleton<IContentProvider, SmbContentProvider>()
                 .AddSingleton<CommandExecutor>()
                 .AddSingleton<TimeRunner>()
+                .AddLocalServices()
+                .AddSmbServices()
+                .AddSftpServices()
                 .RegisterCommandHandlers();
         }
 

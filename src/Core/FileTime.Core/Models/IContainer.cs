@@ -12,6 +12,7 @@ namespace FileTime.Core.Models
         Task RefreshAsync(CancellationToken token = default);
         async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
+            if (path == null) return this;
             var paths = path.Split(Constants.SeparatorChar);
 
             var item = (await GetItems())?.FirstOrDefault(i => i.Name == paths[0]);

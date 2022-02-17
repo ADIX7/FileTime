@@ -51,16 +51,11 @@ namespace FileTime.Avalonia.Application
             {
                 if (!_updateFromCode && value != null)
                 {
-                    /*try
-                    {*/
-                    /*var task = SetSelectedItemAsync(value, true);
-                    Task.WaitAll(new Task[] { task }, 100);*/
-                    Task.Run(async () => await SetSelectedItemAsync(value, true)).Wait();
-                    /*}
-                    catch
+                    try
                     {
-                        //TODO: Debug, linux start after restore 3 tabs
-                    }*/
+                        Task.Run(async () => await SetSelectedItemAsync(value, true)).Wait();
+                    }
+                    catch (AggregateException e) when (e.InnerExceptions.Count == 1 && e.InnerExceptions[0] is IndexOutOfRangeException) { }
                 }
             }
         }

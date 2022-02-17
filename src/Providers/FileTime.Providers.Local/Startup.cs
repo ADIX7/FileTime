@@ -1,10 +1,15 @@
+using FileTime.Core.Providers;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace FileTime.Providers.Local
 {
     public static class Startup
     {
-        public static Type[] GetCommandHandlers()
+        public static IServiceCollection AddLocalServices(this IServiceCollection serviceCollection)
         {
-            return Array.Empty<Type>();
+            return serviceCollection
+                .AddSingleton<LocalContentProvider>()
+                .AddSingleton<IContentProvider, LocalContentProvider>(sp => sp.GetService<LocalContentProvider>() ?? throw new Exception($"No {nameof(LocalContentProvider)} instance found"));
         }
     }
 }

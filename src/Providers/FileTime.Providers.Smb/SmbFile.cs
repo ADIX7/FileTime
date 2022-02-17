@@ -27,14 +27,14 @@ namespace FileTime.Providers.Smb
 
         public SmbFile(string name, SmbContentProvider provider, SmbShare smbShare, IContainer parent, SmbClientContext smbClientContext)
         {
-            Name = name;
-            FullName = parent.FullName + Constants.SeparatorChar + Name;
-            NativePath = SmbContentProvider.GetNativePath(FullName);
-
             Provider = provider;
             _parent = parent;
             _smbClientContext = smbClientContext;
             _smbShare = smbShare;
+
+            Name = name;
+            FullName = parent.FullName + Constants.SeparatorChar + Name;
+            NativePath = parent.NativePath + SmbContentProvider.GetNativePathSeparator() + name;
         }
 
         public async Task Delete(bool hardDelete = false)
@@ -146,6 +146,6 @@ namespace FileTime.Providers.Smb
             });
         }
 
-        private string GetPathFromShare() => SmbContentProvider.GetNativePath(FullName![(_smbShare.FullName!.Length + 1)..]);
+        private string GetPathFromShare() => FullName![(_smbShare.FullName!.Length + 1)..].Replace("/", "\\");
     }
 }

@@ -21,7 +21,6 @@ namespace FileTime.Avalonia
                 .AddServices()
                 .RegisterLogging()
                 .AddViewModels()
-                .RegisterCommandHandlers()
                 .BuildServiceProvider()
                 .InitSerilog();
 

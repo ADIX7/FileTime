@@ -147,6 +147,7 @@
 			<converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter"/>
 			<converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter"/>
 			<converters:NamePartShrinkerConverter x:Key="NamePartShrinkerConverter"/>
+			<converters:StringReplaceConverter x:Key="PathPreformatter" OldValue="://" NewValue="/"/>
 
 		</ResourceDictionary>
 	</Application.Resources>

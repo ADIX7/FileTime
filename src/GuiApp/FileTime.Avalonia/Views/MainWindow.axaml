@@ -35,7 +35,7 @@
 					<Rectangle Fill="#01000000"/>
 
 					<StackPanel Margin="20,10" Orientation="Horizontal">
-						<local:PathPresenter DataContext="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName}"/>
+						<local:PathPresenter DataContext="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName,Converter={StaticResource PathPreformatter}}"/>
 						<TextBlock
 							Text="{Binding AppState.SelectedTab.SelectedItem.Item.Name}" Foreground="{StaticResource AccentBrush}" />
 					</StackPanel>

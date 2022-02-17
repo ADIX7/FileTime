@@ -37,19 +37,19 @@ namespace FileTime.Providers.Smb
         public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent, SmbClientContext smbClientContext)
         {
             _parent = parent;
+            _smbClientContext = smbClientContext;
             SmbShare = smbShare;
 
             Name = name;
-            FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
-            NativePath = SmbContentProvider.GetNativePath(FullName);
+            FullName = parent.FullName! + Constants.SeparatorChar + Name;
+            NativePath = parent.NativePath + SmbContentProvider.GetNativePathSeparator() + name;
             Provider = contentProvider;
-            _smbClientContext = smbClientContext;
         }
 
         public async Task<IContainer> CreateContainerAsync(string name)
         {
             var path = FullName![(SmbShare.FullName!.Length + 1)..] + Constants.SeparatorChar + name;
-            await SmbShare.CreateContainerWithPathAsync(SmbContentProvider.GetNativePath(path));
+            await SmbShare.CreateContainerWithPathAsync(path.Replace("/", "\\"));
             await RefreshAsync();
 
             return _containers!.FirstOrDefault(e => e.Name == name)!;
@@ -58,7 +58,7 @@ namespace FileTime.Providers.Smb
         public async Task<IElement> CreateElementAsync(string name)
         {
             var path = FullName![(SmbShare.FullName!.Length + 1)..] + Constants.SeparatorChar + name;
-            await SmbShare.CreateElementWithPathAsync(SmbContentProvider.GetNativePath(path));
+            await SmbShare.CreateElementWithPathAsync(path.Replace("/", "\\"));
             await RefreshAsync();
 
             return _elements!.FirstOrDefault(e => e.Name == name)!;
@@ -161,6 +161,6 @@ namespace FileTime.Providers.Smb
             _elements = null;
         }
 
-        private string GetPathFromShare() => SmbContentProvider.GetNativePath(FullName![(SmbShare.FullName!.Length + 1)..]);
+        private string GetPathFromShare() => FullName![(SmbShare.FullName!.Length + 1)..].Replace("/", "\\");
     }
 }
