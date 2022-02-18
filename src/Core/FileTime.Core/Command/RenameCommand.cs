@@ -1,6 +1,4 @@
 using AsyncEvent;
-using FileTime.Core.Extensions;
-using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -33,20 +31,18 @@ namespace FileTime.Core.Command
             }
         }
 
-        public async Task<PointInTime> SimulateCommand(PointInTime startPoint)
+        public Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {
-            var item = await Source.ResolveAsync();
-            if (item == null) throw new FileNotFoundException();
             var newDifferences = new List<Difference>()
             {
-                new Difference(item.ToDifferenceItemType(),
+                new Difference(
                     DifferenceActionType.Delete,
                     Source),
-                new Difference(item.ToDifferenceItemType(),
-                    DifferenceActionType.Delete,
-                    Source)
+                new Difference(
+                    DifferenceActionType.Create,
+                    Source.GetParent().GetChild(Target, Source.Type))
             };
-            return startPoint.WithDifferences(newDifferences);
+            return Task.FromResult(startPoint.WithDifferences(newDifferences));
         }
 
         public async Task<CanCommandRun> CanRun(PointInTime startPoint)

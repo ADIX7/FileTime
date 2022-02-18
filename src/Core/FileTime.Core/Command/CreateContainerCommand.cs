@@ -39,7 +39,7 @@ namespace FileTime.Core.Command
         {
             var newDifferences = new List<Difference>()
             {
-                new Difference(DifferenceItemType.Container, DifferenceActionType.Create, Container.GetChild(NewContainerName, AbsolutePathType.Container))
+                new Difference(DifferenceActionType.Create, Container.GetChild(NewContainerName, AbsolutePathType.Container))
             };
             return Task.FromResult(startPoint.WithDifferences(newDifferences));
         }

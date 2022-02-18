@@ -64,33 +64,25 @@ namespace FileTime.Core.Command
 
             var newDiffs = new List<Difference>();
 
-            _copyOperation = async (_, to, _, _) =>
+            _copyOperation = (_, to, _, _) =>
             {
-                var target = await to.GetParent().ResolveAsync();
-                newDiffs.Add(new Difference(
-                    target is IElement
-                        ? DifferenceItemType.Element
-                        : DifferenceItemType.Container,
-                    DifferenceActionType.Create,
-                    to
-                ));
+                newDiffs.Add(new Difference(DifferenceActionType.Create, to));
+                return Task.CompletedTask;
             };
 
-            _createContainer = async (IContainer target, string name) =>
+            _createContainer = (IContainer target, string name) =>
             {
                 var newContainerDiff = new Difference(
-                    DifferenceItemType.Container,
                     DifferenceActionType.Create,
                     AbsolutePath.FromParentAndChildName(target, name, AbsolutePathType.Container)
                 );
 
                 newDiffs.Add(newContainerDiff);
 
-                return (IContainer)(await newContainerDiff.AbsolutePath.ResolveAsync())!;
+                return Task.FromResult((IContainer)null!);
             };
 
-            var resolvedTarget = (IContainer)(await Target.ResolveAsync())!;
-            await TraverseTree(Sources, resolvedTarget, TransportMode.Value);
+            await TraverseTree(Sources, Target, TransportMode.Value);
 
             return startPoint.WithDifferences(newDiffs);
         }
@@ -127,8 +119,7 @@ namespace FileTime.Core.Command
                 }
             };
 
-            var resolvedTarget = (IContainer)(await Target.ResolveAsync())!;
-            await TraverseTree(Sources, resolvedTarget, TransportMode.Value);
+            await TraverseTree(Sources, Target, TransportMode.Value);
         }
 
         private async Task CalculateProgress()
@@ -156,18 +147,19 @@ namespace FileTime.Core.Command
                 }
             };
 
-            var resolvedTarget = (IContainer)(await Target.ResolveAsync())!;
-            await TraverseTree(Sources, resolvedTarget, TransportMode.Value);
+            await TraverseTree(Sources, Target, TransportMode.Value);
             _operationStatuses = operationStatuses;
         }
 
         private async Task TraverseTree(
             IEnumerable<AbsolutePath> sources,
-            IContainer target,
+            AbsolutePath target,
             TransportMode transportMode)
         {
             if (_copyOperation == null) throw new ArgumentException("No copy operation were given.");
             if (_createContainer == null) throw new ArgumentException("No container creation function were given.");
+
+            var resolvedTarget = (IContainer?)await target.ResolveAsync();
 
             foreach (var source in sources)
             {
@@ -175,7 +167,13 @@ namespace FileTime.Core.Command
 
                 if (item is IContainer container)
                 {
-                    var targetContainer = (await target.GetContainers())?.FirstOrDefault(d => d.Name == container.Name) ?? (await _createContainer?.Invoke(target, container.Name)!);
+                    var targetContainer = target.GetChild(item.Name, AbsolutePathType.Container);
+                    if (_createContainer != null
+                        && resolvedTarget != null
+                        && !await resolvedTarget.IsExistsAsync(item.Name))
+                    {
+                        await _createContainer.Invoke(resolvedTarget, container.Name);
+                    }
 
                     var childDirectories = (await container.GetContainers())!.Select(d => new AbsolutePath(d));
                     var childFiles = (await container.GetElements())!.Select(f => new AbsolutePath(f));
@@ -185,32 +183,12 @@ namespace FileTime.Core.Command
                 }
                 else if (item is IElement element)
                 {
-                    var targetName = element.Name;
-
-                    var targetNameExists = await target.IsExistsAsync(targetName);
-                    if (transportMode == Command.TransportMode.Merge)
-                    {
-                        for (var i = 0; targetNameExists; i++)
-                        {
-                            targetName = element.Name + (i == 0 ? "_" : $"_{i}");
-                            targetNameExists = await target.IsExistsAsync(targetName);
-                        }
-                    }
-                    else if (transportMode == Command.TransportMode.Skip && targetNameExists)
-                    {
-                        continue;
-                    }
+                    var targetName = await Helper.CommandHelper.GetNewNameAsync(resolvedTarget, element.Name, transportMode);
+                    if (targetName == null) continue;
 
                     OperationProgress? operation = null;
                     var targetFolderPath = new AbsolutePath(target);
-                    var targetElementPath = AbsolutePath.FromParentAndChildName(target, targetName, AbsolutePathType.Element);
-
-                    foreach (var asd in _operationStatuses.Keys)
-                    {
-                        var hash1 = asd.GetHashCode();
-                        var hash2 = targetFolderPath.GetHashCode();
-                        var eq = asd == targetFolderPath;
-                    }
+                    var targetElementPath = target.GetChild(targetName, AbsolutePathType.Element);
 
                     if (_operationStatuses.TryGetValue(targetFolderPath, out var targetPathOperations))
                     {

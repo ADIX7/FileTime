@@ -5,14 +5,12 @@ namespace FileTime.Core.Timeline
 {
     public class Difference
     {
-        public DifferenceItemType Type { get; }
         public string Name { get; }
         public AbsolutePath AbsolutePath { get; }
         public DifferenceActionType Action { get; }
 
-        public Difference(DifferenceItemType type, DifferenceActionType action, AbsolutePath absolutePath)
+        public Difference(DifferenceActionType action, AbsolutePath absolutePath)
         {
-            Type = type;
             AbsolutePath = absolutePath;
             Action = action;
 
@@ -22,7 +20,6 @@ namespace FileTime.Core.Timeline
         public Difference WithVirtualContentProvider(IContentProvider? virtualContentProvider)
         {
             return new Difference(
-                Type,
                 Action,
                 new AbsolutePath(AbsolutePath.ContentProvider, AbsolutePath.Path, AbsolutePath.Type, virtualContentProvider)
             );

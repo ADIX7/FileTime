@@ -77,7 +77,7 @@ namespace FileTime.Core.Timeline
                 (IReadOnlyList<IContainer>?)_pointInTime
                     .Differences
                     .Where(d =>
-                        d.Type == DifferenceItemType.Container
+                        d.AbsolutePath.Type == AbsolutePathType.Container
                         && GetParentPath(d.AbsolutePath.Path) == FullName)
                     .Select(MapContainer)
                     .ToList()
@@ -89,7 +89,7 @@ namespace FileTime.Core.Timeline
                 (IReadOnlyList<IElement>?)_pointInTime
                     .Differences
                     .Where(d =>
-                        d.Type == DifferenceItemType.Element
+                        d.AbsolutePath.Type == AbsolutePathType.Element
                         && GetParentPath(d.AbsolutePath.Path) == FullName)
                     .Select(MapElement)
                     .ToList()
@@ -116,13 +116,13 @@ namespace FileTime.Core.Timeline
 
         private IContainer MapContainer(Difference containerDiff)
         {
-            if (containerDiff.Type != DifferenceItemType.Container) throw new ArgumentException($"{nameof(containerDiff)}'s {nameof(Difference.Type)} property is not {DifferenceItemType.Container}.");
+            if (containerDiff.AbsolutePath.Type != AbsolutePathType.Container) throw new ArgumentException($"{nameof(containerDiff)}'s {nameof(AbsolutePath.Type)} property is not {AbsolutePathType.Container}.");
             return new TimeContainer(containerDiff.Name, this, Provider, containerDiff.AbsolutePath.VirtualContentProvider ?? containerDiff.AbsolutePath.ContentProvider, _pointInTime);
         }
 
         private IElement MapElement(Difference elementDiff)
         {
-            if (elementDiff.Type != DifferenceItemType.Container) throw new ArgumentException($"{elementDiff}'s {nameof(Difference.Type)} property is not {DifferenceItemType.Element}.");
+            if (elementDiff.AbsolutePath.Type != AbsolutePathType.Element) throw new ArgumentException($"{elementDiff}'s {nameof(AbsolutePath.Type)} property is not {AbsolutePathType.Element}.");
             return new TimeElement(elementDiff.Name, this, Provider, elementDiff.AbsolutePath.VirtualContentProvider ?? elementDiff.AbsolutePath.ContentProvider);
         }
         public Task<bool> CanOpenAsync() => Task.FromResult(true);

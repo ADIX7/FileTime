@@ -27,7 +27,6 @@ namespace FileTime.Core.Command
             _deleteContainer = (c) =>
             {
                 newDifferences.Add(new Difference(
-                    DifferenceItemType.Container,
                     DifferenceActionType.Delete,
                     new AbsolutePath(c)
                 ));
@@ -37,7 +36,6 @@ namespace FileTime.Core.Command
             _deleteElement = (e) =>
             {
                 newDifferences.Add(new Difference(
-                    DifferenceItemType.Element,
                     DifferenceActionType.Delete,
                     new AbsolutePath(e)
                 ));
