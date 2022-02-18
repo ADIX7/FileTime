@@ -43,6 +43,7 @@ namespace FileTime.Providers.Sftp
         public IContentProvider Provider => this;
 
         public string Protocol => "sftp://";
+        public bool IsExists => true;
 
         public SftpContentProvider(IInputInterface inputInterface, ILogger<SftpContentProvider> logger)
         {

@@ -37,12 +37,14 @@ namespace FileTime.Core.Providers
 
         IContentProvider IItem.Provider => Provider;
 
+        public abstract bool IsExists { get; }
+
         protected AbstractContainer(TProvider provider, IContainer parent, string name)
         {
             _parent = parent;
             Provider = provider;
             Name = name;
-            FullName = (parent?.FullName ?? Name) + Constants.SeparatorChar + Name;
+            FullName = parent.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
             Exceptions = _exceptions.AsReadOnly();
         }
 

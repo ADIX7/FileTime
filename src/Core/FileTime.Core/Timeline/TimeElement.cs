@@ -35,6 +35,7 @@ namespace FileTime.Core.Timeline
         public IContentProvider VirtualProvider { get; }
 
         public bool IsDestroyed { get; private set; }
+        public bool IsExists => true;
 
         public Task Delete(bool hardDelete = false) => Task.CompletedTask;
 

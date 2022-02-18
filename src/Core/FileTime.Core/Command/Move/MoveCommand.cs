@@ -3,7 +3,7 @@ using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command.Move
 {
     public class MoveCommand : ITransportationCommand
     {

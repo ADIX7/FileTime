@@ -5,13 +5,14 @@ using FileTime.Providers.Local.Interop;
 
 namespace FileTime.Providers.Local
 {
-    public class LocalFolder : AbstractContainer<LocalContentProvider>
+    public class LocalFolder : AbstractContainer<LocalContentProvider>, IContainer
     {
         public DirectoryInfo Directory { get; }
 
         public string Attributes => GetAttributes();
 
         public DateTime CreatedAt => Directory.CreationTime;
+        public override bool IsExists => Directory.Exists;
 
         public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer parent)
          : base(contentProvider, parent, directory.Name.TrimEnd(Path.DirectorySeparatorChar))
@@ -52,7 +53,7 @@ namespace FileTime.Providers.Local
             return Task.FromResult(Enumerable.Empty<IItem>());
         }
 
-        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
+        async Task<IItem?> IContainer.GetByPath(string path, bool acceptDeepestMatch)
         {
             var paths = path.Split(Constants.SeparatorChar);
 
@@ -87,7 +88,7 @@ namespace FileTime.Providers.Local
             return (await GetElements())!.FirstOrDefault(e => Provider.NormalizePath(e.Name) == Provider.NormalizePath(name))!;
         }
 
-        public override async Task<bool> IsExistsAsync(string name) => (await GetItems())?.Any(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(name)) ?? false;
+        public override async Task<bool> IsExistsAsync(string name) => (await GetItems())?.Any(i => i.IsExists && Provider.NormalizePath(i.Name) == Provider.NormalizePath(name)) ?? false;
 
         public override Task Delete(bool hardDelete = false)
         {

@@ -8,6 +8,7 @@ namespace FileTime.Providers.Smb
     public class SmbShare : AbstractContainer<SmbContentProvider>
     {
         private readonly SmbClientContext _smbClientContext;
+        public override bool IsExists => true;
 
         public SmbShare(string name, SmbContentProvider contentProvider, IContainer parent, SmbClientContext smbClientContext)
          : base(contentProvider, parent, name)

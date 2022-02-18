@@ -2,7 +2,7 @@ using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command.Delete
 {
     public class DeleteCommand : IExecutableCommand
     {
@@ -63,6 +63,11 @@ namespace FileTime.Core.Command
             foreach (var item in ItemsToDelete)
             {
                 await TraverseTree((await item.ResolveAsync())!);
+            }
+
+            foreach(var updatedParent in ItemsToDelete.Select(i => i.GetParent()).Distinct())
+            {
+                await timeRunner.RefreshContainer.InvokeAsync(this, updatedParent);
             }
         }
 

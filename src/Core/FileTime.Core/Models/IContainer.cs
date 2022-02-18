@@ -10,7 +10,7 @@ namespace FileTime.Core.Models
         Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default);
 
         Task RefreshAsync(CancellationToken token = default);
-        async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
+        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
         {
             if (path == null) return this;
             var paths = path.Split(Constants.SeparatorChar);

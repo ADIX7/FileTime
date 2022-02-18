@@ -8,7 +8,7 @@ using SMBLibrary.Client;
 
 namespace FileTime.Providers.Smb
 {
-    public class SmbServer : AbstractContainer<SmbContentProvider>
+    public class SmbServer : AbstractContainer<SmbContentProvider>, IContainer
     {
         internal const int MAXRETRIES = 5;
 
@@ -21,6 +21,7 @@ namespace FileTime.Providers.Smb
 
         public string? Username { get; private set; }
         public string? Password { get; private set; }
+        public override bool IsExists => true;
 
         public SmbServer(string name, SmbContentProvider contentProvider, IInputInterface inputInterface, string? username = null, string? password = null)
          : base(contentProvider, contentProvider, name)
@@ -52,7 +53,7 @@ namespace FileTime.Providers.Smb
             return Task.CompletedTask;
         }
 
-        public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
+        async Task<IItem?> IContainer.GetByPath(string path, bool acceptDeepestMatch)
         {
             var paths = path.Split(Constants.SeparatorChar);
 

@@ -18,6 +18,7 @@ namespace FileTime.Providers.Sftp
 
         public string? Username { get; private set; }
         public string? Password { get; private set; }
+        public override bool IsExists => true;
 
         public SftpServer(string name, SftpContentProvider sftpContentProvider, IInputInterface inputInterface, string? username = null, string? password = null)
             : base(sftpContentProvider, sftpContentProvider, name)

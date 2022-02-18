@@ -23,6 +23,8 @@ namespace FileTime.Providers.Sftp
 
         public IContentProvider Provider => throw new NotImplementedException();
 
+        public bool IsExists => throw new NotImplementedException();
+
         public Task Delete(bool hardDelete = false)
         {
             throw new NotImplementedException();

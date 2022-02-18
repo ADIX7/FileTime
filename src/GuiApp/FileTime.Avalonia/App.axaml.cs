@@ -24,8 +24,8 @@ namespace FileTime.Avalonia
                 .BuildServiceProvider()
                 .InitSerilog();
 
-            var _logger = ServiceProvider.GetService<ILogger<App>>();
-            _logger?.LogInformation("App initialization completed.");
+            var logger = ServiceProvider.GetService<ILogger<App>>();
+            logger?.LogInformation("App initialization completed.");
         }
 
         public override void Initialize()

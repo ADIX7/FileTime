@@ -154,10 +154,10 @@ namespace FileTime.Avalonia.ViewModels
             {
                 _isRefreshing = true;
 
-                List<ContainerViewModel> newContainers = new List<ContainerViewModel>();
-                List<ElementViewModel> newElements = new List<ElementViewModel>();
+                List<ContainerViewModel> newContainers = new();
+                List<ElementViewModel> newElements = new();
 
-                if (await _container.GetContainers() is IReadOnlyList<IContainer> containers)
+                if (await _container.GetContainers(token) is IReadOnlyList<IContainer> containers)
                 {
                     foreach (var container in containers)
                     {
@@ -165,7 +165,7 @@ namespace FileTime.Avalonia.ViewModels
                     }
                 }
 
-                if (await _container.GetElements() is IReadOnlyList<IElement> elements)
+                if (await _container.GetElements(token) is IReadOnlyList<IElement> elements)
                 {
                     foreach (var element in elements)
                     {
@@ -216,7 +216,7 @@ namespace FileTime.Avalonia.ViewModels
                 _exceptions.Add(e);
             }
 
-            await _newItemProcessor.UpdateMarkedItems(this);
+            await _newItemProcessor.UpdateMarkedItems(this, CancellationToken.None);
 
             _isRefreshing = false;
         }

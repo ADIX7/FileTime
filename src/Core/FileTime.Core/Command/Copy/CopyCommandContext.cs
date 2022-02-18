@@ -1,4 +1,4 @@
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command.Copy
 {
     public class CopyCommandContext
     {

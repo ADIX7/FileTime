@@ -42,6 +42,7 @@ namespace FileTime.Providers.Smb
 
         public bool IsDestroyed => false;
         public bool SupportsContentStreams => true;
+        public bool IsExists => true;
 
         public SmbContentProvider(IInputInterface inputInterface, Persistence.PersistenceService persistenceService, ILogger<SmbContentProvider> logger)
         {

@@ -37,6 +37,7 @@ namespace FileTime.Core.Models
         public AsyncEventHandler Refreshed { get; }
 
         public bool IsDestroyed => BaseContainer.IsDestroyed;
+        public bool IsExists => BaseContainer.IsExists;
 
         private void RefreshAddBase(Func<object?, AsyncEventArgs, CancellationToken, Task> handler)
         {

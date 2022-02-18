@@ -15,6 +15,7 @@ namespace FileTime.Providers.Local
 
         public string FullName { get; }
         public string? NativePath => File.FullName;
+        public bool IsExists => File.Exists;
 
         public IContentProvider Provider { get; }
 

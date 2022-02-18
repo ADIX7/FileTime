@@ -1,6 +1,4 @@
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -13,6 +11,7 @@ using FileTime.Core.Providers;
 using FileTime.Providers.Local;
 using FileTime.Core.Models;
 using Microsoft.Extensions.Logging;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Avalonia.Services
 {
@@ -25,13 +24,15 @@ namespace FileTime.Avalonia.Services
         private readonly IEnumerable<IContentProvider> _contentProviders;
         private readonly LocalContentProvider _localContentProvider;
         private readonly ILogger<StatePersistenceService> _logger;
+        private readonly TimeRunner _timeRunner;
 
         public StatePersistenceService(
             AppState appState,
             ItemNameConverterService itemNameConverterService,
             IEnumerable<IContentProvider> contentProviders,
             LocalContentProvider localContentProvider,
-            ILogger<StatePersistenceService> logger)
+            ILogger<StatePersistenceService> logger,
+            TimeRunner timeRunner)
         {
             _appState = appState;
             _itemNameConverterService = itemNameConverterService;
@@ -45,6 +46,7 @@ namespace FileTime.Avalonia.Services
                 PropertyNameCaseInsensitive = true,
                 WriteIndented = true
             };
+            this._timeRunner = timeRunner;
         }
 
         public async Task LoadStatesAsync()
@@ -151,7 +153,7 @@ namespace FileTime.Avalonia.Services
                             }
                         }
 
-                        var newTabContainer = new TabContainer(newTab, _localContentProvider, _itemNameConverterService);
+                        var newTabContainer = new TabContainer(_timeRunner, newTab, _localContentProvider, _itemNameConverterService);
                         await newTabContainer.Init(tab.Number);
                         _appState.Tabs.Add(newTabContainer);
                     }

@@ -1,4 +1,5 @@
 using FileTime.Core.Command;
+using FileTime.Core.Command.Copy;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 

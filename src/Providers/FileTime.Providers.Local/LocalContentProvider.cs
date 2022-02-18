@@ -38,6 +38,7 @@ namespace FileTime.Providers.Local
 
         public bool IsDestroyed => false;
         public bool SupportsContentStreams => true;
+        public bool IsExists => true;
 
         public LocalContentProvider(ILogger<LocalContentProvider> logger)
         {
@@ -48,8 +49,6 @@ namespace FileTime.Providers.Local
             var rootDirectories = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 ? new DirectoryInfo("/").GetDirectories()
                 : Environment.GetLogicalDrives().Select(d => new DirectoryInfo(d));
-
-            FullName = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "" : null;
 
             _rootContainers = rootDirectories.Select(d => new LocalFolder(d, this, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
             _items = _rootContainers.Cast<IItem>().ToList().AsReadOnly();

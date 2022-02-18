@@ -2,7 +2,7 @@ using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command.Rename
 {
     public class RenameCommand : IExecutableCommand
     {
@@ -27,7 +27,7 @@ namespace FileTime.Core.Command
             if (itemToRename != null)
             {
                 await itemToRename.Rename(Target);
-                if (timeRunner.RefreshContainer != null) await timeRunner.RefreshContainer.InvokeAsync(this, new AbsolutePath(itemToRename.GetParent()!));
+                await timeRunner.RefreshContainer.InvokeAsync(this, new AbsolutePath(itemToRename.GetParent()!));
             }
         }
 

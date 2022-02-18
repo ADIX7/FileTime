@@ -6,6 +6,7 @@ namespace FileTime.Providers.Sftp
     public class SftpFolder : AbstractContainer<SftpContentProvider>
     {
         private readonly SftpServer _server;
+        public override bool IsExists => true;
 
         public SftpFolder(SftpContentProvider provider, SftpServer server, IContainer parent, string path) : base(provider, parent, path)
         {

@@ -87,7 +87,7 @@ namespace FileTime.Avalonia.Views
 
         private void InputText_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            if (sender is TextBox inputText && inputText.DataContext is InputElementWrapper inputElementWrapper && inputElementWrapper == ViewModel!.AppState.Inputs.First())
+            if (sender is TextBox inputText && inputText.IsVisible && inputText.DataContext is InputElementWrapper inputElementWrapper && inputElementWrapper == ViewModel!.AppState.Inputs[0])
             {
                 inputText.Focus();
             }

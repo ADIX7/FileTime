@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FileTime.App.Core.Tab;
 using System.Threading;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Avalonia.Application
 {
@@ -18,6 +19,7 @@ namespace FileTime.Avalonia.Application
     [Inject(typeof(ItemNameConverterService))]
     [Inject(typeof(LocalContentProvider))]
     [Inject(typeof(Tab))]
+    [Inject(typeof(TimeRunner), propertyName: "_timeRunner")]
     public partial class TabContainer : INewItemProcessor
     {
         private bool _updateFromCode;
@@ -77,6 +79,21 @@ namespace FileTime.Avalonia.Application
         partial void OnInitialize()
         {
             _tabState = new TabState(Tab);
+            _timeRunner.RefreshContainer.Add(TimeRunnerContainerRefreshed);
+
+        }
+
+        private async Task TimeRunnerContainerRefreshed(object? sender, AbsolutePath container, CancellationToken token = default)
+        {
+            var currentLocation = await Tab.GetCurrentLocation();
+            if (currentLocation != null)
+            {
+                var currentLocationPath = new AbsolutePath(currentLocation);
+                if (currentLocationPath == container)
+                {
+                    await currentLocation.RefreshAsync();
+                }
+            }
         }
 
         public async Task Init(int tabNumber)

@@ -33,6 +33,7 @@ namespace FileTime.Core.Providers
         public bool SupportsDirectoryLevelSoftDelete => false;
 
         public bool IsDestroyed => false;
+        public bool IsExists => true;
 
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {

@@ -24,6 +24,8 @@ namespace FileTime.Providers.Smb
         public IContentProvider Provider { get; }
 
         public bool IsDestroyed { get; private set; }
+        //TODO: implement
+        public bool IsExists => true;
 
         public SmbFile(string name, SmbContentProvider provider, SmbShare smbShare, IContainer parent, SmbClientContext smbClientContext)
         {

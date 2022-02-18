@@ -12,6 +12,12 @@ using FileTime.Avalonia.Misc;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Core.Command;
+using FileTime.Core.Command.Copy;
+using FileTime.Core.Command.CreateContainer;
+using FileTime.Core.Command.CreateElement;
+using FileTime.Core.Command.Delete;
+using FileTime.Core.Command.Move;
+using FileTime.Core.Command.Rename;
 using FileTime.Core.Components;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
@@ -229,7 +235,7 @@ namespace FileTime.Avalonia.Services
                 var newTab = new Tab();
                 await newTab.Init(newContainer);
 
-                tabContainer = new TabContainer(newTab, _localContentProvider, _itemNameConverterService);
+                tabContainer = new TabContainer(_timeRunner, newTab, _localContentProvider, _itemNameConverterService);
                 await tabContainer.Init(number);
 
                 var i = 0;

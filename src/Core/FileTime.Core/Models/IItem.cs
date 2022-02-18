@@ -9,6 +9,7 @@ namespace FileTime.Core.Models
         string? NativePath { get; }
         bool IsHidden { get; }
         bool IsDestroyed { get; }
+        bool IsExists { get; }
         SupportsDelete CanDelete { get; }
         bool CanRename { get; }
         IContentProvider Provider { get; }

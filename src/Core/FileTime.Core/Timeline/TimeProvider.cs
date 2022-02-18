@@ -33,6 +33,7 @@ namespace FileTime.Core.Timeline
         public bool SupportsContentStreams => false;
 
         public string Protocol => "time2://";
+        public bool IsExists => true;
 
         public TimeProvider(PointInTime pointInTime)
         {

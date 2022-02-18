@@ -8,8 +8,9 @@ namespace FileTime.Providers.Smb
     {
         private readonly SmbClientContext _smbClientContext;
 
-
         public SmbShare SmbShare { get; }
+        //TODO: implement
+        public override bool IsExists => true;
 
         public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent, SmbClientContext smbClientContext)
          : base(contentProvider, parent, name)

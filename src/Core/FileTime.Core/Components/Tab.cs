@@ -61,42 +61,51 @@ namespace FileTime.Core.Components
         {
             if (_currentlySelecting) return false;
 
-            IItem? itemToSelect = null;
-            if (value != null)
+            try
             {
-                itemToSelect = (await _currentLocation.GetItems(token))?.FirstOrDefault(i =>
-                    i.FullName == null && value?.FullName == null
-                    ? i.Name == value?.Name
-                    : i.FullName == value?.FullName);
-                if (itemToSelect == null) throw new IndexOutOfRangeException($"Provided item ({value.FullName ?? "unknwon"}) does not exists in the current container ({_currentLocation.FullName ?? "unknwon"}).");
-            }
+                _currentlySelecting = true;
 
-            CancellationToken newToken;
-            lock (_guardSetCurrentSelectedItemCTS)
+                IItem? itemToSelect = null;
+                if (value != null)
+                {
+                    itemToSelect = (await _currentLocation.GetItems(token))?.FirstOrDefault(i =>
+                        i.FullName == null && value?.FullName == null
+                        ? i.Name == value?.Name
+                        : i.FullName == value?.FullName);
+                    if (itemToSelect == null) throw new IndexOutOfRangeException($"Provided item ({value.FullName ?? "unknwon"}) does not exists in the current container ({_currentLocation.FullName ?? "unknwon"}).");
+                }
+
+                CancellationToken newToken;
+                lock (_guardSetCurrentSelectedItemCTS)
+                {
+                    if (token.IsCancellationRequested) return false;
+                    _setCurrentSelectedItemCTS?.Cancel();
+                    if (token.IsCancellationRequested)
+                    {
+                        _setCurrentSelectedItemCTS = new CancellationTokenSource();
+                        newToken = _setCurrentSelectedItemCTS.Token;
+                    }
+                    else
+                    {
+                        _setCurrentSelectedItemCTS = new CancellationTokenSource();
+                        newToken = CancellationTokenSource.CreateLinkedTokenSource(_setCurrentSelectedItemCTS.Token, token).Token;
+                    }
+                }
+
+                _currentSelectedItem = itemToSelect;
+                _lastPath = GetCommonPath(_lastPath, itemToSelect?.FullName);
+
+                var newCurrentSelectedIndex = await GetItemIndex(itemToSelect, CancellationToken.None);
+                CurrentSelectedIndex = newCurrentSelectedIndex;
+
+                await CurrentSelectedItemChanged.InvokeAsync(this, AsyncEventArgs.Empty, newToken);
+
+                return !newToken.IsCancellationRequested;
+            }
+            finally
             {
-                if (token.IsCancellationRequested) return false;
-                _setCurrentSelectedItemCTS?.Cancel();
-                if (token.IsCancellationRequested)
-                {
-                    _setCurrentSelectedItemCTS = new CancellationTokenSource();
-                    newToken = _setCurrentSelectedItemCTS.Token;
-                }
-                else
-                {
-                    _setCurrentSelectedItemCTS = new CancellationTokenSource();
-                    newToken = CancellationTokenSource.CreateLinkedTokenSource(_setCurrentSelectedItemCTS.Token, token).Token;
-                }
+                _currentlySelecting = false;
             }
-
-            _currentSelectedItem = itemToSelect;
-            _lastPath = GetCommonPath(_lastPath, itemToSelect?.FullName);
-
-            var newCurrentSelectedIndex = await GetItemIndex(itemToSelect, CancellationToken.None);
-            CurrentSelectedIndex = newCurrentSelectedIndex;
-
-            await CurrentSelectedItemChanged.InvokeAsync(this, AsyncEventArgs.Empty, newToken);
-
-            return !newToken.IsCancellationRequested;
         }
         public async Task<IItem?> GetItemByLastPath(IContainer? container = null)
         {
@@ -211,30 +220,35 @@ namespace FileTime.Core.Components
             {
                 if (token.IsCancellationRequested) return;
 
-                _currentlySelecting = true;
-                if (AutoRefresh && currentLocation != null)
-                {
-                    await currentLocation.RefreshAsync(token);
-                    if (token.IsCancellationRequested) return;
-                }
-
                 IItem? newSelectedItem = null;
-                foreach (var item in currentPossibleItems)
+                try
                 {
-                    if (currentLocationItems.FirstOrDefault(i => i.Name == item.Name) is var possibleNewSelectedItem
-                        && possibleNewSelectedItem is not null)
+                    _currentlySelecting = true;
+                    if (AutoRefresh && currentLocation != null)
                     {
-                        newSelectedItem = possibleNewSelectedItem;
-                        break;
+                        await currentLocation.RefreshAsync(token);
+                        if (token.IsCancellationRequested) return;
+                    }
+
+                    foreach (var item in currentPossibleItems)
+                    {
+                        if (currentLocationItems.FirstOrDefault(i => i.Name == item.Name) is var possibleNewSelectedItem
+                            && possibleNewSelectedItem is not null)
+                        {
+                            newSelectedItem = possibleNewSelectedItem;
+                            break;
+                        }
+                    }
+
+                    if (newSelectedItem != null)
+                    {
+                        newSelectedItem = (await (await GetCurrentLocation(token)).GetItems(token))?.FirstOrDefault(i => i.Name == newSelectedItem.Name);
                     }
                 }
-
-                if (newSelectedItem != null)
+                finally
                 {
-                    newSelectedItem = (await (await GetCurrentLocation(token)).GetItems(token))?.FirstOrDefault(i => i.Name == newSelectedItem.Name);
+                    _currentlySelecting = false;
                 }
-
-                _currentlySelecting = false;
                 await SetCurrentSelectedItem(newSelectedItem ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null), token: token);
             }
             else

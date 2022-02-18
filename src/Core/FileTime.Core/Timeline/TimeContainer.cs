@@ -33,6 +33,7 @@ namespace FileTime.Core.Timeline
 
         //FIXME: currently this can be different of the real items NativePath, should be fixed
         public string? NativePath => FullName;
+        public bool IsExists => true;
 
         public TimeContainer(string name, IContainer parent, IContentProvider contentProvider, IContentProvider virtualContentProvider, PointInTime pointInTime)
         {

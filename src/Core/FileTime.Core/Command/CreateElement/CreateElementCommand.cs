@@ -2,26 +2,24 @@ using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command.CreateElement
 {
-    public class CreateContainerCommand : IExecutableCommand
+    public class CreateElementCommand : IExecutableCommand
     {
         public AbsolutePath Container { get; }
-        public string NewContainerName { get; }
+        public string NewElementName { get; }
 
         public int Progress => 100;
         public int CurrentProgress => 100;
-
         public AsyncEventHandler ProgressChanged { get; } = new();
         public string DisplayLabel { get; }
         public IReadOnlyList<string> CanRunMessages { get; } = new List<string>().AsReadOnly();
 
-
-        public CreateContainerCommand(AbsolutePath container, string newContainerName)
+        public CreateElementCommand(AbsolutePath container, string newElementName)
         {
             Container = container;
-            NewContainerName = newContainerName;
-            DisplayLabel = $"Create container {newContainerName}";
+            NewElementName = newElementName;
+            DisplayLabel = $"Create element {newElementName}";
         }
 
         public async Task Execute(TimeRunner timeRunner)
@@ -29,17 +27,16 @@ namespace FileTime.Core.Command
             var possibleContainer = await Container.ResolveAsync();
             if (possibleContainer is IContainer container)
             {
-                await container.CreateContainerAsync(NewContainerName);
+                await container.CreateElementAsync(NewElementName);
                 await timeRunner.RefreshContainer.InvokeAsync(this, new AbsolutePath(container));
             }
-            //TODO: else
         }
 
         public Task<PointInTime> SimulateCommand(PointInTime startPoint)
         {
             var newDifferences = new List<Difference>()
             {
-                new Difference(DifferenceActionType.Create, Container.GetChild(NewContainerName, AbsolutePathType.Container))
+                new Difference(DifferenceActionType.Create, Container.GetChild(NewElementName, AbsolutePathType.Element))
             };
             return Task.FromResult(startPoint.WithDifferences(newDifferences));
         }
@@ -50,7 +47,7 @@ namespace FileTime.Core.Command
             if (resolvedContainer == null) return CanCommandRun.Forceable;
 
             if (resolvedContainer is not IContainer container
-                || await container.IsExistsAsync(NewContainerName))
+                || await container.IsExistsAsync(NewElementName))
             {
                 return CanCommandRun.False;
             }

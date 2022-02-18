@@ -84,7 +84,7 @@ namespace FileTime.Avalonia.ViewModels
                 var tab = new Tab();
                 await tab.Init(LocalContentProvider);
 
-                var tabContainer = new TabContainer(tab, LocalContentProvider, ItemNameConverterService);
+                var tabContainer = new TabContainer(_timeRunner, tab, LocalContentProvider, ItemNameConverterService);
                 await tabContainer.Init(1);
                 tabContainer.IsSelected = true;
                 AppState.Tabs.Add(tabContainer);
