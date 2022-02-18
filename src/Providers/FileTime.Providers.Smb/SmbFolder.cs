@@ -1,80 +1,47 @@
-using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using SMBLibrary;
 
 namespace FileTime.Providers.Smb
 {
-    public class SmbFolder : IContainer
+    public class SmbFolder : AbstractContainer<SmbContentProvider>
     {
-        private IReadOnlyList<IItem>? _items;
-        private IReadOnlyList<IContainer>? _containers;
-        private IReadOnlyList<IElement>? _elements;
-        private readonly IContainer? _parent;
         private readonly SmbClientContext _smbClientContext;
 
-        public string Name { get; }
 
-        public string? FullName { get; }
-        public string? NativePath { get; }
-
-        public bool IsHidden => false;
-        public bool IsLoaded => _items != null;
-
-        public SmbContentProvider Provider { get; }
-        IContentProvider IItem.Provider => Provider;
         public SmbShare SmbShare { get; }
-        public SupportsDelete CanDelete => SupportsDelete.True;
-        public bool CanRename => true;
-
-        public AsyncEventHandler Refreshed { get; } = new();
-        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
-
-        public bool IsDestroyed { get; private set; }
-
-        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public SmbFolder(string name, SmbContentProvider contentProvider, SmbShare smbShare, IContainer parent, SmbClientContext smbClientContext)
+         : base(contentProvider, parent, name)
         {
-            _parent = parent;
             _smbClientContext = smbClientContext;
             SmbShare = smbShare;
-
-            Name = name;
-            FullName = parent.FullName! + Constants.SeparatorChar + Name;
             NativePath = parent.NativePath + SmbContentProvider.GetNativePathSeparator() + name;
-            Provider = contentProvider;
+            CanDelete = SupportsDelete.True;
+            CanRename = true;
         }
 
-        public async Task<IContainer> CreateContainerAsync(string name)
+        public override async Task<IContainer> CreateContainerAsync(string name)
         {
             var path = FullName![(SmbShare.FullName!.Length + 1)..] + Constants.SeparatorChar + name;
             await SmbShare.CreateContainerWithPathAsync(path.Replace("/", "\\"));
             await RefreshAsync();
 
-            return _containers!.FirstOrDefault(e => e.Name == name)!;
+            return (await GetContainers())!.FirstOrDefault(e => e.Name == name)!;
         }
 
-        public async Task<IElement> CreateElementAsync(string name)
+        public override async Task<IElement> CreateElementAsync(string name)
         {
             var path = FullName![(SmbShare.FullName!.Length + 1)..] + Constants.SeparatorChar + name;
             await SmbShare.CreateElementWithPathAsync(path.Replace("/", "\\"));
             await RefreshAsync();
 
-            return _elements!.FirstOrDefault(e => e.Name == name)!;
+            return (await GetElements())!.FirstOrDefault(e => e.Name == name)!;
         }
 
-        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
+        public override Task<IContainer> CloneAsync() => Task.FromResult((IContainer)new SmbFolder(Name, Provider, SmbShare, GetParent(), _smbClientContext));
 
-        public IContainer? GetParent() => _parent;
-
-        public async Task<bool> IsExistsAsync(string name)
-        {
-            var items = await GetItems();
-            return items?.Any(i => i.Name == name) ?? false;
-        }
-
-        public async Task Delete(bool hardDelete = false)
+        public override async Task Delete(bool hardDelete = false)
         {
             await _smbClientContext.RunWithSmbClientAsync(client =>
             {
@@ -103,62 +70,23 @@ namespace FileTime.Providers.Smb
                 status = fileStore.Disconnect();
             });
         }
-        public Task Rename(string newName)
+        public override Task Rename(string newName)
         {
             throw new NotImplementedException();
         }
 
-        public async Task RefreshAsync(CancellationToken token = default)
+        public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default)
         {
-            var containers = new List<IContainer>();
-            var elements = new List<IElement>();
-
             try
             {
                 var path = FullName![(SmbShare.FullName!.Length + 1)..];
-                (containers, elements) = await SmbShare.ListFolder(this, path, token);
+                var (containers, elements) = await SmbShare.ListFolder(this, path, token);
+
+                return containers.Cast<IItem>().Concat(elements);
             }
             catch { }
 
-            _containers = containers.AsReadOnly();
-            _elements = elements.AsReadOnly();
-
-            if (_items != null)
-            {
-                foreach (var item in _items)
-                {
-                    item.Destroy();
-                }
-            }
-
-            _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
-        }
-
-        public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
-        {
-            if (_items == null) await RefreshAsync(token);
-            return _items;
-        }
-        public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
-        {
-            if (_containers == null) await RefreshAsync(token);
-            return _containers;
-        }
-        public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
-        {
-            if (_elements == null) await RefreshAsync(token);
-            return _elements;
-        }
-        public Task<bool> CanOpenAsync() => Task.FromResult(true);
-
-        public void Destroy() => IsDestroyed = true;
-
-        public void Unload()
-        {
-            _items = null;
-            _containers = null;
-            _elements = null;
+            return Enumerable.Empty<IItem>();
         }
 
         private string GetPathFromShare() => FullName![(SmbShare.FullName!.Length + 1)..].Replace("/", "\\");

@@ -46,7 +46,7 @@ namespace FileTime.Core.Providers
             Exceptions = _exceptions.AsReadOnly();
         }
 
-        public abstract Task<bool> CanOpenAsync();
+        public virtual Task<bool> CanOpenAsync() => Task.FromResult(_exceptions.Count == 0);
 
         public abstract Task<IContainer> CloneAsync();
 
@@ -61,6 +61,7 @@ namespace FileTime.Core.Providers
             _items = null;
             _containers = null;
             _elements = null;
+            IsLoaded = false;
             IsDestroyed = true;
             Refreshed = new AsyncEventHandler();
         }
@@ -93,6 +94,7 @@ namespace FileTime.Core.Providers
 
         public virtual async Task RefreshAsync(CancellationToken token = default)
         {
+            _exceptions.Clear();
             var containers = new List<IContainer>();
             var elements = new List<IElement>();
             foreach (var item in await RefreshItems(token))
@@ -118,8 +120,10 @@ namespace FileTime.Core.Providers
             _containers = containers.OrderBy(c => c.Name).ToList().AsReadOnly();
             _elements = elements.OrderBy(e => e.Name).ToList().AsReadOnly();
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
+            IsLoaded = true;
             if (Refreshed != null) await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
         }
+
         public abstract Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default);
 
         public abstract Task Rename(string newName);
@@ -129,6 +133,9 @@ namespace FileTime.Core.Providers
             _items = null;
             _containers = null;
             _elements = null;
+            IsLoaded = false;
         }
+
+        protected void AddException(Exception e) => _exceptions.Add(e);
     }
 }

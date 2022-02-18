@@ -1,55 +1,25 @@
 using System.Runtime.InteropServices;
-using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using FileTime.Providers.Local.Interop;
 
 namespace FileTime.Providers.Local
 {
-    public class LocalFolder : IContainer
+    public class LocalFolder : AbstractContainer<LocalContentProvider>
     {
-        private IReadOnlyList<IItem>? _items;
-        private IReadOnlyList<IContainer>? _containers;
-        private IReadOnlyList<IElement>? _elements;
-        private readonly List<Exception> _exceptions;
-        private readonly IContainer? _parent;
-
-        public bool IsHidden => (Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
         public DirectoryInfo Directory { get; }
-        public LocalContentProvider Provider { get; }
-        IContentProvider IItem.Provider => Provider;
-
-        public string Name { get; }
-
-        public string FullName { get; }
-        public string? NativePath => Directory.FullName;
-
-        public bool IsLoaded => _items != null;
-        public SupportsDelete CanDelete { get; }
-        public bool CanRename => true;
-
-        public AsyncEventHandler Refreshed { get; private set; } = new();
 
         public string Attributes => GetAttributes();
 
         public DateTime CreatedAt => Directory.CreationTime;
-        public IReadOnlyList<Exception> Exceptions { get; }
 
-        public bool IsDestroyed { get; private set; }
-
-        public bool SupportsDirectoryLevelSoftDelete { get; }
-
-        public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer? parent)
+        public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer parent)
+         : base(contentProvider, parent, directory.Name.TrimEnd(Path.DirectorySeparatorChar))
         {
             Directory = directory;
-            _parent = parent;
-
-            _exceptions = new List<Exception>();
-            Exceptions = _exceptions.AsReadOnly();
-
-            Name = directory.Name.TrimEnd(Path.DirectorySeparatorChar);
-            FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
-            Provider = contentProvider;
+            NativePath = Directory.FullName;
+            IsHidden = (Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+            CanRename = true;
 
             //TODO: Linux soft delete
             SupportsDirectoryLevelSoftDelete = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -58,58 +28,28 @@ namespace FileTime.Providers.Local
                 : SupportsDelete.HardDeleteOnly;
         }
 
-        public IContainer? GetParent() => _parent;
+        public override Task<IContainer> CloneAsync() => Task.FromResult((IContainer)new LocalFolder(Directory, Provider, GetParent()!));
 
-        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)new LocalFolder(Directory, Provider, _parent));
-
-        public async Task RefreshAsync(CancellationToken token = default)
+        public override Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default)
         {
-            if (_items != null)
-            {
-                foreach (var item in _items)
-                {
-                    item.Destroy();
-                }
-            }
-
-            _containers = new List<IContainer>();
-            _elements = new List<IElement>();
-            _items = new List<IItem>();
-            _exceptions.Clear();
-
             try
             {
-                if (token.IsCancellationRequested) return;
-                _containers = Directory.GetDirectories().Select(d => new LocalFolder(d, Provider, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
+                if (token.IsCancellationRequested) return Task.FromResult(Enumerable.Empty<IItem>());
+                var containers = Directory.GetDirectories().Select(d => new LocalFolder(d, Provider, this)).OrderBy(d => d.Name).ToList().AsReadOnly();
 
-                if (token.IsCancellationRequested) return;
-                _elements = Directory.GetFiles().Select(f => new LocalFile(f, this, Provider)).OrderBy(f => f.Name).ToList().AsReadOnly();
+                if (token.IsCancellationRequested) return Task.FromResult(Enumerable.Empty<IItem>());
+                var elements = Directory.GetFiles().Select(f => new LocalFile(f, this, Provider)).OrderBy(f => f.Name).ToList().AsReadOnly();
 
-                if (token.IsCancellationRequested) return;
+                if (token.IsCancellationRequested) return Task.FromResult(Enumerable.Empty<IItem>());
+
+                return Task.FromResult(containers.Cast<IItem>().Concat(elements));
             }
             catch (Exception e)
             {
-                _exceptions.Add(e);
+                AddException(e);
             }
 
-            _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            if (Refreshed != null) await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
-        }
-
-        public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
-        {
-            if (_items == null) await RefreshAsync(token);
-            return _items;
-        }
-        public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
-        {
-            if (_containers == null) await RefreshAsync(token);
-            return _containers;
-        }
-        public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
-        {
-            if (_elements == null) await RefreshAsync(token);
-            return _elements;
+            return Task.FromResult(Enumerable.Empty<IItem>());
         }
 
         public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
@@ -131,25 +71,25 @@ namespace FileTime.Providers.Local
 
             return null;
         }
-        public async Task<IContainer> CreateContainerAsync(string name)
+        public override async Task<IContainer> CreateContainerAsync(string name)
         {
             Directory.CreateSubdirectory(name);
             await RefreshAsync();
 
-            return _containers!.FirstOrDefault(c => Provider.NormalizePath(c.Name) == Provider.NormalizePath(name))!;
+            return (await GetContainers())!.FirstOrDefault(c => Provider.NormalizePath(c.Name) == Provider.NormalizePath(name))!;
         }
 
-        public async Task<IElement> CreateElementAsync(string name)
+        public override async Task<IElement> CreateElementAsync(string name)
         {
             using (File.Create(Path.Combine(Directory.FullName, name))) { }
             await RefreshAsync();
 
-            return _elements!.FirstOrDefault(e => Provider.NormalizePath(e.Name) == Provider.NormalizePath(name))!;
+            return (await GetElements())!.FirstOrDefault(e => Provider.NormalizePath(e.Name) == Provider.NormalizePath(name))!;
         }
 
-        public async Task<bool> IsExistsAsync(string name) => (await GetItems())?.Any(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(name)) ?? false;
+        public override async Task<bool> IsExistsAsync(string name) => (await GetItems())?.Any(i => Provider.NormalizePath(i.Name) == Provider.NormalizePath(name)) ?? false;
 
-        public Task Delete(bool hardDelete = false)
+        public override Task Delete(bool hardDelete = false)
         {
             if (hardDelete)
             {
@@ -161,12 +101,12 @@ namespace FileTime.Providers.Local
             }
             return Task.CompletedTask;
         }
-        public async Task Rename(string newName)
+        public override async Task Rename(string newName)
         {
-            if (_parent is LocalFolder parentFolder)
+            if (GetParent() is LocalFolder parentFolder)
             {
                 System.IO.Directory.Move(Directory.FullName, Path.Combine(parentFolder.Directory.FullName, newName));
-                await _parent.RefreshAsync();
+                await parentFolder.RefreshAsync();
             }
         }
 
@@ -184,23 +124,6 @@ namespace FileTime.Providers.Local
                     + ((Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ? "h" : "-")
                     + ((Directory.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
             }
-        }
-        public Task<bool> CanOpenAsync() => Task.FromResult(true);
-
-        public void Destroy()
-        {
-            _items = null;
-            _containers = null;
-            _elements = null;
-            IsDestroyed = true;
-            Refreshed = new AsyncEventHandler();
-        }
-
-        public void Unload()
-        {
-            _items = null;
-            _containers = null;
-            _elements = null;
         }
     }
 }

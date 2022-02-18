@@ -35,8 +35,6 @@ namespace FileTime.Providers.Sftp
 
         public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default) => await ListDirectory("");
 
-        public override Task<bool> CanOpenAsync() => Task.FromResult(true);
-
         public override Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
         public override Task<IContainer> CreateContainerAsync(string name)
@@ -78,8 +76,7 @@ namespace FileTime.Providers.Sftp
                 isClientNull = _client == null;
             }
 
-            int reTries = 0;
-            while (isClientNull)
+            for (int reTries = 0; isClientNull; reTries++)
             {
                 if (!await RefreshSftpClient())
                 {
@@ -95,7 +92,6 @@ namespace FileTime.Providers.Sftp
                 {
                     throw new Exception($"Could not connect to server {Name} after {reTries} retry");
                 }
-                reTries++;
             }
             return _client!;
         }

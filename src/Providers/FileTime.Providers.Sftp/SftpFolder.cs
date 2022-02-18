@@ -12,7 +12,6 @@ namespace FileTime.Providers.Sftp
             _server = server;
             NativePath = FullName;
         }
-        public override Task<bool> CanOpenAsync() => Task.FromResult(true);
 
         public override Task<IContainer> CloneAsync()
         {

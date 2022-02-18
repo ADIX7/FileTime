@@ -1,6 +1,5 @@
 using System.Net;
 using System.Runtime.InteropServices;
-using AsyncEvent;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
@@ -9,87 +8,46 @@ using SMBLibrary.Client;
 
 namespace FileTime.Providers.Smb
 {
-    public class SmbServer : IContainer
+    public class SmbServer : AbstractContainer<SmbContentProvider>
     {
         internal const int MAXRETRIES = 5;
 
         private bool _reenterCredentials;
-
-        private IReadOnlyList<IContainer>? _shares;
-        private IReadOnlyList<IItem>? _items;
-        private readonly IReadOnlyList<IElement>? _elements = new List<IElement>().AsReadOnly();
         private ISMBClient? _client;
         private readonly object _clientGuard = new();
         private bool _refreshingClient;
         private readonly IInputInterface _inputInterface;
         private readonly SmbClientContext _smbClientContext;
-        private readonly List<Exception> _exceptions = new();
 
         public string? Username { get; private set; }
         public string? Password { get; private set; }
 
-        public string Name { get; }
-        public string? FullName { get; }
-        public string? NativePath { get; }
-
-        public bool IsHidden => false;
-        public bool IsLoaded => _items != null;
-
-        public SmbContentProvider Provider { get; }
-
-        IContentProvider IItem.Provider => Provider;
-        public SupportsDelete CanDelete => SupportsDelete.True;
-        public bool CanRename => false;
-        public IReadOnlyList<Exception> Exceptions { get; }
-
-        public AsyncEventHandler Refreshed { get; } = new();
-
-        public bool SupportsDirectoryLevelSoftDelete => false;
-
-        public bool IsDestroyed => false;
-
-        public SmbServer(string path, SmbContentProvider contentProvider, IInputInterface inputInterface, string? username = null, string? password = null)
+        public SmbServer(string name, SmbContentProvider contentProvider, IInputInterface inputInterface, string? username = null, string? password = null)
+         : base(contentProvider, contentProvider, name)
         {
             _inputInterface = inputInterface;
             _smbClientContext = new SmbClientContext(GetSmbClient, DisposeSmbClient);
-            Exceptions = _exceptions.AsReadOnly();
             Username = username;
             Password = password;
+            CanDelete = SupportsDelete.True;
 
-            Provider = contentProvider;
-            Name = path;
             FullName = contentProvider.Protocol + Name;
             NativePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? "\\\\" + Name
                 : contentProvider.Protocol + Name;
         }
 
-        public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
-        {
-            if (_shares == null) await RefreshAsync(token);
-            return _shares;
-        }
-        public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
-        {
-            if (_shares == null) await RefreshAsync(token);
-            return _shares;
-        }
-        public Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
-        {
-            return Task.FromResult(_elements);
-        }
-
-        public Task<IContainer> CreateContainerAsync(string name)
+        public override Task<IContainer> CreateContainerAsync(string name)
         {
             throw new NotSupportedException();
         }
 
-        public Task<IElement> CreateElementAsync(string name)
+        public override Task<IElement> CreateElementAsync(string name)
         {
             throw new NotSupportedException();
         }
 
-        public Task Delete(bool hardDelete = false)
+        public override Task Delete(bool hardDelete = false)
         {
             return Task.CompletedTask;
         }
@@ -114,31 +72,23 @@ namespace FileTime.Providers.Smb
             return null;
         }
 
-        public IContainer? GetParent() => Provider;
-
-        public Task<bool> IsExistsAsync(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task RefreshAsync(CancellationToken token = default)
+        public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default)
         {
             try
             {
-                _exceptions.Clear();
-                List<string> shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status), _shares == null ? 1 : MAXRETRIES);
+                var shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status), IsLoaded ? MAXRETRIES : 1);
 
-                _shares = shares.ConvertAll(s => new SmbShare(s, Provider, this, _smbClientContext)).AsReadOnly();
-                _items = _shares.Cast<IItem>().ToList().AsReadOnly();
-                await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
+                return shares.Select(s => new SmbShare(s, Provider, this, _smbClientContext));
             }
             catch (Exception e)
             {
-                _exceptions.Add(e);
+                AddException(e);
             }
+
+            return Enumerable.Empty<IItem>();
         }
 
-        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
+        public override Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
         private void DisposeSmbClient()
         {
@@ -156,8 +106,7 @@ namespace FileTime.Providers.Smb
                 isClientNull = _client == null;
             }
 
-            int reTries = 0;
-            while (isClientNull)
+            for (var reTries = 0; isClientNull; reTries++)
             {
                 if (!await RefreshSmbClient())
                 {
@@ -173,7 +122,6 @@ namespace FileTime.Providers.Smb
                 {
                     throw new Exception($"Could not connect to server {Name} after {reTries} retry");
                 }
-                reTries++;
             }
             return _client!;
         }
@@ -235,11 +183,7 @@ namespace FileTime.Providers.Smb
             return true;
         }
 
-        public Task Rename(string newName) => throw new NotSupportedException();
-        public Task<bool> CanOpenAsync() => Task.FromResult(true);
-
-        public void Destroy() { }
-
-        public void Unload() { }
+        public override Task Rename(string newName) => throw new NotSupportedException();
+        public override Task<bool> CanOpenAsync() => Task.FromResult(true);
     }
 }

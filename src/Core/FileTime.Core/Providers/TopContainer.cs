@@ -1,5 +1,3 @@
-
-using System;
 using AsyncEvent;
 using FileTime.Core.Models;
 

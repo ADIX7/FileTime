@@ -1,4 +1,3 @@
-using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
 using SMBLibrary;
@@ -6,67 +5,24 @@ using SMBLibrary.Client;
 
 namespace FileTime.Providers.Smb
 {
-    public class SmbShare : IContainer
+    public class SmbShare : AbstractContainer<SmbContentProvider>
     {
-        private IReadOnlyList<IItem>? _items;
-        private IReadOnlyList<IContainer>? _containers;
-        private IReadOnlyList<IElement>? _elements;
         private readonly SmbClientContext _smbClientContext;
-        private readonly IContainer? _parent;
-
-        public string Name { get; }
-
-        public string? FullName { get; }
-        public string? NativePath { get; }
-
-        public bool IsHidden => false;
-        public bool IsLoaded => _items != null;
-
-        public SmbContentProvider Provider { get; }
-        IContentProvider IItem.Provider => Provider;
-        public SupportsDelete CanDelete => SupportsDelete.False;
-        public bool CanRename => false;
-
-        public AsyncEventHandler Refreshed { get; } = new();
-        public IReadOnlyList<Exception> Exceptions { get; } = new List<Exception>().AsReadOnly();
-
-        public bool IsDestroyed => false;
-
-        public bool SupportsDirectoryLevelSoftDelete => false;
 
         public SmbShare(string name, SmbContentProvider contentProvider, IContainer parent, SmbClientContext smbClientContext)
+         : base(contentProvider, parent, name)
         {
-            _parent = parent;
             _smbClientContext = smbClientContext;
-
-            Name = name;
-            FullName = parent.FullName! + Constants.SeparatorChar + Name;
             NativePath = parent.NativePath + SmbContentProvider.GetNativePathSeparator() + name;
-            Provider = contentProvider;
+            CanDelete = SupportsDelete.False;
         }
 
-        public async Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default)
-        {
-            if (_items == null) await RefreshAsync(token);
-            return _items;
-        }
-        public async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
-        {
-            if (_containers == null) await RefreshAsync(token);
-            return _containers;
-        }
-        public async Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default)
-        {
-            if (_elements == null) await RefreshAsync(token);
-            return _elements;
-        }
-
-        public async Task<IContainer> CreateContainerAsync(string name)
+        public override async Task<IContainer> CreateContainerAsync(string name)
         {
             await CreateContainerWithPathAsync(name);
             await RefreshAsync();
 
-            return _containers!.FirstOrDefault(e => e.Name == name)!;
+            return (await GetContainers())!.FirstOrDefault(e => e.Name == name)!;
         }
         internal async Task CreateContainerWithPathAsync(string path)
         {
@@ -101,12 +57,12 @@ namespace FileTime.Providers.Smb
             });
         }
 
-        public async Task<IElement> CreateElementAsync(string name)
+        public override async Task<IElement> CreateElementAsync(string name)
         {
             await CreateElementWithPathAsync(name);
             await RefreshAsync();
 
-            return _elements!.FirstOrDefault(e => e.Name == name)!;
+            return (await GetElements())!.FirstOrDefault(e => e.Name == name)!;
         }
         internal async Task CreateElementWithPathAsync(string path)
         {
@@ -141,45 +97,24 @@ namespace FileTime.Providers.Smb
             });
         }
 
-        public Task Delete(bool hardDelete = false)
+        public override Task Delete(bool hardDelete = false)
         {
             throw new NotSupportedException();
         }
 
-        public IContainer? GetParent() => _parent;
+        public override Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
-        public Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
-
-        public async Task<bool> IsExistsAsync(string name)
+        public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default)
         {
-            var items = await GetItems();
-            return items?.Any(i => i.Name == name) ?? false;
-        }
-
-        public async Task RefreshAsync(CancellationToken token = default)
-        {
-            var containers = new List<IContainer>();
-            var elements = new List<IElement>();
-
             try
             {
-                (containers, elements) = await ListFolder(this, string.Empty, token);
+                var (containers, elements) = await ListFolder(this, string.Empty, token);
+
+                return containers.Cast<IItem>().Concat(elements);
             }
             catch { }
 
-            if (_items != null)
-            {
-                foreach (var item in _items)
-                {
-                    item.Destroy();
-                }
-            }
-
-            _containers = containers.AsReadOnly();
-            _elements = elements.AsReadOnly();
-
-            _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
-            await Refreshed.InvokeAsync(this, AsyncEventArgs.Empty, token);
+            return Enumerable.Empty<IItem>();
         }
 
         public async Task<(List<IContainer> containers, List<IElement> elements)> ListFolder(IContainer parent, string folderName, CancellationToken token = default)
@@ -228,16 +163,6 @@ namespace FileTime.Providers.Smb
             return client.TreeConnect(Name, out status);
         }
 
-        public Task Rename(string newName) => throw new NotSupportedException();
-        public Task<bool> CanOpenAsync() => Task.FromResult(true);
-
-        public void Destroy() { }
-
-        public void Unload()
-        {
-            _items = null;
-            _containers = null;
-            _elements = null;
-        }
+        public override Task Rename(string newName) => throw new NotSupportedException();
     }
 }
