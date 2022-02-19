@@ -55,7 +55,7 @@ namespace FileTime.Avalonia.Application
                 {
                     try
                     {
-                        Task.Run(async () => await SetSelectedItemAsync(value, true)).Wait();
+                        Task.Run(async () => await SetSelectedItemAsync(value)).Wait();
                     }
                     catch (AggregateException e) when (e.InnerExceptions.Count == 1 && e.InnerExceptions[0] is IndexOutOfRangeException) { }
                 }
@@ -65,13 +65,13 @@ namespace FileTime.Avalonia.Application
         [Property]
         private ElementPreviewViewModel? _elementPreview;
 
-        public async Task SetSelectedItemAsync(IItemViewModel? value, bool fromDataBinding = false)
+        public async Task SetSelectedItemAsync(IItemViewModel? value)
         {
             if (_selectedItem != value)
             {
                 _selectedItem = value;
 
-                await Tab.SetCurrentSelectedItem(SelectedItem?.Item, fromDataBinding);
+                await Tab.SetCurrentSelectedItem(SelectedItem?.Item);
                 OnPropertyChanged(nameof(SelectedItem));
             }
         }
@@ -153,12 +153,12 @@ namespace FileTime.Avalonia.Application
             }
         }
 
-        private async Task Tab_CurrentSelectedItemChanged(object? sender, AsyncEventArgs e, CancellationToken token = default)
+        private async Task Tab_CurrentSelectedItemChanged(object? sender, bool locationChanged, CancellationToken token = default)
         {
-            await UpdateCurrentSelectedItem(token);
+            await UpdateCurrentSelectedItem(skipCancellationWaiting: locationChanged, token: token);
         }
 
-        public async Task UpdateCurrentSelectedItem(CancellationToken token = default)
+        public async Task UpdateCurrentSelectedItem(bool skipCancellationWaiting = false, CancellationToken token = default)
         {
             /*try
             {*/
@@ -194,11 +194,15 @@ namespace FileTime.Avalonia.Application
             await UpdateParents(token);
 
             var start = DateTime.Now;
-            while (true)
+
+            if (!skipCancellationWaiting)
             {
-                await Task.Delay(1);
-                if (token.IsCancellationRequested) return;
-                if ((DateTime.Now - start).Milliseconds > 500) break;
+                do
+                {
+                    await Task.Delay(1, token);
+                    if (token.IsCancellationRequested) return;
+                }
+                while ((DateTime.Now - start).Milliseconds <= 500);
             }
 
             ChildContainer = newChildContainer;

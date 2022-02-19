@@ -21,7 +21,7 @@ namespace FileTime.Core.Components
         public bool AutoRefresh { get; set; }
 
         public AsyncEventHandler CurrentLocationChanged = new();
-        public AsyncEventHandler CurrentSelectedItemChanged = new();
+        public AsyncEventHandler<bool> CurrentSelectedItemChanged = new();
 
         public async Task Init(IContainer currentPath)
         {
@@ -47,7 +47,7 @@ namespace FileTime.Core.Components
 
                 var currentLocationItems = await (await GetCurrentLocation()).GetItems();
                 if (currentLocationItems == null) throw new Exception("Could not get current location items.");
-                await SetCurrentSelectedItem(await GetItemByLastPath() ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null));
+                await SetCurrentSelectedItem(await GetItemByLastPath() ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null), true);
                 _currentLocation.Refreshed.Add(HandleCurrentLocationRefresh);
             }
         }
@@ -57,7 +57,11 @@ namespace FileTime.Core.Components
             return Task.FromResult(_currentSelectedItem);
         }
 
-        public async Task<bool> SetCurrentSelectedItem(IItem? value, bool secondary = false, CancellationToken token = default)
+        /*public async Task<bool> SetCurrentSelectedItem(IItem? value, bool secondary = false, CancellationToken token = default)
+        {
+
+        }*/
+        public async Task<bool> SetCurrentSelectedItem(IItem? value, bool locationChanged = false, CancellationToken token = default)
         {
             if (_currentlySelecting) return false;
 
@@ -95,10 +99,9 @@ namespace FileTime.Core.Components
                 _currentSelectedItem = itemToSelect;
                 _lastPath = GetCommonPath(_lastPath, itemToSelect?.FullName);
 
-                var newCurrentSelectedIndex = await GetItemIndex(itemToSelect, CancellationToken.None);
-                CurrentSelectedIndex = newCurrentSelectedIndex;
+                CurrentSelectedIndex = await GetItemIndex(itemToSelect, CancellationToken.None);
 
-                await CurrentSelectedItemChanged.InvokeAsync(this, AsyncEventArgs.Empty, newToken);
+                await CurrentSelectedItemChanged.InvokeAsync(this, locationChanged, newToken);
 
                 return !newToken.IsCancellationRequested;
             }
@@ -290,13 +293,13 @@ namespace FileTime.Core.Components
                 if (lastCurrentLocation is VirtualContainer lastCurrentVirtualContainer)
                 {
                     await SetCurrentLocation(lastCurrentVirtualContainer.CloneVirtualChainFor(parent, v => v.IsPermanent));
-                    await SetCurrentSelectedItem(lastCurrentVirtualContainer.GetRealContainer());
+                    await SetCurrentSelectedItem(lastCurrentVirtualContainer.GetRealContainer(), true);
                 }
                 else
                 {
                     await SetCurrentLocation(parent);
                     var newCurrentLocation = (await (await GetCurrentLocation()).GetItems())?.FirstOrDefault(i => i.Name == lastCurrentLocation.Name);
-                    await SetCurrentSelectedItem(newCurrentLocation);
+                    await SetCurrentSelectedItem(newCurrentLocation, true);
                 }
 
                 foreach (var lastLocationItem in currentLocationItems.OfType<IContainer>())
