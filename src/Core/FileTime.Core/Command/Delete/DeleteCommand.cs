@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -65,7 +66,7 @@ namespace FileTime.Core.Command.Delete
                 await TraverseTree((await item.ResolveAsync())!);
             }
 
-            foreach(var updatedParent in ItemsToDelete.Select(i => i.GetParent()).Distinct())
+            foreach (var updatedParent in ItemsToDelete.Select(i => i.GetParent()).Distinct())
             {
                 await timeRunner.RefreshContainer.InvokeAsync(this, updatedParent);
             }
@@ -81,9 +82,12 @@ namespace FileTime.Core.Command.Delete
                 }
                 else
                 {
-                    foreach (var child in (await container.GetItems())!)
+                    if (container.AllowRecursiveDeletion)
                     {
-                        await TraverseTree(child);
+                        foreach (var child in (await container.GetItems())!)
+                        {
+                            await TraverseTree(child);
+                        }
                     }
 
                     if (_deleteContainer != null) await _deleteContainer.Invoke(container);

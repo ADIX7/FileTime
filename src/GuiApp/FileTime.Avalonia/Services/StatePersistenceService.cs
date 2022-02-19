@@ -121,7 +121,7 @@ namespace FileTime.Avalonia.Services
                         {
                             foreach (var contentProvider in _contentProviders)
                             {
-                                if (contentProvider.CanHandlePath(tab.Path))
+                                if (await contentProvider.CanHandlePath(tab.Path))
                                 {
                                     pathItem = await contentProvider.GetByPath(tab.Path, true);
                                     if (pathItem != null) break;

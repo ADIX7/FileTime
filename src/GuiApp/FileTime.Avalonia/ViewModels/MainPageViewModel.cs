@@ -235,7 +235,7 @@ namespace FileTime.Avalonia.ViewModels
 
         private async Task<IContainer?> GetContainerForWindowsDrive(DriveInfo drive)
         {
-            return (await LocalContentProvider.GetRootContainers()).FirstOrDefault(d => d.Name == drive.Name.TrimEnd(Path.DirectorySeparatorChar));
+            return (await LocalContentProvider.GetContainers())!.FirstOrDefault(d => d.Name == drive.Name.TrimEnd(Path.DirectorySeparatorChar));
         }
 
         private async Task<IContainer?> GetContainerForLinuxDrive(DriveInfo drive)

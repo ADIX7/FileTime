@@ -8,6 +8,7 @@ namespace FileTime.Core.Models
         Task<IReadOnlyList<IItem>?> GetItems(CancellationToken token = default);
         Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default);
         Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default);
+        bool AllowRecursiveDeletion { get; }
 
         Task RefreshAsync(CancellationToken token = default);
         public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)

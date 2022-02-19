@@ -38,6 +38,7 @@ namespace FileTime.Core.Models
 
         public bool IsDestroyed => BaseContainer.IsDestroyed;
         public bool IsExists => BaseContainer.IsExists;
+        public bool AllowRecursiveDeletion => BaseContainer.AllowRecursiveDeletion;
 
         private void RefreshAddBase(Func<object?, AsyncEventArgs, CancellationToken, Task> handler)
         {

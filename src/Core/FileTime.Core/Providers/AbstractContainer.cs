@@ -3,9 +3,9 @@ using FileTime.Core.Models;
 
 namespace FileTime.Core.Providers
 {
-    public abstract class AbstractContainer<TProvider> : IContainer where TProvider : IContentProvider
+    public abstract class AbstractContainer<TProvider> : IContainer where TProvider : class, IContentProvider
     {
-        private readonly IContainer _parent;
+        private readonly IContainer? _parent;
         private readonly List<Exception> _exceptions = new();
         private IReadOnlyList<IContainer>? _containers;
         private IReadOnlyList<IItem>? _items;
@@ -39,13 +39,26 @@ namespace FileTime.Core.Providers
 
         public abstract bool IsExists { get; }
 
-        protected AbstractContainer(TProvider provider, IContainer parent, string name)
+        public virtual bool AllowRecursiveDeletion { get; protected set; }
+
+        protected AbstractContainer(TProvider provider, IContainer parent, string name) : this(name)
         {
             _parent = parent;
             Provider = provider;
+            FullName = parent.FullName == null ? name : parent.FullName + Constants.SeparatorChar + name;
+        }
+
+        protected AbstractContainer(string name, string? fullName = null) : this(name)
+        {
+            Provider = this is TProvider provider ? provider : throw new ArgumentException($"This constructor is for {nameof(IContentProvider)}s only");
+            FullName = fullName;
+        }
+
+        private AbstractContainer(string name)
+        {
             Name = name;
-            FullName = parent.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
             Exceptions = _exceptions.AsReadOnly();
+            Provider = null!;
         }
 
         public virtual Task<bool> CanOpenAsync() => Task.FromResult(_exceptions.Count == 0);

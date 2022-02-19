@@ -7,9 +7,7 @@ namespace FileTime.Core.Providers
         bool SupportsContentStreams { get; }
         string Protocol { get; }
 
-        Task<IReadOnlyList<IContainer>> GetRootContainers(CancellationToken token = default);
-
-        bool CanHandlePath(string path);
+        Task<bool> CanHandlePath(string path);
 
         void SetParent(IContainer container);
     }

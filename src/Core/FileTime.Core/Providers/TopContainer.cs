@@ -34,6 +34,7 @@ namespace FileTime.Core.Providers
 
         public bool IsDestroyed => false;
         public bool IsExists => true;
+        public bool AllowRecursiveDeletion => false;
 
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {

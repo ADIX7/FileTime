@@ -21,6 +21,7 @@ namespace FileTime.Providers.Local
             NativePath = Directory.FullName;
             IsHidden = (Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
             CanRename = true;
+            AllowRecursiveDeletion = true;
 
             //TODO: Linux soft delete
             SupportsDirectoryLevelSoftDelete = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

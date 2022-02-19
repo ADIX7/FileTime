@@ -564,7 +564,7 @@ namespace FileTime.Avalonia.Services
                 var path = inputs[0].Value;
                 foreach (var contentProvider in _contentProviders)
                 {
-                    if (contentProvider.CanHandlePath(path))
+                    if (await contentProvider.CanHandlePath(path))
                     {
                         var possibleContainer = await contentProvider.GetByPath(path);
                         if (possibleContainer is IContainer container)
