@@ -193,16 +193,14 @@ namespace FileTime.Avalonia.Application
 
             await UpdateParents(token);
 
-            var start = DateTime.Now;
-
             if (!skipCancellationWaiting)
             {
-                do
+                try
                 {
-                    await Task.Delay(1, token);
-                    if (token.IsCancellationRequested) return;
+                    await Task.Delay(500, token);
                 }
-                while ((DateTime.Now - start).Milliseconds <= 500);
+                catch { }
+                if (token.IsCancellationRequested) return;
             }
 
             ChildContainer = newChildContainer;

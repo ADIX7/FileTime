@@ -165,7 +165,6 @@ namespace FileTime.Avalonia.ViewModels
                         }
                         places.Add(new PlaceInfo(name, container));
                     }
-
                 }
                 LocalContentProvider.Unload();
             }
