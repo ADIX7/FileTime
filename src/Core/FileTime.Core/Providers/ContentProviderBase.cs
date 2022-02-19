@@ -53,6 +53,8 @@ namespace FileTime.Core.Providers
         protected void SetRootContainers(IEnumerable<IContainer> newRootContainers)
             => RootContainers = newRootContainers.OrderBy(c => c.Name).ToList().AsReadOnly();
 
+        protected void ClearRootContainers() => RootContainers = new List<IContainer>().AsReadOnly();
+
         public override async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
             await InitIfNeeded();
@@ -102,7 +104,11 @@ namespace FileTime.Core.Providers
             }
         }
 
-        protected virtual Task Init() { return Task.CompletedTask; }
+        protected virtual Task Init()
+        {
+            if (RootContainers == null) ClearRootContainers();
+            return Task.CompletedTask;
+        }
 
         public override Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default) { throw new NotImplementedException($"{nameof(RefreshItems)} should not be called in {nameof(ContentProviderBase<T>)}."); }
 

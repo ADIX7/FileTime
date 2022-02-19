@@ -34,7 +34,7 @@ namespace FileTime.Providers.Sftp
             throw new NotImplementedException();
         }
 
-        public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default) => await _server.ListDirectory(FullName![(_server.FullName!.Length + 1)..]);
+        public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default) => await _server.ListDirectory(this, FullName![(_server.FullName!.Length + 1)..]);
 
         public override Task Rename(string newName)
         {

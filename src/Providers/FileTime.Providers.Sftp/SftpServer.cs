@@ -34,7 +34,7 @@ namespace FileTime.Providers.Sftp
             CanDelete = SupportsDelete.True;
         }
 
-        public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default) => await ListDirectory("");
+        public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default) => await ListDirectory(this, "");
 
         public override Task<IContainer> CloneAsync() => Task.FromResult((IContainer)this);
 
@@ -149,7 +149,7 @@ namespace FileTime.Providers.Sftp
             return true;
         }
 
-        public async Task<IEnumerable<IItem>> ListDirectory(string path)
+        public async Task<IEnumerable<IItem>> ListDirectory(IContainer parent, string path)
         {
             return await _sftpClientContext.RunWithSftpClientAsync(client =>
             {
@@ -160,7 +160,7 @@ namespace FileTime.Providers.Sftp
                 {
                     if (file.IsDirectory)
                     {
-                        var container = new SftpFolder(Provider, this, this, file.Name);
+                        var container = new SftpFolder(Provider, this, parent, file.Name);
                         containers.Add(container);
                     }
                 }
