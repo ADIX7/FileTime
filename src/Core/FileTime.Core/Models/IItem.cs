@@ -5,6 +5,7 @@ namespace FileTime.Core.Models
     public interface IItem
     {
         string Name { get; }
+        string DisplayName { get; }
         string? FullName { get; }
         string? NativePath { get; }
         bool IsHidden { get; }

@@ -1,5 +1,6 @@
 ﻿using AsyncEvent;
 using FileTime.Core.Models;
+using FileTime.Avalonia.Application;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.Services;
 using MvvmGen;
@@ -11,10 +12,12 @@ using System.Text;
 using System.Threading.Tasks;
 using FileTime.Avalonia.Application;
 using System.Threading;
+using FileTime.Core.Services;
 
 namespace FileTime.Avalonia.ViewModels
 {
     [ViewModel]
+    [Inject(typeof(AppState))]
     [Inject(typeof(ItemNameConverterService))]
     public partial class ContainerViewModel : IItemViewModel
     {
@@ -51,6 +54,8 @@ namespace FileTime.Avalonia.ViewModels
 
         public List<IItemViewModel> ChildrenToAdopt { get; } = new List<IItemViewModel>();
 
+        public bool LazyLoading => _container.LazyLoading;
+
         [PropertyInvalidate(nameof(IsSelected))]
         [PropertyInvalidate(nameof(IsAlternative))]
         [PropertyInvalidate(nameof(IsMarked))]
@@ -65,7 +70,7 @@ namespace FileTime.Avalonia.ViewModels
                 _ => ItemViewMode.Default
             };
 
-        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
+        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(Item, AppState.ViewMode == Application.ViewMode.RapidTravel ? AppState.RapidTravelText : null);
 
         public Task Containers => GetContainers();
         public Task Elements => GetElements();
@@ -116,13 +121,14 @@ namespace FileTime.Avalonia.ViewModels
             }
         }
 
-        public ContainerViewModel(INewItemProcessor newItemProcessor, ContainerViewModel? parent, IContainer container, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
+        public ContainerViewModel(INewItemProcessor newItemProcessor, ContainerViewModel? parent, IContainer container, ItemNameConverterService itemNameConverterService, AppState appState) : this(itemNameConverterService, appState)
         {
             _newItemProcessor = newItemProcessor;
             Parent = parent;
 
             Container = container;
             Container.Refreshed.Add(Container_Refreshed);
+            Container.LazyLoadingChanged.Add(Container_LazyLoadingChanged);
         }
 
         public void InvalidateDisplayName() => OnPropertyChanged(nameof(DisplayName));
@@ -136,6 +142,12 @@ namespace FileTime.Avalonia.ViewModels
         private async Task Container_Refreshed(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
             await Refresh(false, false, token: token);
+        }
+
+        private Task Container_LazyLoadingChanged(object? sender, bool lazyLoading, CancellationToken token = default)
+        {
+            OnPropertyChanged(nameof(LazyLoading));
+            return Task.CompletedTask;
         }
 
         [Obsolete($"Use the parametrizable version of {nameof(Refresh)}.")]
@@ -161,7 +173,7 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     foreach (var container in containers)
                     {
-                        newContainers.Add(await AdoptOrReuseOrCreateItem(container, alloweReuse, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService)));
+                        newContainers.Add(await AdoptOrReuseOrCreateItem(container, alloweReuse, (c2) => new ContainerViewModel(_newItemProcessor, this, c2, ItemNameConverterService, AppState)));
                     }
                 }
 
@@ -171,7 +183,7 @@ namespace FileTime.Avalonia.ViewModels
                     {
                         var generator = async (IElement e) =>
                         {
-                            var element = new ElementViewModel(e, this, ItemNameConverterService);
+                            var element = new ElementViewModel(e, this, ItemNameConverterService, AppState);
                             await element.Init();
                             return element;
                         };

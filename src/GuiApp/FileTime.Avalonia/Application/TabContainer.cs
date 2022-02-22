@@ -2,7 +2,6 @@
 using FileTime.Core.Components;
 using FileTime.Core.Models;
 using FileTime.Providers.Local;
-using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using MvvmGen;
 using System;
@@ -12,14 +11,20 @@ using System.Threading.Tasks;
 using FileTime.App.Core.Tab;
 using System.Threading;
 using FileTime.Core.Timeline;
+using FileTime.Avalonia.ViewModels.ItemPreview;
+using FileTime.Core.Search;
+using Microsoft.Extensions.DependencyInjection;
+using FileTime.Core.Services;
 
 namespace FileTime.Avalonia.Application
 {
     [ViewModel]
+    [Inject(typeof(AppState))]
     [Inject(typeof(ItemNameConverterService))]
     [Inject(typeof(LocalContentProvider))]
     [Inject(typeof(Tab))]
     [Inject(typeof(TimeRunner), propertyName: "_timeRunner")]
+    [Inject(typeof(IServiceProvider), PropertyName = "_serviceProvider")]
     public partial class TabContainer : INewItemProcessor
     {
         private bool _updateFromCode;
@@ -63,7 +68,7 @@ namespace FileTime.Avalonia.Application
         }
 
         [Property]
-        private ElementPreviewViewModel? _elementPreview;
+        private IItemPreviewViewModel? _itemPreview;
 
         public async Task SetSelectedItemAsync(IItemViewModel? value)
         {
@@ -104,7 +109,7 @@ namespace FileTime.Avalonia.Application
 
             var currentLocation = await Tab.GetCurrentLocation();
             var parent = GenerateParent(currentLocation);
-            CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService);
+            CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService, AppState);
             await CurrentLocation.Init();
 
             if (parent != null)
@@ -127,7 +132,7 @@ namespace FileTime.Avalonia.Application
             if (parentContainer == null) return null;
             var parentParent = recursive ? GenerateParent(parentContainer.GetParent(), recursive) : null;
 
-            var parent = new ContainerViewModel(this, parentParent, parentContainer, ItemNameConverterService);
+            var parent = new ContainerViewModel(this, parentParent, parentContainer, ItemNameConverterService, AppState);
             parentParent?.ChildrenToAdopt.Add(parent);
             return parent;
         }
@@ -136,7 +141,7 @@ namespace FileTime.Avalonia.Application
         {
             var currentLocation = await Tab.GetCurrentLocation(token);
             var parent = GenerateParent(currentLocation);
-            CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService);
+            CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService, AppState);
             await CurrentLocation.Init(token: token);
 
             if (token.IsCancellationRequested) return;
@@ -179,7 +184,7 @@ namespace FileTime.Avalonia.Application
                 if (currentSelectenItem is ContainerViewModel currentSelectedContainer)
                 {
                     await SetSelectedItemAsync(currentSelectedContainer);
-                    newChildContainer = currentSelectedContainer;
+                    newChildContainer = currentSelectenItem is ChildSearchContainer ? null : currentSelectedContainer;
                 }
                 else if (currentSelectenItem is ElementViewModel element)
                 {
@@ -205,16 +210,30 @@ namespace FileTime.Avalonia.Application
 
             ChildContainer = newChildContainer;
 
-            if (currentSelectenItem is ElementViewModel elementViewModel)
+            IItemPreviewViewModel? preview = null;
+            if (currentSelectenItem == null)
+            {
+
+            }
+            else if (currentSelectenItem.Item is ChildSearchContainer searchContainer)
+            {
+                var searchContainerPreview = _serviceProvider.GetService<SearchContainerPreview>()!;
+                await searchContainerPreview.Init(searchContainer, _currentLocation.Container);
+                preview = searchContainerPreview;
+            }
+            else if (currentSelectenItem.Item is ChildSearchElement searchElement)
+            {
+                var searchElementPreview = _serviceProvider.GetService<SearchElementPreview>()!;
+                await searchElementPreview.Init(searchElement, _currentLocation.Container);
+                preview = searchElementPreview;
+            }
+            else if (currentSelectenItem is ElementViewModel elementViewModel)
             {
                 var elementPreview = new ElementPreviewViewModel();
                 await elementPreview.Init(elementViewModel.Element);
-                ElementPreview = elementPreview;
+                preview = elementPreview;
             }
-            else
-            {
-                ElementPreview = null;
-            }
+            ItemPreview = preview;
             /*}
             catch
             {
@@ -310,10 +329,7 @@ namespace FileTime.Avalonia.Application
 
         public async Task Open()
         {
-            if (ChildContainer != null)
-            {
-                await RunFromCode(Tab.Open);
-            }
+            await RunFromCode(Tab.Open);
         }
 
         public async Task GoUp()

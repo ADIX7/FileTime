@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using FileTime.Avalonia.Services;
+using FileTime.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.Avalonia.Converters

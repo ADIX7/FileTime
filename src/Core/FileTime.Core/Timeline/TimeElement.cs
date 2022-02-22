@@ -10,7 +10,7 @@ namespace FileTime.Core.Timeline
         {
             _parent = parent;
 
-            Name = name;
+            DisplayName = Name = name;
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
             Provider = contentProvider;
             VirtualProvider = virtualContentProvider;
@@ -19,6 +19,7 @@ namespace FileTime.Core.Timeline
         public bool IsSpecial => false;
 
         public string Name { get; }
+        public string DisplayName { get; }
 
         public string? FullName { get; }
 
@@ -46,7 +47,7 @@ namespace FileTime.Core.Timeline
         public Task Rename(string newName) => Task.CompletedTask;
 
         public Task<string> GetContent(CancellationToken token = default) => Task.FromResult("");
-        public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(-1L);
+        public Task<long?> GetElementSize(CancellationToken token = default) => Task.FromResult((long?)-1L);
 
         public void Destroy() => IsDestroyed = true;
 

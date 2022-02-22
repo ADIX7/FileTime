@@ -37,7 +37,7 @@
 					<StackPanel Margin="20,10" Orientation="Horizontal">
 						<local:PathPresenter DataContext="{Binding AppState.SelectedTab.CurrentLocation.Container.FullName,Converter={StaticResource PathPreformatter}}"/>
 						<TextBlock
-							Text="{Binding AppState.SelectedTab.SelectedItem.Item.Name}" Foreground="{StaticResource AccentBrush}" />
+							Text="{Binding AppState.SelectedTab.SelectedItem.Item.DisplayName}" Foreground="{StaticResource AccentBrush}" />
 					</StackPanel>
 				</Grid>
 
@@ -242,8 +242,12 @@
 								VerticalAlignment="Stretch"
 								Fill="{DynamicResource ContentSeparatorBrush}" />
 
-							<Grid Grid.Column="2">
+							<Grid Grid.Column="2" RowDefinitions="Auto,*">
+								<Grid IsVisible="{Binding AppState.SelectedTab.CurrentLocation.LazyLoading}">
+									<Image Width="40" Height="40" Source="{SvgImage /Assets/loading.svg}" Classes="LoadingAnimation"/>
+								</Grid>
 								<ListBox
+									Grid.Row="1"
 									x:Name="CurrentItems"
 									x:CompileBindings="False"
 									AutoScrollToSelectedItem="True"
@@ -261,6 +265,7 @@
 								</ListBox>
 
 								<TextBlock
+									Grid.Row="1"
 									x:CompileBindings="False"
 									x:Name="CurrentEmpty"
 									Margin="10"
@@ -300,15 +305,17 @@
 										x:CompileBindings="False"
 										IsVisible="{Binding AppState.SelectedTab.ChildContainer.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 
-										<TextBlock
-											x:Name="ChildEmpty"
-											Margin="10"
-											HorizontalAlignment="Center"
-											FontWeight="Bold"
-											Foreground="{DynamicResource ErrorBrush}"
-											IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
-											Empty
-										</TextBlock>
+										<Grid IsVisible="{Binding AppState.SelectedTab.ItemPreview, Converter={StaticResource IsNullConverter}}">
+											<TextBlock
+												x:Name="ChildEmpty"
+												Margin="10"
+												HorizontalAlignment="Center"
+												FontWeight="Bold"
+												Foreground="{DynamicResource ErrorBrush}"
+												IsVisible="{Binding AppState.SelectedTab.ChildContainer.Exceptions.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+												Empty
+											</TextBlock>
+										</Grid>
 
 										<Grid
 											RowDefinitions="Auto, Auto"
@@ -332,14 +339,65 @@
 									</Grid>
 								</Grid>
 
-								<Grid IsVisible="{Binding AppState.SelectedTab.ElementPreview, Converter={StaticResource IsNotNullConverter}}">
-									<TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this file" IsVisible="{Binding AppState.SelectedTab.ElementPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ElementPreviewMode.Unknown}}"/>
-									<TextBlock HorizontalAlignment="Center" Text="Empty" IsVisible="{Binding AppState.SelectedTab.ElementPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ElementPreviewMode.Empty}}"/>
-									<ScrollViewer IsVisible="{Binding AppState.SelectedTab.ElementPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ElementPreviewMode.Text}}">
+								<Grid IsVisible="{Binding AppState.SelectedTab.ItemPreview, Converter={StaticResource IsNotNullConverter}}">
+									<TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this item." IsVisible="{Binding AppState.SelectedTab.ItemPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ItemPreviewMode.Unknown}}"/>
+									<TextBlock HorizontalAlignment="Center" Text="Empty" IsVisible="{Binding AppState.SelectedTab.ItemPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ItemPreviewMode.Empty}}"/>
+									<ScrollViewer IsVisible="{Binding AppState.SelectedTab.ItemPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ItemPreviewMode.Text}}">
 										<TextBox
 											IsReadOnly="True"
-											Text="{Binding AppState.SelectedTab.ElementPreview.TextContent}" />
+											x:CompileBindings="False"
+											Text="{Binding AppState.SelectedTab.ItemPreview.TextContent}" />
 									</ScrollViewer>
+									<Grid
+										IsVisible="{Binding AppState.SelectedTab.ItemPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ItemPreviewMode.SearchContainer}}"
+										ColumnDefinitions="Auto,*"
+										RowDefinitions="Auto,Auto">
+										<TextBlock Text="Name" Margin="0,0,10,20" VerticalAlignment="Top"/>
+										<ItemsControl Grid.Column="1" x:CompileBindings="False" Items="{Binding AppState.SelectedTab.ItemPreview.ItemNameParts}" VerticalAlignment="Top">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Horizontal" />
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Grid>
+														<TextBlock
+															Text="{Binding Text}"
+															TextDecorations="{Binding TextDecorations}"/>
+													</Grid>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+
+										<TextBlock Margin="0,0,10,0" Grid.Row="1" Text="Path"/>
+										<local:PathPresenter Grid.Column="1" Grid.Row="1" x:CompileBindings="False" DataContext="{Binding AppState.SelectedTab.ItemPreview.RealtiveParentPath,Converter={StaticResource PathPreformatter}}"/>
+									</Grid>
+									<Grid
+										IsVisible="{Binding AppState.SelectedTab.ItemPreview.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static models:ItemPreviewMode.SearchElement}}"
+										ColumnDefinitions="Auto,*"
+										RowDefinitions="Auto,Auto">
+										<TextBlock Text="Name" Margin="0,0,10,20" VerticalAlignment="Top"/>
+										<ItemsControl Grid.Column="1" x:CompileBindings="False" Items="{Binding AppState.SelectedTab.ItemPreview.ItemNameParts}" Margin="0,0,0,20">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Horizontal" />
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Grid>
+														<TextBlock
+															Text="{Binding Text}"
+															TextDecorations="{Binding TextDecorations}"/>
+													</Grid>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+
+										<TextBlock Margin="0,0,10,0" Grid.Row="1" Text="Path"/>
+										<local:PathPresenter Grid.Column="1" Grid.Row="1" x:CompileBindings="False" DataContext="{Binding AppState.SelectedTab.ItemPreview.RealtiveParentPath,Converter={StaticResource PathPreformatter}}"/>
+									</Grid>
 								</Grid>
 							</Grid>
 						</Grid>
@@ -494,10 +552,10 @@
 												KeyDown="InputText_KeyDown"
 												VerticalAlignment="Top"
 												Text="{Binding Value, Mode=TwoWay}" />
-											<ListBox 
-												Classes="RadioButtonListBox" 
+											<ListBox
+												Classes="RadioButtonListBox"
 												IsVisible="{Binding InputElement.InputType, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
-												Items="{Binding InputElement.Options}" 
+												Items="{Binding InputElement.Options}"
 												SelectedItem="{Binding Option}"/>
 										</Grid>
 									</Grid>

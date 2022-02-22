@@ -1,34 +1,25 @@
-﻿using Avalonia.Media;
-using FileTime.Avalonia.Application;
-using FileTime.Avalonia.Models;
-using FileTime.Avalonia.ViewModels;
-using FileTime.Core.Models;
-using MvvmGen;
-using System;
-using System.Collections.Generic;
+﻿using FileTime.Core.Models;
 
-namespace FileTime.Avalonia.Services
+namespace FileTime.Core.Services
 {
-    [ViewModel]
-    [Inject(typeof(AppState))]
-    public partial class ItemNameConverterService
+    public class ItemNameConverterService
     {
-        public List<ItemNamePart> GetDisplayName(IItemViewModel itemViewModel)
+        public List<ItemNamePart> GetDisplayName(IItem item, string? searchText)
         {
             var nameParts = new List<ItemNamePart>();
-            var rapidTravelText = AppState.RapidTravelText.ToLower();
+            searchText = searchText?.ToLower();
 
-            var name = itemViewModel.Item is IElement ? GetFileName(itemViewModel.Item.Name) : itemViewModel.Item.Name;
-            if (AppState.ViewMode == ViewMode.RapidTravel && rapidTravelText.Length > 0)
+            var name = item is IElement ? GetFileName(item.DisplayName) : item.DisplayName;
+            if (!string.IsNullOrEmpty(searchText))
             {
                 var nameLeft = name;
 
-                while (nameLeft.ToLower().IndexOf(rapidTravelText, StringComparison.Ordinal) is int rapidTextStart && rapidTextStart != -1)
+                while (nameLeft.ToLower().IndexOf(searchText, StringComparison.Ordinal) is int rapidTextStart && rapidTextStart != -1)
                 {
                     var before = rapidTextStart > 0 ? nameLeft.Substring(0, rapidTextStart) : null;
-                    var rapidTravel = nameLeft.Substring(rapidTextStart, rapidTravelText.Length);
+                    var rapidTravel = nameLeft.Substring(rapidTextStart, searchText.Length);
 
-                    nameLeft = nameLeft.Substring(rapidTextStart + rapidTravelText.Length);
+                    nameLeft = nameLeft.Substring(rapidTextStart + searchText.Length);
 
                     if (before != null)
                     {

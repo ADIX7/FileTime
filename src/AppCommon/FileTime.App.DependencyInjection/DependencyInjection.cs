@@ -2,6 +2,7 @@ using FileTime.App.Core.Clipboard;
 using FileTime.Core.Command;
 using FileTime.Core.CommandHandlers;
 using FileTime.Core.Providers;
+using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using FileTime.Providers.Sftp;
@@ -21,6 +22,7 @@ namespace FileTime.App.Core
                 .AddSingleton<TopContainer>()
                 .AddSingleton<CommandExecutor>()
                 .AddSingleton<TimeRunner>()
+                .AddSingleton<ItemNameConverterService>()
                 .AddLocalServices()
                 .AddSmbServices()
                 .AddSftpServices()

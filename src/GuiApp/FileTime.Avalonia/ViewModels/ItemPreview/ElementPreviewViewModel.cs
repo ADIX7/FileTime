@@ -2,16 +2,13 @@
 using FileTime.Core.Models;
 using MvvmGen;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FileTime.Avalonia.ViewModels
+namespace FileTime.Avalonia.ViewModels.ItemPreview
 {
     [ViewModel]
-    public partial class ElementPreviewViewModel
+    public partial class ElementPreviewViewModel : IItemPreviewViewModel
     {
         private const int MAXTEXTPREVIEWSIZE = 1024 * 1024;
         [Property]
@@ -21,16 +18,23 @@ namespace FileTime.Avalonia.ViewModels
         private string? _textContent;
 
         [Property]
-        private ElementPreviewMode? _mode;
+        private ItemPreviewMode _mode = ItemPreviewMode.Unknown;
 
         public async Task Init(IElement element, CancellationToken token = default)
         {
             Element = element;
 
-            var elementSize = await element.GetElementSize(token);
+            long? elementSize = null;
+
+            try
+            {
+                elementSize = await element.GetElementSize(token);
+            }
+            catch { }
+
             if (elementSize == 0)
             {
-                Mode = ElementPreviewMode.Empty;
+                Mode = ItemPreviewMode.Empty;
             }
             else if (elementSize < MAXTEXTPREVIEWSIZE)
             {
@@ -38,15 +42,15 @@ namespace FileTime.Avalonia.ViewModels
                 {
                     TextContent = await element.GetContent();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     TextContent = $"Error while getting content of {element.FullName}. " + e.ToString();
                 }
-                Mode = ElementPreviewMode.Text;
+                Mode = ItemPreviewMode.Text;
             }
             else
             {
-                Mode = ElementPreviewMode.Unknown;
+                Mode = ItemPreviewMode.Unknown;
             }
         }
     }

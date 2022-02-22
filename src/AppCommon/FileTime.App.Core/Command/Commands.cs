@@ -16,6 +16,8 @@ namespace FileTime.App.Core.Command
         Cut,
         Edit,
         EnterRapidTravel,
+        FindByName,
+        FindByNameRegex,
         GoToHome,
         GoToPath,
         GoToProvider,

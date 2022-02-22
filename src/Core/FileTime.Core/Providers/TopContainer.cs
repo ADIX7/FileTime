@@ -12,6 +12,7 @@ namespace FileTime.Core.Providers
 
 #pragma warning disable CS8603 // Possible null reference return.
         public string Name => null;
+        public string DisplayName => null;
 #pragma warning restore CS8603 // Possible null reference return.
 
         public string? FullName => null;
@@ -35,6 +36,12 @@ namespace FileTime.Core.Providers
         public bool IsDestroyed => false;
         public bool IsExists => true;
         public bool AllowRecursiveDeletion => false;
+
+        public bool UseLazyLoad => false;
+
+        public bool LazyLoading => false;
+        public bool CanHandleEscape => false;
+        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
 
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {
@@ -75,5 +82,6 @@ namespace FileTime.Core.Providers
         public void Destroy() { }
 
         public void Unload() { }
+        public Task<ContainerEscapeResult> HandleEscape() => Task.FromResult(new ContainerEscapeResult(false));
     }
 }

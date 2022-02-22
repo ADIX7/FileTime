@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using AsyncEvent;
 using FileTime.Core.Models;
 
@@ -18,8 +19,10 @@ namespace FileTime.Core.Providers
         public bool SupportsDirectoryLevelSoftDelete { get; protected set; }
 
         public AsyncEventHandler Refreshed { get; protected set; } = new();
+        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
 
         public string Name { get; protected set; }
+        public virtual string DisplayName { get; protected set; }
 
         public string? FullName { get; protected set; }
 
@@ -41,6 +44,12 @@ namespace FileTime.Core.Providers
 
         public virtual bool AllowRecursiveDeletion { get; protected set; }
 
+        public bool UseLazyLoad { get; protected set; }
+
+        public bool LazyLoading { get; protected set; }
+
+        public bool CanHandleEscape { get; protected set; }
+
         protected AbstractContainer(TProvider provider, IContainer parent, string name) : this(name)
         {
             _parent = parent;
@@ -56,7 +65,7 @@ namespace FileTime.Core.Providers
 
         private AbstractContainer(string name)
         {
-            Name = name;
+            DisplayName = Name = name;
             Exceptions = _exceptions.AsReadOnly();
             Provider = null!;
         }
@@ -152,5 +161,7 @@ namespace FileTime.Core.Providers
         }
 
         protected void AddException(Exception e) => _exceptions.Add(e);
+
+        public virtual Task<ContainerEscapeResult> HandleEscape() => Task.FromResult(new ContainerEscapeResult(false));
     }
 }

@@ -17,11 +17,11 @@ using Microsoft.Extensions.DependencyInjection;
 using FileTime.Core.Timeline;
 using FileTime.Core.Providers;
 using Syroot.Windows.IO;
-using FileTime.Avalonia.IconProviders;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using Avalonia.Input;
 using System.Reflection;
+using FileTime.Core.Services;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -35,6 +35,7 @@ namespace FileTime.Avalonia.ViewModels
     [Inject(typeof(CommandHandlerService), PropertyAccessModifier = AccessModifier.Public)]
     [Inject(typeof(IDialogService), PropertyName = "_dialogService")]
     [Inject(typeof(KeyInputHandlerService))]
+    [Inject(typeof(IServiceProvider), PropertyName = "_serviceProvider")]
     public partial class MainPageViewModel : IMainPageViewModelBase
     {
         public const string RAPIDTRAVEL = "rapidTravel";
@@ -84,7 +85,7 @@ namespace FileTime.Avalonia.ViewModels
                 var tab = new Tab();
                 await tab.Init(LocalContentProvider);
 
-                var tabContainer = new TabContainer(_timeRunner, tab, LocalContentProvider, ItemNameConverterService);
+                var tabContainer = new TabContainer(_serviceProvider, _timeRunner, tab, LocalContentProvider, ItemNameConverterService, AppState);
                 await tabContainer.Init(1);
                 tabContainer.IsSelected = true;
                 AppState.Tabs.Add(tabContainer);

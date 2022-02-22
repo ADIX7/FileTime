@@ -1,4 +1,4 @@
-﻿namespace FileTime.Avalonia.Models
+﻿namespace FileTime.Core.Models
 {
     public class ItemNamePart
     {

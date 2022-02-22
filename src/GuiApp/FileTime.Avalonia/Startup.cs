@@ -7,6 +7,7 @@ using FileTime.Avalonia.IconProviders;
 using FileTime.Avalonia.Logging;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Avalonia.ViewModels.ItemPreview;
 using FileTime.Core.Command;
 using FileTime.Core.Interactions;
 using FileTime.Core.Persistence;
@@ -23,13 +24,14 @@ namespace FileTime.Avalonia
         {
             return serviceCollection
                 .AddTransient<MainPageViewModel>()
+                .AddTransient<SearchElementPreview>()
+                .AddTransient<SearchContainerPreview>()
                 .AddSingleton<IInputInterface, BasicInputHandler>();
         }
         internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)
         {
             serviceCollection = serviceCollection
                 .AddSingleton<AppState>()
-                .AddSingleton<ItemNameConverterService>()
                 .AddSingleton<StatePersistenceService>()
                 .AddSingleton<CommandHandlerService>()
                 .AddSingleton<KeyboardConfigurationService>()

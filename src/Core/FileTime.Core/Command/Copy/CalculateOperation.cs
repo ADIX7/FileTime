@@ -34,7 +34,7 @@ namespace FileTime.Core.Command.Copy
             }
 
             var resolvedFrom = await from.ResolveAsync();
-            operationsByFolder.Add(new OperationProgress(from.Path, resolvedFrom is IElement element ? await element.GetElementSize() : 0L));
+            operationsByFolder.Add(new OperationProgress(from.Path, resolvedFrom is IElement element ? await element.GetElementSize() ?? 0L : 0L));
         }
 
         public Task CreateContainerAsync(IContainer target, string name)

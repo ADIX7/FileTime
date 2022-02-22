@@ -14,6 +14,7 @@ namespace FileTime.Core.Timeline
         public AsyncEventHandler Refreshed { get; } = new AsyncEventHandler();
 
         public string Name { get; }
+        public string DisplayName { get; }
 
         public string? FullName { get; }
 
@@ -36,12 +37,18 @@ namespace FileTime.Core.Timeline
         public bool IsExists => true;
         public bool AllowRecursiveDeletion => true;
 
+        public bool UseLazyLoad => false;
+
+        public bool LazyLoading => false;
+        public bool CanHandleEscape => false;
+        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
+
         public TimeContainer(string name, IContainer parent, IContentProvider contentProvider, IContentProvider virtualContentProvider, PointInTime pointInTime)
         {
             _parent = parent;
             _pointInTime = pointInTime;
 
-            Name = name;
+            DisplayName = Name = name;
             Provider = contentProvider;
             VirtualProvider = virtualContentProvider;
             FullName = parent?.FullName == null ? Name : parent.FullName + Constants.SeparatorChar + Name;
@@ -131,5 +138,6 @@ namespace FileTime.Core.Timeline
 
         public void Destroy() => IsDestroyed = true;
         public void Unload() { }
+        public Task<ContainerEscapeResult> HandleEscape() => Task.FromResult(new ContainerEscapeResult(false));
     }
 }

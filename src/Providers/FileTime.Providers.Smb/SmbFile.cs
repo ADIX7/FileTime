@@ -13,6 +13,7 @@ namespace FileTime.Providers.Smb
         public bool IsSpecial => false;
 
         public string Name { get; }
+        public string DisplayName { get; }
 
         public string? FullName { get; }
         public string? NativePath { get; }
@@ -34,7 +35,7 @@ namespace FileTime.Providers.Smb
             _smbClientContext = smbClientContext;
             _smbShare = smbShare;
 
-            Name = name;
+            DisplayName = Name = name;
             FullName = parent.FullName + Constants.SeparatorChar + Name;
             NativePath = parent.NativePath + SmbContentProvider.GetNativePathSeparator() + name;
         }
@@ -80,7 +81,7 @@ namespace FileTime.Providers.Smb
 
         public IContainer? GetParent() => _parent;
         public Task<string> GetContent(CancellationToken token = default) => Task.FromResult("NotImplemented");
-        public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(-1L);
+        public Task<long?> GetElementSize(CancellationToken token = default) => Task.FromResult((long?)null);
 
         public void Destroy() => IsDestroyed = true;
 

@@ -22,6 +22,8 @@ using FileTime.Core.Components;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
+using FileTime.Core.Search;
+using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using FileTime.Tools.Compression.Command;
@@ -44,6 +46,7 @@ namespace FileTime.Avalonia.Services
         private readonly Dictionary<Commands, Func<Task>> _commandHandlers;
         private readonly ProgramsService _programsService;
         private readonly ILogger<CommandHandlerService> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
         public CommandHandlerService(
             AppState appState,
@@ -55,7 +58,8 @@ namespace FileTime.Avalonia.Services
             IIconProvider iconProvider,
             IEnumerable<IContentProvider> contentProviders,
             ProgramsService programsService,
-            ILogger<CommandHandlerService> logger)
+            ILogger<CommandHandlerService> logger,
+            IServiceProvider serviceProvider)
         {
             _appState = appState;
             _localContentProvider = localContentProvider;
@@ -67,6 +71,7 @@ namespace FileTime.Avalonia.Services
             _contentProviders = contentProviders;
             _programsService = programsService;
             _logger = logger;
+            _serviceProvider = serviceProvider;
 
             _commandHandlers = new Dictionary<Commands, Func<Task>>
             {
@@ -82,6 +87,8 @@ namespace FileTime.Avalonia.Services
                 {Commands.Cut, Cut},
                 {Commands.Edit, Edit},
                 {Commands.EnterRapidTravel, EnterRapidTravelMode},
+                {Commands.FindByName, FindByName},
+                {Commands.FindByNameRegex, FindByNameRegex},
                 {Commands.GoToHome, GotToHome},
                 {Commands.GoToPath, GoToContainer},
                 {Commands.GoToProvider, GotToProvider},
@@ -235,7 +242,7 @@ namespace FileTime.Avalonia.Services
                 var newTab = new Tab();
                 await newTab.Init(newContainer);
 
-                tabContainer = new TabContainer(_timeRunner, newTab, _localContentProvider, _itemNameConverterService);
+                tabContainer = new TabContainer(_serviceProvider, _timeRunner, newTab, _localContentProvider, _itemNameConverterService, _appState);
                 await tabContainer.Init(number);
 
                 var i = 0;
@@ -939,6 +946,54 @@ namespace FileTime.Avalonia.Services
                     _clipboard.AddContent(new AbsolutePath(currentSelectedItem));
                 }
             }
+        }
+
+        private Task FindByName()
+        {
+            var handler = async (List<InputElementWrapper> inputs) =>
+            {
+                var container = _appState.SelectedTab.CurrentLocation.Container;
+                while (container is SearchContainer searchContainer)
+                {
+                    container = searchContainer.SearchBaseContainer;
+                }
+
+                var search = new NameSearchTask(inputs[0].Value, container, _itemNameConverterService);
+                search.Start();
+
+                await OpenContainer(search.TargetContainer);
+            };
+
+            _dialogService.ReadInputs(new List<InputElement>()
+            {
+                InputElement.ForText("Item name pattern")
+            }, handler);
+
+            return Task.CompletedTask;
+        }
+
+        private Task FindByNameRegex()
+        {
+            var handler = async (List<InputElementWrapper> inputs) =>
+            {
+                var container = _appState.SelectedTab.CurrentLocation.Container;
+                while (container is SearchContainer searchContainer)
+                {
+                    container = searchContainer.SearchBaseContainer;
+                }
+
+                var search = new NameRegexSearchTask(inputs[0].Value, container);
+                search.Start();
+
+                await OpenContainer(search.TargetContainer);
+            };
+
+            _dialogService.ReadInputs(new List<InputElement>()
+            {
+                InputElement.ForText("Item name pattern")
+            }, handler);
+
+            return Task.CompletedTask;
         }
     }
 }

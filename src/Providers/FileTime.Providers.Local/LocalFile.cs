@@ -12,6 +12,7 @@ namespace FileTime.Providers.Local
         public FileInfo File { get; }
 
         public string Name { get; }
+        public string DisplayName { get; }
 
         public string FullName { get; }
         public string? NativePath => File.FullName;
@@ -39,7 +40,7 @@ namespace FileTime.Providers.Local
             _parent = parent;
             File = file;
 
-            Name = file.Name;
+            DisplayName = Name = file.Name;
             FullName = parent.FullName + Constants.SeparatorChar + file.Name;
             Provider = contentProvider;
         }
@@ -86,7 +87,7 @@ namespace FileTime.Providers.Local
         public IContainer? GetParent() => _parent;
 
         public async Task<string> GetContent(CancellationToken token = default) => await System.IO.File.ReadAllTextAsync(File.FullName, token);
-        public Task<long> GetElementSize(CancellationToken token = default) => Task.FromResult(File.Length);
+        public Task<long?> GetElementSize(CancellationToken token = default) => Task.FromResult((long?)File.Length);
 
         public void Destroy() => IsDestroyed = true;
 

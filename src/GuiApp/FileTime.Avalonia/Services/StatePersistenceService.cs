@@ -12,6 +12,7 @@ using FileTime.Providers.Local;
 using FileTime.Core.Models;
 using Microsoft.Extensions.Logging;
 using FileTime.Core.Timeline;
+using FileTime.Core.Services;
 
 namespace FileTime.Avalonia.Services
 {
@@ -25,6 +26,7 @@ namespace FileTime.Avalonia.Services
         private readonly LocalContentProvider _localContentProvider;
         private readonly ILogger<StatePersistenceService> _logger;
         private readonly TimeRunner _timeRunner;
+        private readonly IServiceProvider _serviceProvider;
 
         public StatePersistenceService(
             AppState appState,
@@ -32,7 +34,8 @@ namespace FileTime.Avalonia.Services
             IEnumerable<IContentProvider> contentProviders,
             LocalContentProvider localContentProvider,
             ILogger<StatePersistenceService> logger,
-            TimeRunner timeRunner)
+            TimeRunner timeRunner,
+            IServiceProvider serviceProvider)
         {
             _appState = appState;
             _itemNameConverterService = itemNameConverterService;
@@ -40,13 +43,14 @@ namespace FileTime.Avalonia.Services
             _localContentProvider = localContentProvider;
             _logger = logger;
             _settingsPath = Path.Combine(Program.AppDataRoot, "savedState.json");
+            _timeRunner = timeRunner;
+            _serviceProvider = serviceProvider;
 
             _jsonOptions = new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true,
                 WriteIndented = true
             };
-            this._timeRunner = timeRunner;
         }
 
         public async Task LoadStatesAsync()
@@ -153,7 +157,7 @@ namespace FileTime.Avalonia.Services
                             }
                         }
 
-                        var newTabContainer = new TabContainer(_timeRunner, newTab, _localContentProvider, _itemNameConverterService);
+                        var newTabContainer = new TabContainer(_serviceProvider, _timeRunner, newTab, _localContentProvider, _itemNameConverterService, _appState);
                         await newTabContainer.Init(tab.Number);
                         _appState.Tabs.Add(newTabContainer);
                     }

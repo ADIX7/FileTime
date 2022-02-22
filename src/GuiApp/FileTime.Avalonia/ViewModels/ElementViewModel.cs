@@ -4,10 +4,13 @@ using FileTime.Avalonia.Services;
 using MvvmGen;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FileTime.Avalonia.Application;
+using FileTime.Core.Services;
 
 namespace FileTime.Avalonia.ViewModels
 {
     [ViewModel]
+    [Inject(typeof(AppState))]
     [Inject(typeof(ItemNameConverterService))]
     public partial class ElementViewModel : IItemViewModel
     {
@@ -29,7 +32,7 @@ namespace FileTime.Avalonia.ViewModels
         private ContainerViewModel? _parent;
 
         [Property]
-        private long _size;
+        private long? _size;
 
         [PropertyInvalidate(nameof(IsSelected))]
         [PropertyInvalidate(nameof(IsAlternative))]
@@ -45,9 +48,9 @@ namespace FileTime.Avalonia.ViewModels
                 _ => ItemViewMode.Default
             };
 
-        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(this);
+        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(Item, AppState.ViewMode == Application.ViewMode.RapidTravel ? AppState.RapidTravelText : null);
 
-        public ElementViewModel(IElement element, ContainerViewModel parent, ItemNameConverterService itemNameConverterService) : this(itemNameConverterService)
+        public ElementViewModel(IElement element, ContainerViewModel parent, ItemNameConverterService itemNameConverterService, AppState appState) : this(itemNameConverterService, appState)
         {
             Element = element;
             Parent = parent;
@@ -57,7 +60,11 @@ namespace FileTime.Avalonia.ViewModels
 
         public async Task Init()
         {
-            Size = await _element.GetElementSize();
+            try
+            {
+                Size = await _element.GetElementSize();
+            }
+            catch { }
         }
     }
 }

@@ -4,8 +4,8 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Core.Models;
 
 namespace FileTime.Avalonia.Converters
 {

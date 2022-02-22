@@ -55,6 +55,8 @@ namespace FileTime.Avalonia.Configuration
                 new CommandBindingConfiguration(Commands.Cut, new[] { Key.D, Key.D }),
                 new CommandBindingConfiguration(Commands.Edit, new KeyConfig(Key.F4)),
                 new CommandBindingConfiguration(Commands.EnterRapidTravel, new KeyConfig(Key.OemComma, shift: true)),
+                new CommandBindingConfiguration(Commands.FindByName, new[] { Key.F, Key.N }),
+                new CommandBindingConfiguration(Commands.FindByNameRegex, new[] { Key.F, Key.R }),
                 new CommandBindingConfiguration(Commands.GoToHome, new[] { Key.G, Key.H }),
                 new CommandBindingConfiguration(Commands.GoToPath, new KeyConfig(Key.OemComma, ctrl: true)),
                 new CommandBindingConfiguration(Commands.GoToPath, new[] { Key.G, Key.P }),

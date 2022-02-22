@@ -1,5 +1,7 @@
 using AsyncEvent;
+using FileTime.Core.Helper;
 using FileTime.Core.Models;
+using FileTime.Core.Search;
 
 namespace FileTime.Core.Components
 {
@@ -97,7 +99,7 @@ namespace FileTime.Core.Components
                 }
 
                 _currentSelectedItem = itemToSelect;
-                _lastPath = GetCommonPath(_lastPath, itemToSelect?.FullName);
+                _lastPath = PathHelper.GetLongerPath(_lastPath, itemToSelect?.FullName);
 
                 CurrentSelectedIndex = await GetItemIndex(itemToSelect, CancellationToken.None);
 
@@ -122,43 +124,12 @@ namespace FileTime.Core.Components
                 return null;
             }
 
-
             var itemNameToSelect = _lastPath
                 .Split(Constants.SeparatorChar)
                 .Skip((containerFullName?.Split(Constants.SeparatorChar).Length) ?? 0)
                 .FirstOrDefault();
 
             return (await container.GetItems())?.FirstOrDefault(i => i.Name == itemNameToSelect);
-        }
-
-        private static string GetCommonPath(string? oldPath, string? newPath)
-        {
-            var oldPathParts = oldPath?.Split(Constants.SeparatorChar) ?? Array.Empty<string>();
-            var newPathParts = newPath?.Split(Constants.SeparatorChar) ?? Array.Empty<string>();
-
-            var commonPathParts = new List<string>();
-
-            var max = oldPathParts.Length > newPathParts.Length ? oldPathParts.Length : newPathParts.Length;
-
-            for (var i = 0; i < max; i++)
-            {
-                if (newPathParts.Length <= i)
-                {
-                    commonPathParts.AddRange(oldPathParts.Skip(i));
-                    break;
-                }
-                else if (oldPathParts.Length <= i || oldPathParts[i] != newPathParts[i])
-                {
-                    commonPathParts.AddRange(newPathParts.Skip(i));
-                    break;
-                }
-                else if (oldPathParts[i] == newPathParts[i])
-                {
-                    commonPathParts.Add(oldPathParts[i]);
-                }
-            }
-
-            return string.Join(Constants.SeparatorChar, commonPathParts);
         }
 
         private async Task HandleCurrentLocationRefresh(object? sender, AsyncEventArgs e, CancellationToken token = default)
@@ -311,12 +282,24 @@ namespace FileTime.Core.Components
 
         public async Task Open()
         {
-            var currentLocationItems = (await (await GetCurrentLocation()).GetItems())!;
-            if (_currentSelectedItem is IContainer childContainer)
+            if (_currentSelectedItem is ChildSearchElement searchElement && searchElement.GetParent() is IContainer parentContainer)
             {
-                if (await GetCurrentLocation() is VirtualContainer currentVirtuakContainer)
+                await OpenContainer(parentContainer);
+                var elementToSelect = await (await GetCurrentLocation()).GetByPath(searchElement.DisplayName);
+                if (elementToSelect != null)
                 {
-                    await SetCurrentLocation(currentVirtuakContainer.CloneVirtualChainFor(childContainer, v => v.IsPermanent));
+                    await SetCurrentSelectedItem(elementToSelect);
+                }
+            }
+            else if (_currentSelectedItem is ChildSearchContainer searchContainer)
+            {
+                await OpenContainer(searchContainer.BaseContainer);
+            }
+            else if (_currentSelectedItem is IContainer childContainer)
+            {
+                if (await GetCurrentLocation() is VirtualContainer currentVirtualContainer)
+                {
+                    await SetCurrentLocation(currentVirtualContainer.CloneVirtualChainFor(childContainer, v => v.IsPermanent));
                 }
                 else
                 {

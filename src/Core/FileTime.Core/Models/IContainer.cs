@@ -9,6 +9,9 @@ namespace FileTime.Core.Models
         Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default);
         Task<IReadOnlyList<IElement>?> GetElements(CancellationToken token = default);
         bool AllowRecursiveDeletion { get; }
+        bool UseLazyLoad { get; }
+        bool LazyLoading { get; }
+        bool CanHandleEscape { get; }
 
         Task RefreshAsync(CancellationToken token = default);
         public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)
@@ -46,9 +49,12 @@ namespace FileTime.Core.Models
         Task<bool> CanOpenAsync();
         void Unload();
 
+        Task<ContainerEscapeResult> HandleEscape();
+
         bool IsLoaded { get; }
         bool SupportsDirectoryLevelSoftDelete { get; }
 
         AsyncEventHandler Refreshed { get; }
+        AsyncEventHandler<bool> LazyLoadingChanged { get; }
     }
 }

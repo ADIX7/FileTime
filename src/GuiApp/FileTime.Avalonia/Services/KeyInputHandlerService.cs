@@ -69,11 +69,41 @@ namespace FileTime.Avalonia.Services
 
                 if (key == Key.Escape)
                 {
-                    _appState.IsAllShortcutVisible = false;
-                    _appState.MessageBoxText = null;
-                    _appState.PreviousKeys.Clear();
-                    _appState.PossibleCommands = new();
-                    setHandled(true);
+                    var doGeneralReset = false;
+                    if (_appState.PreviousKeys.Count > 1 || _appState.IsAllShortcutVisible || _appState.MessageBoxText != null)
+                    {
+                        doGeneralReset = true;
+                    }
+                    else if (_appState.SelectedTab.CurrentLocation.Container.CanHandleEscape)
+                    {
+                        var escapeResult = await _appState.SelectedTab.CurrentLocation.Container.HandleEscape();
+                        if (escapeResult.NavigateTo != null)
+                        {
+                            setHandled(true);
+                            _appState.PreviousKeys.Clear();
+                            await _appState.SelectedTab.OpenContainer(escapeResult.NavigateTo);
+                        }
+                        else
+                        {
+                            if(escapeResult.Handled)
+                            {
+                                _appState.PreviousKeys.Clear();
+                            }
+                            else
+                            {
+                                doGeneralReset = true;
+                            }
+                        }
+                    }
+
+                    if (doGeneralReset)
+                    {
+                        setHandled(true);
+                        _appState.IsAllShortcutVisible = false;
+                        _appState.MessageBoxText = null;
+                        _appState.PreviousKeys.Clear();
+                        _appState.PossibleCommands = new();
+                    }
                 }
                 else if (key == Key.Enter
                     && _appState.MessageBoxText != null)

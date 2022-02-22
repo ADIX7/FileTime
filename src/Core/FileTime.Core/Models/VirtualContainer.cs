@@ -20,6 +20,7 @@ namespace FileTime.Core.Models
         public IReadOnlyList<IElement>? Elements { get; private set; }
 
         public string Name => BaseContainer.Name;
+        public string DisplayName => BaseContainer.DisplayName;
 
         public string? FullName => BaseContainer.FullName;
         public string? NativePath => BaseContainer.NativePath;
@@ -39,6 +40,13 @@ namespace FileTime.Core.Models
         public bool IsDestroyed => BaseContainer.IsDestroyed;
         public bool IsExists => BaseContainer.IsExists;
         public bool AllowRecursiveDeletion => BaseContainer.AllowRecursiveDeletion;
+
+        public bool UseLazyLoad => BaseContainer.UseLazyLoad;
+
+        public bool LazyLoading => BaseContainer.LazyLoading;
+        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
+
+        public bool CanHandleEscape => BaseContainer.CanHandleEscape;
 
         private void RefreshAddBase(Func<object?, AsyncEventArgs, CancellationToken, Task> handler)
         {
@@ -183,5 +191,6 @@ namespace FileTime.Core.Models
         {
             BaseContainer.Unload();
         }
+        public async Task<ContainerEscapeResult> HandleEscape() => await BaseContainer.HandleEscape();
     }
 }

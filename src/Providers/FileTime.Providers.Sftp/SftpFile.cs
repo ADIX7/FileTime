@@ -8,6 +8,7 @@ namespace FileTime.Providers.Sftp
         public bool IsSpecial => throw new NotImplementedException();
 
         public string Name => throw new NotImplementedException();
+        public string DisplayName => throw new NotImplementedException();
 
         public string? FullName => throw new NotImplementedException();
 
@@ -50,7 +51,7 @@ namespace FileTime.Providers.Sftp
             throw new NotImplementedException();
         }
 
-        public Task<long> GetElementSize(CancellationToken token = default)
+        public Task<long?> GetElementSize(CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
