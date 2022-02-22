@@ -7,7 +7,7 @@ using Mono.Unix;
 
 namespace FileTime.Providers.Local
 {
-    public class LocalFile : IElement
+    public class LocalFile : IFile
     {
         public FileInfo File { get; }
 

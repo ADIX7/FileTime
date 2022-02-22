@@ -23,11 +23,11 @@ namespace FileTime.Avalonia.ViewModels.ItemPreview
         [Property]
         private string? _realtiveParentPath;
 
-        public async Task Init(ChildSearchContainer container, IContainer currentLocation)
+        public void Init(ChildSearchContainer container, IContainer currentLocation)
         {
             var pathCommonPath = PathHelper.GetCommonPath(currentLocation.FullName!, container.FullName!);
             RealtiveParentPath = new AbsolutePath(null!, container.FullName!.Substring(pathCommonPath.Length).Trim(Constants.SeparatorChar), AbsolutePathType.Unknown, null).GetParentPath();
-            ItemNameParts = await Task.Run(async () => await Dispatcher.UIThread.InvokeAsync(() => container.SearchDisplayName.Select(p => new ItemNamePartViewModel(p.Text, p.IsSpecial ? TextDecorations.Underline : null)).ToList()));
+            Task.Run(async () => ItemNameParts = await Dispatcher.UIThread.InvokeAsync(() => container.SearchDisplayName.ConvertAll(p => new ItemNamePartViewModel(p.Text, p.IsSpecial ? TextDecorations.Underline : null))));
         }
     }
 }

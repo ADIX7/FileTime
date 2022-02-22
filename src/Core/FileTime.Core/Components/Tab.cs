@@ -42,6 +42,10 @@ namespace FileTime.Core.Components
                 if (_currentLocation != null)
                 {
                     _currentLocation.Refreshed.Remove(HandleCurrentLocationRefresh);
+                    if(_currentLocation is SearchContainer searchContainer)
+                    {
+                        searchContainer.SearchTaskBase.Cancel();
+                    }
                 }
 
                 _currentLocation = value;

@@ -7,6 +7,7 @@ namespace FileTime.Avalonia.ViewModels
     public interface IItemViewModel
     {
         IItem Item { get; }
+        IItem BaseItem { get; }
         bool IsSelected { get; set; }
 
         bool IsAlternative { get; set; }

@@ -15,7 +15,7 @@ namespace FileTime.Core.Search
 
         private readonly IReadOnlyList<IContainer> _containersReadOnly;
         private readonly IReadOnlyList<IElement> _elementsReadOnly;
-        private readonly SearchTaskBase _searchTaskBase;
+        public SearchTaskBase SearchTaskBase { get; }
 
         public IContainer SearchBaseContainer { get; }
         public override bool IsExists => throw new NotImplementedException();
@@ -25,7 +25,7 @@ namespace FileTime.Core.Search
             SearchBaseContainer = searchBaseContainer;
             _containers = new List<IContainer>();
             _elements = new List<IElement>();
-            _searchTaskBase = searchTaskBase;
+            SearchTaskBase = searchTaskBase;
 
             _containersReadOnly = _containers.AsReadOnly();
             _elementsReadOnly = _elements.AsReadOnly();
@@ -52,14 +52,14 @@ namespace FileTime.Core.Search
 
         public async Task AddContainer(IContainer container)
         {
-            var childContainer = new ChildSearchContainer(this, Provider, container, "container" + _childContainerCounter++, container.DisplayName, _searchTaskBase.GetDisplayName(container));
+            var childContainer = new ChildSearchContainer(this, Provider, container, "container" + _childContainerCounter++, container.DisplayName, SearchTaskBase.GetDisplayName(container));
             _containers.Add(childContainer);
             await UpdateChildren();
         }
 
         public async Task AddElement(IElement element)
         {
-            var childElement = new ChildSearchElement(this, Provider, element.GetParent()!, "element" + _childElementCounter++, element.DisplayName, _searchTaskBase.GetDisplayName(element));
+            var childElement = new ChildSearchElement(this, Provider, element.GetParent()!, element, "element" + _childElementCounter++, SearchTaskBase.GetDisplayName(element));
             _elements.Add(childElement);
             await UpdateChildren();
         }
@@ -95,7 +95,7 @@ namespace FileTime.Core.Search
 
         public override Task<ContainerEscapeResult> HandleEscape()
         {
-            if (_searchTaskBase.Cancel()) return Task.FromResult(new ContainerEscapeResult(true));
+            if (SearchTaskBase.Cancel()) return Task.FromResult(new ContainerEscapeResult(true));
 
             return Task.FromResult(new ContainerEscapeResult(SearchBaseContainer));
         }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FileTime.Avalonia.Application;
 using FileTime.Core.Services;
+using FileTime.Core.Search;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -15,9 +16,13 @@ namespace FileTime.Avalonia.ViewModels
     public partial class ElementViewModel : IItemViewModel
     {
         public IItem Item => _element;
+        public IItem BaseItem => _baseElement;
 
         [Property]
         private IElement _element;
+
+        [Property]
+        private IElement _baseElement;
 
         [Property]
         private bool _isSelected;
@@ -48,11 +53,12 @@ namespace FileTime.Avalonia.ViewModels
                 _ => ItemViewMode.Default
             };
 
-        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(Item, AppState.ViewMode == Application.ViewMode.RapidTravel ? AppState.RapidTravelText : null);
+        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(ItemNameConverterService.GetFileName(Item.DisplayName), AppState.ViewMode == Application.ViewMode.RapidTravel ? AppState.RapidTravelText : null);
 
         public ElementViewModel(IElement element, ContainerViewModel parent, ItemNameConverterService itemNameConverterService, AppState appState) : this(itemNameConverterService, appState)
         {
             Element = element;
+            BaseElement = element is ChildSearchElement childSearchElement ? childSearchElement.BaseElement : element;
             Parent = parent;
         }
 

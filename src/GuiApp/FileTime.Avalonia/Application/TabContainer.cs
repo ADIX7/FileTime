@@ -218,13 +218,13 @@ namespace FileTime.Avalonia.Application
             else if (currentSelectenItem.Item is ChildSearchContainer searchContainer)
             {
                 var searchContainerPreview = _serviceProvider.GetService<SearchContainerPreview>()!;
-                await searchContainerPreview.Init(searchContainer, _currentLocation.Container);
+                searchContainerPreview.Init(searchContainer, _currentLocation.Container);
                 preview = searchContainerPreview;
             }
             else if (currentSelectenItem.Item is ChildSearchElement searchElement)
             {
                 var searchElementPreview = _serviceProvider.GetService<SearchElementPreview>()!;
-                await searchElementPreview.Init(searchElement, _currentLocation.Container);
+                searchElementPreview.Init(searchElement, _currentLocation.Container);
                 preview = searchElementPreview;
             }
             else if (currentSelectenItem is ElementViewModel elementViewModel)

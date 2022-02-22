@@ -4,12 +4,11 @@ namespace FileTime.Core.Services
 {
     public class ItemNameConverterService
     {
-        public List<ItemNamePart> GetDisplayName(IItem item, string? searchText)
+        public List<ItemNamePart> GetDisplayName(string name, string? searchText)
         {
             var nameParts = new List<ItemNamePart>();
             searchText = searchText?.ToLower();
 
-            var name = item is IElement ? GetFileName(item.DisplayName) : item.DisplayName;
             if (!string.IsNullOrEmpty(searchText))
             {
                 var nameLeft = name;

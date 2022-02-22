@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Core.Models;
 using FileTime.Providers.Local;
 
 namespace FileTime.Avalonia.Converters
@@ -12,7 +13,9 @@ namespace FileTime.Avalonia.Converters
         public bool Invert { get; set; }
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            var result = parameter is AttibuteType targetAttribute && GetAttibuteType(value) == targetAttribute;
+            var attributeType = GetAttibuteType(value);
+            if (parameter == null) return attributeType;
+            var result = parameter is AttibuteType targetAttribute && attributeType == targetAttribute;
             if (Invert && parameter is AttibuteType) result = !result;
             return result;
         }
@@ -21,9 +24,9 @@ namespace FileTime.Avalonia.Converters
         {
             if (value is ElementViewModel elementVM)
             {
-                if (elementVM.Element is LocalFile)
+                if (elementVM.BaseElement is IFile)
                 {
-                    return AttibuteType.LocalFile;
+                    return AttibuteType.File;
                 }
                 return AttibuteType.Element;
             }

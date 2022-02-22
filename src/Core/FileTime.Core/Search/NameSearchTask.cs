@@ -16,6 +16,6 @@ namespace FileTime.Core.Search
 
         protected override Task<bool> IsItemMatch(IItem item) => Task.FromResult(item.Name.Contains(_name));
 
-        public override List<ItemNamePart> GetDisplayName(IItem item) => _itemNameConverterService.GetDisplayName(item, _name);
+        public override List<ItemNamePart> GetDisplayName(IItem item) => _itemNameConverterService.GetDisplayName(item.DisplayName, _name);
     }
 }

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using FileTime.Avalonia.Application;
 using System.Threading;
 using FileTime.Core.Services;
+using FileTime.Core.Search;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -30,6 +31,9 @@ namespace FileTime.Avalonia.ViewModels
         private IContainer _container;
 
         [Property]
+        private IContainer _baseContainer;
+
+        [Property]
         private bool _isSelected;
 
         [Property]
@@ -45,6 +49,7 @@ namespace FileTime.Avalonia.ViewModels
         private List<Exception> _exceptions;
 
         public IItem Item => _container;
+        public IItem BaseItem => _baseContainer;
 
         private ObservableCollection<ContainerViewModel> _containers = new();
 
@@ -70,7 +75,7 @@ namespace FileTime.Avalonia.ViewModels
                 _ => ItemViewMode.Default
             };
 
-        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(Item, AppState.ViewMode == Application.ViewMode.RapidTravel ? AppState.RapidTravelText : null);
+        public List<ItemNamePart> DisplayName => ItemNameConverterService.GetDisplayName(Item.DisplayName, AppState.ViewMode == Application.ViewMode.RapidTravel ? AppState.RapidTravelText : null);
 
         public Task Containers => GetContainers();
         public Task Elements => GetElements();
@@ -127,6 +132,7 @@ namespace FileTime.Avalonia.ViewModels
             Parent = parent;
 
             Container = container;
+            BaseContainer = container is ChildSearchContainer childSearchContainer ? childSearchContainer.BaseContainer : container;
             Container.Refreshed.Add(Container_Refreshed);
             Container.LazyLoadingChanged.Add(Container_LazyLoadingChanged);
         }

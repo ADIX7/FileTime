@@ -5,12 +5,15 @@ namespace FileTime.Core.Search
 {
     public class ChildSearchElement : AbstractElement<IContentProvider>
     {
-        public ChildSearchElement(SearchContainer searchContainer, IContentProvider provider, IContainer parent, string name, string displayName, List<ItemNamePart> searchDisplayName) : base(provider, parent, name)
+        public IElement BaseElement { get; }
+
+        public ChildSearchElement(SearchContainer searchContainer, IContentProvider provider, IContainer parent, IElement baseElement, string name, List<ItemNamePart> searchDisplayName) : base(provider, parent, name)
         {
-            DisplayName = displayName;
+            DisplayName = baseElement.DisplayName;
             NativePath = FullName;
             SearchContainer = searchContainer;
             SearchDisplayName = searchDisplayName;
+            BaseElement = baseElement;
         }
 
         public SearchContainer SearchContainer { get; }
@@ -24,9 +27,9 @@ namespace FileTime.Core.Search
 
         public override Task<IContentWriter> GetContentWriterAsync() => throw new NotSupportedException();
 
-        public override Task<long?> GetElementSize(CancellationToken token = default) => Task.FromResult((long?)null);
+        public override async Task<long?> GetElementSize(CancellationToken token = default) => await BaseElement.GetElementSize(token);
 
-        public override string GetPrimaryAttributeText() => "";
+        public override string GetPrimaryAttributeText() => BaseElement.GetPrimaryAttributeText();
 
         public override Task Rename(string newName) => throw new NotSupportedException();
     }
