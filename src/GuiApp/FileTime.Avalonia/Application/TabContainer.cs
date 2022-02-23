@@ -15,6 +15,7 @@ using FileTime.Avalonia.ViewModels.ItemPreview;
 using FileTime.Core.Search;
 using Microsoft.Extensions.DependencyInjection;
 using FileTime.Core.Services;
+using FileTime.Core.ContainerSizeScanner;
 
 namespace FileTime.Avalonia.Application
 {
@@ -215,6 +216,12 @@ namespace FileTime.Avalonia.Application
             {
 
             }
+            else if (currentSelectenItem.Item is ContainerSizeContainer sizeContainer)
+            {
+                var sizeContainerPreview = _serviceProvider.GetService<SizeContainerPreview>()!;
+                sizeContainerPreview.Init(sizeContainer);
+                preview = sizeContainerPreview;
+            }
             else if (currentSelectenItem.Item is ChildSearchContainer searchContainer)
             {
                 var searchContainerPreview = _serviceProvider.GetService<SearchContainerPreview>()!;
@@ -232,6 +239,11 @@ namespace FileTime.Avalonia.Application
                 var elementPreview = new ElementPreviewViewModel();
                 await elementPreview.Init(elementViewModel.Element);
                 preview = elementPreview;
+            }
+
+            if (ItemPreview != null)
+            {
+                await ItemPreview.Destroy();
             }
             ItemPreview = preview;
             /*}

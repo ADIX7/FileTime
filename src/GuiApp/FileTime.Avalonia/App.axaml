@@ -148,6 +148,9 @@
 			<converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter"/>
 			<converters:NamePartShrinkerConverter x:Key="NamePartShrinkerConverter"/>
 			<converters:StringReplaceConverter x:Key="PathPreformatter" OldValue="://" NewValue="/"/>
+			<converters:ItemSizeToSizeConverter x:Key="ItemSizeToSizeConverter"/>
+			<converters:ItemSizeToBrushConverter x:Key="ItemSizeToBrushConverter"/>
+			<converters:ItemSizeToBrushConverter x:Key="ItemSizeToForegroundBrushConverter" HueDiff="180"/>
 
 		</ResourceDictionary>
 	</Application.Resources>

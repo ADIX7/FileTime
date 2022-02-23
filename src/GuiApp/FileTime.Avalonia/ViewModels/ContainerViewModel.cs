@@ -14,6 +14,7 @@ using FileTime.Avalonia.Application;
 using System.Threading;
 using FileTime.Core.Services;
 using FileTime.Core.Search;
+using FileTime.Core.ContainerSizeScanner;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -48,6 +49,9 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private List<Exception> _exceptions;
 
+        //[Property]
+        //private long? _size;
+
         public IItem Item => _container;
         public IItem BaseItem => _baseContainer;
 
@@ -80,6 +84,8 @@ namespace FileTime.Avalonia.ViewModels
         public Task Containers => GetContainers();
         public Task Elements => GetElements();
         public Task Items => GetItems();
+
+        public long? Size => BaseContainer is ContainerSizeContainer sizeContainer ? sizeContainer.Size : null;
 
         public async Task<ObservableCollection<ContainerViewModel>> GetContainers(CancellationToken token = default)
         {
@@ -133,8 +139,19 @@ namespace FileTime.Avalonia.ViewModels
 
             Container = container;
             BaseContainer = container is ChildSearchContainer childSearchContainer ? childSearchContainer.BaseContainer : container;
+            if (BaseContainer is ContainerSizeContainer sizeContainer)
+            {
+                sizeContainer.SizeChanged.Add(UpdateSize);
+            }
             Container.Refreshed.Add(Container_Refreshed);
             Container.LazyLoadingChanged.Add(Container_LazyLoadingChanged);
+        }
+
+        private Task UpdateSize(object? sender, long? size, CancellationToken token)
+        {
+            OnPropertyChanged(nameof(Size));
+
+            return Task.CompletedTask;
         }
 
         public void InvalidateDisplayName() => OnPropertyChanged(nameof(DisplayName));

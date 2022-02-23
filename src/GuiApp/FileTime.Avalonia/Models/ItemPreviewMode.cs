@@ -6,6 +6,7 @@ namespace FileTime.Avalonia.Models
         Text,
         Empty,
         SearchContainer,
-        SearchElement
+        SearchElement,
+        SizeContainer,
     }
 }

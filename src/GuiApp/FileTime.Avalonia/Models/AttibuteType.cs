@@ -4,6 +4,7 @@ namespace FileTime.Avalonia.Models
     {
         File,
         Element,
-        Container
+        Container,
+        SizeContainer
     }
 }

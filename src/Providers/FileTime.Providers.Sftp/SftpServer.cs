@@ -32,6 +32,7 @@ namespace FileTime.Providers.Sftp
             NativePath = FullName = sftpContentProvider.Protocol + Constants.SeparatorChar + name;
 
             CanDelete = SupportsDelete.True;
+            AllowRecursiveDeletion = false;
         }
 
         public override async Task<IEnumerable<IItem>> RefreshItems(CancellationToken token = default) => await ListDirectory(this, "");

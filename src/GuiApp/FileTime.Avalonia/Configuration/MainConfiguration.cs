@@ -78,6 +78,7 @@ namespace FileTime.Avalonia.Configuration
                 new CommandBindingConfiguration(Commands.Rename, Key.F2),
                 new CommandBindingConfiguration(Commands.Rename, new[] { Key.C, Key.W }),
                 new CommandBindingConfiguration(Commands.RunCommand, new KeyConfig(Key.D4, shift: true)),
+                new CommandBindingConfiguration(Commands.ScanContainerSize, new[] { Key.C, Key.S }),
                 new CommandBindingConfiguration(Commands.ShowAllShotcut, Key.F1),
                 new CommandBindingConfiguration(Commands.SoftDelete, new[] { new KeyConfig(Key.D), new KeyConfig(Key.D, shift: true) }),
                 new CommandBindingConfiguration(Commands.SwitchToLastTab, Key.D9),

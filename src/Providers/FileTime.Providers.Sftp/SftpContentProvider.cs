@@ -17,7 +17,7 @@ namespace FileTime.Providers.Sftp
             _inputInterface = inputInterface;
         }
 
-        public override Task<bool> CanHandlePath(string path) => Task.FromResult(path.StartsWith("sftp://"));
+        public override Task<bool> CanHandlePath(string path) => Task.FromResult(path.StartsWith(Protocol));
 
         public override async Task<IContainer> CreateContainerAsync(string name)
         {

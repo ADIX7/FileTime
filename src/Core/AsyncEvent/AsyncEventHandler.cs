@@ -48,7 +48,7 @@
             List<Func<TSender, TArg, CancellationToken, Task>>? handlers;
             lock (_guard)
             {
-                handlers = _handlers;
+                handlers = new List<Func<TSender, TArg, CancellationToken, Task>>(_handlers);
             }
 
             foreach (var handler in handlers)

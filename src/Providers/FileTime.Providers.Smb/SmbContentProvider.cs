@@ -91,7 +91,7 @@ namespace FileTime.Providers.Smb
         protected override async Task Init()
         {
             var servers = await _persistenceService.LoadServers();
-            SetRootContainers(servers.Select(s => new SmbServer(s.Path, this, _inputInterface, s.UserName, s.Password)));
+            await SetRootContainers(servers.Select(s => new SmbServer(s.Path, this, _inputInterface, s.UserName, s.Password)));
         }
 
         public static string GetNativePathSeparator() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\\" : "/";

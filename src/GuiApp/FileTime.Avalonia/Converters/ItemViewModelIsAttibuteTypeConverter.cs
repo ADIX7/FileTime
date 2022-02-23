@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Core.ContainerSizeScanner;
 using FileTime.Core.Models;
 using FileTime.Providers.Local;
 
@@ -30,8 +31,9 @@ namespace FileTime.Avalonia.Converters
                 }
                 return AttibuteType.Element;
             }
-            else if (value is ContainerViewModel)
+            else if (value is ContainerViewModel containerVM)
             {
+                if(containerVM.BaseItem is ContainerSizeContainer) return AttibuteType.SizeContainer;
                 return AttibuteType.Container;
             }
 

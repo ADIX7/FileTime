@@ -21,7 +21,7 @@ namespace FileTime.Providers.Local
                 ? new DirectoryInfo("/").GetDirectories()
                 : Environment.GetLogicalDrives().Select(d => new DirectoryInfo(d));
 
-            SetRootContainers(rootDirectories.Select(d => new LocalFolder(d, this, this)).OrderBy(d => d.Name));
+            SetRootContainers(rootDirectories.Select(d => new LocalFolder(d, this, this)).OrderBy(d => d.Name)).Wait();
         }
 
         public async Task<IItem?> GetByPath(string path, bool acceptDeepestMatch = false)

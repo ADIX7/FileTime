@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using AsyncEvent;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
@@ -23,9 +22,9 @@ namespace FileTime.Core.Search
         public SearchContainer(IContainer searchBaseContainer, SearchTaskBase searchTaskBase) : base(searchBaseContainer.Provider, searchBaseContainer.GetParent()!, searchBaseContainer.Name)
         {
             SearchBaseContainer = searchBaseContainer;
+            SearchTaskBase = searchTaskBase;
             _containers = new List<IContainer>();
             _elements = new List<IElement>();
-            SearchTaskBase = searchTaskBase;
 
             _containersReadOnly = _containers.AsReadOnly();
             _elementsReadOnly = _elements.AsReadOnly();
@@ -33,6 +32,7 @@ namespace FileTime.Core.Search
 
             UseLazyLoad = true;
             CanHandleEscape = true;
+            CanDelete = SupportsDelete.False;
         }
 
         public async Task RunWithLazyLoading(Func<CancellationToken, Task> func, CancellationToken token = default)

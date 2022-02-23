@@ -44,6 +44,7 @@ namespace FileTime.App.Core.Command
         Refresh,
         Rename,
         RunCommand,
+        ScanContainerSize,
         ShowAllShotcut,
         SoftDelete,
         SwitchToLastTab,

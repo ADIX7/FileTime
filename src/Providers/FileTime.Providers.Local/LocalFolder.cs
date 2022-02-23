@@ -1,17 +1,18 @@
 using System.Runtime.InteropServices;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
+using FileTime.Core.Providers.ContainerProperty;
 using FileTime.Providers.Local.Interop;
 
 namespace FileTime.Providers.Local
 {
-    public class LocalFolder : AbstractContainer<LocalContentProvider>, IContainer
+    public class LocalFolder : AbstractContainer<LocalContentProvider>, IContainer, IHaveCreatedAt, IHaveAttributes
     {
         public DirectoryInfo Directory { get; }
 
         public string Attributes => GetAttributes();
 
-        public DateTime CreatedAt => Directory.CreationTime;
+        public DateTime? CreatedAt => Directory.CreationTime;
         public override bool IsExists => Directory.Exists;
 
         public LocalFolder(DirectoryInfo directory, LocalContentProvider contentProvider, IContainer parent)
@@ -21,7 +22,6 @@ namespace FileTime.Providers.Local
             NativePath = Directory.FullName;
             IsHidden = (Directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
             CanRename = true;
-            AllowRecursiveDeletion = true;
 
             //TODO: Linux soft delete
             SupportsDirectoryLevelSoftDelete = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

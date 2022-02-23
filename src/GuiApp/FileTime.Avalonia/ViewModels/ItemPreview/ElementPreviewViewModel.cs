@@ -53,5 +53,7 @@ namespace FileTime.Avalonia.ViewModels.ItemPreview
                 Mode = ItemPreviewMode.Unknown;
             }
         }
+
+        public Task Destroy() => Task.CompletedTask;
     }
 }

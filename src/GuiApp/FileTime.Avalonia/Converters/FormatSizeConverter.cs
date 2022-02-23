@@ -17,6 +17,7 @@ namespace FileTime.Avalonia.Converters
             {
                 (long size, true) => ToSizeString(size, prec),
                 (long size, false) => ToSizeString(size),
+                (null, _) => "...",
                 _ => value
             };
         }

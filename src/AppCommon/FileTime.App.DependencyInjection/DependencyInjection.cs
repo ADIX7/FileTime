@@ -1,6 +1,7 @@
 using FileTime.App.Core.Clipboard;
 using FileTime.Core.Command;
 using FileTime.Core.CommandHandlers;
+using FileTime.Core.ContainerSizeScanner;
 using FileTime.Core.Providers;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
@@ -22,6 +23,8 @@ namespace FileTime.App.Core
                 .AddSingleton<TopContainer>()
                 .AddSingleton<CommandExecutor>()
                 .AddSingleton<TimeRunner>()
+                .AddSingleton<ContainerScanSnapshotProvider>()
+                .AddSingleton<IContentProvider, ContainerScanSnapshotProvider>(p => p.GetService<ContainerScanSnapshotProvider>() ?? throw new ArgumentException(nameof(ContainerScanSnapshotProvider) + " is not registered"))
                 .AddSingleton<ItemNameConverterService>()
                 .AddLocalServices()
                 .AddSmbServices()

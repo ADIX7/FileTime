@@ -26,6 +26,9 @@ namespace FileTime.Avalonia
                 .AddTransient<MainPageViewModel>()
                 .AddTransient<SearchElementPreview>()
                 .AddTransient<SearchContainerPreview>()
+                .AddTransient<SizeContainerViewModel>()
+                .AddTransient<SizeElementViewmodel>()
+                .AddTransient<SizeContainerPreview>()
                 .AddSingleton<IInputInterface, BasicInputHandler>();
         }
         internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)

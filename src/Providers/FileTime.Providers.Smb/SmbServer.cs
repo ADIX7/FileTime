@@ -31,6 +31,7 @@ namespace FileTime.Providers.Smb
             Username = username;
             Password = password;
             CanDelete = SupportsDelete.True;
+            AllowRecursiveDeletion = false;
 
             FullName = contentProvider.Protocol + Name;
             NativePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

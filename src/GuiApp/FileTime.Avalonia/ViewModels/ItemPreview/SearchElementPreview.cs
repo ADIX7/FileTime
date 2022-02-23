@@ -31,5 +31,6 @@ namespace FileTime.Avalonia.ViewModels.ItemPreview
             RealtiveParentPath = new AbsolutePath(null!, element.FullName!.Substring(pathCommonPath.Length).Trim(Constants.SeparatorChar), AbsolutePathType.Unknown, null).GetParentPath();
             Task.Run(async () => ItemNameParts = await Dispatcher.UIThread.InvokeAsync(() => element.SearchDisplayName.ConvertAll(p => new ItemNamePartViewModel(p.Text, p.IsSpecial ? TextDecorations.Underline : null))));
         }
+        public Task Destroy() => Task.CompletedTask;
     }
 }

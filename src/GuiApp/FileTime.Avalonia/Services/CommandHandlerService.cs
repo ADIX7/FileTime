@@ -19,6 +19,7 @@ using FileTime.Core.Command.Delete;
 using FileTime.Core.Command.Move;
 using FileTime.Core.Command.Rename;
 using FileTime.Core.Components;
+using FileTime.Core.ContainerSizeScanner;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Providers;
@@ -47,6 +48,7 @@ namespace FileTime.Avalonia.Services
         private readonly ProgramsService _programsService;
         private readonly ILogger<CommandHandlerService> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ContainerScanSnapshotProvider _containerScanSnapshotProvider;
 
         public CommandHandlerService(
             AppState appState,
@@ -59,7 +61,8 @@ namespace FileTime.Avalonia.Services
             IEnumerable<IContentProvider> contentProviders,
             ProgramsService programsService,
             ILogger<CommandHandlerService> logger,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            ContainerScanSnapshotProvider containerScanSnapshotProvider)
         {
             _appState = appState;
             _localContentProvider = localContentProvider;
@@ -72,6 +75,7 @@ namespace FileTime.Avalonia.Services
             _programsService = programsService;
             _logger = logger;
             _serviceProvider = serviceProvider;
+            _containerScanSnapshotProvider = containerScanSnapshotProvider;
 
             _commandHandlers = new Dictionary<Commands, Func<Task>>
             {
@@ -115,6 +119,7 @@ namespace FileTime.Avalonia.Services
                 {Commands.Refresh, RefreshCurrentLocation},
                 {Commands.Rename, Rename},
                 {Commands.RunCommand, RunCommandInContainer},
+                {Commands.ScanContainerSize, ScanContainerSize},
                 {Commands.ShowAllShotcut, ShowAllShortcut},
                 {Commands.SoftDelete, SoftDelete},
                 {Commands.SwitchToLastTab, async() => await SwitchToTab(-1)},
@@ -994,6 +999,17 @@ namespace FileTime.Avalonia.Services
             }, handler);
 
             return Task.CompletedTask;
+        }
+
+        private async Task ScanContainerSize()
+        {
+            if (_appState.SelectedTab.CurrentLocation != null)
+            {
+                var scanTask = new ScanSizeTask(_containerScanSnapshotProvider, _appState.SelectedTab.CurrentLocation.Container);
+                scanTask.Start();
+
+                await OpenContainer(scanTask.Snapshot);
+            }
         }
     }
 }

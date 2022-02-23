@@ -7,10 +7,11 @@ namespace FileTime.Core.Providers
         where T : class, IContentProvider
     {
         private readonly object _initializationGuard = new();
+        protected IReadOnlyList<IContainer> _rootContainers;
         private bool _initialized;
         private bool _initializing;
         private IContainer? _parent;
-        protected IReadOnlyList<IContainer>? RootContainers { get; private set; }
+        protected List<IContainer>? RootContainers { get; private set; }
         public override bool IsExists => true;
 
         protected ContentProviderBase(
@@ -22,6 +23,9 @@ namespace FileTime.Core.Providers
         {
             Protocol = protocol;
             SupportsContentStreams = supportsContentStreams;
+            RootContainers = new List<IContainer>();
+            _rootContainers = RootContainers.AsReadOnly();
+            AllowRecursiveDeletion = false;
 
             CanRename = false;
             CanDelete = SupportsDelete.False;
@@ -39,21 +43,35 @@ namespace FileTime.Core.Providers
         protected async Task AddRootContainer(IContainer newRootContainer)
         {
             RootContainers =
-                (await GetContainers())?.Append(newRootContainer).OrderBy(c => c.Name).ToList().AsReadOnly()
-                ?? new List<IContainer>() { newRootContainer }.AsReadOnly();
+                (await GetContainers())?.Append(newRootContainer).OrderBy(c => c.Name).ToList()
+                ?? new List<IContainer>() { newRootContainer };
+
+            _rootContainers = RootContainers.AsReadOnly();
+            await RefreshAsync();
         }
 
         protected async Task AddRootContainers(IEnumerable<IContainer> newRootContainers)
         {
             RootContainers =
-                (await GetContainers())?.Concat(newRootContainers).OrderBy(c => c.Name).ToList().AsReadOnly()
-                ?? new List<IContainer>(newRootContainers).AsReadOnly();
+                (await GetContainers())?.Concat(newRootContainers).OrderBy(c => c.Name).ToList()
+                ?? new List<IContainer>(newRootContainers);
+
+            _rootContainers = RootContainers.AsReadOnly();
+            await RefreshAsync();
         }
 
-        protected void SetRootContainers(IEnumerable<IContainer> newRootContainers)
-            => RootContainers = newRootContainers.OrderBy(c => c.Name).ToList().AsReadOnly();
+        protected async Task SetRootContainers(IEnumerable<IContainer> newRootContainers)
+        {
+            RootContainers = newRootContainers.OrderBy(c => c.Name).ToList();
+            _rootContainers = RootContainers.AsReadOnly();
+            await RefreshAsync();
+        }
 
-        protected void ClearRootContainers() => RootContainers = new List<IContainer>().AsReadOnly();
+        protected void ClearRootContainers()
+        {
+            RootContainers = new List<IContainer>();
+            _rootContainers = RootContainers.AsReadOnly();
+        }
 
         public override async Task<IReadOnlyList<IContainer>?> GetContainers(CancellationToken token = default)
         {
@@ -119,7 +137,6 @@ namespace FileTime.Core.Providers
         public override Task Delete(bool hardDelete = false) => throw new NotSupportedException();
         public override Task Rename(string newName) => throw new NotSupportedException();
         public override Task<bool> CanOpenAsync() => Task.FromResult(true);
-
 
         public override void Unload() { }
 

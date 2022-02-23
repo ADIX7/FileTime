@@ -68,6 +68,7 @@ namespace FileTime.Core.Providers
             DisplayName = Name = name;
             Exceptions = _exceptions.AsReadOnly();
             Provider = null!;
+            AllowRecursiveDeletion = true;
         }
 
         public virtual Task<bool> CanOpenAsync() => Task.FromResult(_exceptions.Count == 0);
