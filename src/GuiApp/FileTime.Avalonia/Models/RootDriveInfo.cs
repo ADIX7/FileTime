@@ -1,4 +1,5 @@
-﻿using FileTime.Core.Models;
+﻿using FileTime.App.Core.Models;
+using FileTime.Core.Models;
 using FileTime.Providers.Local;
 using MvvmGen;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace FileTime.Avalonia.Models
 {
     [ViewModel]
-    public partial class RootDriveInfo
+    public partial class RootDriveInfo : IHaveContainer
     {
         private readonly DriveInfo _driveInfo;
         private readonly IContainer _container;

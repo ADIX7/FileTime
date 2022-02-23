@@ -8,12 +8,13 @@ namespace FileTime.Core.Components
     public class Tab
     {
         private IItem? _currentSelectedItem;
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private IContainer _currentLocation;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+        private readonly List<AbsolutePath> _history = new();
+
         private string? _lastPath;
 
-        private bool _currentlySelecting = false;
+        private bool _currentlySelecting;
 
         private readonly object _guardSetCurrentSelectedItemCTS = new();
         private CancellationTokenSource? _setCurrentSelectedItemCTS;
@@ -22,8 +23,17 @@ namespace FileTime.Core.Components
 
         public bool AutoRefresh { get; set; }
 
+        public IReadOnlyList<AbsolutePath> History { get; }
+
         public AsyncEventHandler CurrentLocationChanged = new();
+        public AsyncEventHandler HistoryChanged { get; } = new();
         public AsyncEventHandler<bool> CurrentSelectedItemChanged = new();
+
+        public Tab()
+        {
+            _currentLocation = null!;
+            History = _history.AsReadOnly();
+        }
 
         public async Task Init(IContainer currentPath)
         {
@@ -42,13 +52,14 @@ namespace FileTime.Core.Components
                 if (_currentLocation != null)
                 {
                     _currentLocation.Refreshed.Remove(HandleCurrentLocationRefresh);
-                    if(_currentLocation is SearchContainer searchContainer)
+                    if (_currentLocation is SearchContainer searchContainer)
                     {
                         searchContainer.SearchTaskBase.Cancel();
                     }
                 }
 
                 _currentLocation = value;
+                await AddHistoryItem(_currentLocation);
                 await CurrentLocationChanged.InvokeAsync(this, AsyncEventArgs.Empty);
 
                 var currentLocationItems = await (await GetCurrentLocation()).GetItems();
@@ -56,6 +67,22 @@ namespace FileTime.Core.Components
                 await SetCurrentSelectedItem(await GetItemByLastPath() ?? (currentLocationItems.Count > 0 ? currentLocationItems[0] : null), true);
                 _currentLocation.Refreshed.Add(HandleCurrentLocationRefresh);
             }
+        }
+
+        private async Task AddHistoryItem(IContainer container)
+        {
+            var containerPath = new AbsolutePath(container);
+            if (_history.Count == 0 || _history.Last() != containerPath)
+            {
+                _history.Add(containerPath);
+            }
+
+            while (_history.Count > 50)
+            {
+                _history.RemoveAt(0);
+            }
+
+            await HistoryChanged.InvokeAsync(this, AsyncEventArgs.Empty);
         }
 
         public Task<IItem?> GetCurrentSelectedItem()

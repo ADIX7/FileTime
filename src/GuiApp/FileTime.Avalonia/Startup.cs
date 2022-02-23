@@ -8,7 +8,6 @@ using FileTime.Avalonia.Logging;
 using FileTime.Avalonia.Services;
 using FileTime.Avalonia.ViewModels;
 using FileTime.Avalonia.ViewModels.ItemPreview;
-using FileTime.Core.Command;
 using FileTime.Core.Interactions;
 using FileTime.Core.Persistence;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +28,7 @@ namespace FileTime.Avalonia
                 .AddTransient<SizeContainerViewModel>()
                 .AddTransient<SizeElementViewmodel>()
                 .AddTransient<SizeContainerPreview>()
+                .AddTransient<HistoryItemViewModel>()
                 .AddSingleton<IInputInterface, BasicInputHandler>();
         }
         internal static IServiceCollection AddServices(this IServiceCollection serviceCollection)

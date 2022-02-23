@@ -187,19 +187,11 @@
 			</Setter>
 		</Style>
 
-		<Style Selector="Grid.RootDriveInfo">
+		<Style Selector="Grid.SidebarContainerPresenter">
 			<Setter Property="Background" Value="#01000000"/>
 		</Style>
 
-		<Style Selector="Grid.RootDriveInfo:pointerover">
-			<Setter Property="Background" Value="{DynamicResource AppBackgroundColor}"/>
-		</Style>
-
-		<Style Selector="Grid.PlacesItem">
-			<Setter Property="Background" Value="#01000000"/>
-		</Style>
-
-		<Style Selector="Grid.PlacesItem:pointerover">
+		<Style Selector="Grid.SidebarContainerPresenter:pointerover">
 			<Setter Property="Background" Value="{DynamicResource AppBackgroundColor}"/>
 		</Style>
 

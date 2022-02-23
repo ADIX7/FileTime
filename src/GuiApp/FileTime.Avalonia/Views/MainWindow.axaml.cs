@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using FileTime.App.Core.Models;
 using FileTime.Avalonia.Misc;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
@@ -93,31 +94,19 @@ namespace FileTime.Avalonia.Views
             }
         }
 
-        private void OnPlacePointerPressed(object sender, PointerPressedEventArgs e)
+        private void OnHasContainerPointerPressed(object sender, PointerPressedEventArgs e)
         {
             if (!e.Handled
                 && ViewModel != null
                 && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
                 && sender is StyledElement control
-                && control.DataContext is PlaceInfo placeInfo)
+                && control.DataContext is IHaveContainer hasContainer)
             {
-                ViewModel.CommandHandlerService.OpenContainer(placeInfo.Container);
+                ViewModel.CommandHandlerService.OpenContainer(hasContainer.Container);
                 e.Handled = true;
             }
         }
 
-        private void OnRootDrivePointerPressed(object sender, PointerPressedEventArgs e)
-        {
-            if (!e.Handled
-                && ViewModel != null
-                && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
-                && sender is StyledElement control
-                && control.DataContext is RootDriveInfo rootDriveInfo)
-            {
-                ViewModel.CommandHandlerService.OpenContainer(rootDriveInfo.Container);
-                e.Handled = true;
-            }
-        }
         private void OnWindowClosed(object sender, EventArgs e)
         {
             try

@@ -82,6 +82,8 @@ namespace FileTime.Core.Models
                 ? await VirtualContentProvider.GetByPath(Path)
                 : null;
 
+            if (ContentProvider == null) return null;
+
             result ??= await ContentProvider.GetByPath(Path);
 
             return result;

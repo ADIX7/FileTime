@@ -1,4 +1,4 @@
-﻿using AsyncEvent;
+using AsyncEvent;
 using FileTime.Core.Components;
 using FileTime.Core.Models;
 using FileTime.Providers.Local;
@@ -16,6 +16,8 @@ using FileTime.Core.Search;
 using Microsoft.Extensions.DependencyInjection;
 using FileTime.Core.Services;
 using FileTime.Core.ContainerSizeScanner;
+using System.Collections.Generic;
+using FileTime.Core.Providers;
 
 namespace FileTime.Avalonia.Application
 {
@@ -71,6 +73,9 @@ namespace FileTime.Avalonia.Application
         [Property]
         private IItemPreviewViewModel? _itemPreview;
 
+        [Property]
+        private List<HistoryItemViewModel> _history = new();
+
         public async Task SetSelectedItemAsync(IItemViewModel? value)
         {
             if (_selectedItem != value)
@@ -86,7 +91,38 @@ namespace FileTime.Avalonia.Application
         {
             _tabState = new TabState(Tab);
             _timeRunner.RefreshContainer.Add(TimeRunnerContainerRefreshed);
+            Tab.HistoryChanged.Add(TabHistoryChanged);
+        }
 
+        private async Task TabHistoryChanged(object? sender, AsyncEventArgs e, CancellationToken token)
+        {
+            await RefreshHistory();
+        }
+
+        private async Task RefreshHistory()
+        {
+            var newHistory = new List<HistoryItemViewModel>();
+
+            var counter = 0;
+            AbsolutePath? lastPath = null;
+            foreach (var history in Tab.History.Reverse())
+            {
+                try
+                {
+                    var historyItemVM = await _serviceProvider.GetAsyncInitableResolver(history).GetServiceAsync<HistoryItemViewModel>();
+                    if (historyItemVM.Container != null && historyItemVM.Container is not IContentProvider && lastPath != history)
+                    {
+                        lastPath = history;
+                        newHistory.Add(historyItemVM);
+                        counter++;
+
+                        if (counter == 10) break;
+                    }
+                }
+                catch { }
+            }
+
+            History = newHistory;
         }
 
         private async Task TimeRunnerContainerRefreshed(object? sender, AbsolutePath container, CancellationToken token = default)

@@ -41,7 +41,7 @@
 					</StackPanel>
 				</Grid>
 
-				<Grid Grid.Row="1" RowDefinitions="Auto,Auto">
+				<Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto">
 
 					<Border CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="10" Margin="10">
 						<Grid RowDefinitions="Auto,Auto">
@@ -55,7 +55,7 @@
 								Items="{Binding RootDriveInfos}">
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
-										<Grid Classes="RootDriveInfo" PointerPressed="OnRootDrivePointerPressed" Cursor="Hand">
+										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
 											<Grid Margin="0,5" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
 												<Image
 													Grid.RowSpan="2"
@@ -128,7 +128,7 @@
 								Items="{Binding Places}">
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
-										<Grid Classes="PlacesItem" PointerPressed="OnPlacePointerPressed" Cursor="Hand">
+										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
 											<StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
 												<Image
 													Width="20"
@@ -147,6 +147,39 @@
 							</ItemsRepeater>
 						</Grid>
 					</Border>
+
+					<Border Grid.Row="2" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+						<Grid RowDefinitions="Auto,Auto">
+
+							<TextBlock
+								Margin="10,0,10,10"
+								Text="History" />
+
+							<ItemsRepeater
+								Grid.Row="1"
+								Items="{Binding AppState.SelectedTab.History}">
+								<ItemsRepeater.ItemTemplate>
+									<DataTemplate>
+										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
+											<StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
+												<Image
+													Width="20"
+													Height="20"
+													VerticalAlignment="Center"
+													Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" />
+
+												<TextBlock
+													Margin="5,0,0,0"
+													VerticalAlignment="Center"
+													Text="{Binding Name}" />
+											</StackPanel>
+										</Grid>
+									</DataTemplate>
+								</ItemsRepeater.ItemTemplate>
+							</ItemsRepeater>
+						</Grid>
+					</Border>				
+					
 				</Grid>
 
 				<Grid Grid.Column="1" Grid.Row="1" RowDefinitions="Auto,40,*,Auto">

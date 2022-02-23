@@ -97,6 +97,7 @@ namespace FileTime.Core.Providers
             {
                 lock (_initializationGuard)
                 {
+                    if (_initialized) return;
                     if (!_initializing)
                     {
                         _initializing = true;
@@ -109,8 +110,8 @@ namespace FileTime.Core.Providers
             try
             {
                 if (_initialized) return;
-                _initialized = true;
                 await Init();
+                _initialized = true;
                 IsLoaded = true;
             }
             finally

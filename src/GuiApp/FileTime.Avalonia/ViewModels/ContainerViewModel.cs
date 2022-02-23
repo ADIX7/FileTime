@@ -228,6 +228,11 @@ namespace FileTime.Avalonia.ViewModels
                     }
                 }
 
+                foreach (var oldContainer in _containers.Except(newContainers))
+                {
+                    oldContainer.Unload(recursive: true, unloadParent: false, unloadEvents: true);
+                }
+
                 if (silent)
                 {
                     _containers = new ObservableCollection<ContainerViewModel>(newContainers);
@@ -251,9 +256,14 @@ namespace FileTime.Avalonia.ViewModels
                 _exceptions.Add(e);
             }
 
-            await _newItemProcessor.UpdateMarkedItems(this, CancellationToken.None);
-
-            _isRefreshing = false;
+            try
+            {
+                await _newItemProcessor.UpdateMarkedItems(this, CancellationToken.None);
+            }
+            finally
+            {
+                _isRefreshing = false;
+            }
         }
 
         private int GetNewItemPosition<TItem, T>(TItem itemToAdd, IList<T> items) where TItem : IItemViewModel where T : IItemViewModel
@@ -320,7 +330,12 @@ namespace FileTime.Avalonia.ViewModels
 
             if (unloadEvents)
             {
+                if (BaseContainer is ContainerSizeContainer sizeContainer)
+                {
+                    sizeContainer.SizeChanged.Remove(UpdateSize);
+                }
                 Container.Refreshed.Remove(Container_Refreshed);
+                Container.LazyLoadingChanged.Remove(Container_LazyLoadingChanged);
             }
 
             _containers.Clear();
