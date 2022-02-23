@@ -43,7 +43,7 @@ namespace FileTime.Core.ContainerSizeScanner
             {
                 try
                 {
-                    Task.Run(async () => await Snapshot.RunWithLazyLoading(async (token) => await ScanAsync(ContainerToScan, Snapshot, token))).Wait();
+                    Task.Run(async () => await Snapshot.RunWithLoading(async (token) => await ScanAsync(ContainerToScan, Snapshot, token))).Wait();
                 }
                 finally
                 {
@@ -93,7 +93,7 @@ namespace FileTime.Core.ContainerSizeScanner
                     {
                         return;
                     }
-                    await newSizeContainer.RunWithLazyLoading(async (token) => await ScanAsync(childContainer, newSizeContainer, token), token);
+                    await newSizeContainer.RunWithLoading(async (token) => await ScanAsync(childContainer, newSizeContainer, token), token);
                 }
             }
 

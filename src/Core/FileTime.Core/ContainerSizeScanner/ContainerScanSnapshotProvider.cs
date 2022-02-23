@@ -29,5 +29,14 @@ namespace FileTime.Core.ContainerSizeScanner
                 await RefreshAsync();
             }
         }
+
+        public async Task RemoveSnapshotAsync(ContainerSizeContainer snapshot)
+        {
+            if (RootContainers?.Contains(snapshot) == true)
+            {
+                RootContainers.Remove(snapshot);
+                await RefreshAsync();
+            }
+        }
     }
 }

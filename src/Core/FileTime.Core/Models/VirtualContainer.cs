@@ -41,10 +41,8 @@ namespace FileTime.Core.Models
         public bool IsExists => BaseContainer.IsExists;
         public bool AllowRecursiveDeletion => BaseContainer.AllowRecursiveDeletion;
 
-        public bool UseLazyLoad => BaseContainer.UseLazyLoad;
-
-        public bool LazyLoading => BaseContainer.LazyLoading;
-        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
+        public bool Loading => BaseContainer.Loading;
+        public AsyncEventHandler<bool> LoadingChanged { get; protected set; } = new();
 
         public bool CanHandleEscape => BaseContainer.CanHandleEscape;
 
@@ -192,5 +190,7 @@ namespace FileTime.Core.Models
             BaseContainer.Unload();
         }
         public async Task<ContainerEscapeResult> HandleEscape() => await BaseContainer.HandleEscape();
+
+        public async Task RunWithLoading(Func<CancellationToken, Task> func, CancellationToken token = default) => await BaseContainer.RunWithLoading(func, token);
     }
 }

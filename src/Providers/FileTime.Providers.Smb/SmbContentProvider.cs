@@ -95,5 +95,14 @@ namespace FileTime.Providers.Smb
         }
 
         public static string GetNativePathSeparator() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\\" : "/";
+
+        public async Task RemoveServerAsync(SmbServer server)
+        {
+            if(RootContainers?.Contains(server) == true)
+            {
+                RootContainers.Remove(server);
+                await RefreshAsync();
+            }
+        }
     }
 }

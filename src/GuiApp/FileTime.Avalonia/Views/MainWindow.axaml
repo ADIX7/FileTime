@@ -276,7 +276,7 @@
 								Fill="{DynamicResource ContentSeparatorBrush}" />
 
 							<Grid Grid.Column="2" RowDefinitions="Auto,*">
-								<Grid IsVisible="{Binding AppState.SelectedTab.CurrentLocation.LazyLoading}">
+								<Grid IsVisible="{Binding AppState.SelectedTab.CurrentLocation.Loading}">
 									<Image Width="40" Height="40" Source="{SvgImage /Assets/loading.svg}" Classes="LoadingAnimation"/>
 								</Grid>
 								<ListBox

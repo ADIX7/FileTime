@@ -63,7 +63,7 @@ namespace FileTime.Avalonia.ViewModels
 
         public List<IItemViewModel> ChildrenToAdopt { get; } = new List<IItemViewModel>();
 
-        public bool LazyLoading => _container.LazyLoading;
+        public bool Loading => _container.Loading;
 
         [PropertyInvalidate(nameof(IsSelected))]
         [PropertyInvalidate(nameof(IsAlternative))]
@@ -144,7 +144,7 @@ namespace FileTime.Avalonia.ViewModels
                 sizeContainer.SizeChanged.Add(UpdateSize);
             }
             Container.Refreshed.Add(Container_Refreshed);
-            Container.LazyLoadingChanged.Add(Container_LazyLoadingChanged);
+            Container.LoadingChanged.Add(Container_LoadingChanged);
         }
 
         private Task UpdateSize(object? sender, long? size, CancellationToken token)
@@ -167,9 +167,9 @@ namespace FileTime.Avalonia.ViewModels
             await Refresh(false, false, token: token);
         }
 
-        private Task Container_LazyLoadingChanged(object? sender, bool lazyLoading, CancellationToken token = default)
+        private Task Container_LoadingChanged(object? sender, bool loading, CancellationToken token = default)
         {
-            OnPropertyChanged(nameof(LazyLoading));
+            OnPropertyChanged(nameof(Loading));
             return Task.CompletedTask;
         }
 
@@ -335,7 +335,7 @@ namespace FileTime.Avalonia.ViewModels
                     sizeContainer.SizeChanged.Remove(UpdateSize);
                 }
                 Container.Refreshed.Remove(Container_Refreshed);
-                Container.LazyLoadingChanged.Remove(Container_LazyLoadingChanged);
+                Container.LoadingChanged.Remove(Container_LoadingChanged);
             }
 
             _containers.Clear();

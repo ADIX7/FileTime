@@ -19,7 +19,7 @@ namespace FileTime.Core.Providers
         public bool SupportsDirectoryLevelSoftDelete { get; protected set; }
 
         public AsyncEventHandler Refreshed { get; protected set; } = new();
-        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
+        public AsyncEventHandler<bool> LoadingChanged { get; protected set; } = new();
 
         public string Name { get; protected set; }
         public virtual string DisplayName { get; protected set; }
@@ -44,9 +44,7 @@ namespace FileTime.Core.Providers
 
         public virtual bool AllowRecursiveDeletion { get; protected set; }
 
-        public bool UseLazyLoad { get; protected set; }
-
-        public bool LazyLoading { get; protected set; }
+        public bool Loading { get; protected set; }
 
         public bool CanHandleEscape { get; protected set; }
 
@@ -107,6 +105,21 @@ namespace FileTime.Core.Providers
         {
             if (_items == null) await RefreshAsync(token);
             return _items;
+        }
+
+        public async Task RunWithLoading(Func<CancellationToken, Task> func, CancellationToken token = default)
+        {
+            try
+            {
+                Loading = true;
+                await LoadingChanged.InvokeAsync(this, Loading, token);
+                await func(token);
+            }
+            finally
+            {
+                Loading = false;
+                await LoadingChanged.InvokeAsync(this, Loading, token);
+            }
         }
 
         public virtual IContainer? GetParent() => _parent;

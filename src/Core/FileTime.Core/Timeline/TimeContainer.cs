@@ -36,12 +36,9 @@ namespace FileTime.Core.Timeline
         public string? NativePath => FullName;
         public bool IsExists => true;
         public bool AllowRecursiveDeletion => true;
-
-        public bool UseLazyLoad => false;
-
-        public bool LazyLoading => false;
+        public bool Loading => false;
         public bool CanHandleEscape => false;
-        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
+        public AsyncEventHandler<bool> LoadingChanged { get; protected set; } = new();
 
         public TimeContainer(string name, IContainer parent, IContentProvider contentProvider, IContentProvider virtualContentProvider, PointInTime pointInTime)
         {
@@ -139,5 +136,10 @@ namespace FileTime.Core.Timeline
         public void Destroy() => IsDestroyed = true;
         public void Unload() { }
         public Task<ContainerEscapeResult> HandleEscape() => Task.FromResult(new ContainerEscapeResult(false));
+
+        public async Task RunWithLoading(Func<CancellationToken, Task> func, CancellationToken token = default)
+        {
+            await func(token);
+        }
     }
 }

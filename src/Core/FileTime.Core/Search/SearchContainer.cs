@@ -30,7 +30,6 @@ namespace FileTime.Core.Search
             _elementsReadOnly = _elements.AsReadOnly();
             _items = _containers.Cast<IItem>().Concat(_elements).ToList().AsReadOnly();
 
-            UseLazyLoad = true;
             CanHandleEscape = true;
             CanDelete = SupportsDelete.False;
         }
@@ -39,14 +38,14 @@ namespace FileTime.Core.Search
         {
             try
             {
-                LazyLoading = true;
-                await LazyLoadingChanged.InvokeAsync(this, LazyLoading, token);
+                Loading = true;
+                await LoadingChanged.InvokeAsync(this, Loading, token);
                 await func(token);
             }
             finally
             {
-                LazyLoading = false;
-                await LazyLoadingChanged.InvokeAsync(this, LazyLoading, token);
+                Loading = false;
+                await LoadingChanged.InvokeAsync(this, Loading, token);
             }
         }
 

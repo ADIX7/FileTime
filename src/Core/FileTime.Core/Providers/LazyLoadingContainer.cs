@@ -25,21 +25,6 @@ namespace FileTime.Core.Providers
             _items = Containers.Cast<IItem>().Concat(Elements).ToList().AsReadOnly();
         }
 
-        public async Task RunWithLazyLoading(Func<CancellationToken, Task> func, CancellationToken token = default)
-        {
-            try
-            {
-                LazyLoading = true;
-                await LazyLoadingChanged.InvokeAsync(this, LazyLoading, token);
-                await func(token);
-            }
-            finally
-            {
-                LazyLoading = false;
-                await LazyLoadingChanged.InvokeAsync(this, LazyLoading, token);
-            }
-        }
-
         public virtual async Task AddContainerAsync(TContainer container)
         {
             Containers.Add(container);

@@ -36,12 +36,9 @@ namespace FileTime.Core.Providers
         public bool IsDestroyed => false;
         public bool IsExists => true;
         public bool AllowRecursiveDeletion => false;
-
-        public bool UseLazyLoad => false;
-
-        public bool LazyLoading => false;
+        public bool Loading => false;
         public bool CanHandleEscape => false;
-        public AsyncEventHandler<bool> LazyLoadingChanged { get; protected set; } = new();
+        public AsyncEventHandler<bool> LoadingChanged { get; protected set; } = new();
 
         public TopContainer(IEnumerable<IContentProvider> contentProviders)
         {
@@ -83,5 +80,10 @@ namespace FileTime.Core.Providers
 
         public void Unload() { }
         public Task<ContainerEscapeResult> HandleEscape() => Task.FromResult(new ContainerEscapeResult(false));
+
+        public async Task RunWithLoading(Func<CancellationToken, Task> func, CancellationToken token = default)
+        {
+            await func(token);
+        }
     }
 }

@@ -23,6 +23,7 @@ namespace FileTime.Core.ContainerSizeScanner
         public ContainerSizeContainer(ContainerScanSnapshotProvider provider, IContainer parent, IContainer baseContainer, string? displayName = null) : base(provider, parent, baseContainer.Name)
         {
             _baseContainer = baseContainer;
+            CanDelete = SupportsDelete.True;
             AllowRecursiveDeletion = false;
             CanHandleEscape = true;
             if (displayName != null)
@@ -37,7 +38,13 @@ namespace FileTime.Core.ContainerSizeScanner
 
         public override Task<IElement> CreateElementAsync(string name) => throw new NotSupportedException();
 
-        public override Task Delete(bool hardDelete = false) => throw new NotSupportedException();
+        public override async Task Delete(bool hardDelete = false)
+        {
+            if (GetParent() is ContainerScanSnapshotProvider provider)
+            {
+                await provider.RemoveSnapshotAsync(this);
+            }
+        }
 
         public override async Task RefreshAsync(CancellationToken token = default)
         {

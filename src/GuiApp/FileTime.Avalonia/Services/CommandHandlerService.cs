@@ -393,7 +393,7 @@ namespace FileTime.Avalonia.Services
                 if (currentSelectedItems.Count == 1)
                 {
                     if ((await currentSelectedItems[0].ResolveAsync()) is IContainer container
-                        && (await container.GetItems())?.Count > 0)
+                        && (await container.GetItems())?.Count > 0 && container.AllowRecursiveDeletion)
                     {
                         askForDelete = true;
                         questionText = $"The container '{container.Name}' is not empty. Proceed with delete?";
@@ -416,7 +416,7 @@ namespace FileTime.Avalonia.Services
                     new AbsolutePath(currentSelectedItem)
                 };
 
-                if (currentSelectedItem is IContainer container && (await container.GetItems())?.Count > 0)
+                if (currentSelectedItem is IContainer container && (await container.GetItems())?.Count > 0 && container.AllowRecursiveDeletion)
                 {
                     askForDelete = true;
                     questionText = $"The container '{container.Name}' is not empty. Proceed with delete?";

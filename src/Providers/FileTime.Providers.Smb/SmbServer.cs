@@ -16,6 +16,7 @@ namespace FileTime.Providers.Smb
         private ISMBClient? _client;
         private readonly object _clientGuard = new();
         private bool _refreshingClient;
+        private readonly SmbContentProvider _contentProvider;
         private readonly IInputInterface _inputInterface;
         private readonly SmbClientContext _smbClientContext;
 
@@ -26,6 +27,7 @@ namespace FileTime.Providers.Smb
         public SmbServer(string name, SmbContentProvider contentProvider, IInputInterface inputInterface, string? username = null, string? password = null)
          : base(contentProvider, contentProvider, name)
         {
+            _contentProvider = contentProvider;
             _inputInterface = inputInterface;
             _smbClientContext = new SmbClientContext(GetSmbClient, DisposeSmbClient);
             Username = username;
@@ -49,9 +51,9 @@ namespace FileTime.Providers.Smb
             throw new NotSupportedException();
         }
 
-        public override Task Delete(bool hardDelete = false)
+        public override async Task Delete(bool hardDelete = false)
         {
-            return Task.CompletedTask;
+            await _contentProvider.RemoveServerAsync(this);
         }
 
         async Task<IItem?> IContainer.GetByPath(string path, bool acceptDeepestMatch)
@@ -78,7 +80,8 @@ namespace FileTime.Providers.Smb
         {
             try
             {
-                var shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status), IsLoaded ? MAXRETRIES : 1);
+                var shares = new List<string>();
+                await RunWithLoading(async (_) => shares = await _smbClientContext.RunWithSmbClientAsync((client) => client.ListShares(out var status), IsLoaded ? MAXRETRIES : 1), token);
 
                 return shares.Select(s => new SmbShare(s, Provider, this, _smbClientContext));
             }

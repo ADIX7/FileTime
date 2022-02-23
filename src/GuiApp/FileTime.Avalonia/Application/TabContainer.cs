@@ -176,22 +176,30 @@ namespace FileTime.Avalonia.Application
 
         private async Task Tab_CurrentLocationChanged(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            var currentLocation = await Tab.GetCurrentLocation(token);
-            var parent = GenerateParent(currentLocation);
-            CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService, AppState);
-            await CurrentLocation.Init(token: token);
-
-            if (token.IsCancellationRequested) return;
-
-            if (parent != null)
+            var oldCurrentLocation = CurrentLocation;
+            try
             {
-                parent.ChildrenToAdopt.Add(CurrentLocation);
-                Parent = parent;
-                await Parent.Init(token: token);
+                var currentLocation = await Tab.GetCurrentLocation(token);
+                var parent = GenerateParent(currentLocation);
+                CurrentLocation = new ContainerViewModel(this, parent, currentLocation, ItemNameConverterService, AppState);
+                await CurrentLocation.Init(token: token);
+
+                if (token.IsCancellationRequested) return;
+
+                if (parent != null)
+                {
+                    parent.ChildrenToAdopt.Add(CurrentLocation);
+                    Parent = parent;
+                    await Parent.Init(token: token);
+                }
+                else
+                {
+                    Parent = null;
+                }
             }
-            else
+            finally
             {
-                Parent = null;
+                oldCurrentLocation.Unload(unloadEvents: true);
             }
         }
 
