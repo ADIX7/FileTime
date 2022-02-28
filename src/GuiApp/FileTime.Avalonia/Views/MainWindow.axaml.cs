@@ -3,14 +3,17 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using FileTime.App.Core.Models;
 using FileTime.Avalonia.Misc;
 using FileTime.Avalonia.Models;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FileTime.Avalonia.Views
 {
@@ -94,18 +97,38 @@ namespace FileTime.Avalonia.Views
             }
         }
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         private void OnHasContainerPointerPressed(object sender, PointerPressedEventArgs e)
         {
             if (!e.Handled
                 && ViewModel != null
                 && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
-                && sender is StyledElement control
-                && control.DataContext is IHaveContainer hasContainer)
+                && sender is StyledElement control)
             {
-                ViewModel.CommandHandlerService.OpenContainer(hasContainer.Container);
-                e.Handled = true;
+                if (control.DataContext is IHaveContainer hasContainer
+                && hasContainer.Container is not null)
+                {
+                    ViewModel.CommandHandlerService.OpenContainer(hasContainer.Container);
+                    e.Handled = true;
+                }
+                else if (control.DataContext is IContainer container)
+                {
+                    ViewModel.CommandHandlerService.OpenContainer(container);
+                }
+                else if (control.DataContext is IElement element && element.GetParent() is IContainer parentContainer)
+                {
+                    Task.Run(async () =>
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await ViewModel.AppState.SelectedTab.OpenContainer(parentContainer);
+                            await ViewModel.AppState.SelectedTab.SetCurrentSelectedItem(element);
+                        });
+                    });
+                }
             }
         }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
         private void OnWindowClosed(object sender, EventArgs e)
         {

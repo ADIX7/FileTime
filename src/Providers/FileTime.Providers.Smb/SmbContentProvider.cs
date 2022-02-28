@@ -13,7 +13,7 @@ namespace FileTime.Providers.Smb
         private readonly ILogger<SmbContentProvider> _logger;
 
         public SmbContentProvider(IInputInterface inputInterface, Persistence.PersistenceService persistenceService, ILogger<SmbContentProvider> logger)
-            : base("smb", null, "smb://", true)
+            : base("smb", "smb://", true)
         {
             _inputInterface = inputInterface;
             _persistenceService = persistenceService;

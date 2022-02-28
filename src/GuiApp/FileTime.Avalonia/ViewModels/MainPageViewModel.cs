@@ -22,6 +22,7 @@ using System.Threading;
 using Avalonia.Input;
 using System.Reflection;
 using FileTime.Core.Services;
+using FileTime.Providers.Favorites;
 
 namespace FileTime.Avalonia.ViewModels
 {
@@ -72,6 +73,7 @@ namespace FileTime.Avalonia.ViewModels
             }
             Title = "FileTime " + versionString;
 
+            var favoriteContentProvider = App.ServiceProvider.GetRequiredService<FavoriteContentProvider>();
             _timeRunner = App.ServiceProvider.GetService<TimeRunner>()!;
             var inputInterface = (BasicInputHandler)App.ServiceProvider.GetService<IInputInterface>()!;
             inputInterface.InputHandler = _dialogService.ReadInputs;
@@ -174,9 +176,22 @@ namespace FileTime.Avalonia.ViewModels
                 throw new Exception("TODO linux places");
             }
             Places = places;
+
+            await favoriteContentProvider.InitIfNeeded();
+            AppState.FavoriteElements = GetFavoriteElements(favoriteContentProvider).Select(f => f.BaseItem).ToList();
+
             await Task.Delay(100);
             Loading = false;
             _logger?.LogInformation($"{nameof(MainPageViewModel)} initialized.");
+
+
+
+            static IEnumerable<FavoriteElement> GetFavoriteElements(FavoriteContainerBase container)
+            {
+                return container.Elements.Where(e => e.IsPinned).Concat(
+                    container.Containers.SelectMany(GetFavoriteElements)
+                );
+            }
         }
 
         private Task UpdateParallelCommands(object? sender, IReadOnlyList<ReadOnlyParallelCommands> parallelCommands, CancellationToken token)
@@ -269,7 +284,9 @@ namespace FileTime.Avalonia.ViewModels
 
         public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
         {
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             KeyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
     }
 }

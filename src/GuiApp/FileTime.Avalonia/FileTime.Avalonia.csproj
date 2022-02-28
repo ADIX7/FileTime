@@ -53,6 +53,7 @@
     <ProjectReference Include="..\..\AppCommon\FileTime.App.Core\FileTime.App.Core.csproj" />
     <ProjectReference Include="..\..\AppCommon\FileTime.App.DependencyInjection\FileTime.App.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Core\InitableService\InitableService.csproj" />
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.Favorites\FileTime.Providers.Favorites.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AvaloniaXaml Update="Views\MainWindow.axaml">

@@ -11,6 +11,7 @@ using FileTime.Avalonia.Configuration;
 using FileTime.Avalonia.Misc;
 using FileTime.Core.Extensions;
 using FileTime.Avalonia.ViewModels;
+using FileTime.Providers.Favorites;
 
 namespace FileTime.Avalonia.Application
 {
@@ -47,6 +48,9 @@ namespace FileTime.Avalonia.Application
 
         [Property]
         private bool _noCommandFound;
+
+        [Property]
+        private List<IItem> _favoriteElements;
 
         public List<KeyConfig> PreviousKeys { get; } = new();
         

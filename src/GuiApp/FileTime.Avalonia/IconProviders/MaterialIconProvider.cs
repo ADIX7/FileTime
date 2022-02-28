@@ -10,7 +10,6 @@ namespace FileTime.Avalonia.IconProviders
 {
     public class MaterialIconProvider : IIconProvider
     {
-
         private static readonly Dictionary<string, string> _iconsByExtension = new();
         private static readonly Dictionary<string, string> _iconsByFileName = new();
 
@@ -38,6 +37,7 @@ namespace FileTime.Avalonia.IconProviders
 
         public ImagePath GetImage(IItem item)
         {
+            item = item is ISymlinkElement symlinkElement ? symlinkElement.RealItem : item;
             var icon = item is IContainer ? "folder.svg" : "file.svg";
             string? localPath = item switch
             {

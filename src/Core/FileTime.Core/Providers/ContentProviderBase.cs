@@ -14,11 +14,15 @@ namespace FileTime.Core.Providers
         protected List<IContainer>? RootContainers { get; private set; }
         public override bool IsExists => true;
 
+        public virtual bool SupportsContentStreams { get; }
+
+        public virtual string Protocol { get; }
+
         protected ContentProviderBase(
             string name,
-            string? fullName,
             string protocol,
-            bool supportsContentStreams)
+            bool supportsContentStreams,
+            string? fullName = null)
         : base(name, fullName)
         {
             Protocol = protocol;
@@ -31,11 +35,7 @@ namespace FileTime.Core.Providers
             CanDelete = SupportsDelete.False;
         }
 
-        public virtual bool SupportsContentStreams { get; }
-
-        public virtual string Protocol { get; }
-
-        public abstract Task<bool> CanHandlePath(string path);
+        public virtual Task<bool> CanHandlePath(string path) => Task.FromResult(path.StartsWith(Protocol));
         public override IContainer? GetParent() => _parent;
 
         public void SetParent(IContainer parent) => _parent = parent;

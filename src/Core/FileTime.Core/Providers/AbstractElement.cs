@@ -51,7 +51,7 @@ namespace FileTime.Core.Providers
         public abstract Task<long?> GetElementSize(CancellationToken token = default);
 
         public IContainer? GetParent() => _parent;
-        public abstract string GetPrimaryAttributeText();
+        public abstract string? GetPrimaryAttributeText();
 
         public abstract Task Rename(string newName);
     }

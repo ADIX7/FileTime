@@ -5,6 +5,7 @@ using FileTime.Core.ContainerSizeScanner;
 using FileTime.Core.Providers;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
+using FileTime.Providers.Favorites;
 using FileTime.Providers.Local;
 using FileTime.Providers.Sftp;
 using FileTime.Providers.Smb;
@@ -29,6 +30,7 @@ namespace FileTime.App.Core
                 .AddLocalServices()
                 .AddSmbServices()
                 .AddSftpServices()
+                .AddFavoriteServices()
                 .RegisterCommandHandlers();
         }
 

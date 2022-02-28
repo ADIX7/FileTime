@@ -29,7 +29,7 @@ namespace FileTime.Core.Search
 
         public override async Task<long?> GetElementSize(CancellationToken token = default) => await BaseElement.GetElementSize(token);
 
-        public override string GetPrimaryAttributeText() => BaseElement.GetPrimaryAttributeText();
+        public override string? GetPrimaryAttributeText() => BaseElement.GetPrimaryAttributeText();
 
         public override Task Rename(string newName) => throw new NotSupportedException();
     }

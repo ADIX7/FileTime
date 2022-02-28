@@ -39,6 +39,7 @@ namespace FileTime.App.Core.Command
         PasteMerge,
         PasteOverwrite,
         PasteSkip,
+        PinFavorite,
         PreviousTimelineBlock,
         PreviousTimelineCommand,
         Refresh,

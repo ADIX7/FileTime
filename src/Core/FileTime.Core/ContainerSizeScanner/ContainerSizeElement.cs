@@ -32,7 +32,7 @@ namespace FileTime.Core.ContainerSizeScanner
 
         public override Task<long?> GetElementSize(CancellationToken token = default) => Task.FromResult((long?)Size);
 
-        public override string GetPrimaryAttributeText() => "";
+        public override string? GetPrimaryAttributeText() => null;
 
         public override Task Rename(string newName) => throw new NotSupportedException();
     }

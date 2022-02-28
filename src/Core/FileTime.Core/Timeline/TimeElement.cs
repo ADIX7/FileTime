@@ -42,7 +42,7 @@ namespace FileTime.Core.Timeline
 
         public IContainer? GetParent() => _parent;
 
-        public string GetPrimaryAttributeText() => "";
+        public string? GetPrimaryAttributeText() => null;
 
         public Task Rename(string newName) => Task.CompletedTask;
 

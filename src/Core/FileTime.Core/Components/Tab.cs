@@ -337,6 +337,26 @@ namespace FileTime.Core.Components
                     await SetCurrentLocation(childContainer);
                 }
             }
+            else if (_currentSelectedItem is ISymlinkElement symlinkElement)
+            {
+                if (symlinkElement.RealItem is IContainer realContainer)
+                {
+                    await SetCurrentLocation(realContainer);
+                }
+                else if (symlinkElement.RealItem is IElement realElement)
+                {
+                    if (realElement.GetParent() is IContainer parent)
+                    {
+                        await SetCurrentLocation(parent);
+                        if (await _currentLocation.IsExistsAsync(realElement.Name))
+                        {
+                            var newRealElement = await _currentLocation.GetByPath(realElement.Name);
+
+                            if (newRealElement != null) await SetCurrentSelectedItem(newRealElement);
+                        }
+                    }
+                }
+            }
         }
 
         public async Task OpenContainer(IContainer container) => await SetCurrentLocation(container);

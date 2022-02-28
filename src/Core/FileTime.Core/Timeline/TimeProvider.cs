@@ -7,7 +7,7 @@ namespace FileTime.Core.Timeline
     {
         private readonly PointInTime _pointInTime;
 
-        public TimeProvider(PointInTime pointInTime) : base("time", null, "time2://", false)
+        public TimeProvider(PointInTime pointInTime) : base("time", "time2://", false)
         {
             _pointInTime = pointInTime;
         }

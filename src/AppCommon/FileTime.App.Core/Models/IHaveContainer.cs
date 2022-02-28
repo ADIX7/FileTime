@@ -4,6 +4,6 @@ namespace FileTime.App.Core.Models
 {
     public interface IHaveContainer
     {
-        IContainer Container { get; }
+        IContainer? Container { get; }
     }
 }

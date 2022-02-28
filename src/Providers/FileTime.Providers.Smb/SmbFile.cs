@@ -74,10 +74,7 @@ namespace FileTime.Providers.Smb
             throw new NotImplementedException();
         }
 
-        public string GetPrimaryAttributeText()
-        {
-            return "";
-        }
+        public string? GetPrimaryAttributeText() => null;
 
         public IContainer? GetParent() => _parent;
         public Task<string> GetContent(CancellationToken token = default) => Task.FromResult("NotImplemented");

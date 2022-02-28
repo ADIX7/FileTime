@@ -45,7 +45,7 @@ namespace FileTime.Providers.Local
             Provider = contentProvider;
         }
 
-        public string GetPrimaryAttributeText() => File.Length.ToSizeString();
+        public string? GetPrimaryAttributeText() => File.Length.ToSizeString();
 
         public Task Delete(bool hardDelete = false)
         {

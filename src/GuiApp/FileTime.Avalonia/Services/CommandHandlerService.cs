@@ -26,6 +26,7 @@ using FileTime.Core.Providers;
 using FileTime.Core.Search;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
+using FileTime.Providers.Favorites;
 using FileTime.Providers.Local;
 using FileTime.Tools.Compression.Command;
 using Microsoft.Extensions.Logging;
@@ -49,6 +50,7 @@ namespace FileTime.Avalonia.Services
         private readonly ILogger<CommandHandlerService> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly ContainerScanSnapshotProvider _containerScanSnapshotProvider;
+        private readonly FavoriteContentProvider _favoriteContentProvider;
 
         public CommandHandlerService(
             AppState appState,
@@ -62,7 +64,8 @@ namespace FileTime.Avalonia.Services
             ProgramsService programsService,
             ILogger<CommandHandlerService> logger,
             IServiceProvider serviceProvider,
-            ContainerScanSnapshotProvider containerScanSnapshotProvider)
+            ContainerScanSnapshotProvider containerScanSnapshotProvider,
+            FavoriteContentProvider favoriteContentProvider)
         {
             _appState = appState;
             _localContentProvider = localContentProvider;
@@ -76,6 +79,7 @@ namespace FileTime.Avalonia.Services
             _logger = logger;
             _serviceProvider = serviceProvider;
             _containerScanSnapshotProvider = containerScanSnapshotProvider;
+            _favoriteContentProvider = favoriteContentProvider;
 
             _commandHandlers = new Dictionary<Commands, Func<Task>>
             {
@@ -114,6 +118,7 @@ namespace FileTime.Avalonia.Services
                 {Commands.PasteMerge, PasteMerge},
                 {Commands.PasteOverwrite, PasteOverwrite},
                 {Commands.PasteSkip, PasteSkip},
+                {Commands.PinFavorite, PinFavorite},
                 {Commands.PreviousTimelineBlock, SelectPreviousTimelineBlock},
                 {Commands.PreviousTimelineCommand, SelectPreviousTimelineCommand},
                 {Commands.Refresh, RefreshCurrentLocation},
@@ -1009,6 +1014,31 @@ namespace FileTime.Avalonia.Services
                 scanTask.Start();
 
                 await OpenContainer(scanTask.Snapshot);
+            }
+        }
+
+        private async Task PinFavorite()
+        {
+            if (_appState.SelectedTab.SelectedItem is IItemViewModel selectedItemVM)
+            {
+                if (selectedItemVM.BaseItem is FavoriteElement favoriteElement)
+                {
+                    favoriteElement.IsPinned = !favoriteElement.IsPinned;
+
+                    _appState.FavoriteElements = GetFavoriteElements(_favoriteContentProvider).Select(f => f.BaseItem).ToList();
+                    await _favoriteContentProvider.SaveAsync();
+                }
+                else
+                {
+                    _dialogService.ShowToastMessage("Selected item is not a favorite element.");
+                }
+            }
+
+            static IEnumerable<FavoriteElement> GetFavoriteElements(FavoriteContainerBase container)
+            {
+                return container.Elements.Where(e => e.IsPinned).Concat(
+                    container.Containers.SelectMany(GetFavoriteElements)
+                );
             }
         }
     }

@@ -11,13 +11,11 @@ namespace FileTime.Providers.Sftp
         private readonly ILogger<SftpContentProvider> _logger;
 
         public SftpContentProvider(IInputInterface inputInterface, ILogger<SftpContentProvider> logger)
-            : base("sftp", null, "sftp://", false)
+            : base("sftp", "sftp://", false)
         {
             _logger = logger;
             _inputInterface = inputInterface;
         }
-
-        public override Task<bool> CanHandlePath(string path) => Task.FromResult(path.StartsWith(Protocol));
 
         public override async Task<IContainer> CreateContainerAsync(string name)
         {

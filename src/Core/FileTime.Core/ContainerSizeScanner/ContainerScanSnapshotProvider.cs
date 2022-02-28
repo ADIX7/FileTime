@@ -7,11 +7,9 @@ namespace FileTime.Core.ContainerSizeScanner
     public class ContainerScanSnapshotProvider : ContentProviderBase<ContainerScanSnapshotProvider>
     {
 
-        public ContainerScanSnapshotProvider() : base("size", null, "size://", false)
+        public ContainerScanSnapshotProvider() : base("size", "size://", false)
         {
         }
-
-        public override Task<bool> CanHandlePath(string path) => Task.FromResult(path.StartsWith(Protocol));
 
         public override Task<IContainer> CreateContainerAsync(string name) => throw new NotSupportedException();
 

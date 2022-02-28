@@ -41,7 +41,7 @@
 					</StackPanel>
 				</Grid>
 
-				<Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto">
+				<Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
 
 					<Border CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="10" Margin="10">
 						<Grid RowDefinitions="Auto,Auto">
@@ -149,6 +149,38 @@
 					</Border>
 
 					<Border Grid.Row="2" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+						<Grid RowDefinitions="Auto,Auto">
+
+							<TextBlock
+								Margin="10,0,10,10"
+								Text="Favorites" />
+
+							<ItemsRepeater
+								Grid.Row="1"
+								Items="{Binding AppState.FavoriteElements}">
+								<ItemsRepeater.ItemTemplate>
+									<DataTemplate>
+										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
+											<StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
+												<Image
+													Width="20"
+													Height="20"
+													VerticalAlignment="Center"
+													Source="{Binding Converter={StaticResource ItemToImageConverter}}" />
+
+												<TextBlock
+													Margin="5,0,0,0"
+													VerticalAlignment="Center"
+													Text="{Binding Name}" />
+											</StackPanel>
+										</Grid>
+									</DataTemplate>
+								</ItemsRepeater.ItemTemplate>
+							</ItemsRepeater>
+						</Grid>
+					</Border>
+
+					<Border Grid.Row="3" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
 						<Grid RowDefinitions="Auto,Auto">
 
 							<TextBlock

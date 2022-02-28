@@ -61,7 +61,7 @@ namespace FileTime.Providers.Sftp
             throw new NotImplementedException();
         }
 
-        public string GetPrimaryAttributeText()
+        public string? GetPrimaryAttributeText()
         {
             throw new NotImplementedException();
         }

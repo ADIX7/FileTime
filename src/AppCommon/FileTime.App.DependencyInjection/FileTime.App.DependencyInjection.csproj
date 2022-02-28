@@ -9,6 +9,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.Favorites\FileTime.Providers.Favorites.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Sftp\FileTime.Providers.Sftp.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools.Compression\FileTime.Tools.Compression.csproj" />
     <ProjectReference Include="..\FileTime.App.Core\FileTime.App.Core.csproj" />

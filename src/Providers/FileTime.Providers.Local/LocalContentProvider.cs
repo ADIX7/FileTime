@@ -11,7 +11,7 @@ namespace FileTime.Providers.Local
         public bool IsCaseInsensitive { get; }
 
         public LocalContentProvider(ILogger<LocalContentProvider> logger)
-        : base("local", null, "local://", true)
+        : base("local", "local://", true)
         {
             _logger = logger;
 

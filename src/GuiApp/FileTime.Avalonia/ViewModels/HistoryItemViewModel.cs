@@ -1,11 +1,12 @@
-﻿using FileTime.Core.Models;
+﻿using FileTime.App.Core.Models;
+using FileTime.Core.Models;
 using InitableService;
 using System;
 using System.Threading.Tasks;
 
 namespace FileTime.Avalonia.ViewModels
 {
-    public class HistoryItemViewModel : IAsyncInitable<AbsolutePath>
+    public class HistoryItemViewModel : IAsyncInitable<AbsolutePath>, IHaveContainer
     {
         public string? Name { get; private set; }
         public IContainer? Container { get; private set; }
