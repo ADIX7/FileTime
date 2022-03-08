@@ -1,7 +1,10 @@
 using System;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncEvent;
+using Avalonia.Threading;
 using FileTime.Core.Command;
 using FileTime.Core.Timeline;
 using MvvmGen;
@@ -16,8 +19,10 @@ namespace FileTime.Avalonia.ViewModels
         [Property]
         private ReadOnlyCommandTimeState _commandTimeState;
 
+        private readonly BehaviorSubject<int> _progressSubject = new BehaviorSubject<int>(0);
+
         [Property]
-        private int _progress;
+        private IObservable<int> _progress;
 
         [Property]
         private bool _isSelected;
@@ -31,12 +36,13 @@ namespace FileTime.Avalonia.ViewModels
         {
             _commandTimeState = commandTimeState;
             _commandTimeState.Command.ProgressChanged.Add(HandleProgressChange);
+
+            _progress = _progressSubject.Throttle(TimeSpan.FromSeconds(1));
         }
 
-        private Task HandleProgressChange(object? sender, AsyncEventArgs e, CancellationToken token = default)
+        private async Task HandleProgressChange(object? sender, AsyncEventArgs e, CancellationToken token = default)
         {
-            Progress = _commandTimeState.Command.Progress;
-            return Task.CompletedTask;
+            await Dispatcher.UIThread.InvokeAsync(() => _progressSubject.OnNext(_commandTimeState.Command.Progress));
         }
 
         public void Destroy()

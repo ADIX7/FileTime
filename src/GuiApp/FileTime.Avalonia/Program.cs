@@ -56,13 +56,15 @@ namespace FileTime.Avalonia
         [STAThread]
         public static void Main(string[] args)
         {
+#if DEBUG
+#else
             try
             {
-                BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-            }
+#endif
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 #if DEBUG
-            finally { }
 #else
+            }
             catch (Exception e)
             {
                 var message = $"Ciritcal error cought in {nameof(Program)}";

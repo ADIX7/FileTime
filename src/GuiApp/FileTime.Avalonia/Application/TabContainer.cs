@@ -18,6 +18,7 @@ using FileTime.Core.Services;
 using FileTime.Core.ContainerSizeScanner;
 using System.Collections.Generic;
 using FileTime.Core.Providers;
+using Avalonia.Threading;
 
 namespace FileTime.Avalonia.Application
 {
@@ -122,7 +123,7 @@ namespace FileTime.Avalonia.Application
                 catch { }
             }
 
-            History = newHistory;
+            await Dispatcher.UIThread.InvokeAsync(() => History = newHistory);
         }
 
         private async Task TimeRunnerContainerRefreshed(object? sender, AbsolutePath container, CancellationToken token = default)

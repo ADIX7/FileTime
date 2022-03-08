@@ -53,7 +53,7 @@ namespace FileTime.Avalonia.Application
         private List<IItem> _favoriteElements;
 
         public List<KeyConfig> PreviousKeys { get; } = new();
-        
+
         public ObservableCollection<ParallelCommandsViewModel> TimelineCommands { get; } = new();
 
         partial void OnInitialize()

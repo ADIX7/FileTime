@@ -232,7 +232,7 @@
 														<Border BorderThickness="1" Classes="TimelineCommand" Classes.SelectedTimelineCommand="{Binding IsSelected}">
 															<StackPanel>
 																<TextBlock Text="{Binding Name}"/>
-																<ProgressBar Margin="0,5,0,0" Maximum="100" Value="{Binding Progress}"/>
+																<ProgressBar Margin="0,5,0,0" Maximum="100" Value="{Binding Progress^}"/>
 															</StackPanel>
 														</Border>
 													</DataTemplate>
