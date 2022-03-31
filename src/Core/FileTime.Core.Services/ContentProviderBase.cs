@@ -27,6 +27,8 @@ namespace FileTime.Core.Services
 
         public IContentProvider Provider => this;
 
+        public FullName? Parent => null;
+
         protected ContentProviderBase(string name)
         {
             DisplayName = Name = name;

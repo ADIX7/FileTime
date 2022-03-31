@@ -62,12 +62,15 @@ namespace FileTime.Providers.Local
             return new AbsolutePath(this, fullName, AbsolutePathType.Element);
         }
 
-        private Container DirectoryToContainer(DirectoryInfo directoryInfo) =>
-            new(
+        private Container DirectoryToContainer(DirectoryInfo directoryInfo)
+        {
+            var fullName = GetFullName(directoryInfo.FullName);
+            return new(
                 directoryInfo.Name,
                 directoryInfo.Name,
-                GetFullName(directoryInfo.FullName),
+                fullName,
                 new(directoryInfo.FullName),
+                fullName.GetParent()!,
                 (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden,
                 directoryInfo.Exists,
                 SupportsDelete.True,
@@ -75,19 +78,24 @@ namespace FileTime.Providers.Local
                 this,
                 GetItemsByContainer(directoryInfo)
             );
+        }
 
-        private Element FileToElement(FileInfo fileInfo) =>
-            new(
+        private Element FileToElement(FileInfo fileInfo)
+        {
+            var fullName = GetFullName(fileInfo);
+            return new(
                 fileInfo.Name,
                 fileInfo.Name,
-                GetFullName(fileInfo),
+                fullName,
                 new(fileInfo.FullName),
+                fullName.GetParent()!,
                 (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden,
                 fileInfo.Exists,
                 SupportsDelete.True,
                 true,
                 this
             );
+        }
 
         private FullName GetFullName(DirectoryInfo directoryInfo) => GetFullName(directoryInfo.FullName);
         private FullName GetFullName(FileInfo fileInfo) => GetFullName(fileInfo.FullName);
