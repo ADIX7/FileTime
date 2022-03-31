@@ -1,0 +1,35 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Core Launch (console)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build cli",
+      "program": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI/bin/Debug/net6.0/FileTime.ConsoleUI.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/ConsoleApp/FileTime.ConsoleUI",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "GUI",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build gui",
+      "program": "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp/bin/Debug/net6.0/FileTime.GuiApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp/bin/Debug/net6.0",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach"
+    }
+  ]
+}
