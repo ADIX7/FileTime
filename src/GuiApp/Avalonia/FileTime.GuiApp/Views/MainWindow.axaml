@@ -1,17 +1,54 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:FileTime.GuiApp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:FileTime.GuiApp.ViewModels"
+		xmlns:corevm="using:FileTime.App.Core.ViewModels"
+		xmlns:local="using:FileTime.GuiApp.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	    InputElement.KeyDown="OnKeyDown"
+	    Opened="OnWindowOpened"
         x:Class="FileTime.GuiApp.Views.MainWindow"
         Icon="/Assets/filetime.ico"
-        Title="FileTime.GuiApp">
+        Title="FileTime"
+		TransparencyLevelHint="Blur"
+		Background="Transparent"
+		ExtendClientAreaToDecorationsHint="True"
+		x:DataType="vm:MainWindowViewModel"
+		x:CompileBindings="True">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+	<Grid Background="{DynamicResource AppBackgroundBrush}">
+		<Grid IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}}">
+			<Grid ColumnDefinitions="250,*" RowDefinitions="Auto,*">
+				<ListBox
+					Grid.Row="1"
+					x:Name="CurrentItems"
+					x:CompileBindings="False"
+					AutoScrollToSelectedItem="True"
+					IsTabStop="True"
+					Items="{Binding AppState.SelectedTab.CurrentItems^}"
+					ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+					ScrollViewer.VerticalScrollBarVisibility="Visible"
+					Classes="ContentListView">
+					<ListBox.ItemTemplate>
+						<DataTemplate x:DataType="corevm:IItemViewModel">
+							<local:ItemView HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch"/>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Grid>
+			<!--Borders-->
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+		</Grid>
 
+		<Grid IsVisible="{Binding Loading}">
+			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+				<Image Source="/Assets/filetime.ico" Width="128" Height="128"/>
+				<TextBlock Text="Loading..." HorizontalAlignment="Center" Margin="50"/>
+			</StackPanel>
+		</Grid>
+	</Grid>
 </Window>

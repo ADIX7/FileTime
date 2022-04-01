@@ -8,8 +8,8 @@ namespace FileTime.Providers.Local
         public static IServiceCollection AddLocalServices(this IServiceCollection serviceCollection)
         {
             return serviceCollection
-                .AddSingleton<LocalContentProvider>()
-                .AddSingleton<IContentProvider, LocalContentProvider>(sp => sp.GetService<LocalContentProvider>() ?? throw new Exception($"No {nameof(LocalContentProvider)} instance found"));
+                .AddSingleton<ILocalContentProvider, LocalContentProvider>()
+                .AddSingleton<IContentProvider, ILocalContentProvider>(sp => sp.GetRequiredService<ILocalContentProvider>());
         }
     }
 }
