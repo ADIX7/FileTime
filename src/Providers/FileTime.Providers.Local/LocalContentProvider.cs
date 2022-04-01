@@ -5,7 +5,7 @@ using FileTime.Core.Services;
 
 namespace FileTime.Providers.Local
 {
-    public class LocalContentProvider : ContentProviderBase, ILocalContentProvider
+    public partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
     {
         protected bool IsCaseInsensitive { get; init; }
         public LocalContentProvider() : base("local")
@@ -73,8 +73,10 @@ namespace FileTime.Providers.Local
                 fullName.GetParent()!,
                 (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden,
                 directoryInfo.Exists,
+                directoryInfo.CreationTime,
                 SupportsDelete.True,
                 true,
+                GetDirectoryAttributes(directoryInfo),
                 this,
                 GetItemsByContainer(directoryInfo)
             );
@@ -91,8 +93,10 @@ namespace FileTime.Providers.Local
                 fullName.GetParent()!,
                 (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden,
                 fileInfo.Exists,
+                fileInfo.CreationTime,
                 SupportsDelete.True,
                 true,
+                GetFileAttributes(fileInfo),
                 this
             );
         }

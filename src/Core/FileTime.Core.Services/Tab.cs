@@ -40,11 +40,6 @@ namespace FileTime.Core.Services
                 )
                 .Merge(Constants.MaximumObservableMergeOperations);
             CurrentSelectedItem = CurrentLocation.Select(GetSelectedItemByLocation).Merge(_currentSelectedItem).Throttle(TimeSpan.FromMilliseconds(500));
-
-            CurrentItems.Subscribe(c =>
-            {
-                ;
-            });
         }
 
         public void Init(IContainer currentLocation)

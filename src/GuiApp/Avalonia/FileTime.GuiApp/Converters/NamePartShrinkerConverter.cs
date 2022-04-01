@@ -79,7 +79,7 @@ namespace FileTime.GuiApp.Converters
                 if (trimmed) break;
             }
 
-            return newNameParts.OfType<ItemNamePart>().ToList();
+            return newNameParts.Where(f => f is not null).ToList()!;
         }
 
         private static List<ItemNamePart> GetNamePartsForWidthPessimistic(IList<ItemNamePart> nameParts, double maxWidth)

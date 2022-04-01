@@ -12,8 +12,10 @@ namespace FileTime.Core.Models
         FullName? Parent { get; }
         bool IsHidden { get; }
         bool IsExists { get; }
+        DateTime? CreatedAt { get; }
         SupportsDelete CanDelete { get; }
         bool CanRename { get; }
         IContentProvider Provider { get; }
+        string? Attributes { get; }
     }
 }

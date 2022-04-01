@@ -1,7 +1,11 @@
+using MvvmGen;
+
 namespace FileTime.App.Core.ViewModels
 {
-    public class ContainerSizeContainerViewModel : ItemViewModel, IContainerSizeContainerViewModel
+    [ViewModel]
+    public partial class ContainerSizeContainerViewModel : ItemViewModel, IContainerSizeContainerViewModel
     {
-
+        [Property]
+        private long _size;
     }
 }

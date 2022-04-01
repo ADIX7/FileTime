@@ -29,6 +29,10 @@ namespace FileTime.Core.Services
 
         public FullName? Parent => null;
 
+        public DateTime? CreatedAt => null;
+
+        public string? Attributes => null;
+
         protected ContentProviderBase(string name)
         {
             DisplayName = Name = name;

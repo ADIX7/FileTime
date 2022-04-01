@@ -3,7 +3,7 @@ using FileTime.Core.Services;
 
 namespace FileTime.Core.Models
 {
-    public record Container(
+    public record FileElement(
         string Name,
         string DisplayName,
         FullName FullName,
@@ -16,5 +16,19 @@ namespace FileTime.Core.Models
         bool CanRename,
         string? Attributes,
         IContentProvider Provider,
-        IReadOnlyList<IAbsolutePath> Items) : IContainer;
+        long Size)
+    : Element(
+        Name,
+        DisplayName,
+        FullName,
+        NativePath,
+        Parent,
+        IsHidden,
+        IsExists,
+        CreatedAt,
+        CanDelete,
+        CanRename,
+        Attributes,
+        Provider
+    ), IFileElement;
 }

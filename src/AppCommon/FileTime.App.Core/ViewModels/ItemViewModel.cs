@@ -1,3 +1,4 @@
+using System.Reactive.Subjects;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.Core.Models;
@@ -9,7 +10,7 @@ namespace FileTime.App.Core.ViewModels
     public abstract partial class ItemViewModel : IItemViewModel
     {
         [Property]
-        private IItem? _item;
+        private IItem? _baseItem;
 
         [Property]
         private IObservable<IReadOnlyList<ItemNamePart>>? _displayName;
@@ -21,6 +22,15 @@ namespace FileTime.App.Core.ViewModels
         private IObservable<bool>? _isMarked;
 
         [Property]
-        private ItemViewMode _viewMode;
+        private IObservable<ItemViewMode> _viewMode;
+
+        [Property]
+        private DateTime? _createdAt;
+
+        [Property]
+        private string? _attributes;
+
+        [Property]
+        private BehaviorSubject<bool> _isAlternative = new(false);
     }
 }
