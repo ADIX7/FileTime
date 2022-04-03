@@ -17,12 +17,15 @@ namespace FileTime.App.Core.ViewModels
         private readonly List<IDisposable> _disposables = new();
         private bool disposed;
 
+        public ITab? Tab { get; private set; }
+        public int TabNumber { get; private set; }
+
+        public IObservable<bool> IsSelected { get; }
+
         public IObservable<IContainer?>? CurrentLocation { get; private set; }
         public IObservable<IItemViewModel?>? CurrentSelectedItem { get; private set; }
         public IObservable<IReadOnlyList<IItemViewModel>>? CurrentItems { get; private set; }
         public IObservable<IReadOnlyList<FullName>> MarkedItems { get; }
-
-        public ITab? Tab { get; private set; }
 
         public TabViewModel(
             IServiceProvider serviceProvider,
@@ -34,10 +37,14 @@ namespace FileTime.App.Core.ViewModels
             _appState = appState;
 
             MarkedItems = _markedItems.Select(e => e.ToList()).AsObservable();
+            IsSelected = _appState.SelectedTabObservable.Select(s => s == this);
         }
 
-        public void Init(ITab tab)
+        public void Init(ITab tab, int tabNumber)
         {
+            Tab = tab;
+            TabNumber = tabNumber;
+
             CurrentLocation = tab.CurrentLocation.AsObservable();
             CurrentItems = tab.CurrentItems.Select(items => items.Select(MapItemToViewModel).ToList());
             CurrentSelectedItem = Observable.CombineLatest(
@@ -45,60 +52,32 @@ namespace FileTime.App.Core.ViewModels
                 tab.CurrentSelectedItem,
                 (currentItems, currentSelectedItemPath) => currentItems.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path));
             tab.CurrentLocation.Subscribe((_) => _markedItems.OnNext(Enumerable.Empty<FullName>()));
-
-            Tab = tab;
         }
 
         private IItemViewModel MapItemToViewModel(IItem item, int index)
         {
             if (item is IContainer container)
             {
-                var containerViewModel = _serviceProvider.GetRequiredService<IContainerViewModel>();
-                InitIItemViewModel(containerViewModel, item);
+                var containerViewModel = _serviceProvider.GetInitableResolver<IContainer, ITabViewModel, int>(container, this, index).GetRequiredService<IContainerViewModel>();
 
                 return containerViewModel;
             }
             else if (item is IFileElement fileElement)
             {
-                var fileViewModel = _serviceProvider.GetRequiredService<IFileViewModel>();
-                InitIItemViewModel(fileViewModel, item);
+                var fileViewModel = _serviceProvider.GetInitableResolver<IFileElement, ITabViewModel, int>(fileElement, this, index).GetRequiredService<IFileViewModel>();
                 fileViewModel.Size = fileElement.Size;
 
                 return fileViewModel;
             }
             else if (item is IElement element)
             {
-                var elementViewModel = _serviceProvider.GetRequiredService<IElementViewModel>();
-                InitIItemViewModel(elementViewModel, item);
+                var elementViewModel = _serviceProvider.GetInitableResolver<IElement, ITabViewModel, int>(element, this, index).GetRequiredService<IElementViewModel>();
 
                 return elementViewModel;
             }
 
             throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neighter {nameof(IElement)}");
-
-            void InitIItemViewModel(IItemViewModel itemViewModel, IItem item)
-            {
-                itemViewModel.BaseItem = item;
-                itemViewModel.DisplayName = _appState.SearchText.Select(s => _itemNameConverterService.GetDisplayName(item.DisplayName, s));
-                itemViewModel.IsMarked = MarkedItems.Select(m => m.Contains(item.FullName));
-                itemViewModel.IsSelected = MarkedItems.Select(m => m.Contains(item.FullName));
-                itemViewModel.IsAlternative.OnNext(index % 2 == 0);
-                itemViewModel.ViewMode = Observable.CombineLatest(itemViewModel.IsMarked, itemViewModel.IsSelected, itemViewModel.IsAlternative, GenerateViewMode);
-                itemViewModel.Attributes = item.Attributes;
-                itemViewModel.CreatedAt = item.CreatedAt;
-            }
         }
-
-        private ItemViewMode GenerateViewMode(bool isMarked, bool isSelected, bool sAlternative)
-        => (isMarked, isSelected, sAlternative) switch
-        {
-            (true, true, _) => ItemViewMode.MarkedSelected,
-            (true, false, true) => ItemViewMode.MarkedAlternative,
-            (false, true, _) => ItemViewMode.Selected,
-            (false, false, true) => ItemViewMode.Alternative,
-            (true, false, false) => ItemViewMode.Marked,
-            _ => ItemViewMode.Default
-        };
 
         ~TabViewModel() => Dispose(false);
 

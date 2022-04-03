@@ -1,3 +1,4 @@
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
@@ -27,8 +28,7 @@ namespace FileTime.Providers.Local
                 ? new DirectoryInfo("/").GetDirectories()
                 : Environment.GetLogicalDrives().Select(d => new DirectoryInfo(d));
 
-            Items.Clear();
-            Items.AddRange(rootDirectories.Select(DirectoryToAbsolutePath));
+            Items.OnNext(rootDirectories.Select(DirectoryToAbsolutePath).ToList());
         }
 
         public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath)
@@ -78,7 +78,7 @@ namespace FileTime.Providers.Local
                 true,
                 GetDirectoryAttributes(directoryInfo),
                 this,
-                GetItemsByContainer(directoryInfo)
+                Observable.Return(GetItemsByContainer(directoryInfo))
             );
         }
 

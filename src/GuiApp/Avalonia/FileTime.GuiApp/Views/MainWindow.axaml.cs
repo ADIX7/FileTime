@@ -49,5 +49,24 @@ namespace FileTime.GuiApp.Views
                 ViewModel?.ProcessKeyDown(e.Key, e.KeyModifiers, h => e.Handled = h);
             }
         }
+
+        private void HeaderPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                if (WindowState == WindowState.Maximized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+                else
+                {
+                    WindowState = WindowState.Maximized;
+                }
+            }
+            else
+            {
+                BeginMoveDrag(e);
+            }
+        }
     }
 }

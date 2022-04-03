@@ -1,11 +1,22 @@
+using FileTime.App.Core.Services;
+using FileTime.Core.Models;
 using MvvmGen;
 
 namespace FileTime.App.Core.ViewModels
 {
-    [ViewModel]
+    [ViewModel(GenerateConstructor = false)]
     public partial class ElementViewModel : ItemViewModel, IElementViewModel
     {
         [Property]
         private long? _size;
+
+        public ElementViewModel(IItemNameConverterService _itemNameConverterService, IAppState _appState) : base(_itemNameConverterService, _appState)
+        {
+        }
+
+        public void Init(IElement item, ITabViewModel parentTab, int index)
+        {
+            Init((IItem)item, parentTab, index);
+        }
     }
 }

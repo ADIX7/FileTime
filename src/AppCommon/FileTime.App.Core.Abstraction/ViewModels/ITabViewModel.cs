@@ -5,12 +5,14 @@ using InitableService;
 
 namespace FileTime.App.Core.ViewModels
 {
-    public interface ITabViewModel : IInitable<ITab>
+    public interface ITabViewModel : IInitable<ITab, int>
     {
+        ITab? Tab { get; }
+        int TabNumber { get; }
+        IObservable<bool> IsSelected { get; }
         IObservable<IContainer?>? CurrentLocation { get; }
         IObservable<IItemViewModel?>? CurrentSelectedItem { get; }
         IObservable<IReadOnlyList<IItemViewModel>>? CurrentItems { get; }
         IObservable<IReadOnlyList<FullName>> MarkedItems { get; }
-        ITab? Tab { get; }
     }
 }

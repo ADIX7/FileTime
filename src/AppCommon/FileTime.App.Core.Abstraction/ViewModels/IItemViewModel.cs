@@ -2,13 +2,15 @@ using System.Reactive.Subjects;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.Core.Models;
+using InitableService;
 
 namespace FileTime.App.Core.ViewModels
 {
-    public interface IItemViewModel
+    public interface IItemViewModel : IInitable<IItem, ITabViewModel, int>
     {
         IItem? BaseItem { get; set; }
         IObservable<IReadOnlyList<ItemNamePart>>? DisplayName { get; set; }
+        string? DisplayNameText { get; set; }
         IObservable<bool>? IsSelected { get; set; }
         IObservable<bool>? IsMarked { get; set; }
         BehaviorSubject<bool> IsAlternative { get; }

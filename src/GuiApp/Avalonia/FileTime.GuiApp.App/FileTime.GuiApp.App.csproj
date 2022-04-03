@@ -7,6 +7,7 @@
     <TrimMode>copyused</TrimMode>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationIcon>filetime.ico</ApplicationIcon>
+    <Version>0.0.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="filetime.ico" />

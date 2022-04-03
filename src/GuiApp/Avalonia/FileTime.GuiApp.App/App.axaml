@@ -132,6 +132,9 @@
 			<converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter"/>
 			<converters:FormatSizeConverter x:Key="FormatSizeConverter"/>
 			<converters:DateTimeConverter x:Key="DateTimeConverter"/>
+			<converters:SplitStringConverter x:Key="SplitStringConverter" />
+			<converters:CompareConverter x:Key="EqualityConverter"/>
+			<converters:CompareConverter x:Key="NotEqualsConverter" ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}"/>
 		</ResourceDictionary>
 	</Application.Resources>
 

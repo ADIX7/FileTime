@@ -15,31 +15,38 @@ namespace FileTime.Core.Services
         public Tab()
         {
             CurrentLocation = _currentLocation.AsObservable();
-            CurrentItems = _currentLocation
-                .Select(c =>
-                    Observable.FromAsync(async () =>
-                        c == null
-                        ? Enumerable.Empty<IItem>()
-                        : await c.Items
-                            .ToAsyncEnumerable()
-                            .SelectAwait(
-                                async i =>
-                                {
-                                    try
+            CurrentItems = 
+                Observable.Merge(
+                    _currentLocation
+                        .Where(c => c is not null)
+                        .Select(c => c!.Items)
+                        .Switch()
+                        .Select(
+                            i => Observable.FromAsync(async () => 
+                                await i
+                                .ToAsyncEnumerable()
+                                .SelectAwait(
+                                    async i =>
                                     {
-                                        //TODO: force create by AbsolutePath name
-                                        return await i.ContentProvider.GetItemByFullNameAsync(i.Path);
+                                        try
+                                        {
+                                            //TODO: force create by AbsolutePath name
+                                            return await i.ContentProvider.GetItemByFullNameAsync(i.Path);
+                                        }
+                                        catch { return null!; }
                                     }
-                                    catch { return null!; }
-                                }
-
+                                )
+                                .Where(i => i != null)
+                                .ToListAsync()
                             )
-                            .Where(i => i != null)
-                            .ToListAsync()
-                    )
-                )
-                .Merge(Constants.MaximumObservableMergeOperations);
-            CurrentSelectedItem = CurrentLocation.Select(GetSelectedItemByLocation).Merge(_currentSelectedItem).Throttle(TimeSpan.FromMilliseconds(500));
+                        )
+                        .Merge(Constants.MaximumObservableMergeOperations),
+                    _currentLocation
+                        .Where(c => c is null)
+                        .Select(c => Enumerable.Empty<IItem>())
+                );
+
+            CurrentSelectedItem = CurrentLocation.Select(GetSelectedItemByLocation).Switch().Merge(_currentSelectedItem).Throttle(TimeSpan.FromMilliseconds(500));
         }
 
         public void Init(IContainer currentLocation)
@@ -47,9 +54,9 @@ namespace FileTime.Core.Services
             _currentLocation.OnNext(currentLocation);
         }
 
-        private IAbsolutePath? GetSelectedItemByLocation(IContainer? currentLocation)
+        private IObservable<IAbsolutePath?> GetSelectedItemByLocation(IContainer? currentLocation)
         {
-            return currentLocation?.Items[0];
+            return currentLocation?.Items?.Select(i => i.FirstOrDefault()) ?? Observable.Never((IAbsolutePath?)null);
         }
 
         public void ChangeLocation(IContainer newLocation)

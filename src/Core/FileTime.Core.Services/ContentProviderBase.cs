@@ -1,3 +1,5 @@
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 
@@ -5,9 +7,9 @@ namespace FileTime.Core.Services
 {
     public abstract class ContentProviderBase : IContentProvider
     {
-        protected List<IAbsolutePath> Items { get; set; } = new List<IAbsolutePath>();
+        protected BehaviorSubject<IReadOnlyList<IAbsolutePath>> Items { get; } = new BehaviorSubject<IReadOnlyList<IAbsolutePath>>(new List<IAbsolutePath>());
 
-        IReadOnlyList<IAbsolutePath> IContainer.Items => Items;
+        IObservable<IReadOnlyList<IAbsolutePath>> IContainer.Items => Items;
 
         public string Name { get; }
 
@@ -32,6 +34,10 @@ namespace FileTime.Core.Services
         public DateTime? CreatedAt => null;
 
         public string? Attributes => null;
+
+        protected BehaviorSubject<bool> IsLoading { get; } = new(false);
+
+        IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
 
         protected ContentProviderBase(string name)
         {

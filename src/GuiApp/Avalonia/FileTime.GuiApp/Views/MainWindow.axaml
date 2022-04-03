@@ -23,22 +23,116 @@
 	<Grid Background="{DynamicResource AppBackgroundBrush}">
 		<Grid IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}}">
 			<Grid ColumnDefinitions="250,*" RowDefinitions="Auto,*">
-				<ListBox
-					Grid.Row="1"
-					x:Name="CurrentItems"
-					x:CompileBindings="False"
-					AutoScrollToSelectedItem="True"
-					IsTabStop="True"
-					Items="{Binding AppState.SelectedTab.CurrentItems^}"
-					ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-					ScrollViewer.VerticalScrollBarVisibility="Visible"
-					Classes="ContentListView">
-					<ListBox.ItemTemplate>
-						<DataTemplate x:DataType="corevm:IItemViewModel">
-							<local:ItemView HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch"/>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
+				<Grid PointerPressed="HeaderPointerPressed">
+					<Rectangle Fill="#01000000"/>
+					<TextBlock Margin="15,10" Text="{Binding Title}"/>
+				</Grid>
+
+				<Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
+					<Rectangle Fill="#01000000"/>
+
+					<StackPanel Margin="20,10" Orientation="Horizontal">
+						<!--local:PathPresenter DataContext="{Binding AppState.SelectedTab.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}"/-->
+						<TextBlock
+							Text="{Binding AppState.SelectedTab.CurrentSelectedItem^.DisplayNameText}" Foreground="{StaticResource AccentBrush}" />
+					</StackPanel>
+				</Grid>
+
+				<Grid Grid.Column="1" Grid.Row="1" RowDefinitions="Auto,40,*,Auto">
+
+					<ItemsControl
+							Grid.Row="1"
+							Items="{Binding AppState.Tabs}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Horizontal" />
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Grid RowDefinitions="Auto,1">
+									<StackPanel Orientation="Horizontal" Margin="20,0,20,0">
+
+										<TextBlock
+											VerticalAlignment="Center" Text="{Binding TabNumber,StringFormat=({0})}" />
+
+										<TextBlock
+											VerticalAlignment="Center" Margin="5,0,0,0" Text="{Binding CurrentLocation^.Name}" />
+									</StackPanel>
+
+									<Rectangle Fill="{DynamicResource ForegroundBrush}" Grid.Row="1" IsVisible="{Binding IsSelected^}"/>
+								</Grid>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+					<Grid
+						Grid.Row="2"
+						Margin="20,0,0,0">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="15*" />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="40*" />
+								<ColumnDefinition Width="10" />
+								<ColumnDefinition Width="45*" />
+							</Grid.ColumnDefinitions>
+
+
+							<Rectangle
+								Grid.Column="1"
+								Width="1"
+								Margin="0,10,0,10"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Stretch"
+								Fill="{DynamicResource ContentSeparatorBrush}" />
+
+
+							<Grid Grid.Column="2" RowDefinitions="Auto,*">
+								<Grid IsVisible="{Binding AppState.SelectedTab.CurrentLocation^.IsLoading^}">
+									<Image Width="40" Height="40" Source="{SvgImage /Assets/loading.svg}" Classes="LoadingAnimation"/>
+								</Grid>
+								<ListBox
+									Grid.Row="1"
+									x:Name="CurrentItems"
+									x:CompileBindings="False"
+									AutoScrollToSelectedItem="True"
+									IsTabStop="True"
+									Items="{Binding AppState.SelectedTab.CurrentItems^}"
+									ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+									ScrollViewer.VerticalScrollBarVisibility="Visible"
+									Classes="ContentListView">
+									<ListBox.ItemTemplate>
+										<DataTemplate x:DataType="corevm:IItemViewModel">
+											<local:ItemView HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch"/>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+
+								<TextBlock
+									Grid.Row="1"
+									x:CompileBindings="False"
+									x:Name="CurrentEmpty"
+									Margin="10"
+									HorizontalAlignment="Center"
+									FontWeight="Bold"
+									Foreground="{DynamicResource ErrorBrush}"
+									IsVisible="{Binding AppState.SelectedTab.CurrentLocation^.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+									Empty
+								</TextBlock>
+							</Grid>
+
+							<Rectangle
+								Grid.Column="3"
+								Width="1"
+								Margin="0,10,0,10"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Stretch"
+								Fill="{DynamicResource ContentSeparatorBrush}" />
+
+						</Grid>
+					</Grid>
+				</Grid>
 			</Grid>
 			<!--Borders-->
 

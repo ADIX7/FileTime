@@ -1,3 +1,5 @@
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
 
@@ -16,5 +18,9 @@ namespace FileTime.Core.Models
         bool CanRename,
         string? Attributes,
         IContentProvider Provider,
-        IReadOnlyList<IAbsolutePath> Items) : IContainer;
+        IObservable<IReadOnlyList<IAbsolutePath>> Items) : IContainer
+    {
+        BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);
+        IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
+    }
 }

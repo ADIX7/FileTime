@@ -2,6 +2,7 @@ namespace FileTime.Core.Models
 {
     public interface IContainer : IItem
     {
-        IReadOnlyList<IAbsolutePath> Items { get; }
+        IObservable<IReadOnlyList<IAbsolutePath>> Items { get; }
+        IObservable<bool> IsLoading { get; }
     }
 }

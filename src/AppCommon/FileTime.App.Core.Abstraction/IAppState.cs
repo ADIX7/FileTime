@@ -7,6 +7,7 @@ namespace FileTime.App.Core
     {
         ObservableCollection<ITabViewModel> Tabs { get; }
         ITabViewModel? SelectedTab { get; }
+        IObservable<ITabViewModel?> SelectedTabObservable { get; }
         IObservable<string?> SearchText { get; }
 
         void AddTab(ITabViewModel tabViewModel);
