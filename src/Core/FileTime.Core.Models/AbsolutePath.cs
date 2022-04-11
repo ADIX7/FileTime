@@ -18,5 +18,11 @@ namespace FileTime.Core.Models
             VirtualContentProvider = virtualContentProvider;
             Type = type;
         }
+
+        public async Task<IItem> ResolveAsync()
+        {
+            var provider = VirtualContentProvider ?? ContentProvider;
+            return await provider.GetItemByFullNameAsync(Path);
+        }
     }
 }

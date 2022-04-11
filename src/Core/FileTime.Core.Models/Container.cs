@@ -10,7 +10,7 @@ namespace FileTime.Core.Models
         string DisplayName,
         FullName FullName,
         NativePath NativePath,
-        FullName Parent,
+        IAbsolutePath? Parent,
         bool IsHidden,
         bool IsExists,
         DateTime? CreatedAt,

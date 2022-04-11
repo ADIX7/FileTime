@@ -34,9 +34,13 @@ namespace FileTime.Providers.Local
         public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath)
         {
             var path = nativePath.Path;
-            if (Directory.Exists(path))
+            if ((path?.Length ?? 0) == 0)
             {
-                return Task.FromResult((IItem)DirectoryToContainer(new DirectoryInfo(path)));
+                return Task.FromResult((IItem)this);
+            }
+            else if (Directory.Exists(path))
+            {
+                return Task.FromResult((IItem)DirectoryToContainer(new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)));
             }
             else if (File.Exists(path))
             {
@@ -48,7 +52,7 @@ namespace FileTime.Providers.Local
 
         public override Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName) => Task.FromResult(GetItemsByContainer(fullName));
         public List<IAbsolutePath> GetItemsByContainer(FullName fullName) => GetItemsByContainer(new DirectoryInfo(GetNativePath(fullName).Path));
-        public List<IAbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo) => directoryInfo.GetDirectories().Select(DirectoryToAbsolutePath).Concat(directoryInfo.GetFiles().Select(FileToAbsolutePath)).ToList();
+        public List<IAbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo) => directoryInfo.GetDirectories().Select(DirectoryToAbsolutePath).Concat(GetFilesSafe(directoryInfo).Select(FileToAbsolutePath)).ToList();
 
         private IAbsolutePath DirectoryToAbsolutePath(DirectoryInfo directoryInfo)
         {
@@ -65,12 +69,18 @@ namespace FileTime.Providers.Local
         private Container DirectoryToContainer(DirectoryInfo directoryInfo)
         {
             var fullName = GetFullName(directoryInfo.FullName);
+            var parentFullName = fullName.GetParent();
+            var parent = new AbsolutePath(
+                this,
+                parentFullName ?? new FullName(""),
+                AbsolutePathType.Container);
+
             return new(
                 directoryInfo.Name,
                 directoryInfo.Name,
                 fullName,
                 new(directoryInfo.FullName),
-                fullName.GetParent()!,
+                parent,
                 (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden,
                 directoryInfo.Exists,
                 directoryInfo.CreationTime,
@@ -85,12 +95,15 @@ namespace FileTime.Providers.Local
         private Element FileToElement(FileInfo fileInfo)
         {
             var fullName = GetFullName(fileInfo);
+            var parentFullName = fullName.GetParent() ?? throw new Exception($"Path does not have parent: '{fileInfo.FullName}'");
+            var parent = new AbsolutePath(this, parentFullName, AbsolutePathType.Container);
+
             return new(
                 fileInfo.Name,
                 fileInfo.Name,
                 fullName,
                 new(fileInfo.FullName),
-                fullName.GetParent()!,
+                parent,
                 (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden,
                 fileInfo.Exists,
                 fileInfo.CreationTime,

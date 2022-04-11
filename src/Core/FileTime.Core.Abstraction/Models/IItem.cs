@@ -9,7 +9,7 @@ namespace FileTime.Core.Models
         string DisplayName { get; }
         FullName? FullName { get; }
         NativePath? NativePath { get; }
-        FullName? Parent { get; }
+        IAbsolutePath? Parent { get; }
         bool IsHidden { get; }
         bool IsExists { get; }
         DateTime? CreatedAt { get; }

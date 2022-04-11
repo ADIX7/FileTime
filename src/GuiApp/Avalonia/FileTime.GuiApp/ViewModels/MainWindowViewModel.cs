@@ -5,6 +5,7 @@ using FileTime.App.Core;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
+using FileTime.GuiApp.Services;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ namespace FileTime.GuiApp.ViewModels
     [Inject(typeof(ILocalContentProvider), "_localContentProvider")]
     [Inject(typeof(IServiceProvider), PropertyName = "_serviceProvider")]
     [Inject(typeof(ILogger<MainWindowViewModel>), PropertyName = "_logger")]
+    [Inject(typeof(IKeyInputHandlerService), PropertyName = "_keyInputHandlerService")]
     public partial class MainWindowViewModel : IMainWindowViewModelBase
     {
         public bool Loading => false;
@@ -51,6 +53,7 @@ namespace FileTime.GuiApp.ViewModels
 
         public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
         {
+            _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
         }
     }
 }

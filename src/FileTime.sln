@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp.CustomImpl"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.Providers.Local.Abstractions", "Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj", "{1500A537-2116-4111-B216-7632040619B0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp.Abstractions", "GuiApp\Avalonia\FileTime.GuiApp.Abstractions\FileTime.GuiApp.Abstractions.csproj", "{D7D1C76A-05B0-49BC-BCFF-06340E264EC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,10 @@ Global
 		{1500A537-2116-4111-B216-7632040619B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1500A537-2116-4111-B216-7632040619B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1500A537-2116-4111-B216-7632040619B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7D1C76A-05B0-49BC-BCFF-06340E264EC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7D1C76A-05B0-49BC-BCFF-06340E264EC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7D1C76A-05B0-49BC-BCFF-06340E264EC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7D1C76A-05B0-49BC-BCFF-06340E264EC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +133,7 @@ Global
 		{26331AB9-6E4D-40DB-8FF0-CB7133F67CA0} = {01F231DE-4A65-435F-B4BB-77EE5221890C}
 		{4B742649-225F-4C73-B118-1B29FE2A5774} = {01F231DE-4A65-435F-B4BB-77EE5221890C}
 		{1500A537-2116-4111-B216-7632040619B0} = {2FC40FE1-4446-44AB-BF77-00F94D995FA3}
+		{D7D1C76A-05B0-49BC-BCFF-06340E264EC1} = {01F231DE-4A65-435F-B4BB-77EE5221890C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

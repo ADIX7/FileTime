@@ -9,5 +9,7 @@ namespace FileTime.Core.Models
         IContentProvider? VirtualContentProvider { get; }
         FullName Path { get; }
         AbsolutePathType Type { get; }
+
+        Task<IItem> ResolveAsync();
     }
 }

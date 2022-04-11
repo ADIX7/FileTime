@@ -33,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\..\Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.GuiApp.Abstractions\FileTime.GuiApp.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

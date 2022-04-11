@@ -24,8 +24,8 @@ namespace FileTime.App.Core.ViewModels
 
         public IObservable<IContainer?>? CurrentLocation { get; private set; }
         public IObservable<IItemViewModel?>? CurrentSelectedItem { get; private set; }
-        public IObservable<IReadOnlyList<IItemViewModel>>? CurrentItems { get; private set; }
-        public IObservable<IReadOnlyList<FullName>> MarkedItems { get; }
+        public IObservable<IEnumerable<IItemViewModel>>? CurrentItems { get; private set; }
+        public IObservable<IEnumerable<FullName>> MarkedItems { get; }
 
         public TabViewModel(
             IServiceProvider serviceProvider,
@@ -37,7 +37,7 @@ namespace FileTime.App.Core.ViewModels
             _appState = appState;
 
             MarkedItems = _markedItems.Select(e => e.ToList()).AsObservable();
-            IsSelected = _appState.SelectedTabObservable.Select(s => s == this);
+            IsSelected = _appState.SelectedTab.Select(s => s == this);
         }
 
         public void Init(ITab tab, int tabNumber)
@@ -46,11 +46,15 @@ namespace FileTime.App.Core.ViewModels
             TabNumber = tabNumber;
 
             CurrentLocation = tab.CurrentLocation.AsObservable();
-            CurrentItems = tab.CurrentItems.Select(items => items.Select(MapItemToViewModel).ToList());
-            CurrentSelectedItem = Observable.CombineLatest(
-                CurrentItems,
-                tab.CurrentSelectedItem,
-                (currentItems, currentSelectedItemPath) => currentItems.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path));
+            CurrentItems = tab.CurrentItems.Select(items => items.Select(MapItemToViewModel).ToList()).Publish(Enumerable.Empty<IItemViewModel>()).RefCount();
+            CurrentSelectedItem =
+                Observable.CombineLatest(
+                    CurrentItems,
+                    tab.CurrentSelectedItem,
+                    (currentItems, currentSelectedItemPath) => currentItems.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path)
+                )
+                .Publish(null)
+                .RefCount();
             tab.CurrentLocation.Subscribe((_) => _markedItems.OnNext(Enumerable.Empty<FullName>()));
         }
 

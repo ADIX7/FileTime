@@ -11,12 +11,22 @@ namespace FileTime.GuiApp.Configuration
 
         public KeyConfig() { }
 
-        public KeyConfig(Key key, bool shift = false, bool alt = false, bool ctrl = false)
+        public KeyConfig(
+            Key key,
+            bool shift = false,
+            bool alt = false,
+            bool ctrl = false)
         {
             Key = key;
             Shift = shift;
             Alt = alt;
             Ctrl = ctrl;
         }
+
+        public bool AreEquals(KeyConfig otherKeyConfig) =>
+            Key == otherKeyConfig.Key
+            && Alt == otherKeyConfig.Alt
+            && Shift == otherKeyConfig.Shift
+            && Ctrl == otherKeyConfig.Ctrl;
     }
 }

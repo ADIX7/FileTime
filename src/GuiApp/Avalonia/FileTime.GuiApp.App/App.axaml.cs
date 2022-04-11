@@ -22,7 +22,7 @@ namespace FileTime.GuiApp
                 .InitSerilog();
 
             var logger = DI.ServiceProvider.GetRequiredService<ILogger<App>>();
-            logger.LogInformation("App initialization completed.");
+            logger.LogInformation("App initialization completed");
         }
         public override void Initialize()
         {

@@ -29,7 +29,7 @@ namespace FileTime.Core.Services
 
         public IContentProvider Provider => this;
 
-        public FullName? Parent => null;
+        public IAbsolutePath? Parent => null;
 
         public DateTime? CreatedAt => null;
 

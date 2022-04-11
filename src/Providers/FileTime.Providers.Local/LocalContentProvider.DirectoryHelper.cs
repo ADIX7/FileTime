@@ -19,5 +19,17 @@ namespace FileTime.Providers.Local
                     + ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ? "s" : "-");
             }
         }
+
+        private static IEnumerable<FileInfo> GetFilesSafe(DirectoryInfo directoryInfo)
+        {
+            try
+            {
+                return directoryInfo.GetFiles();
+            }
+            catch
+            {
+                return Enumerable.Empty<FileInfo>();
+            }
+        }
     }
 }

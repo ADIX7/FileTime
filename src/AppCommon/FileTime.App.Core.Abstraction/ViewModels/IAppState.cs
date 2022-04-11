@@ -1,14 +1,14 @@
 using System.Collections.ObjectModel;
-using FileTime.App.Core.ViewModels;
+using FileTime.App.Core.Models.Enums;
 
-namespace FileTime.App.Core
+namespace FileTime.App.Core.ViewModels
 {
     public interface IAppState
     {
         ObservableCollection<ITabViewModel> Tabs { get; }
-        ITabViewModel? SelectedTab { get; }
-        IObservable<ITabViewModel?> SelectedTabObservable { get; }
+        IObservable<ITabViewModel?> SelectedTab { get; }
         IObservable<string?> SearchText { get; }
+        ViewMode ViewMode { get; }
 
         void AddTab(ITabViewModel tabViewModel);
         void RemoveTab(ITabViewModel tabViewModel);

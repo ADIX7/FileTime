@@ -14,14 +14,11 @@
 		TransparencyLevelHint="Blur"
 		Background="Transparent"
 		ExtendClientAreaToDecorationsHint="True"
-		x:DataType="vm:MainWindowViewModel"
+		x:DataType="vm:IMainWindowViewModelBase"
 		x:CompileBindings="True">
 
-	<Design.DataContext>
-		<vm:MainWindowViewModel/>
-	</Design.DataContext>
 	<Grid Background="{DynamicResource AppBackgroundBrush}">
-		<Grid IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}}">
+		<Grid IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}}" x:DataType="vm:MainWindowViewModel">
 			<Grid ColumnDefinitions="250,*" RowDefinitions="Auto,*">
 				<Grid PointerPressed="HeaderPointerPressed">
 					<Rectangle Fill="#01000000"/>
@@ -32,9 +29,9 @@
 					<Rectangle Fill="#01000000"/>
 
 					<StackPanel Margin="20,10" Orientation="Horizontal">
-						<!--local:PathPresenter DataContext="{Binding AppState.SelectedTab.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}"/-->
+						<!--local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}"/-->
 						<TextBlock
-							Text="{Binding AppState.SelectedTab.CurrentSelectedItem^.DisplayNameText}" Foreground="{StaticResource AccentBrush}" />
+							Text="{Binding AppState.SelectedTab^.CurrentSelectedItem^.DisplayNameText}" Foreground="{StaticResource AccentBrush}" />
 					</StackPanel>
 				</Grid>
 
@@ -89,7 +86,7 @@
 
 
 							<Grid Grid.Column="2" RowDefinitions="Auto,*">
-								<Grid IsVisible="{Binding AppState.SelectedTab.CurrentLocation^.IsLoading^}">
+								<Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^}">
 									<Image Width="40" Height="40" Source="{SvgImage /Assets/loading.svg}" Classes="LoadingAnimation"/>
 								</Grid>
 								<ListBox
@@ -98,7 +95,7 @@
 									x:CompileBindings="False"
 									AutoScrollToSelectedItem="True"
 									IsTabStop="True"
-									Items="{Binding AppState.SelectedTab.CurrentItems^}"
+									Items="{Binding AppState.SelectedTab^.CurrentItems^}"
 									ScrollViewer.HorizontalScrollBarVisibility="Hidden"
 									ScrollViewer.VerticalScrollBarVisibility="Visible"
 									Classes="ContentListView">
@@ -117,7 +114,7 @@
 									HorizontalAlignment="Center"
 									FontWeight="Bold"
 									Foreground="{DynamicResource ErrorBrush}"
-									IsVisible="{Binding AppState.SelectedTab.CurrentLocation^.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+									IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
 									Empty
 								</TextBlock>
 							</Grid>

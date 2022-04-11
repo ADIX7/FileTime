@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace FileTime.GuiApp.Configuration
 {
     public class KeyBindingConfiguration

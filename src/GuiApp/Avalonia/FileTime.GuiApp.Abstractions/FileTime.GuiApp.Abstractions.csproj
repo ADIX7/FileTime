@@ -7,8 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core\FileTime.App.Core.csproj" />
-    <ProjectReference Include="..\FileTime.GuiApp.Abstractions\FileTime.GuiApp.Abstractions.csproj" />
+    <PackageReference Include="Avalonia" Version="0.10.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>
