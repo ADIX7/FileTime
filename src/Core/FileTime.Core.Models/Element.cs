@@ -15,5 +15,8 @@ namespace FileTime.Core.Models
         SupportsDelete CanDelete,
         bool CanRename,
         string? Attributes,
-        IContentProvider Provider) : IElement;
+        IContentProvider Provider) : IElement
+    {
+        public AbsolutePathType Type => AbsolutePathType.Element;
+    }
 }

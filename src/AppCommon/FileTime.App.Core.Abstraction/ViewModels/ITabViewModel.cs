@@ -10,9 +10,9 @@ namespace FileTime.App.Core.ViewModels
         ITab? Tab { get; }
         int TabNumber { get; }
         IObservable<bool> IsSelected { get; }
-        IObservable<IContainer?>? CurrentLocation { get; }
-        IObservable<IItemViewModel?>? CurrentSelectedItem { get; }
-        IObservable<IEnumerable<IItemViewModel>>? CurrentItems { get; }
+        IObservable<IContainer?> CurrentLocation { get; }
+        IObservable<IItemViewModel?> CurrentSelectedItem { get; }
+        IObservable<IEnumerable<IItemViewModel>> CurrentItems { get; }
         IObservable<IEnumerable<FullName>> MarkedItems { get; }
     }
 }

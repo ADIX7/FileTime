@@ -22,5 +22,6 @@ namespace FileTime.Core.Models
     {
         BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);
         IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
+        public AbsolutePathType Type => AbsolutePathType.Container;
     }
 }

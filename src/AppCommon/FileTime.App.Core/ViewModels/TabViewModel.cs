@@ -22,9 +22,9 @@ namespace FileTime.App.Core.ViewModels
 
         public IObservable<bool> IsSelected { get; }
 
-        public IObservable<IContainer?>? CurrentLocation { get; private set; }
-        public IObservable<IItemViewModel?>? CurrentSelectedItem { get; private set; }
-        public IObservable<IEnumerable<IItemViewModel>>? CurrentItems { get; private set; }
+        public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
+        public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
+        public IObservable<IEnumerable<IItemViewModel>> CurrentItems { get; private set; } = null!;
         public IObservable<IEnumerable<FullName>> MarkedItems { get; }
 
         public TabViewModel(

@@ -39,6 +39,8 @@ namespace FileTime.Core.Services
 
         IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
 
+        public AbsolutePathType Type => AbsolutePathType.Container;
+
         protected ContentProviderBase(string name)
         {
             DisplayName = Name = name;

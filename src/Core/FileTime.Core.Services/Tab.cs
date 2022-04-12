@@ -40,11 +40,7 @@ namespace FileTime.Core.Services
                 .Publish(null)
                 .RefCount();
 
-            CurrentSelectedItem.Subscribe(s =>
-            {
-                _currentSelectedItemCached = s;
-                _currentSelectedItem.OnNext(s);
-            });
+            CurrentSelectedItem.Subscribe(s => _currentSelectedItemCached = s);
         }
 
         private async Task<IEnumerable<IItem>> MapItems(IReadOnlyList<IAbsolutePath> items)
@@ -83,7 +79,7 @@ namespace FileTime.Core.Services
         private IObservable<IAbsolutePath?> GetSelectedItemByLocation(IContainer? currentLocation)
         {
             //TODO: 
-            return currentLocation?.Items?.Select(i => i.FirstOrDefault()) ?? Observable.Never((IAbsolutePath?)null);
+            return currentLocation?.Items?.Select(i => i.Count == 0 ? null : i[0]) ?? Observable.Return((IAbsolutePath?)null);
         }
 
         public void SetCurrentLocation(IContainer newLocation) => _currentLocation.OnNext(newLocation);

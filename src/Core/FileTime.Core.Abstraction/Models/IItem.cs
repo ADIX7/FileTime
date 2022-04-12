@@ -17,5 +17,6 @@ namespace FileTime.Core.Models
         bool CanRename { get; }
         IContentProvider Provider { get; }
         string? Attributes { get; }
+        AbsolutePathType Type { get; }
     }
 }

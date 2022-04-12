@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using FileTime.App.Core.Command;
+using FileTime.App.Core.Extensions;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 
@@ -12,14 +13,16 @@ namespace FileTime.App.Core.Services
         private ITabViewModel? _selectedTab;
         private IContainer? _currentLocation;
         private IItemViewModel? _currentSelectedItem;
+        private List<IItemViewModel> _currentItems = new();
 
         public CommandHandlerService(IAppState appState)
         {
             _appState = appState;
 
             _appState.SelectedTab.Subscribe(t => _selectedTab = t);
-            _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation!).Switch().Subscribe(l => _currentLocation = l);
-            _appState.SelectedTab.Select(t => t == null ? Observable.Return<IItemViewModel?>(null) : t.CurrentSelectedItem!).Switch().Subscribe(l => _currentSelectedItem = l);
+            _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation).Switch().Subscribe(l => _currentLocation = l);
+            _appState.SelectedTab.Select(t => t == null ? Observable.Return<IItemViewModel?>(null) : t.CurrentSelectedItem).Switch().Subscribe(l => _currentSelectedItem = l);
+            _appState.SelectedTab.Select(t => t == null ? Observable.Return(Enumerable.Empty<IItemViewModel>()) : t.CurrentItems).Switch().Subscribe(i => _currentItems = i.ToList());
 
             _commandHandlers = new Dictionary<Commands, Func<Task>>
             {
@@ -44,9 +47,9 @@ namespace FileTime.App.Core.Services
                 {Commands.GoUp, GoUp},
                 //{Commands.HardDelete, HardDelete},
                 //{Commands.Mark, MarkCurrentItem},
-                //{Commands.MoveCursorDown, MoveCursorDown},
+                {Commands.MoveCursorDown, MoveCursorDown},
                 //{Commands.MoveCursorDownPage, MoveCursorDownPage},
-                //{Commands.MoveCursorUp, MoveCursorUp},
+                {Commands.MoveCursorUp, MoveCursorUp},
                 //{Commands.MoveCursorUpPage, MoveCursorUpPage},
                 //{Commands.MoveToFirst, MoveToFirst},
                 //{Commands.MoveToLast, MoveToLast},
@@ -99,6 +102,28 @@ namespace FileTime.App.Core.Services
         {
             if (_currentLocation?.Parent is not IAbsolutePath parentPath || await parentPath.ResolveAsync() is not IContainer newContainer) return;
             _selectedTab?.Tab?.SetCurrentLocation(newContainer);
+        }
+
+        private Task MoveCursorDown()
+        {
+            SelectNewSelectedItem(i => i.SkipWhile(i => i != _currentSelectedItem).Skip(1).FirstOrDefault());
+            return Task.CompletedTask;
+        }
+
+        private Task MoveCursorUp()
+        {
+            SelectNewSelectedItem(i => i.TakeWhile(i => i != _currentSelectedItem).LastOrDefault());
+            return Task.CompletedTask;
+        }
+
+        private void SelectNewSelectedItem(Func<IEnumerable<IItemViewModel>, IItemViewModel?> getNewSelected)
+        {
+            if (_selectedTab is null || _currentLocation is null) return;
+
+            var newSelectedItem = getNewSelected(_currentItems);
+            if (newSelectedItem == null) return;
+
+            _selectedTab.Tab?.SetSelectedItem(newSelectedItem.ToAbsolutePath());
         }
     }
 }
