@@ -117,7 +117,7 @@ namespace FileTime.Providers.Local
         private FullName GetFullName(DirectoryInfo directoryInfo) => GetFullName(directoryInfo.FullName);
         private FullName GetFullName(FileInfo fileInfo) => GetFullName(fileInfo.FullName);
         private FullName GetFullName(NativePath nativePath) => GetFullName(nativePath.Path);
-        private FullName GetFullName(string nativePath) => new(Name + Constants.SeparatorChar + string.Join(Constants.SeparatorChar, nativePath.Split(Path.DirectorySeparatorChar)));
+        private FullName GetFullName(string nativePath) => new((Name + Constants.SeparatorChar + string.Join(Constants.SeparatorChar, nativePath.Split(Path.DirectorySeparatorChar))).TrimEnd(Constants.SeparatorChar));
 
         public override NativePath GetNativePath(FullName fullName) => new(string.Join(Path.DirectorySeparatorChar, fullName.Path.Split(Constants.SeparatorChar).Skip(1)));
     }
