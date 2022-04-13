@@ -46,7 +46,7 @@ namespace FileTime.App.Core.ViewModels
             DisplayName = _appState.SearchText.Select(s => _itemNameConverterService.GetDisplayName(item.DisplayName, s));
             DisplayNameText = item.DisplayName;
             IsMarked = parentTab.MarkedItems.Select(m => m.Contains(item.FullName));
-            IsSelected = parentTab.MarkedItems.Select(m => m.Contains(item.FullName));
+            IsSelected = parentTab.CurrentSelectedItem.Select(i => i == this);
             IsAlternative.OnNext(index % 2 == 0);
             ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode);
             Attributes = item.Attributes;
