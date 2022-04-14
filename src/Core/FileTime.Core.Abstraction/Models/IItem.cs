@@ -18,5 +18,6 @@ namespace FileTime.Core.Models
         IContentProvider Provider { get; }
         string? Attributes { get; }
         AbsolutePathType Type { get; }
+        IObservable<IEnumerable<Exception>> Exceptions { get; }
     }
 }

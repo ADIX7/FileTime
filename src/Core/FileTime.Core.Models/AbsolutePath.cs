@@ -19,10 +19,19 @@ namespace FileTime.Core.Models
             Type = type;
         }
 
-        public async Task<IItem> ResolveAsync()
+        public async Task<IItem> ResolveAsync(bool forceResolve = false)
         {
             var provider = VirtualContentProvider ?? ContentProvider;
-            return await provider.GetItemByFullNameAsync(Path);
+            return await provider.GetItemByFullNameAsync(Path, forceResolve, Type);
+        }
+
+        public async Task<IItem?> ResolveAsyncSafe(bool forceResolve = false)
+        {
+            try
+            {
+                return await ResolveAsync(forceResolve);
+            }
+            catch { return null; }
         }
     }
 }

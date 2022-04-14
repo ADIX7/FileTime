@@ -18,7 +18,8 @@ namespace FileTime.Core.Models
         bool CanRename,
         string? Attributes,
         IContentProvider Provider,
-        IObservable<IReadOnlyList<IAbsolutePath>> Items) : IContainer
+        IObservable<IEnumerable<Exception>> Exceptions,
+        IObservable<IEnumerable<IAbsolutePath>?> Items) : IContainer
     {
         BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);
         IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();

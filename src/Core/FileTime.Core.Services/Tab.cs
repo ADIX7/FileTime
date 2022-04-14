@@ -11,7 +11,7 @@ namespace FileTime.Core.Services
         private readonly List<ItemsTransformator> _transformators = new();
         private IAbsolutePath? _currentSelectedItemCached;
         public IObservable<IContainer?> CurrentLocation { get; }
-        public IObservable<IEnumerable<IItem>> CurrentItems { get; }
+        public IObservable<IEnumerable<IItem>?> CurrentItems { get; }
         public IObservable<IAbsolutePath?> CurrentSelectedItem { get; }
 
         public Tab()
@@ -23,7 +23,7 @@ namespace FileTime.Core.Services
                         .Where(c => c is not null)
                         .Select(c => c!.Items)
                         .Switch()
-                        .Select(i => Observable.FromAsync(async () => await MapItems(i)))
+                        .Select(i => i == null ? Observable.Return<IEnumerable<IItem>?>(null) : Observable.FromAsync(async () => await MapItems(i)))
                         .Switch(),
                     CurrentLocation
                         .Where(c => c is null)
@@ -43,21 +43,11 @@ namespace FileTime.Core.Services
             CurrentSelectedItem.Subscribe(s => _currentSelectedItemCached = s);
         }
 
-        private async Task<IEnumerable<IItem>> MapItems(IReadOnlyList<IAbsolutePath> items)
+        private async Task<IEnumerable<IItem>> MapItems(IEnumerable<IAbsolutePath> items)
         {
             IEnumerable<IItem> resolvedItems = await items
                 .ToAsyncEnumerable()
-                .SelectAwait(
-                    async i =>
-                    {
-                        try
-                        {
-                            //TODO: force create by AbsolutePath name
-                            return await i.ContentProvider.GetItemByFullNameAsync(i.Path);
-                        }
-                        catch { return null!; }
-                    }
-                )
+                .SelectAwait(async i => await i.ResolveAsync(true))
                 .Where(i => i != null)
                 .ToListAsync();
 
@@ -79,7 +69,7 @@ namespace FileTime.Core.Services
         private IObservable<IAbsolutePath?> GetSelectedItemByLocation(IContainer? currentLocation)
         {
             //TODO: 
-            return currentLocation?.Items?.Select(i => i.Count == 0 ? null : i[0]) ?? Observable.Return((IAbsolutePath?)null);
+            return currentLocation?.Items?.Select(i => i.FirstOrDefault()) ?? Observable.Return((IAbsolutePath?)null);
         }
 
         public void SetCurrentLocation(IContainer newLocation) => _currentLocation.OnNext(newLocation);

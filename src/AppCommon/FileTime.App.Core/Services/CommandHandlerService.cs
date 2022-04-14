@@ -100,7 +100,7 @@ namespace FileTime.App.Core.Services
 
         private async Task GoUp()
         {
-            if (_currentLocation?.Parent is not IAbsolutePath parentPath || await parentPath.ResolveAsync() is not IContainer newContainer) return;
+            if (_currentLocation?.Parent is not IAbsolutePath parentPath || await parentPath.ResolveAsyncSafe() is not IContainer newContainer) return;
             _selectedTab?.Tab?.SetCurrentLocation(newContainer);
         }
 

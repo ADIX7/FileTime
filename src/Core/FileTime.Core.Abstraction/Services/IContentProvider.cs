@@ -1,12 +1,13 @@
 using FileTime.Core.Behaviors;
+using FileTime.Core.Enums;
 using FileTime.Core.Models;
 
 namespace FileTime.Core.Services
 {
     public interface IContentProvider : IContainer, IOnContainerEnter
     {
-        Task<IItem> GetItemByFullNameAsync(FullName fullName);
-        Task<IItem> GetItemByNativePathAsync(NativePath nativePath);
+        Task<IItem> GetItemByFullNameAsync(FullName fullName, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown);
+        Task<IItem> GetItemByNativePathAsync(NativePath nativePath, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown);
         Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName);
     }
 }

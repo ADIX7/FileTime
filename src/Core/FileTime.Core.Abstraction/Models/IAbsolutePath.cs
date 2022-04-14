@@ -10,6 +10,7 @@ namespace FileTime.Core.Models
         FullName Path { get; }
         AbsolutePathType Type { get; }
 
-        Task<IItem> ResolveAsync();
+        Task<IItem> ResolveAsync(bool forceResolve = false);
+        Task<IItem?> ResolveAsyncSafe(bool forceResolve = false);
     }
 }

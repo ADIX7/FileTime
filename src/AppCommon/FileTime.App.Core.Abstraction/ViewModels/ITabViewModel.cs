@@ -12,7 +12,8 @@ namespace FileTime.App.Core.ViewModels
         IObservable<bool> IsSelected { get; }
         IObservable<IContainer?> CurrentLocation { get; }
         IObservable<IItemViewModel?> CurrentSelectedItem { get; }
-        IObservable<IEnumerable<IItemViewModel>> CurrentItems { get; }
+        IObservable<IReadOnlyList<IItemViewModel>> CurrentItems { get; }
         IObservable<IEnumerable<FullName>> MarkedItems { get; }
+        IObservable<IReadOnlyList<IItemViewModel>?> SelectedsChildren { get; }
     }
 }

@@ -1,6 +1,5 @@
 using FileTime.Core.Models;
 using InitableService;
-using System.Reactive.Subjects;
 
 namespace FileTime.Core.Services
 {
@@ -8,7 +7,7 @@ namespace FileTime.Core.Services
     {
         IObservable<IContainer?> CurrentLocation { get; }
         IObservable<IAbsolutePath?> CurrentSelectedItem { get; }
-        IObservable<IEnumerable<IItem>> CurrentItems { get; }
+        IObservable<IEnumerable<IItem>?> CurrentItems { get; }
 
         void SetCurrentLocation(IContainer newLocation);
         void AddSelectedItemsTransformator(ItemsTransformator transformator);

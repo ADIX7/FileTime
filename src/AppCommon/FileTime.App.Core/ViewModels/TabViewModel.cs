@@ -1,7 +1,9 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
+using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +26,9 @@ namespace FileTime.App.Core.ViewModels
 
         public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
         public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
-        public IObservable<IEnumerable<IItemViewModel>> CurrentItems { get; private set; } = null!;
+        public IObservable<IReadOnlyList<IItemViewModel>> CurrentItems { get; private set; } = null!;
         public IObservable<IEnumerable<FullName>> MarkedItems { get; }
+        public IObservable<IReadOnlyList<IItemViewModel>?> SelectedsChildren { get; private set; } = null!;
 
         public TabViewModel(
             IServiceProvider serviceProvider,
@@ -46,7 +49,7 @@ namespace FileTime.App.Core.ViewModels
             TabNumber = tabNumber;
 
             CurrentLocation = tab.CurrentLocation.AsObservable();
-            CurrentItems = tab.CurrentItems.Select(items => items.Select(MapItemToViewModel).ToList()).Publish(Enumerable.Empty<IItemViewModel>()).RefCount();
+            CurrentItems = tab.CurrentItems.Select(items => items.Select(MapItemToViewModel).ToList()).Publish(new List<IItemViewModel>()).RefCount();
             CurrentSelectedItem =
                 Observable.CombineLatest(
                     CurrentItems,
@@ -55,7 +58,34 @@ namespace FileTime.App.Core.ViewModels
                 )
                 .Publish(null)
                 .RefCount();
+
+            var currentSelectedItemThrottled = CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
+            SelectedsChildren = Observable.Merge(
+                currentSelectedItemThrottled
+                    .WhereNotNull()
+                    .OfType<IContainerViewModel>()
+                    .Where(c => c?.Container is not null)
+                    .Select(c => c.Container!.Items)
+                    .Switch()
+                    .Select(items => Observable.FromAsync(async () => await Map(items)))
+                    .Switch()
+                    .Select(items => items?.Select(MapItemToViewModel).ToList()),
+                currentSelectedItemThrottled
+                    .Where(c => c is null || c is not IContainerViewModel)
+                    .Select(_ => (IReadOnlyList<IItemViewModel>?)null)
+            );
+
             tab.CurrentLocation.Subscribe((_) => _markedItems.OnNext(Enumerable.Empty<FullName>()));
+
+            static async Task<List<IItem>?> Map(IEnumerable<IAbsolutePath>? items)
+            {
+                if (items == null) return null;
+
+                return await items
+                    .ToAsyncEnumerable()
+                    .SelectAwait(async i => await i.ResolveAsync(true))
+                    .ToListAsync();
+            }
         }
 
         private IItemViewModel MapItemToViewModel(IItem item, int index)

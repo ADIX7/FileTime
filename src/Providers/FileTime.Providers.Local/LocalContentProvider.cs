@@ -31,23 +31,80 @@ namespace FileTime.Providers.Local
             Items.OnNext(rootDirectories.Select(DirectoryToAbsolutePath).ToList());
         }
 
-        public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath)
+        public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown)
         {
             var path = nativePath.Path;
-            if ((path?.Length ?? 0) == 0)
+            try
             {
-                return Task.FromResult((IItem)this);
-            }
-            else if (Directory.Exists(path))
-            {
-                return Task.FromResult((IItem)DirectoryToContainer(new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)));
-            }
-            else if (File.Exists(path))
-            {
-                return Task.FromResult((IItem)FileToElement(new FileInfo(path)));
-            }
+                if ((path?.Length ?? 0) == 0)
+                {
+                    return Task.FromResult((IItem)this);
+                }
+                else if (Directory.Exists(path))
+                {
+                    return Task.FromResult((IItem)DirectoryToContainer(new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)));
+                }
+                else if (File.Exists(path))
+                {
+                    return Task.FromResult((IItem)FileToElement(new FileInfo(path)));
+                }
 
-            throw new FileNotFoundException("Directory or file not found", path);
+                var type = forceResolvePathType switch
+                {
+                    AbsolutePathType.Container => "Directory",
+                    AbsolutePathType.Element => "File",
+                    _ => "Directory or file"
+                };
+
+                if (forceResolvePathType == AbsolutePathType.Container) throw new DirectoryNotFoundException($"{type} not found: '{path}'");
+                throw new FileNotFoundException(type + " not found", path);
+            }
+            catch (Exception e)
+            {
+                if (!forceResolve) throw new Exception($"Could not resolve path '{nativePath.Path}' and {nameof(forceResolve)} is false.", e);
+
+                return forceResolvePathType switch
+                {
+                    AbsolutePathType.Container => Task.FromResult((IItem)CreateEmptyContainer(nativePath, Observable.Return(new List<Exception>() { e }))),
+                    AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
+                    _ => throw new Exception($"Could not resolve path '{nativePath.Path}' and could not force create, because {nameof(forceResolvePathType)} is {nameof(AbsolutePathType.Unknown)}.", e)
+                };
+            }
+        }
+
+        private Container CreateEmptyContainer(NativePath nativePath, IObservable<IEnumerable<Exception>>? exceptions = null)
+        {
+            var nonNullExceptions = exceptions ?? Observable.Return(Enumerable.Empty<Exception>());
+            var name = nativePath.Path.Split(Path.DirectorySeparatorChar).LastOrDefault() ?? "???";
+            var fullName = GetFullName(nativePath);
+
+            var parentFullName = fullName.GetParent();
+            var parent = new AbsolutePath(
+                this,
+                parentFullName ?? new FullName(""),
+                AbsolutePathType.Container);
+
+            return new Container(
+                name,
+                name,
+                fullName,
+                nativePath,
+                parent,
+                false,
+                true,
+                DateTime.MinValue,
+                SupportsDelete.False,
+                false,
+                "???",
+                this,
+                nonNullExceptions,
+                Observable.Return<IEnumerable<IAbsolutePath>?>(null)
+            );
+        }
+
+        private IItem CreateEmptyElement(NativePath nativePath)
+        {
+            throw new NotImplementedException();
         }
 
         public override Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName) => Task.FromResult(GetItemsByContainer(fullName));
@@ -88,6 +145,7 @@ namespace FileTime.Providers.Local
                 true,
                 GetDirectoryAttributes(directoryInfo),
                 this,
+                Observable.Return(Enumerable.Empty<Exception>()),
                 Observable.Return(GetItemsByContainer(directoryInfo))
             );
         }
@@ -110,7 +168,8 @@ namespace FileTime.Providers.Local
                 SupportsDelete.True,
                 true,
                 GetFileAttributes(fileInfo),
-                this
+                this,
+                Observable.Return(Enumerable.Empty<Exception>())
             );
         }
 

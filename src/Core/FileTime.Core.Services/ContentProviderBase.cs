@@ -9,7 +9,7 @@ namespace FileTime.Core.Services
     {
         protected BehaviorSubject<IReadOnlyList<IAbsolutePath>> Items { get; } = new BehaviorSubject<IReadOnlyList<IAbsolutePath>>(new List<IAbsolutePath>());
 
-        IObservable<IReadOnlyList<IAbsolutePath>> IContainer.Items => Items;
+        IObservable<IEnumerable<IAbsolutePath>> IContainer.Items => Items;
 
         public string Name { get; }
 
@@ -41,14 +41,17 @@ namespace FileTime.Core.Services
 
         public AbsolutePathType Type => AbsolutePathType.Container;
 
+        public IObservable<IEnumerable<Exception>> Exceptions => Observable.Return(Enumerable.Empty<Exception>());
+
         protected ContentProviderBase(string name)
         {
             DisplayName = Name = name;
         }
 
         public virtual Task OnEnter() => Task.CompletedTask;
-        public virtual async Task<IItem> GetItemByFullNameAsync(FullName fullName) => await GetItemByNativePathAsync(GetNativePath(fullName));
-        public abstract Task<IItem> GetItemByNativePathAsync(NativePath nativePath);
+        public virtual async Task<IItem> GetItemByFullNameAsync(FullName fullName, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown)
+        => await GetItemByNativePathAsync(GetNativePath(fullName), forceResolve, forceResolvePathType);
+        public abstract Task<IItem> GetItemByNativePathAsync(NativePath nativePath, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown);
         public abstract Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName);
         public abstract NativePath GetNativePath(FullName fullName);
     }

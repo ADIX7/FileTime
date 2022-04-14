@@ -16,6 +16,7 @@ namespace FileTime.Core.Models
         bool CanRename,
         string? Attributes,
         IContentProvider Provider,
+        IObservable<IEnumerable<Exception>> Exceptions,
         long Size)
     : Element(
         Name,
@@ -29,6 +30,7 @@ namespace FileTime.Core.Models
         CanDelete,
         CanRename,
         Attributes,
-        Provider
+        Provider,
+        Exceptions
     ), IFileElement;
 }
