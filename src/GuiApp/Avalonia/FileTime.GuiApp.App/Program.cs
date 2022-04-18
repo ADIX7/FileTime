@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using Avalonia;
-using FileTime.GuiApp;
+using Avalonia.ReactiveUI;
 
 namespace FileTime.GuiApp
 {
@@ -12,7 +12,6 @@ namespace FileTime.GuiApp
 
         static Program()
         {
-
 #if DEBUG
             EnvironmentName = "Development";
 
@@ -57,6 +56,7 @@ namespace FileTime.GuiApp
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .UseReactiveUI()
                 .LogToTrace();
     }
 }
