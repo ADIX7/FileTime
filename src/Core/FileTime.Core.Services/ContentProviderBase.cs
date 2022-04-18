@@ -49,9 +49,17 @@ namespace FileTime.Core.Services
         }
 
         public virtual Task OnEnter() => Task.CompletedTask;
-        public virtual async Task<IItem> GetItemByFullNameAsync(FullName fullName, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown)
-        => await GetItemByNativePathAsync(GetNativePath(fullName), forceResolve, forceResolvePathType);
-        public abstract Task<IItem> GetItemByNativePathAsync(NativePath nativePath, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown);
+        public virtual async Task<IItem> GetItemByFullNameAsync(
+            FullName fullName,
+            bool forceResolve = false,
+            AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
+            ItemInitializationSettings itemInitializationSettings = default)
+        => await GetItemByNativePathAsync(GetNativePath(fullName), forceResolve, forceResolvePathType, itemInitializationSettings);
+        public abstract Task<IItem> GetItemByNativePathAsync(
+            NativePath nativePath,
+            bool forceResolve = false,
+            AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
+            ItemInitializationSettings itemInitializationSettings = default);
         public abstract Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName);
         public abstract NativePath GetNativePath(FullName fullName);
     }

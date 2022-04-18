@@ -103,6 +103,23 @@
                                 <ColumnDefinition Width="45*" />
                             </Grid.ColumnDefinitions>
 
+                            <ListBox
+                                x:CompileBindings="False"
+                                AutoScrollToSelectedItem="True"
+                                Classes="ContentListView"
+                                IsTabStop="True"
+                                Items="{Binding AppState.SelectedTab^.ParentsChildren^}"
+                                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                                ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="corevm:IItemViewModel">
+                                        <local:ItemView
+                                            ShowAttributes="False"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Stretch" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
 
                             <Rectangle
                                 Grid.Column="1"
@@ -111,7 +128,6 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Stretch"
                                 Fill="{DynamicResource ContentSeparatorBrush}" />
-
 
                             <Grid
                                 Grid.Column="2"

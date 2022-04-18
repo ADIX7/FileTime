@@ -1,9 +1,8 @@
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using FileTime.App.Core.Extensions;
-using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
-using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +14,7 @@ namespace FileTime.App.Core.ViewModels
         private readonly IServiceProvider _serviceProvider;
         private readonly IItemNameConverterService _itemNameConverterService;
         private readonly IAppState _appState;
+        private readonly IRxSchedulerService _rxSchedulerService;
         private readonly BehaviorSubject<IEnumerable<FullName>> _markedItems = new(Enumerable.Empty<FullName>());
         private readonly List<IDisposable> _disposables = new();
         private bool disposed;
@@ -29,11 +29,13 @@ namespace FileTime.App.Core.ViewModels
         public IObservable<IReadOnlyList<IItemViewModel>> CurrentItems { get; private set; } = null!;
         public IObservable<IEnumerable<FullName>> MarkedItems { get; }
         public IObservable<IReadOnlyList<IItemViewModel>?> SelectedsChildren { get; private set; } = null!;
+        public IObservable<IReadOnlyList<IItemViewModel>?> ParentsChildren { get; private set; } = null!;
 
         public TabViewModel(
             IServiceProvider serviceProvider,
             IItemNameConverterService itemNameConverterService,
-            IAppState appState)
+            IAppState appState,
+            IRxSchedulerService rxSchedulerService)
         {
             _serviceProvider = serviceProvider;
             _itemNameConverterService = itemNameConverterService;
@@ -41,6 +43,7 @@ namespace FileTime.App.Core.ViewModels
 
             MarkedItems = _markedItems.Select(e => e.ToList()).AsObservable();
             IsSelected = _appState.SelectedTab.Select(s => s == this);
+            _rxSchedulerService = rxSchedulerService;
         }
 
         public void Init(ITab tab, int tabNumber)
@@ -49,7 +52,16 @@ namespace FileTime.App.Core.ViewModels
             TabNumber = tabNumber;
 
             CurrentLocation = tab.CurrentLocation.AsObservable();
-            CurrentItems = tab.CurrentItems.Select(items => items.Select(MapItemToViewModel).ToList()).Publish(new List<IItemViewModel>()).RefCount();
+            CurrentItems = tab.CurrentItems
+                .Select(items =>
+                    items == null
+                    ? new List<IItemViewModel>()
+                    : items.Select(MapItemToViewModel).ToList())
+                .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
+                .SubscribeOn(_rxSchedulerService.GetUIScheduler())
+                .Publish(new List<IItemViewModel>())
+                .RefCount();
+
             CurrentSelectedItem =
                 Observable.CombineLatest(
                     CurrentItems,
@@ -73,7 +85,36 @@ namespace FileTime.App.Core.ViewModels
                 currentSelectedItemThrottled
                     .Where(c => c is null || c is not IContainerViewModel)
                     .Select(_ => (IReadOnlyList<IItemViewModel>?)null)
-            );
+            )
+            .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
+            .SubscribeOn(_rxSchedulerService.GetUIScheduler())
+            .Publish(null)
+            .RefCount();
+
+            var parentThrottled = CurrentLocation
+                .Select(l => l?.Parent)
+                .DistinctUntilChanged()
+                .Publish(null)
+                .RefCount();
+
+            ParentsChildren = Observable.Merge(
+                parentThrottled
+                    .Where(p => p is not null)
+                    .Select(p => Observable.FromAsync(async () => (IContainer)await p!.ResolveAsync()))
+                    .Switch()
+                    .Select(p => p.Items)
+                    .Switch()
+                    .Select(items => Observable.FromAsync(async () => await Map(items)))
+                    .Switch()
+                    .Select(items => items?.Select(MapItemToViewModel).ToList()),
+                parentThrottled
+                    .Where(p => p is null)
+                    .Select(_ => (IReadOnlyList<IItemViewModel>?)null)
+            )
+            .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
+            .SubscribeOn(_rxSchedulerService.GetUIScheduler())
+            .Publish(null)
+            .RefCount();
 
             tab.CurrentLocation.Subscribe((_) => _markedItems.OnNext(Enumerable.Empty<FullName>()));
 
@@ -83,7 +124,7 @@ namespace FileTime.App.Core.ViewModels
 
                 return await items
                     .ToAsyncEnumerable()
-                    .SelectAwait(async i => await i.ResolveAsync(true))
+                    .SelectAwait(async i => await i.ResolveAsync(forceResolve: true, itemInitializationSettings: new ItemInitializationSettings(true)))
                     .ToListAsync();
             }
         }

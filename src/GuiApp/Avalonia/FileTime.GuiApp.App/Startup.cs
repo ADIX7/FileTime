@@ -26,6 +26,7 @@ namespace FileTime.GuiApp
                 .AddSingleton<IGuiAppState, GuiAppState>(s => s.GetRequiredService<GuiAppState>())
                 .AddSingleton<DefaultModeKeyInputHandler>()
                 .AddSingleton<RapidTravelModeKeyInputHandler>()
+                .AddSingleton<IRxSchedulerService, AvaloniaRxSchedulerService>()
                 //TODO: move??
                 .AddTransient<ITab, Tab>()
                 .AddTransient<ITabViewModel, TabViewModel>()

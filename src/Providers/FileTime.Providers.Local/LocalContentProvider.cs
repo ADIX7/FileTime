@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
@@ -31,9 +32,14 @@ namespace FileTime.Providers.Local
             Items.OnNext(rootDirectories.Select(DirectoryToAbsolutePath).ToList());
         }
 
-        public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown)
+        public override Task<IItem> GetItemByNativePathAsync(
+            NativePath nativePath,
+            bool forceResolve = false,
+            AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
+            ItemInitializationSettings itemInitializationSettings = default)
         {
             var path = nativePath.Path;
+            Exception? innerException;
             try
             {
                 if ((path?.Length ?? 0) == 0)
@@ -42,7 +48,7 @@ namespace FileTime.Providers.Local
                 }
                 else if (Directory.Exists(path))
                 {
-                    return Task.FromResult((IItem)DirectoryToContainer(new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)));
+                    return Task.FromResult((IItem)DirectoryToContainer(new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar), !itemInitializationSettings.SkipChildInitialization));
                 }
                 else if (File.Exists(path))
                 {
@@ -56,20 +62,24 @@ namespace FileTime.Providers.Local
                     _ => "Directory or file"
                 };
 
-                if (forceResolvePathType == AbsolutePathType.Container) throw new DirectoryNotFoundException($"{type} not found: '{path}'");
-                throw new FileNotFoundException(type + " not found", path);
+                innerException = forceResolvePathType switch
+                {
+                    AbsolutePathType.Container => new DirectoryNotFoundException($"{type} not found: '{path}'"),
+                    _ => new FileNotFoundException(type + " not found", path)
+                };
             }
             catch (Exception e)
             {
                 if (!forceResolve) throw new Exception($"Could not resolve path '{nativePath.Path}' and {nameof(forceResolve)} is false.", e);
-
-                return forceResolvePathType switch
-                {
-                    AbsolutePathType.Container => Task.FromResult((IItem)CreateEmptyContainer(nativePath, Observable.Return(new List<Exception>() { e }))),
-                    AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
-                    _ => throw new Exception($"Could not resolve path '{nativePath.Path}' and could not force create, because {nameof(forceResolvePathType)} is {nameof(AbsolutePathType.Unknown)}.", e)
-                };
+                innerException = e;
             }
+
+            return forceResolvePathType switch
+            {
+                AbsolutePathType.Container => Task.FromResult((IItem)CreateEmptyContainer(nativePath, Observable.Return(new List<Exception>() { innerException }))),
+                AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
+                _ => throw new Exception($"Could not resolve path '{nativePath.Path}' and could not force create, because {nameof(forceResolvePathType)} is {nameof(AbsolutePathType.Unknown)}.", innerException)
+            };
         }
 
         private Container CreateEmptyContainer(NativePath nativePath, IObservable<IEnumerable<Exception>>? exceptions = null)
@@ -108,8 +118,8 @@ namespace FileTime.Providers.Local
         }
 
         public override Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName) => Task.FromResult(GetItemsByContainer(fullName));
-        public List<IAbsolutePath> GetItemsByContainer(FullName fullName) => GetItemsByContainer(new DirectoryInfo(GetNativePath(fullName).Path));
-        public List<IAbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo) => directoryInfo.GetDirectories().Select(DirectoryToAbsolutePath).Concat(GetFilesSafe(directoryInfo).Select(FileToAbsolutePath)).ToList();
+        private List<IAbsolutePath> GetItemsByContainer(FullName fullName) => GetItemsByContainer(new DirectoryInfo(GetNativePath(fullName).Path));
+        private List<IAbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo) => directoryInfo.GetDirectories().Select(DirectoryToAbsolutePath).Concat(directoryInfo.GetFiles().Select(FileToAbsolutePath)).ToList();
 
         private IAbsolutePath DirectoryToAbsolutePath(DirectoryInfo directoryInfo)
         {
@@ -123,7 +133,7 @@ namespace FileTime.Providers.Local
             return new AbsolutePath(this, fullName, AbsolutePathType.Element);
         }
 
-        private Container DirectoryToContainer(DirectoryInfo directoryInfo)
+        private Container DirectoryToContainer(DirectoryInfo directoryInfo, bool initializeChildren = true)
         {
             var fullName = GetFullName(directoryInfo.FullName);
             var parentFullName = fullName.GetParent();
@@ -131,6 +141,7 @@ namespace FileTime.Providers.Local
                 this,
                 parentFullName ?? new FullName(""),
                 AbsolutePathType.Container);
+            var exceptions = new BehaviorSubject<IEnumerable<Exception>>(Enumerable.Empty<Exception>());
 
             return new(
                 directoryInfo.Name,
@@ -145,9 +156,24 @@ namespace FileTime.Providers.Local
                 true,
                 GetDirectoryAttributes(directoryInfo),
                 this,
-                Observable.Return(Enumerable.Empty<Exception>()),
-                Observable.Return(GetItemsByContainer(directoryInfo))
+                exceptions,
+                Observable.FromAsync(async () => await Task.Run(InitChildren))
             );
+
+            Task<List<IAbsolutePath>?> InitChildren()
+            {
+                List<IAbsolutePath>? result = null;
+                try
+                {
+                    result = initializeChildren ? (List<IAbsolutePath>?)GetItemsByContainer(directoryInfo) : null;
+                }
+                catch (Exception e)
+                {
+                    exceptions.OnNext(new List<Exception>() { e });
+                }
+
+                return Task.FromResult(result);
+            }
         }
 
         private Element FileToElement(FileInfo fileInfo)

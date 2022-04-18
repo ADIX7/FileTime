@@ -16,7 +16,7 @@ namespace FileTime.Core.Services
 
         public Tab()
         {
-            CurrentLocation = _currentLocation.DistinctUntilChanged().Do(_ => {; }).Publish(null).RefCount();
+            CurrentLocation = _currentLocation.DistinctUntilChanged().Publish(null).RefCount();
             CurrentItems =
                 Observable.Merge(
                     CurrentLocation
@@ -69,7 +69,7 @@ namespace FileTime.Core.Services
         private IObservable<IAbsolutePath?> GetSelectedItemByLocation(IContainer? currentLocation)
         {
             //TODO: 
-            return currentLocation?.Items?.Select(i => i.FirstOrDefault()) ?? Observable.Return((IAbsolutePath?)null);
+            return currentLocation?.Items?.Select(i => i?.FirstOrDefault()) ?? Observable.Return((IAbsolutePath?)null);
         }
 
         public void SetCurrentLocation(IContainer newLocation) => _currentLocation.OnNext(newLocation);

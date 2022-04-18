@@ -19,17 +19,17 @@ namespace FileTime.Core.Models
             Type = type;
         }
 
-        public async Task<IItem> ResolveAsync(bool forceResolve = false)
+        public async Task<IItem> ResolveAsync(bool forceResolve = false, ItemInitializationSettings itemInitializationSettings = default)
         {
             var provider = VirtualContentProvider ?? ContentProvider;
-            return await provider.GetItemByFullNameAsync(Path, forceResolve, Type);
+            return await provider.GetItemByFullNameAsync(Path, forceResolve, Type, itemInitializationSettings);
         }
 
-        public async Task<IItem?> ResolveAsyncSafe(bool forceResolve = false)
+        public async Task<IItem?> ResolveAsyncSafe(bool forceResolve = false, ItemInitializationSettings itemInitializationSettings = default)
         {
             try
             {
-                return await ResolveAsync(forceResolve);
+                return await ResolveAsync(forceResolve, itemInitializationSettings);
             }
             catch { return null; }
         }

@@ -15,5 +15,6 @@ namespace FileTime.App.Core.ViewModels
         IObservable<IReadOnlyList<IItemViewModel>> CurrentItems { get; }
         IObservable<IEnumerable<FullName>> MarkedItems { get; }
         IObservable<IReadOnlyList<IItemViewModel>?> SelectedsChildren { get; }
+        IObservable<IReadOnlyList<IItemViewModel>?> ParentsChildren { get; }
     }
 }
