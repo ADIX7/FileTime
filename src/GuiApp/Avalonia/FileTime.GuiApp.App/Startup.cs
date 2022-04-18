@@ -1,9 +1,7 @@
 using System;
 using System.IO;
-using FileTime.App.Core;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
-using FileTime.Core.Services;
 using FileTime.GuiApp.Configuration;
 using FileTime.GuiApp.Logging;
 using FileTime.GuiApp.Services;
@@ -23,17 +21,12 @@ namespace FileTime.GuiApp
                 .AddSingleton<MainWindowViewModel>()
                 .AddSingleton<GuiAppState>()
                 .AddSingleton<IAppState, GuiAppState>(s => s.GetRequiredService<GuiAppState>())
-                .AddSingleton<IGuiAppState, GuiAppState>(s => s.GetRequiredService<GuiAppState>())
-                .AddSingleton<DefaultModeKeyInputHandler>()
-                .AddSingleton<RapidTravelModeKeyInputHandler>()
+                .AddSingleton<IGuiAppState, GuiAppState>(s => s.GetRequiredService<GuiAppState>());
+        }
+        internal static IServiceCollection RegisterServices(this IServiceCollection serviceCollection)
+        {
+            return serviceCollection
                 .AddSingleton<IRxSchedulerService, AvaloniaRxSchedulerService>()
-                //TODO: move??
-                .AddTransient<ITab, Tab>()
-                .AddTransient<ITabViewModel, TabViewModel>()
-                .AddTransient<IContainerViewModel, ContainerViewModel>()
-                .AddTransient<IElementViewModel, ElementViewModel>()
-                .AddTransient<IItemNameConverterService, ItemNameConverterService>()
-                .AddSingleton<ICommandHandlerService, CommandHandlerService>()
                 .AddSingleton<IKeyInputHandlerService, KeyInputHandlerService>()
                 .AddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>()
                 .AddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>()

@@ -1,3 +1,5 @@
+using FileTime.App.Core;
+using FileTime.Core.Services;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +12,8 @@ namespace FileTime.App.DependencyInjection
             serviceCollection ??= new ServiceCollection();
 
             return serviceCollection
+                .AddTransient<ITab, Tab>()
+                .AddCoreAppServices()
                 .AddLocalServices();
         }
     }

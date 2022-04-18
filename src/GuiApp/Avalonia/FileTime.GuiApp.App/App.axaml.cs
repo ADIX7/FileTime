@@ -17,6 +17,7 @@ namespace FileTime.GuiApp
                 .RegisterDefaultServices()
                 .AddConfiguration()
                 .RegisterLogging()
+                .RegisterServices()
                 .AddViewModels()
                 .BuildServiceProvider()
                 .InitSerilog();

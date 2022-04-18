@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
+    <ProjectReference Include="..\FileTime.App.Core\FileTime.App.Core.csproj" />
   </ItemGroup>
 
 </Project>
