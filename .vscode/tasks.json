@@ -79,7 +79,7 @@
         "publish",
         "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp.App/FileTime.GuiApp.App.csproj",
         "-c",
-        "Release",
+        "Release"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -95,6 +95,13 @@
         "/consoleloggerparameters:NoSummary"
       ],
       "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "XamlStyler",
+      "type": "shell",
+      "command": "xstyler",
+      "args": ["-f", "${file}", "--ignore"],
+      "problemMatcher": []
     }
   ]
 }
