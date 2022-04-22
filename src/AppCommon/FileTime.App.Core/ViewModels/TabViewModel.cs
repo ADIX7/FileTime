@@ -46,7 +46,6 @@ namespace FileTime.App.Core.ViewModels
         [Property]
         private BindedCollection<IItemViewModel>? _selectedsChildrenCollection;
 
-
         public TabViewModel(
             IServiceProvider serviceProvider,
             IItemNameConverterService itemNameConverterService,

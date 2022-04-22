@@ -48,13 +48,13 @@ namespace FileTime.App.Core.Services.CommandHandler
 
         private Task MoveCursorDown()
         {
-            SelectNewSelectedItem(i => i.SkipWhile(i => i.EqualsTo(_currentSelectedItem)).Skip(1).FirstOrDefault());
+            SelectNewSelectedItem(i => i.SkipWhile(i => !i.EqualsTo(_currentSelectedItem)).Skip(1).FirstOrDefault());
             return Task.CompletedTask;
         }
 
         private Task MoveCursorUp()
         {
-            SelectNewSelectedItem(i => i.TakeWhile(i => i.EqualsTo(_currentSelectedItem)).LastOrDefault());
+            SelectNewSelectedItem(i => i.TakeWhile(i => !i.EqualsTo(_currentSelectedItem)).LastOrDefault());
             return Task.CompletedTask;
         }
 
