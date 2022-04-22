@@ -1,9 +1,9 @@
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
+using MoreLinq;
 using MvvmGen;
 
 namespace FileTime.App.Core.ViewModels
@@ -38,16 +38,16 @@ namespace FileTime.App.Core.ViewModels
         private string? _attributes;
 
         [Property]
-        private BehaviorSubject<bool> _isAlternative = new(false);
+        private IObservable<bool> _isAlternative;
 
-        public void Init(IItem item, ITabViewModel parentTab, int index)
+        public void Init(IItem item, ITabViewModel parentTab)
         {
             BaseItem = item;
             DisplayName = _appState.SearchText.Select(s => _itemNameConverterService.GetDisplayName(item.DisplayName, s));
             DisplayNameText = item.DisplayName;
             IsMarked = parentTab.MarkedItems.Select(m => m.Contains(item.FullName));
-            IsSelected = parentTab.CurrentSelectedItem.Select(i => i == this);
-            IsAlternative.OnNext(index % 2 == 0);
+            IsSelected = parentTab.CurrentSelectedItem.Select(EqualsTo);
+            IsAlternative = parentTab.CurrentItemsCollectionObservable.Select(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
             ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode);
             Attributes = item.Attributes;
             CreatedAt = item.CreatedAt;
@@ -63,5 +63,10 @@ namespace FileTime.App.Core.ViewModels
             (true, false, false) => ItemViewMode.Marked,
             _ => ItemViewMode.Default
         };
+
+        public bool EqualsTo(IItemViewModel? itemViewModel)
+        {
+            return BaseItem?.FullName?.Path is string path && path == itemViewModel?.BaseItem?.FullName?.Path;
+        }
     }
 }

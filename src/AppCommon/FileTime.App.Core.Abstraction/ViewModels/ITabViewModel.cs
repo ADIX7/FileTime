@@ -1,4 +1,6 @@
 
+using DynamicData;
+using FileTime.App.Core.Models;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using InitableService;
@@ -12,9 +14,13 @@ namespace FileTime.App.Core.ViewModels
         IObservable<bool> IsSelected { get; }
         IObservable<IContainer?> CurrentLocation { get; }
         IObservable<IItemViewModel?> CurrentSelectedItem { get; }
-        IObservable<IReadOnlyList<IItemViewModel>> CurrentItems { get; }
+        IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; }
         IObservable<IEnumerable<FullName>> MarkedItems { get; }
-        IObservable<IReadOnlyList<IItemViewModel>?> SelectedsChildren { get; }
-        IObservable<IReadOnlyList<IItemViewModel>?> ParentsChildren { get; }
+        IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; }
+        IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; }
+        BindedCollection<IItemViewModel>? CurrentItemsCollection { get; }
+        BindedCollection<IItemViewModel>? SelectedsChildrenCollection { get; }
+        BindedCollection<IItemViewModel>? ParentsChildrenCollection { get; }
+        IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; }
     }
 }

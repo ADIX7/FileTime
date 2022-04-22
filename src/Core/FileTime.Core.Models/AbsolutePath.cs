@@ -19,6 +19,14 @@ namespace FileTime.Core.Models
             Type = type;
         }
 
+        public AbsolutePath(IItem item, IContentProvider? virtualContentProvider = null)
+        {
+            ContentProvider = item.Provider;
+            Path = item.FullName ?? throw new ArgumentException($"{nameof(item.FullName)} can not be null.", nameof(item));
+            VirtualContentProvider = virtualContentProvider;
+            Type = item.Type;
+        }
+
         public async Task<IItem> ResolveAsync(bool forceResolve = false, ItemInitializationSettings itemInitializationSettings = default)
         {
             var provider = VirtualContentProvider ?? ContentProvider;

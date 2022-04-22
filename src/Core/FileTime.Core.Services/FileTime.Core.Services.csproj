@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Tools\FileTime.Tools\FileTime.Tools.csproj" />
     <ProjectReference Include="..\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
     <ProjectReference Include="..\FileTime.Core.Models\FileTime.Core.Models.csproj" />
   </ItemGroup>

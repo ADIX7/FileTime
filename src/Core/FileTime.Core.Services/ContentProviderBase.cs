@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DynamicData;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 
@@ -7,9 +8,9 @@ namespace FileTime.Core.Services
 {
     public abstract class ContentProviderBase : IContentProvider
     {
-        protected BehaviorSubject<IReadOnlyList<IAbsolutePath>> Items { get; } = new BehaviorSubject<IReadOnlyList<IAbsolutePath>>(new List<IAbsolutePath>());
+        protected BehaviorSubject<IObservable<IChangeSet<IAbsolutePath>>?> Items { get; } = new (null);
 
-        IObservable<IEnumerable<IAbsolutePath>> IContainer.Items => Items;
+        IObservable<IObservable<IChangeSet<IAbsolutePath>>?> IContainer.Items => Items;
 
         public string Name { get; }
 

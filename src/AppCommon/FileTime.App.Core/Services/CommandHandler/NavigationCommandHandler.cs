@@ -12,7 +12,7 @@ namespace FileTime.App.Core.Services.CommandHandler
         private ITabViewModel? _selectedTab;
         private IContainer? _currentLocation;
         private IItemViewModel? _currentSelectedItem;
-        private List<IItemViewModel> _currentItems = new();
+        private IEnumerable<IItemViewModel> _currentItems = Enumerable.Empty<IItemViewModel>();
 
         public NavigationCommandHandler(IAppState appState)
         {
@@ -21,7 +21,7 @@ namespace FileTime.App.Core.Services.CommandHandler
             _appState.SelectedTab.Subscribe(t => _selectedTab = t);
             _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation).Switch().Subscribe(l => _currentLocation = l);
             _appState.SelectedTab.Select(t => t == null ? Observable.Return<IItemViewModel?>(null) : t.CurrentSelectedItem).Switch().Subscribe(l => _currentSelectedItem = l);
-            _appState.SelectedTab.Select(t => t == null ? Observable.Return(Enumerable.Empty<IItemViewModel>()) : t.CurrentItems).Switch().Subscribe(i => _currentItems = i.ToList());
+            _appState.SelectedTab.Select(t => t?.CurrentItemsCollectionObservable ?? Observable.Return((IEnumerable<IItemViewModel>?)Enumerable.Empty<IItemViewModel>())).Switch().Subscribe(i => _currentItems = i ?? Enumerable.Empty<IItemViewModel>());
 
             AddCommandHandlers(new (Commands, Func<Task>)[]
             {
@@ -48,13 +48,13 @@ namespace FileTime.App.Core.Services.CommandHandler
 
         private Task MoveCursorDown()
         {
-            SelectNewSelectedItem(i => i.SkipWhile(i => i != _currentSelectedItem).Skip(1).FirstOrDefault());
+            SelectNewSelectedItem(i => i.SkipWhile(i => i.EqualsTo(_currentSelectedItem)).Skip(1).FirstOrDefault());
             return Task.CompletedTask;
         }
 
         private Task MoveCursorUp()
         {
-            SelectNewSelectedItem(i => i.TakeWhile(i => i != _currentSelectedItem).LastOrDefault());
+            SelectNewSelectedItem(i => i.TakeWhile(i => i.EqualsTo(_currentSelectedItem)).LastOrDefault());
             return Task.CompletedTask;
         }
 

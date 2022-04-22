@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DynamicData;
 using FileTime.Core.Models;
 
 namespace FileTime.Core.Services
@@ -10,8 +11,9 @@ namespace FileTime.Core.Services
         private readonly BehaviorSubject<IAbsolutePath?> _currentSelectedItem = new(null);
         private readonly List<ItemsTransformator> _transformators = new();
         private IAbsolutePath? _currentSelectedItemCached;
+
         public IObservable<IContainer?> CurrentLocation { get; }
-        public IObservable<IEnumerable<IItem>?> CurrentItems { get; }
+        public IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
         public IObservable<IAbsolutePath?> CurrentSelectedItem { get; }
 
         public Tab()
@@ -23,53 +25,54 @@ namespace FileTime.Core.Services
                         .Where(c => c is not null)
                         .Select(c => c!.Items)
                         .Switch()
-                        .Select(i => i == null ? Observable.Return<IEnumerable<IItem>?>(null) : Observable.FromAsync(async () => await MapItems(i)))
-                        .Switch(),
+                        .Select(items => items?.TransformAsync(MapItem)),
                     CurrentLocation
                         .Where(c => c is null)
-                        .Select(_ => Enumerable.Empty<IItem>())
+                        .Select(_ => (IObservable<IChangeSet<IItem>>?)null)
                 )
-                .Publish(Enumerable.Empty<IItem>())
+                .Publish((IObservable<IChangeSet<IItem>>?)null)
                 .RefCount();
 
-            CurrentSelectedItem = CurrentLocation
-                .Select(GetSelectedItemByLocation)
-                .Switch()
-                .Merge(_currentSelectedItem)
+            CurrentSelectedItem =
+                Observable.CombineLatest(
+                    CurrentItems
+                        .Select(c =>
+                            c == null
+                            ? Observable.Return<IReadOnlyCollection<IItem>?>(null)
+                            : c.ToCollection()
+                        )
+                        .Switch(),
+                    _currentSelectedItem,
+                    (items, selected) =>
+                    {
+                        if (selected != null && (items?.Any(i => i.FullName == selected.Path) ?? true)) return selected;
+                        if (items == null || items.Count == 0) return null;
+
+                        return GetSelectedItemByItems(items);
+                    }
+                )
                 .DistinctUntilChanged()
                 .Publish(null)
                 .RefCount();
 
-            CurrentSelectedItem.Subscribe(s => _currentSelectedItemCached = s);
+            CurrentSelectedItem.Subscribe(s =>
+            {
+                _currentSelectedItemCached = s;
+                _currentSelectedItem.OnNext(s);
+            });
         }
 
-        private async Task<IEnumerable<IItem>> MapItems(IEnumerable<IAbsolutePath> items)
-        {
-            IEnumerable<IItem> resolvedItems = await items
-                .ToAsyncEnumerable()
-                .SelectAwait(async i => await i.ResolveAsync(true))
-                .Where(i => i != null)
-                .ToListAsync();
-
-            return _transformators.Count == 0
-                ? resolvedItems
-                : (await _transformators
-                        .ToAsyncEnumerable()
-                        .Scan(resolvedItems, (acc, t) => new ValueTask<IEnumerable<IItem>>(t.Transformator(acc)))
-                        .ToListAsync()
-                    )
-                    .SelectMany(t => t);
-        }
+        private async Task<IItem> MapItem(IAbsolutePath item) => await item.ResolveAsync(true);
 
         public void Init(IContainer currentLocation)
         {
             _currentLocation.OnNext(currentLocation);
         }
 
-        private IObservable<IAbsolutePath?> GetSelectedItemByLocation(IContainer? currentLocation)
+        private static IAbsolutePath? GetSelectedItemByItems(IEnumerable<IItem> items)
         {
             //TODO: 
-            return currentLocation?.Items?.Select(i => i?.FirstOrDefault()) ?? Observable.Return((IAbsolutePath?)null);
+            return new AbsolutePath(items.First());
         }
 
         public void SetCurrentLocation(IContainer newLocation) => _currentLocation.OnNext(newLocation);

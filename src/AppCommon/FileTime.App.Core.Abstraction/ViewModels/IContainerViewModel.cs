@@ -3,7 +3,7 @@ using InitableService;
 
 namespace FileTime.App.Core.ViewModels
 {
-    public interface IContainerViewModel : IItemViewModel, IInitable<IContainer, ITabViewModel, int>
+    public interface IContainerViewModel : IItemViewModel, IInitable<IContainer, ITabViewModel>
     {
         IContainer? Container { get; }
     }

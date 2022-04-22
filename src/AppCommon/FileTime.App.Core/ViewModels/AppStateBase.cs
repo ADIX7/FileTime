@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using FileTime.App.Core.Models.Enums;
-using FileTime.App.Core.ViewModels;
 using MvvmGen;
 using MoreLinq;
 

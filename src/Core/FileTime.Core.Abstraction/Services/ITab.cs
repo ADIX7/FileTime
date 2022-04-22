@@ -1,3 +1,4 @@
+using DynamicData;
 using FileTime.Core.Models;
 using InitableService;
 
@@ -7,7 +8,7 @@ namespace FileTime.Core.Services
     {
         IObservable<IContainer?> CurrentLocation { get; }
         IObservable<IAbsolutePath?> CurrentSelectedItem { get; }
-        IObservable<IEnumerable<IItem>?> CurrentItems { get; }
+        IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
 
         void SetCurrentLocation(IContainer newLocation);
         void AddSelectedItemsTransformator(ItemsTransformator transformator);

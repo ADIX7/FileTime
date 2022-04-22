@@ -1,19 +1,24 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using DynamicData;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 
 namespace FileTime.Providers.Local
 {
-    public partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
+    public sealed partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
     {
-        protected bool IsCaseInsensitive { get; init; }
+        private readonly SourceList<IAbsolutePath> _rootDirectories = new();
+        private readonly bool _isCaseInsensitive;
         public LocalContentProvider() : base("local")
         {
-            IsCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
             RefreshRootDirectories();
+
+            Items.OnNext(_rootDirectories.Connect());
         }
 
         public override Task OnEnter()
@@ -29,7 +34,11 @@ namespace FileTime.Providers.Local
                 ? new DirectoryInfo("/").GetDirectories()
                 : Environment.GetLogicalDrives().Select(d => new DirectoryInfo(d));
 
-            Items.OnNext(rootDirectories.Select(DirectoryToAbsolutePath).ToList());
+            _rootDirectories.Edit(actions =>
+            {
+                actions.Clear();
+                actions.AddRange(rootDirectories.Select(DirectoryToAbsolutePath));
+            });
         }
 
         public override Task<IItem> GetItemByNativePathAsync(
@@ -108,7 +117,7 @@ namespace FileTime.Providers.Local
                 "???",
                 this,
                 nonNullExceptions,
-                Observable.Return<IEnumerable<IAbsolutePath>?>(null)
+                Observable.Return<IObservable<IChangeSet<IAbsolutePath>>?>(null)
             );
         }
 
@@ -160,19 +169,24 @@ namespace FileTime.Providers.Local
                 Observable.FromAsync(async () => await Task.Run(InitChildren))
             );
 
-            Task<List<IAbsolutePath>?> InitChildren()
+            Task<IObservable<IChangeSet<IAbsolutePath>>?> InitChildren()
             {
-                List<IAbsolutePath>? result = null;
+                SourceList<IAbsolutePath>? result = null;
                 try
                 {
-                    result = initializeChildren ? (List<IAbsolutePath>?)GetItemsByContainer(directoryInfo) : null;
+                    var items = initializeChildren ? (List<IAbsolutePath>?)GetItemsByContainer(directoryInfo) : null;
+                    if (items != null)
+                    {
+                        result = new SourceList<IAbsolutePath>();
+                        result.AddRange(items);
+                    }
                 }
                 catch (Exception e)
                 {
                     exceptions.OnNext(new List<Exception>() { e });
                 }
 
-                return Task.FromResult(result);
+                return Task.FromResult(result?.Connect());
             }
         }
 

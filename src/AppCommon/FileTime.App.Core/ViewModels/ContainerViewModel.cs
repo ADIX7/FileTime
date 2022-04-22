@@ -13,9 +13,9 @@ namespace FileTime.App.Core.ViewModels
         {
         }
 
-        public void Init(IContainer item, ITabViewModel parentTab, int index)
+        public void Init(IContainer item, ITabViewModel parentTab)
         {
-            Init((IItem)item, parentTab, index);
+            Init((IItem)item, parentTab);
         }
     }
 }

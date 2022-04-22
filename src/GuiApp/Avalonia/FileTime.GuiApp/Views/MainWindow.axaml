@@ -108,7 +108,7 @@
                                 AutoScrollToSelectedItem="True"
                                 Classes="ContentListView"
                                 IsTabStop="True"
-                                Items="{Binding AppState.SelectedTab^.ParentsChildren^}"
+                                Items="{Binding AppState.SelectedTab^.ParentsChildrenCollection.Collection}"
                                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                 ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <ListBox.ItemTemplate>
@@ -146,7 +146,7 @@
                                     AutoScrollToSelectedItem="True"
                                     Classes="ContentListView"
                                     IsTabStop="True"
-                                    Items="{Binding AppState.SelectedTab^.CurrentItems^}"
+                                    Items="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible">
                                     <ListBox.ItemTemplate>
@@ -166,7 +166,7 @@
                                     x:CompileBindings="False"
                                     FontWeight="Bold"
                                     Foreground="{DynamicResource ErrorBrush}"
-                                    IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.Items^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+                                    IsVisible="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
                                     Empty
                                 </TextBlock>
                             </Grid>
@@ -180,14 +180,14 @@
                                 Fill="{DynamicResource ContentSeparatorBrush}" />
 
                             <Grid Grid.Column="4">
-                                <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren^, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}}">
                                     <ListBox
                                         x:Name="ChildItems"
                                         x:CompileBindings="False"
                                         AutoScrollToSelectedItem="True"
                                         Classes="ContentListView"
-                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren^.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
-                                        Items="{Binding AppState.SelectedTab^.SelectedsChildren^}">
+                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
+                                        Items="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection}">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate x:DataType="corevm:IItemViewModel">
                                                 <local:ItemView />
@@ -202,13 +202,13 @@
                                         x:CompileBindings="False"
                                         FontWeight="Bold"
                                         Foreground="{DynamicResource ErrorBrush}"
-                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren^.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
                                         Empty
                                     </TextBlock>
                                 </Grid>
 
                                 <Grid
-                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren^, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0}"
+                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0}"
                                     RowDefinitions="Auto, Auto">
                                     <TextBlock
                                         Margin="0,0,0,10"

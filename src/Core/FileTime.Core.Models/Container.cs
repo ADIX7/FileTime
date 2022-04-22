@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DynamicData;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
 
@@ -19,7 +20,7 @@ namespace FileTime.Core.Models
         string? Attributes,
         IContentProvider Provider,
         IObservable<IEnumerable<Exception>> Exceptions,
-        IObservable<IEnumerable<IAbsolutePath>?> Items) : IContainer
+        IObservable<IObservable<IChangeSet<IAbsolutePath>>?> Items) : IContainer
     {
         BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);
         IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
