@@ -20,6 +20,7 @@ namespace FileTime.App.Core.ViewModels
         private readonly IAppState _appState;
         private readonly IRxSchedulerService _rxSchedulerService;
         private readonly BehaviorSubject<IEnumerable<FullName>> _markedItems = new(Enumerable.Empty<FullName>());
+        private readonly List<FullName> _currentMarkedItems = new();
         private readonly List<IDisposable> _disposables = new();
         private bool disposed;
 
@@ -191,7 +192,37 @@ namespace FileTime.App.Core.ViewModels
                 return elementViewModel;
             }
 
-            throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neighter {nameof(IElement)}");
+            throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neither {nameof(IElement)}");
+        }
+
+        public void AddMarkedItem(FullName item)
+        {
+            _currentMarkedItems.Add(item);
+            _markedItems.OnNext(_currentMarkedItems);
+        }
+
+        public void RemoveMarkedItem(FullName item)
+        {
+            _currentMarkedItems.RemoveAll(i => i.Path == item.Path);
+            _markedItems.OnNext(_currentMarkedItems);
+        }
+
+        public void ToggleMarkedItem(FullName item)
+        {
+            if (_currentMarkedItems.Any(i => i.Path == item.Path))
+            {
+                RemoveMarkedItem(item);
+            }
+            else
+            {
+                AddMarkedItem(item);
+            }
+        }
+
+        public void ClearMarkedItems()
+        {
+            _currentMarkedItems.Clear();
+            _markedItems.OnNext(_currentMarkedItems);
         }
 
         ~TabViewModel() => Dispose(false);

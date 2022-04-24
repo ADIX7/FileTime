@@ -22,5 +22,9 @@ namespace FileTime.App.Core.ViewModels
         BindedCollection<IItemViewModel>? SelectedsChildrenCollection { get; }
         BindedCollection<IItemViewModel>? ParentsChildrenCollection { get; }
         IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; }
+        void ClearMarkedItems();
+        void RemoveMarkedItem(FullName item);
+        void AddMarkedItem(FullName item);
+        void ToggleMarkedItem(FullName item);
     }
 }

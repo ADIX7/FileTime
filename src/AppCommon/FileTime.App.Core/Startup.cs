@@ -21,7 +21,8 @@ namespace FileTime.App.Core
         private static IServiceCollection AddCommandHandlers(this IServiceCollection serviceCollection)
         {
             return serviceCollection
-                .AddSingleton<ICommandHandler, NavigationCommandHandler>();
+                .AddSingleton<ICommandHandler, NavigationCommandHandler>()
+                .AddSingleton<ICommandHandler, ItemManipulationCommandHandler>();
         }
     }
 }

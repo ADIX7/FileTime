@@ -8,20 +8,17 @@ namespace FileTime.App.Core.Services.CommandHandler
 {
     public class NavigationCommandHandler : CommandHanderBase
     {
-        private readonly IAppState _appState;
         private ITabViewModel? _selectedTab;
         private IContainer? _currentLocation;
         private IItemViewModel? _currentSelectedItem;
         private IEnumerable<IItemViewModel> _currentItems = Enumerable.Empty<IItemViewModel>();
 
-        public NavigationCommandHandler(IAppState appState)
+        public NavigationCommandHandler(IAppState appState) : base(appState)
         {
-            _appState = appState;
-
-            _appState.SelectedTab.Subscribe(t => _selectedTab = t);
-            _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation).Switch().Subscribe(l => _currentLocation = l);
-            _appState.SelectedTab.Select(t => t == null ? Observable.Return<IItemViewModel?>(null) : t.CurrentSelectedItem).Switch().Subscribe(l => _currentSelectedItem = l);
-            _appState.SelectedTab.Select(t => t?.CurrentItemsCollectionObservable ?? Observable.Return((IEnumerable<IItemViewModel>?)Enumerable.Empty<IItemViewModel>())).Switch().Subscribe(i => _currentItems = i ?? Enumerable.Empty<IItemViewModel>());
+            SaveSelectedTab(t => _selectedTab = t);
+            SaveCurrentSelectedItem(i => _currentSelectedItem = i);
+            SaveCurrentLocation(l => _currentLocation = l);
+            SaveCurrentItems(i => _currentItems = i);
 
             AddCommandHandlers(new (Commands, Func<Task>)[]
             {

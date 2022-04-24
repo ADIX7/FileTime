@@ -1,14 +1,15 @@
 using FileTime.App.Core.Command;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.App.Core.Services
 {
     public class CommandHandlerService : ICommandHandlerService
     {
-        private readonly IEnumerable<ICommandHandler> _commandHandlers;
+        private readonly Lazy<IEnumerable<ICommandHandler>> _commandHandlers;
 
-        public CommandHandlerService(IEnumerable<ICommandHandler> commandHandlers)
+        public CommandHandlerService(IServiceProvider serviceProvider)
         {
-            _commandHandlers = commandHandlers;
+            _commandHandlers = new Lazy<IEnumerable<ICommandHandler>>(() => serviceProvider.GetServices<ICommandHandler>());
 
             //(Commands.AutoRefresh, ToggleAutoRefresh),
             //(Commands.ChangeTimelineMode, ChangeTimelineMode),
@@ -68,7 +69,7 @@ namespace FileTime.App.Core.Services
 
         public async Task HandleCommandAsync(Commands command)
         {
-            var handler = _commandHandlers.FirstOrDefault(h => h.CanHandleCommand(command));
+            var handler = _commandHandlers.Value.FirstOrDefault(h => h.CanHandleCommand(command));
 
             if (handler != null)
             {

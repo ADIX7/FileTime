@@ -44,8 +44,8 @@ namespace FileTime.GuiApp
         {
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(MainConfiguration.Configuration)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{Program.EnvironmentName}.json", true, true)
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile($"appsettings.{Program.EnvironmentName}.json", true)
                 .Build();
 
             return serviceCollection
