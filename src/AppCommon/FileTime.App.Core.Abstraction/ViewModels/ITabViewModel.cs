@@ -15,7 +15,7 @@ namespace FileTime.App.Core.ViewModels
         IObservable<IContainer?> CurrentLocation { get; }
         IObservable<IItemViewModel?> CurrentSelectedItem { get; }
         IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; }
-        IObservable<IEnumerable<FullName>> MarkedItems { get; }
+        IObservable<IChangeSet<IAbsolutePath>> MarkedItems { get; }
         IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; }
         IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; }
         BindedCollection<IItemViewModel>? CurrentItemsCollection { get; }
@@ -23,8 +23,8 @@ namespace FileTime.App.Core.ViewModels
         BindedCollection<IItemViewModel>? ParentsChildrenCollection { get; }
         IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; }
         void ClearMarkedItems();
-        void RemoveMarkedItem(FullName item);
-        void AddMarkedItem(FullName item);
-        void ToggleMarkedItem(FullName item);
+        void RemoveMarkedItem(IAbsolutePath item);
+        void AddMarkedItem(IAbsolutePath item);
+        void ToggleMarkedItem(IAbsolutePath item);
     }
 }

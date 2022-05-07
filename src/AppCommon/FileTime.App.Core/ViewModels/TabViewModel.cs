@@ -1,5 +1,4 @@
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using DynamicData;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models;
@@ -19,8 +18,7 @@ namespace FileTime.App.Core.ViewModels
         private readonly IItemNameConverterService _itemNameConverterService;
         private readonly IAppState _appState;
         private readonly IRxSchedulerService _rxSchedulerService;
-        private readonly BehaviorSubject<IEnumerable<FullName>> _markedItems = new(Enumerable.Empty<FullName>());
-        private readonly List<FullName> _currentMarkedItems = new();
+        private readonly SourceList<IAbsolutePath> _markedItems = new();
         private readonly List<IDisposable> _disposables = new();
         private bool disposed;
 
@@ -32,7 +30,7 @@ namespace FileTime.App.Core.ViewModels
         public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
         public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
         public IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; private set; } = null!;
-        public IObservable<IEnumerable<FullName>> MarkedItems { get; }
+        public IObservable<IChangeSet<IAbsolutePath>> MarkedItems { get; }
         public IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; private set; } = null!;
         public IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; private set; } = null!;
 
@@ -57,7 +55,7 @@ namespace FileTime.App.Core.ViewModels
             _itemNameConverterService = itemNameConverterService;
             _appState = appState;
 
-            MarkedItems = _markedItems.Select(e => e.ToList()).AsObservable();
+            MarkedItems = _markedItems.Connect().StartWithEmpty();
             IsSelected = _appState.SelectedTab.Select(s => s == this);
             _rxSchedulerService = rxSchedulerService;
         }
@@ -117,7 +115,7 @@ namespace FileTime.App.Core.ViewModels
                 SelectedsChildrenCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
             });
 
-            tab.CurrentLocation.Subscribe((_) => _markedItems.OnNext(Enumerable.Empty<FullName>()));
+            tab.CurrentLocation.Subscribe((_) => _markedItems.Clear());
 
             IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitSelectedsChildren()
             {
@@ -195,21 +193,18 @@ namespace FileTime.App.Core.ViewModels
             throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neither {nameof(IElement)}");
         }
 
-        public void AddMarkedItem(FullName item)
+        public void AddMarkedItem(IAbsolutePath item) => _markedItems.Add(item);
+
+        public void RemoveMarkedItem(IAbsolutePath item)
         {
-            _currentMarkedItems.Add(item);
-            _markedItems.OnNext(_currentMarkedItems);
+            var itemsToRemove = _markedItems.Items.Where(i => i.Path.Path == item.Path.Path).ToList();
+
+            _markedItems.RemoveMany(itemsToRemove);
         }
 
-        public void RemoveMarkedItem(FullName item)
+        public void ToggleMarkedItem(IAbsolutePath item)
         {
-            _currentMarkedItems.RemoveAll(i => i.Path == item.Path);
-            _markedItems.OnNext(_currentMarkedItems);
-        }
-
-        public void ToggleMarkedItem(FullName item)
-        {
-            if (_currentMarkedItems.Any(i => i.Path == item.Path))
+            if (_markedItems.Items.Any(i => i.Path.Path == item.Path.Path))
             {
                 RemoveMarkedItem(item);
             }
@@ -221,8 +216,7 @@ namespace FileTime.App.Core.ViewModels
 
         public void ClearMarkedItems()
         {
-            _currentMarkedItems.Clear();
-            _markedItems.OnNext(_currentMarkedItems);
+            _markedItems.Clear();
         }
 
         ~TabViewModel() => Dispose(false);

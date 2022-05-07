@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using DynamicData;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
@@ -45,7 +46,7 @@ namespace FileTime.App.Core.ViewModels
             BaseItem = item;
             DisplayName = _appState.SearchText.Select(s => _itemNameConverterService.GetDisplayName(item.DisplayName, s));
             DisplayNameText = item.DisplayName;
-            IsMarked = parentTab.MarkedItems.Select(m => m.Contains(item.FullName));
+            IsMarked = parentTab.MarkedItems.ToCollection().Select(m => m.Any(i => i.Path.Path == item.FullName?.Path));
             IsSelected = parentTab.CurrentSelectedItem.Select(EqualsTo);
             IsAlternative = parentTab.CurrentItemsCollectionObservable.Select(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
             ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode);

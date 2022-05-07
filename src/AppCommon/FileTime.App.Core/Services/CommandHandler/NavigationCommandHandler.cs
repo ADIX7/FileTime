@@ -6,7 +6,7 @@ using FileTime.Core.Models;
 
 namespace FileTime.App.Core.Services.CommandHandler
 {
-    public class NavigationCommandHandler : CommandHanderBase
+    public class NavigationCommandHandler : CommandHandlerBase
     {
         private ITabViewModel? _selectedTab;
         private IContainer? _currentLocation;

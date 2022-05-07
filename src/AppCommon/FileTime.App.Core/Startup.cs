@@ -15,6 +15,7 @@ namespace FileTime.App.Core
                 .AddTransient<IElementViewModel, ElementViewModel>()
                 .AddTransient<IItemNameConverterService, ItemNameConverterService>()
                 .AddSingleton<ICommandHandlerService, CommandHandlerService>()
+                .AddSingleton<IClipboardService, ClipboardService>()
                 .AddCommandHandlers();
         }
 

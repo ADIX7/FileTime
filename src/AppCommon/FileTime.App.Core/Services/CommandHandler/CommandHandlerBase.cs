@@ -1,16 +1,17 @@
 using System.Reactive.Linq;
+using DynamicData;
 using FileTime.App.Core.Command;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 
 namespace FileTime.App.Core.Services.CommandHandler
 {
-    public abstract class CommandHanderBase : ICommandHandler
+    public abstract class CommandHandlerBase : ICommandHandler
     {
         private readonly Dictionary<Commands, Func<Task>> _commandHandlers = new();
         private readonly IAppState? _appState;
 
-        protected CommandHanderBase(IAppState? appState = null)
+        protected CommandHandlerBase(IAppState? appState = null)
         {
             _appState = appState;
         }
@@ -40,9 +41,12 @@ namespace FileTime.App.Core.Services.CommandHandler
         protected IDisposable SaveCurrentItems(Action<IEnumerable<IItemViewModel>> handler)
             => RunWithAppState(appState => appState.SelectedTab.Select(t => t?.CurrentItemsCollectionObservable ?? Observable.Return((IEnumerable<IItemViewModel>?)Enumerable.Empty<IItemViewModel>())).Switch().Subscribe(i => handler(i ?? Enumerable.Empty<IItemViewModel>())));
 
+        protected IDisposable SaveMarkedItems(Action<IChangeSet<IAbsolutePath>> handler)
+            => RunWithAppState(appstate => appstate.SelectedTab.Select(t => t == null ? Observable.Empty<IChangeSet<IAbsolutePath>>() : t.MarkedItems).Switch().Subscribe(handler));
+
         private IDisposable RunWithAppState(Func<IAppState, IDisposable> act)
         {
-            if (_appState == null) throw new NullReferenceException($"AppState is nit initialized in {nameof(CommandHanderBase)}.");
+            if (_appState == null) throw new NullReferenceException($"AppState is nit initialized in {nameof(CommandHandlerBase)}.");
 
             return act(_appState);
         }
