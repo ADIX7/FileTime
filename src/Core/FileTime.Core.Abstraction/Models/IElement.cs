@@ -1,7 +1,6 @@
-namespace FileTime.Core.Models
+namespace FileTime.Core.Models;
+
+public interface IElement : IItem
 {
-    public interface IElement : IItem
-    {
         
-    }
 }

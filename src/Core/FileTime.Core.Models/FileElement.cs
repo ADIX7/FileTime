@@ -1,9 +1,9 @@
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
 
-namespace FileTime.Core.Models
-{
-    public record FileElement(
+namespace FileTime.Core.Models;
+
+public record FileElement(
         string Name,
         string DisplayName,
         FullName FullName,
@@ -33,4 +33,3 @@ namespace FileTime.Core.Models
         Provider,
         Exceptions
     ), IFileElement;
-}

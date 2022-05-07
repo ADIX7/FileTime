@@ -1,4 +1,3 @@
-namespace FileTime.GuiApp.Services
-{
-    public interface IDefaultModeKeyInputHandler : IKeyInputHandler { }
-}
+namespace FileTime.GuiApp.Services;
+
+public interface IDefaultModeKeyInputHandler : IKeyInputHandler { }

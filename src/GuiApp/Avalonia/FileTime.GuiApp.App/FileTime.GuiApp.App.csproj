@@ -9,6 +9,11 @@
     <ApplicationIcon>filetime.ico</ApplicationIcon>
     <Version>0.0.1</Version>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="filetime.ico" />
   </ItemGroup>

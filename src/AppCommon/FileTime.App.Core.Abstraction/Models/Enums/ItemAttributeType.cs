@@ -1,10 +1,9 @@
-namespace FileTime.App.Core.Models.Enums
+namespace FileTime.App.Core.Models.Enums;
+
+public enum ItemAttributeType
 {
-    public enum ItemAttributeType
-    {
-        File,
-        Element,
-        Container,
-        SizeContainer
-    }
+    File,
+    Element,
+    Container,
+    SizeContainer
 }

@@ -1,10 +1,9 @@
 using FileTime.Core.Models;
 using InitableService;
 
-namespace FileTime.App.Core.ViewModels
+namespace FileTime.App.Core.ViewModels;
+
+public interface IContainerViewModel : IItemViewModel, IInitable<IContainer, ITabViewModel>
 {
-    public interface IContainerViewModel : IItemViewModel, IInitable<IContainer, ITabViewModel>
-    {
-        IContainer? Container { get; }
-    }
+    IContainer? Container { get; }
 }

@@ -1,7 +1,6 @@
-namespace FileTime.Core.Behaviors
+namespace FileTime.Core.Behaviors;
+
+public interface IOnContainerEnter
 {
-    public interface IOnContainerEnter
-    {
-        Task OnEnter();
-    }
+    Task OnEnter();
 }

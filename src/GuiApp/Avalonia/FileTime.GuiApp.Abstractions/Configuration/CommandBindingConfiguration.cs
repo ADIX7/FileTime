@@ -1,89 +1,88 @@
 using Avalonia.Input;
 using FileTime.App.Core.Command;
 
-namespace FileTime.GuiApp.Configuration
+namespace FileTime.GuiApp.Configuration;
+
+public class CommandBindingConfiguration
 {
-    public class CommandBindingConfiguration
+    public List<KeyConfig> Keys { get; set; } = new List<KeyConfig>();
+
+    public Commands Command { get; set; } = Commands.None;
+
+    public string KeysDisplayText => GetKeysDisplayText();
+
+    public CommandBindingConfiguration() { }
+
+    public CommandBindingConfiguration(Commands command, IEnumerable<KeyConfig> keys)
     {
-        public List<KeyConfig> Keys { get; set; } = new List<KeyConfig>();
+        Keys = new List<KeyConfig>(keys);
+        Command = command;
+    }
 
-        public Commands Command { get; set; } = Commands.None;
+    public CommandBindingConfiguration(Commands command, KeyConfig key)
+    {
+        Keys = new List<KeyConfig>() { key };
+        Command = command;
+    }
 
-        public string KeysDisplayText => GetKeysDisplayText();
+    public CommandBindingConfiguration(Commands command, IEnumerable<Key> keys)
+    {
+        Keys = keys.Select(k => new KeyConfig(k)).ToList();
+        Command = command;
+    }
 
-        public CommandBindingConfiguration() { }
+    public CommandBindingConfiguration(Commands command, Key key)
+    {
+        Keys = new List<KeyConfig>() { new KeyConfig(key) };
+        Command = command;
+    }
 
-        public CommandBindingConfiguration(Commands command, IEnumerable<KeyConfig> keys)
+    public string GetKeysDisplayText()
+    {
+        var s = "";
+
+        foreach (var k in Keys)
         {
-            Keys = new List<KeyConfig>(keys);
-            Command = command;
-        }
+            var keyString = k.Key.ToString();
 
-        public CommandBindingConfiguration(Commands command, KeyConfig key)
-        {
-            Keys = new List<KeyConfig>() { key };
-            Command = command;
-        }
-
-        public CommandBindingConfiguration(Commands command, IEnumerable<Key> keys)
-        {
-            Keys = keys.Select(k => new KeyConfig(k)).ToList();
-            Command = command;
-        }
-
-        public CommandBindingConfiguration(Commands command, Key key)
-        {
-            Keys = new List<KeyConfig>() { new KeyConfig(key) };
-            Command = command;
-        }
-
-        public string GetKeysDisplayText()
-        {
-            var s = "";
-
-            foreach (var k in Keys)
+            if (keyString.Length == 1)
             {
-                var keyString = k.Key.ToString();
-
-                if (keyString.Length == 1)
-                {
-                    s += AddKeyWithCtrlOrAlt(k, s, (_, _, _) => k.Shift ? keyString.ToUpper() : keyString.ToLower());
-                }
-                else
-                {
-                    s += AddKeyWithCtrlOrAlt(k, s, AddSpecialKey);
-                }
+                s += AddKeyWithCtrlOrAlt(k, s, (_, _, _) => k.Shift ? keyString.ToUpper() : keyString.ToLower());
             }
-
-            return s;
+            else
+            {
+                s += AddKeyWithCtrlOrAlt(k, s, AddSpecialKey);
+            }
         }
 
-        private static string AddKeyWithCtrlOrAlt(KeyConfig key, string currentText, Func<KeyConfig, string, bool, string> keyProcessor)
-        {
-            var s = "";
+        return s;
+    }
 
-            bool ctrlOrAlt = key.Ctrl || key.Alt;
+    private static string AddKeyWithCtrlOrAlt(KeyConfig key, string currentText, Func<KeyConfig, string, bool, string> keyProcessor)
+    {
+        var s = "";
 
-            if (ctrlOrAlt && currentText.Length > 0 && currentText.Last() != ' ') s += " ";
+        bool ctrlOrAlt = key.Ctrl || key.Alt;
 
-            if (key.Ctrl) s += "CTRL+";
-            if (key.Alt) s += "ALT+";
-            s += keyProcessor(key, currentText, ctrlOrAlt);
+        if (ctrlOrAlt && currentText.Length > 0 && currentText.Last() != ' ') s += " ";
 
-            if (ctrlOrAlt) s += " ";
+        if (key.Ctrl) s += "CTRL+";
+        if (key.Alt) s += "ALT+";
+        s += keyProcessor(key, currentText, ctrlOrAlt);
 
-            return s;
-        }
+        if (ctrlOrAlt) s += " ";
 
-        private static string AddSpecialKey(KeyConfig key, string currentText, bool wasCtrlOrAlt)
-        {
-            var s = "";
+        return s;
+    }
 
-            if (currentText.Length > 0 && currentText.Last() != ' ' && !wasCtrlOrAlt) s += " ";
-            s += key.Key.ToString();
-            if (!wasCtrlOrAlt) s += " ";
+    private static string AddSpecialKey(KeyConfig key, string currentText, bool wasCtrlOrAlt)
+    {
+        var s = "";
 
-            return s;
-        }
+        if (currentText.Length > 0 && currentText.Last() != ' ' && !wasCtrlOrAlt) s += " ";
+        s += key.Key.ToString();
+        if (!wasCtrlOrAlt) s += " ";
+
+        return s;
     }
 }

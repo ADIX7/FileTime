@@ -1,7 +1,6 @@
-namespace FileTime.Core.Command.Copy
-{
-    public class CopyCommand : ITransportationCommand
-    {
+namespace FileTime.Core.Command.Copy;
 
-    }
+public class CopyCommand : ITransportationCommand
+{
+
 }

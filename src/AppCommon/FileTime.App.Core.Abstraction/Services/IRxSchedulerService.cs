@@ -1,10 +1,9 @@
 using System.Reactive.Concurrency;
 
-namespace FileTime.App.Core.Services
+namespace FileTime.App.Core.Services;
+
+public interface IRxSchedulerService
 {
-    public interface IRxSchedulerService
-    {
-        IScheduler GetWorkerScheduler();
-        IScheduler GetUIScheduler();
-    }
+    IScheduler GetWorkerScheduler();
+    IScheduler GetUIScheduler();
 }

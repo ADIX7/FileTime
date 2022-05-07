@@ -7,40 +7,39 @@ using FileTime.GuiApp.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace FileTime.GuiApp
+namespace FileTime.GuiApp;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    static App()
     {
-        static App()
-        {
-            DI.ServiceProvider ??= DependencyInjection
-                .RegisterDefaultServices()
-                .AddConfiguration()
-                .RegisterLogging()
-                .RegisterServices()
-                .AddViewModels()
-                .BuildServiceProvider()
-                .InitSerilog();
+        DI.ServiceProvider ??= DependencyInjection
+            .RegisterDefaultServices()
+            .AddConfiguration()
+            .RegisterLogging()
+            .RegisterServices()
+            .AddViewModels()
+            .BuildServiceProvider()
+            .InitSerilog();
 
-            var logger = DI.ServiceProvider.GetRequiredService<ILogger<App>>();
-            logger.LogInformation("App initialization completed");
-        }
-        public override void Initialize()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+        var logger = DI.ServiceProvider.GetRequiredService<ILogger<App>>();
+        logger.LogInformation("App initialization completed");
+    }
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        public override void OnFrameworkInitializationCompleted()
+    public override void OnFrameworkInitializationCompleted()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            desktop.MainWindow = new MainWindow
             {
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowLoadingViewModel(),
-                };
-            }
-
-            base.OnFrameworkInitializationCompleted();
+                DataContext = new MainWindowLoadingViewModel(),
+            };
         }
+
+        base.OnFrameworkInitializationCompleted();
     }
 }

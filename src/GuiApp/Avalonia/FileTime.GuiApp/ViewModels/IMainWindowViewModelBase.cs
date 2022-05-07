@@ -1,7 +1,6 @@
-namespace FileTime.GuiApp.ViewModels
+namespace FileTime.GuiApp.ViewModels;
+
+public interface IMainWindowViewModelBase
 {
-    public interface IMainWindowViewModelBase
-    {
-        bool Loading { get; }
-    }
+    bool Loading { get; }
 }

@@ -1,9 +1,8 @@
 using Avalonia.Input;
 
-namespace FileTime.GuiApp.Services
+namespace FileTime.GuiApp.Services;
+
+public interface IKeyInputHandlerService
 {
-    public interface IKeyInputHandlerService
-    {
-        Task ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled);
-    }
+    Task ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled);
 }

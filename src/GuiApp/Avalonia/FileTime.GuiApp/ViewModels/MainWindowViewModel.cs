@@ -11,49 +11,48 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MvvmGen;
 
-namespace FileTime.GuiApp.ViewModels
+namespace FileTime.GuiApp.ViewModels;
+
+[ViewModel]
+[Inject(typeof(IAppState), "_appState")]
+[Inject(typeof(ILocalContentProvider), "_localContentProvider")]
+[Inject(typeof(IServiceProvider), PropertyName = "_serviceProvider")]
+[Inject(typeof(ILogger<MainWindowViewModel>), PropertyName = "_logger")]
+[Inject(typeof(IKeyInputHandlerService), PropertyName = "_keyInputHandlerService")]
+public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
-    [ViewModel]
-    [Inject(typeof(IAppState), "_appState")]
-    [Inject(typeof(ILocalContentProvider), "_localContentProvider")]
-    [Inject(typeof(IServiceProvider), PropertyName = "_serviceProvider")]
-    [Inject(typeof(ILogger<MainWindowViewModel>), PropertyName = "_logger")]
-    [Inject(typeof(IKeyInputHandlerService), PropertyName = "_keyInputHandlerService")]
-    public partial class MainWindowViewModel : IMainWindowViewModelBase
+    public bool Loading => false;
+    public IAppState AppState => _appState;
+    public string Title { get; private set; }
+
+    partial void OnInitialize()
     {
-        public bool Loading => false;
-        public IAppState AppState => _appState;
-        public string Title { get; private set; }
+        _logger?.LogInformation($"Starting {nameof(MainWindowViewModel)} initialization...");
 
-        partial void OnInitialize()
+        var version = Assembly.GetEntryAssembly()!.GetName().Version;
+        var versionString = "Unknwon version";
+        if (version != null)
         {
-            _logger?.LogInformation($"Starting {nameof(MainWindowViewModel)} initialization...");
-
-            var version = Assembly.GetEntryAssembly()!.GetName().Version;
-            var versionString = "Unknwon version";
-            if (version != null)
+            versionString = $"{version.Major}.{version.Minor}.{version.Build}";
+            if (version.Revision != 0)
             {
-                versionString = $"{version.Major}.{version.Minor}.{version.Build}";
-                if (version.Revision != 0)
-                {
-                    versionString += $" ({version.Revision})";
-                }
-            }
-            Title = "FileTime " + versionString;
-
-            //TODO: refactor
-            if (AppState.Tabs.Count == 0)
-            {
-                var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider).GetRequiredService<ITab>();
-                var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
-
-                _appState.AddTab(tabViewModel);
+                versionString += $" ({version.Revision})";
             }
         }
+        Title = "FileTime " + versionString;
 
-        public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
+        //TODO: refactor
+        if (AppState.Tabs.Count == 0)
         {
-            _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
+            var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider).GetRequiredService<ITab>();
+            var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
+
+            _appState.AddTab(tabViewModel);
         }
+    }
+
+    public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
+    {
+        _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
     }
 }

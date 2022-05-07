@@ -1,8 +1,7 @@
-namespace FileTime.App.Core.Models.Enums
+namespace FileTime.App.Core.Models.Enums;
+
+public enum ViewMode
 {
-    public enum ViewMode
-    {
-        Default,
-        RapidTravel
-    }
+    Default,
+    RapidTravel
 }

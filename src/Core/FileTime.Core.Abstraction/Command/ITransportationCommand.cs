@@ -1,7 +1,6 @@
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command;
+
+public interface ITransportationCommand : ICommand
 {
-    public interface ITransportationCommand : ICommand
-    {
         
-    }
 }

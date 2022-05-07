@@ -1,4 +1,3 @@
-namespace FileTime.GuiApp.Services
-{
-    public interface IRapidTravelModeKeyInputHandler : IKeyInputHandler { }
-}
+namespace FileTime.GuiApp.Services;
+
+public interface IRapidTravelModeKeyInputHandler : IKeyInputHandler { }

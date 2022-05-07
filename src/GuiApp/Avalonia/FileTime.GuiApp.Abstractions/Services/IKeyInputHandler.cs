@@ -1,10 +1,9 @@
 using Avalonia.Input;
 using FileTime.GuiApp.Models;
 
-namespace FileTime.GuiApp.Services
+namespace FileTime.GuiApp.Services;
+
+public interface IKeyInputHandler
 {
-    public interface IKeyInputHandler
-    {
-        Task HandleInputKey(Key key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled);
-    }
+    Task HandleInputKey(Key key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled);
 }

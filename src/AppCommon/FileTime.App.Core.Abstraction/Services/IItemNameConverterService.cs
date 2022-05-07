@@ -1,11 +1,10 @@
 using FileTime.App.Core.Models;
 
-namespace FileTime.App.Core.Services
+namespace FileTime.App.Core.Services;
+
+public interface IItemNameConverterService
 {
-    public interface IItemNameConverterService
-    {
-        List<ItemNamePart> GetDisplayName(string name, string? searchText);
-        string GetFileExtension(string fullName);
-        string GetFileName(string fullName);
-    }
+    List<ItemNamePart> GetDisplayName(string name, string? searchText);
+    string GetFileExtension(string fullName);
+    string GetFileName(string fullName);
 }

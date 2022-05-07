@@ -1,2 +1,4 @@
 [*.cs]
 dotnet_diagnostic.RCS1196.severity = none
+csharp_style_namespace_declarations = file_scoped:error
+dotnet_diagnostic.IDE0161.severity = error

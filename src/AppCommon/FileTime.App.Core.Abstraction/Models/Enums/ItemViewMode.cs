@@ -1,12 +1,11 @@
-namespace FileTime.App.Core.Models.Enums
+namespace FileTime.App.Core.Models.Enums;
+
+public enum ItemViewMode
 {
-    public enum ItemViewMode
-    {
-        Default,
-        Alternative,
-        Selected,
-        Marked,
-        MarkedSelected,
-        MarkedAlternative
-    }
+    Default,
+    Alternative,
+    Selected,
+    Marked,
+    MarkedSelected,
+    MarkedAlternative
 }

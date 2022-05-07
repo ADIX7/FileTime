@@ -1,4 +1,3 @@
-namespace FileTime.Core.Models
-{
-    public record NativePath(string Path);
-}
+namespace FileTime.Core.Models;
+
+public record NativePath(string Path);

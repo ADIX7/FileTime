@@ -1,8 +1,7 @@
-namespace FileTime.GuiApp.Configuration
+namespace FileTime.GuiApp.Configuration;
+
+public static class SectionNames
 {
-    public static class SectionNames
-    {
-        public const string KeybindingSectionName = "KeyBindings";
-        public const string ProgramsSectionName = "Programs";
-    }
+    public const string KeybindingSectionName = "KeyBindings";
+    public const string ProgramsSectionName = "Programs";
 }

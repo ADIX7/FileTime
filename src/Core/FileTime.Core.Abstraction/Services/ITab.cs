@@ -2,18 +2,17 @@ using DynamicData;
 using FileTime.Core.Models;
 using InitableService;
 
-namespace FileTime.Core.Services
-{
-    public interface ITab : IInitable<IContainer>
-    {
-        IObservable<IContainer?> CurrentLocation { get; }
-        IObservable<IAbsolutePath?> CurrentSelectedItem { get; }
-        IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
+namespace FileTime.Core.Services;
 
-        void SetCurrentLocation(IContainer newLocation);
-        void AddSelectedItemsTransformator(ItemsTransformator transformator);
-        void RemoveSelectedItemsTransformator(ItemsTransformator transformator);
-        void RemoveSelectedItemsTransformatorByName(string name);
-        void SetSelectedItem(IAbsolutePath newSelectedItem);
-    }
+public interface ITab : IInitable<IContainer>
+{
+    IObservable<IContainer?> CurrentLocation { get; }
+    IObservable<IAbsolutePath?> CurrentSelectedItem { get; }
+    IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
+
+    void SetCurrentLocation(IContainer newLocation);
+    void AddSelectedItemsTransformator(ItemsTransformator transformator);
+    void RemoveSelectedItemsTransformator(ItemsTransformator transformator);
+    void RemoveSelectedItemsTransformatorByName(string name);
+    void SetSelectedItem(IAbsolutePath newSelectedItem);
 }

@@ -1,7 +1,6 @@
-namespace FileTime.GuiApp
+namespace FileTime.GuiApp;
+
+public static class DI
 {
-    public static class DI
-    {
-        public static IServiceProvider ServiceProvider { get; set; } = null!;
-    }
+    public static IServiceProvider ServiceProvider { get; set; } = null!;
 }

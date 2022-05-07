@@ -1,9 +1,8 @@
-namespace FileTime.Core.Enums
+namespace FileTime.Core.Enums;
+
+public enum AbsolutePathType
 {
-    public enum AbsolutePathType
-    {
-        Unknown,
-        Container,
-        Element
-    }
+    Unknown,
+    Container,
+    Element
 }

@@ -9,118 +9,118 @@ using FileTime.Tools.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using MvvmGen;
 
-namespace FileTime.App.Core.ViewModels
+namespace FileTime.App.Core.ViewModels;
+
+[ViewModel]
+public partial class TabViewModel : ITabViewModel, IDisposable
 {
-    [ViewModel]
-    public partial class TabViewModel : ITabViewModel, IDisposable
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IItemNameConverterService _itemNameConverterService;
+    private readonly IAppState _appState;
+    private readonly IRxSchedulerService _rxSchedulerService;
+    private readonly SourceList<IAbsolutePath> _markedItems = new();
+    private readonly List<IDisposable> _disposables = new();
+    private bool disposed;
+
+    public ITab? Tab { get; private set; }
+    public int TabNumber { get; private set; }
+
+    public IObservable<bool> IsSelected { get; }
+
+    public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
+    public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
+    public IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; private set; } = null!;
+    public IObservable<IChangeSet<IAbsolutePath>> MarkedItems { get; }
+    public IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; private set; } = null!;
+    public IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; private set; } = null!;
+
+    public IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; private set; } = null!;
+
+    [Property]
+    private BindedCollection<IItemViewModel>? _currentItemsCollection;
+
+    [Property]
+    private BindedCollection<IItemViewModel>? _parentsChildrenCollection;
+
+    [Property]
+    private BindedCollection<IItemViewModel>? _selectedsChildrenCollection;
+
+    public TabViewModel(
+        IServiceProvider serviceProvider,
+        IItemNameConverterService itemNameConverterService,
+        IAppState appState,
+        IRxSchedulerService rxSchedulerService)
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IItemNameConverterService _itemNameConverterService;
-        private readonly IAppState _appState;
-        private readonly IRxSchedulerService _rxSchedulerService;
-        private readonly SourceList<IAbsolutePath> _markedItems = new();
-        private readonly List<IDisposable> _disposables = new();
-        private bool disposed;
+        _serviceProvider = serviceProvider;
+        _itemNameConverterService = itemNameConverterService;
+        _appState = appState;
 
-        public ITab? Tab { get; private set; }
-        public int TabNumber { get; private set; }
+        MarkedItems = _markedItems.Connect().StartWithEmpty();
+        IsSelected = _appState.SelectedTab.Select(s => s == this);
+        _rxSchedulerService = rxSchedulerService;
+    }
 
-        public IObservable<bool> IsSelected { get; }
+    public void Init(ITab tab, int tabNumber)
+    {
+        Tab = tab;
+        TabNumber = tabNumber;
 
-        public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
-        public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
-        public IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; private set; } = null!;
-        public IObservable<IChangeSet<IAbsolutePath>> MarkedItems { get; }
-        public IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; private set; } = null!;
-        public IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; private set; } = null!;
+        CurrentLocation = tab.CurrentLocation.AsObservable();
+        CurrentItems = tab.CurrentItems
+            .Select(items => items?.Transform(MapItemToViewModel))
+            .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
+            .SubscribeOn(_rxSchedulerService.GetUIScheduler())
+            .Publish(null)
+            .RefCount();
 
-        public IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; private set; } = null!;
-
-        [Property]
-        private BindedCollection<IItemViewModel>? _currentItemsCollection;
-
-        [Property]
-        private BindedCollection<IItemViewModel>? _parentsChildrenCollection;
-
-        [Property]
-        private BindedCollection<IItemViewModel>? _selectedsChildrenCollection;
-
-        public TabViewModel(
-            IServiceProvider serviceProvider,
-            IItemNameConverterService itemNameConverterService,
-            IAppState appState,
-            IRxSchedulerService rxSchedulerService)
-        {
-            _serviceProvider = serviceProvider;
-            _itemNameConverterService = itemNameConverterService;
-            _appState = appState;
-
-            MarkedItems = _markedItems.Connect().StartWithEmpty();
-            IsSelected = _appState.SelectedTab.Select(s => s == this);
-            _rxSchedulerService = rxSchedulerService;
-        }
-
-        public void Init(ITab tab, int tabNumber)
-        {
-            Tab = tab;
-            TabNumber = tabNumber;
-
-            CurrentLocation = tab.CurrentLocation.AsObservable();
-            CurrentItems = tab.CurrentItems
-                .Select(items => items?.Transform(MapItemToViewModel))
-                .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-                .SubscribeOn(_rxSchedulerService.GetUIScheduler())
-                .Publish(null)
-                .RefCount();
-
-            CurrentSelectedItem =
-                Observable.CombineLatest(
+        CurrentSelectedItem =
+            Observable.CombineLatest(
                     CurrentItems,
                     tab.CurrentSelectedItem,
                     (currentItems, currentSelectedItemPath) =>
                         currentItems == null
-                        ? Observable.Return((IItemViewModel?)null)
-                        : currentItems
-                            .ToCollection()
-                            .Select(items => items.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path))
+                            ? Observable.Return((IItemViewModel?)null)
+                            : currentItems
+                                .ToCollection()
+                                .Select(items => items.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path))
                 )
                 .Switch()
                 .Publish(null)
                 .RefCount();
 
-            SelectedsChildren = InitSelectedsChildren();
-            ParentsChildren = InitParentsChildren();
+        SelectedsChildren = InitSelectedsChildren();
+        ParentsChildren = InitParentsChildren();
 
-            CurrentItemsCollectionObservable = CurrentItems
-                .Select(c => c != null ? c.ToCollection() : Observable.Return((IReadOnlyCollection<IItemViewModel>?)null))
-                .Switch()
-                .Publish(null)
-                .RefCount();
+        CurrentItemsCollectionObservable = CurrentItems
+            .Select(c => c != null ? c.ToCollection() : Observable.Return((IReadOnlyCollection<IItemViewModel>?)null))
+            .Switch()
+            .Publish(null)
+            .RefCount();
 
-            CurrentItems.Subscribe(children =>
-            {
-                CurrentItemsCollection?.Dispose();
-                CurrentItemsCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
-            });
+        CurrentItems.Subscribe(children =>
+        {
+            CurrentItemsCollection?.Dispose();
+            CurrentItemsCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
+        });
 
-            ParentsChildren.Subscribe(children =>
-            {
-                ParentsChildrenCollection?.Dispose();
-                ParentsChildrenCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
-            });
+        ParentsChildren.Subscribe(children =>
+        {
+            ParentsChildrenCollection?.Dispose();
+            ParentsChildrenCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
+        });
 
-            SelectedsChildren.Subscribe(children =>
-            {
-                SelectedsChildrenCollection?.Dispose();
-                SelectedsChildrenCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
-            });
+        SelectedsChildren.Subscribe(children =>
+        {
+            SelectedsChildrenCollection?.Dispose();
+            SelectedsChildrenCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
+        });
 
-            tab.CurrentLocation.Subscribe((_) => _markedItems.Clear());
+        tab.CurrentLocation.Subscribe((_) => _markedItems.Clear());
 
-            IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitSelectedsChildren()
-            {
-                var currentSelectedItemThrottled = CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
-                return Observable.Merge(
+        IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitSelectedsChildren()
+        {
+            var currentSelectedItemThrottled = CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
+            return Observable.Merge(
                     currentSelectedItemThrottled
                         .WhereNotNull()
                         .OfType<IContainerViewModel>()
@@ -136,17 +136,17 @@ namespace FileTime.App.Core.ViewModels
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())
                 .Publish(null)
                 .RefCount();
-            }
+        }
 
-            IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitParentsChildren()
-            {
-                var parentThrottled = CurrentLocation
-                    .Select(l => l?.Parent)
-                    .DistinctUntilChanged()
-                    .Publish(null)
-                    .RefCount();
+        IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitParentsChildren()
+        {
+            var parentThrottled = CurrentLocation
+                .Select(l => l?.Parent)
+                .DistinctUntilChanged()
+                .Publish(null)
+                .RefCount();
 
-                return Observable.Merge(
+            return Observable.Merge(
                     parentThrottled
                         .Where(p => p is not null)
                         .Select(p => Observable.FromAsync(async () => (IContainer)await p!.ResolveAsync()))
@@ -162,85 +162,84 @@ namespace FileTime.App.Core.ViewModels
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())
                 .Publish(null)
                 .RefCount();
-            }
+        }
+    }
+
+    private static async Task<IItem> MapItem(IAbsolutePath item)
+        => await item.ResolveAsync(forceResolve: true, itemInitializationSettings: new ItemInitializationSettings(true));
+
+    private IItemViewModel MapItemToViewModel(IItem item)
+    {
+        if (item is IContainer container)
+        {
+            var containerViewModel = _serviceProvider.GetInitableResolver<IContainer, ITabViewModel>(container, this).GetRequiredService<IContainerViewModel>();
+
+            return containerViewModel;
+        }
+        else if (item is IFileElement fileElement)
+        {
+            var fileViewModel = _serviceProvider.GetInitableResolver<IFileElement, ITabViewModel>(fileElement, this).GetRequiredService<IFileViewModel>();
+            fileViewModel.Size = fileElement.Size;
+
+            return fileViewModel;
+        }
+        else if (item is IElement element)
+        {
+            var elementViewModel = _serviceProvider.GetInitableResolver<IElement, ITabViewModel>(element, this).GetRequiredService<IElementViewModel>();
+
+            return elementViewModel;
         }
 
-        private static async Task<IItem> MapItem(IAbsolutePath item)
-            => await item.ResolveAsync(forceResolve: true, itemInitializationSettings: new ItemInitializationSettings(true));
+        throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neither {nameof(IElement)}");
+    }
 
-        private IItemViewModel MapItemToViewModel(IItem item)
+    public void AddMarkedItem(IAbsolutePath item) => _markedItems.Add(item);
+
+    public void RemoveMarkedItem(IAbsolutePath item)
+    {
+        var itemsToRemove = _markedItems.Items.Where(i => i.Path.Path == item.Path.Path).ToList();
+
+        _markedItems.RemoveMany(itemsToRemove);
+    }
+
+    public void ToggleMarkedItem(IAbsolutePath item)
+    {
+        if (_markedItems.Items.Any(i => i.Path.Path == item.Path.Path))
         {
-            if (item is IContainer container)
-            {
-                var containerViewModel = _serviceProvider.GetInitableResolver<IContainer, ITabViewModel>(container, this).GetRequiredService<IContainerViewModel>();
-
-                return containerViewModel;
-            }
-            else if (item is IFileElement fileElement)
-            {
-                var fileViewModel = _serviceProvider.GetInitableResolver<IFileElement, ITabViewModel>(fileElement, this).GetRequiredService<IFileViewModel>();
-                fileViewModel.Size = fileElement.Size;
-
-                return fileViewModel;
-            }
-            else if (item is IElement element)
-            {
-                var elementViewModel = _serviceProvider.GetInitableResolver<IElement, ITabViewModel>(element, this).GetRequiredService<IElementViewModel>();
-
-                return elementViewModel;
-            }
-
-            throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neither {nameof(IElement)}");
+            RemoveMarkedItem(item);
         }
-
-        public void AddMarkedItem(IAbsolutePath item) => _markedItems.Add(item);
-
-        public void RemoveMarkedItem(IAbsolutePath item)
+        else
         {
-            var itemsToRemove = _markedItems.Items.Where(i => i.Path.Path == item.Path.Path).ToList();
-
-            _markedItems.RemoveMany(itemsToRemove);
+            AddMarkedItem(item);
         }
+    }
 
-        public void ToggleMarkedItem(IAbsolutePath item)
+    public void ClearMarkedItems()
+    {
+        _markedItems.Clear();
+    }
+
+    ~TabViewModel() => Dispose(false);
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!disposed && disposing)
         {
-            if (_markedItems.Items.Any(i => i.Path.Path == item.Path.Path))
+            foreach (var disposable in _disposables)
             {
-                RemoveMarkedItem(item);
-            }
-            else
-            {
-                AddMarkedItem(item);
-            }
-        }
-
-        public void ClearMarkedItems()
-        {
-            _markedItems.Clear();
-        }
-
-        ~TabViewModel() => Dispose(false);
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!disposed && disposing)
-            {
-                foreach (var disposable in _disposables)
+                try
                 {
-                    try
-                    {
-                        disposable.Dispose();
-                    }
-                    catch { }
+                    disposable.Dispose();
                 }
+                catch { }
             }
-            disposed = true;
         }
+        disposed = true;
     }
 }

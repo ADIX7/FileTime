@@ -1,51 +1,50 @@
 using FileTime.Core.Command;
 using FileTime.Core.Models;
 
-namespace FileTime.App.Core.Services
+namespace FileTime.App.Core.Services;
+
+public class ClipboardService : IClipboardService
 {
-    public class ClipboardService : IClipboardService
+    private List<IAbsolutePath> _content;
+    public IReadOnlyList<IAbsolutePath> Content { get; private set; }
+    public Type? CommandType { get; private set; }
+
+    public ClipboardService()
     {
-        private List<IAbsolutePath> _content;
-        public IReadOnlyList<IAbsolutePath> Content { get; private set; }
-        public Type? CommandType { get; private set; }
+        _content = new List<IAbsolutePath>();
+        Content = _content.AsReadOnly();
+    }
 
-        public ClipboardService()
+    public void AddContent(IAbsolutePath absolutePath)
+    {
+        foreach (var content in _content)
         {
-            _content = new List<IAbsolutePath>();
-            Content = _content.AsReadOnly();
+            if (content.Equals(absolutePath)) return;
         }
 
-        public void AddContent(IAbsolutePath absolutePath)
-        {
-            foreach (var content in _content)
-            {
-                if (content.Equals(absolutePath)) return;
-            }
+        _content.Add(absolutePath);
+    }
 
-            _content.Add(absolutePath);
-        }
-
-        public void RemoveContent(IAbsolutePath absolutePath)
+    public void RemoveContent(IAbsolutePath absolutePath)
+    {
+        for (var i = 0; i < _content.Count; i++)
         {
-            for (var i = 0; i < _content.Count; i++)
+            if (_content[i].Equals(absolutePath))
             {
-                if (_content[i].Equals(absolutePath))
-                {
-                    _content.RemoveAt(i--);
-                }
+                _content.RemoveAt(i--);
             }
         }
+    }
 
-        public void Clear()
-        {
-            _content = new List<IAbsolutePath>();
-            Content = _content.AsReadOnly();
-            CommandType = null;
-        }
+    public void Clear()
+    {
+        _content = new List<IAbsolutePath>();
+        Content = _content.AsReadOnly();
+        CommandType = null;
+    }
 
-        public void SetCommand<T>() where T : ITransportationCommand
-        {
-            CommandType = typeof(T);
-        }
+    public void SetCommand<T>() where T : ITransportationCommand
+    {
+        CommandType = typeof(T);
     }
 }

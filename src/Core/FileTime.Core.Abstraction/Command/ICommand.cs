@@ -1,7 +1,6 @@
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command;
+
+public interface ICommand
 {
-    public interface ICommand
-    {
         
-    }
 }

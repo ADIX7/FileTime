@@ -1,56 +1,55 @@
 using FileTime.App.Core.Models;
 
-namespace FileTime.App.Core.Services
+namespace FileTime.App.Core.Services;
+
+public class ItemNameConverterService : IItemNameConverterService
 {
-    public class ItemNameConverterService : IItemNameConverterService
+    public List<ItemNamePart> GetDisplayName(string name, string? searchText)
     {
-        public List<ItemNamePart> GetDisplayName(string name, string? searchText)
+        var nameParts = new List<ItemNamePart>();
+        searchText = searchText?.ToLower();
+
+        if (!string.IsNullOrEmpty(searchText))
         {
-            var nameParts = new List<ItemNamePart>();
-            searchText = searchText?.ToLower();
+            var nameLeft = name;
 
-            if (!string.IsNullOrEmpty(searchText))
+            while (nameLeft.ToLower().IndexOf(searchText, StringComparison.Ordinal) is int rapidTextStart && rapidTextStart != -1)
             {
-                var nameLeft = name;
+                var before = rapidTextStart > 0 ? nameLeft.Substring(0, rapidTextStart) : null;
+                var rapidTravel = nameLeft.Substring(rapidTextStart, searchText.Length);
 
-                while (nameLeft.ToLower().IndexOf(searchText, StringComparison.Ordinal) is int rapidTextStart && rapidTextStart != -1)
+                nameLeft = nameLeft.Substring(rapidTextStart + searchText.Length);
+
+                if (before != null)
                 {
-                    var before = rapidTextStart > 0 ? nameLeft.Substring(0, rapidTextStart) : null;
-                    var rapidTravel = nameLeft.Substring(rapidTextStart, searchText.Length);
-
-                    nameLeft = nameLeft.Substring(rapidTextStart + searchText.Length);
-
-                    if (before != null)
-                    {
-                        nameParts.Add(new ItemNamePart(before));
-                    }
-
-                    nameParts.Add(new ItemNamePart(rapidTravel, true));
+                    nameParts.Add(new ItemNamePart(before));
                 }
 
-                if (nameLeft.Length > 0)
-                {
-                    nameParts.Add(new ItemNamePart(nameLeft));
-                }
+                nameParts.Add(new ItemNamePart(rapidTravel, true));
             }
-            else
+
+            if (nameLeft.Length > 0)
             {
-                nameParts.Add(new ItemNamePart(name));
+                nameParts.Add(new ItemNamePart(nameLeft));
             }
-            return nameParts;
         }
-
-        public string GetFileName(string fullName)
+        else
         {
-            var parts = fullName.Split('.');
-            var fileName = string.Join('.', parts[..^1]);
-            return string.IsNullOrEmpty(fileName) ? fullName : fileName;
+            nameParts.Add(new ItemNamePart(name));
         }
+        return nameParts;
+    }
 
-        public string GetFileExtension(string fullName)
-        {
-            var parts = fullName.Split('.');
-            return parts.Length == 1 || (parts.Length == 2 && string.IsNullOrEmpty(parts[0])) ? "" : parts[^1];
-        }
+    public string GetFileName(string fullName)
+    {
+        var parts = fullName.Split('.');
+        var fileName = string.Join('.', parts[..^1]);
+        return string.IsNullOrEmpty(fileName) ? fullName : fileName;
+    }
+
+    public string GetFileExtension(string fullName)
+    {
+        var parts = fullName.Split('.');
+        return parts.Length == 1 || (parts.Length == 2 && string.IsNullOrEmpty(parts[0])) ? "" : parts[^1];
     }
 }

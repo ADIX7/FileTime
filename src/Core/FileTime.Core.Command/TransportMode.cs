@@ -1,9 +1,8 @@
-namespace FileTime.Core.Command
+namespace FileTime.Core.Command;
+
+public enum TransportMode
 {
-    public enum TransportMode
-    {
-        Merge,
-        Overwrite,
-        Skip
-    }
+    Merge,
+    Overwrite,
+    Skip
 }

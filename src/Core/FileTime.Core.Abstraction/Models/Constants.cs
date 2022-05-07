@@ -1,7 +1,6 @@
-namespace FileTime.Core.Models
+namespace FileTime.Core.Models;
+
+public static class Constants
 {
-    public static class Constants
-    {
-        public const char SeparatorChar = '/';
-    }
+    public const char SeparatorChar = '/';
 }

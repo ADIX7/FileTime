@@ -1,7 +1,6 @@
-namespace FileTime.GuiApp.ViewModels
+namespace FileTime.GuiApp.ViewModels;
+
+public class MainWindowLoadingViewModel : IMainWindowViewModelBase
 {
-    public class MainWindowLoadingViewModel : IMainWindowViewModelBase
-    {
-        public bool Loading => true;
-    }
+    public bool Loading => true;
 }

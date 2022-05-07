@@ -1,9 +1,8 @@
 using FileTime.App.Core.Command;
 
-namespace FileTime.App.Core.Services
+namespace FileTime.App.Core.Services;
+
+public interface ICommandHandlerService
 {
-    public interface ICommandHandlerService
-    {
-        Task HandleCommandAsync(Commands command);
-    }
+    Task HandleCommandAsync(Commands command);
 }

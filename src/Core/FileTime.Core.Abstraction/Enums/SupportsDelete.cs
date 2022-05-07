@@ -1,9 +1,8 @@
-namespace FileTime.Core.Enums
+namespace FileTime.Core.Enums;
+
+public enum SupportsDelete
 {
-    public enum SupportsDelete
-    {
-        False,
-        True,
-        HardDeleteOnly,
-    }
+    False,
+    True,
+    HardDeleteOnly,
 }

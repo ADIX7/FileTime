@@ -1,7 +1,6 @@
-namespace FileTime.Core.Models
+namespace FileTime.Core.Models;
+
+public interface IFileElement : IElement
 {
-    public interface IFileElement : IElement
-    {
-        long Size { get; }
-    }
+    long Size { get; }
 }

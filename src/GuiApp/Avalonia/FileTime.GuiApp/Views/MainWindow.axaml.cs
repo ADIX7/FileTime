@@ -7,66 +7,65 @@ using FileTime.GuiApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace FileTime.GuiApp.Views
+namespace FileTime.GuiApp.Views;
+
+public partial class MainWindow : Window
 {
-    public partial class MainWindow : Window
+    private readonly ILogger<MainWindow>? _logger;
+    private InputElementWrapper? _inputElementWrapper;
+
+    public MainWindowViewModel? ViewModel
     {
-        private readonly ILogger<MainWindow>? _logger;
-        private InputElementWrapper? _inputElementWrapper;
-
-        public MainWindowViewModel? ViewModel
+        get => DataContext as MainWindowViewModel;
+        set
         {
-            get => DataContext as MainWindowViewModel;
-            set
+            if (value != DataContext)
             {
-                if (value != DataContext)
-                {
-                    DataContext = value;
-                }
+                DataContext = value;
             }
         }
+    }
 
-        public MainWindow()
+    public MainWindow()
+    {
+        _logger = DI.ServiceProvider.GetService<ILogger<MainWindow>>();
+        _logger?.LogInformation($"Starting {nameof(MainWindow)} initialization...");
+        InitializeComponent();
+    }
+
+    private void OnWindowOpened(object sender, EventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel)
         {
-            _logger = DI.ServiceProvider.GetService<ILogger<MainWindow>>();
-            _logger?.LogInformation($"Starting {nameof(MainWindow)} initialization...");
-            InitializeComponent();
+            _logger?.LogInformation($"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
+            ViewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
         }
+    }
 
-        private void OnWindowOpened(object sender, EventArgs e)
+    private void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (_inputElementWrapper == null)
         {
-            if (DataContext is not MainWindowViewModel)
-            {
-                _logger?.LogInformation($"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
-                ViewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
-            }
+            ViewModel?.ProcessKeyDown(e.Key, e.KeyModifiers, h => e.Handled = h);
         }
+    }
 
-        private void OnKeyDown(object sender, KeyEventArgs e)
+    private void HeaderPointerPressed(object sender, PointerPressedEventArgs e)
+    {
+        if (e.ClickCount == 2)
         {
-            if (_inputElementWrapper == null)
+            if (WindowState == WindowState.Maximized)
             {
-                ViewModel?.ProcessKeyDown(e.Key, e.KeyModifiers, h => e.Handled = h);
-            }
-        }
-
-        private void HeaderPointerPressed(object sender, PointerPressedEventArgs e)
-        {
-            if (e.ClickCount == 2)
-            {
-                if (WindowState == WindowState.Maximized)
-                {
-                    WindowState = WindowState.Normal;
-                }
-                else
-                {
-                    WindowState = WindowState.Maximized;
-                }
+                WindowState = WindowState.Normal;
             }
             else
             {
-                BeginMoveDrag(e);
+                WindowState = WindowState.Maximized;
             }
+        }
+        else
+        {
+            BeginMoveDrag(e);
         }
     }
 }

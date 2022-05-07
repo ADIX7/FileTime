@@ -1,10 +1,9 @@
 using FileTime.Core.Models;
 using InitableService;
 
-namespace FileTime.App.Core.ViewModels
+namespace FileTime.App.Core.ViewModels;
+
+public interface IContainerSizeContainerViewModel : IItemViewModel, IInitable<IContainer, ITabViewModel>
 {
-    public interface IContainerSizeContainerViewModel : IItemViewModel, IInitable<IContainer, ITabViewModel>
-    {
-        long Size { get; set; }
-    }
+    long Size { get; set; }
 }
