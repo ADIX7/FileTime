@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using DynamicData;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models;
+using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
@@ -35,15 +36,14 @@ public partial class TabViewModel : ITabViewModel, IDisposable
     public IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; private set; } = null!;
 
     public IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; private set; } = null!;
+    public IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; private set; } = null!;
+    public IObservable<IReadOnlyCollection<IItemViewModel>?> SelectedsChildrenCollectionObservable { get; private set; } = null!;
 
-    [Property]
-    private BindedCollection<IItemViewModel>? _currentItemsCollection;
+    [Property] private BindedCollection<IItemViewModel>? _currentItemsCollection;
 
-    [Property]
-    private BindedCollection<IItemViewModel>? _parentsChildrenCollection;
+    [Property] private BindedCollection<IItemViewModel>? _parentsChildrenCollection;
 
-    [Property]
-    private BindedCollection<IItemViewModel>? _selectedsChildrenCollection;
+    [Property] private BindedCollection<IItemViewModel>? _selectedsChildrenCollection;
 
     public TabViewModel(
         IServiceProvider serviceProvider,
@@ -67,7 +67,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
 
         CurrentLocation = tab.CurrentLocation.AsObservable();
         CurrentItems = tab.CurrentItems
-            .Select(items => items?.Transform(MapItemToViewModel))
+            .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
             .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
             .SubscribeOn(_rxSchedulerService.GetUIScheduler())
             .Publish(null)
@@ -79,10 +79,11 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                     tab.CurrentSelectedItem,
                     (currentItems, currentSelectedItemPath) =>
                         currentItems == null
-                            ? Observable.Return((IItemViewModel?)null)
+                            ? Observable.Return((IItemViewModel?) null)
                             : currentItems
                                 .ToCollection()
-                                .Select(items => items.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path))
+                                .Select(items =>
+                                    items.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path))
                 )
                 .Switch()
                 .Publish(null)
@@ -91,11 +92,9 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         SelectedsChildren = InitSelectedsChildren();
         ParentsChildren = InitParentsChildren();
 
-        CurrentItemsCollectionObservable = CurrentItems
-            .Select(c => c != null ? c.ToCollection() : Observable.Return((IReadOnlyCollection<IItemViewModel>?)null))
-            .Switch()
-            .Publish(null)
-            .RefCount();
+        CurrentItemsCollectionObservable = InitAsd(CurrentItems);
+        SelectedsChildrenCollectionObservable = InitAsd(SelectedsChildren);
+        ParentsChildrenCollectionObservable = InitAsd(ParentsChildren);
 
         CurrentItems.Subscribe(children =>
         {
@@ -119,7 +118,8 @@ public partial class TabViewModel : ITabViewModel, IDisposable
 
         IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitSelectedsChildren()
         {
-            var currentSelectedItemThrottled = CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
+            var currentSelectedItemThrottled =
+                CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
             return Observable.Merge(
                     currentSelectedItemThrottled
                         .WhereNotNull()
@@ -127,10 +127,12 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                         .Where(c => c?.Container is not null)
                         .Select(c => c.Container!.Items)
                         .Switch()
-                        .Select(i => i?.TransformAsync(MapItem).Transform(MapItemToViewModel)),
+                        .Select(i =>
+                            i?.TransformAsync(MapItem)
+                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))),
                     currentSelectedItemThrottled
                         .Where(c => c is null || c is not IContainerViewModel)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?) null)
                 )
                 .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())
@@ -149,43 +151,63 @@ public partial class TabViewModel : ITabViewModel, IDisposable
             return Observable.Merge(
                     parentThrottled
                         .Where(p => p is not null)
-                        .Select(p => Observable.FromAsync(async () => (IContainer)await p!.ResolveAsync()))
+                        .Select(p => Observable.FromAsync(async () => (IContainer) await p!.ResolveAsync()))
                         .Switch()
                         .Select(p => p.Items)
                         .Switch()
-                        .Select(items => items?.TransformAsync(MapItem).Transform(MapItemToViewModel)),
+                        .Select(items =>
+                            items?.TransformAsync(MapItem)
+                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.Parent))),
                     parentThrottled
                         .Where(p => p is null)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?) null)
                 )
                 .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())
                 .Publish(null)
                 .RefCount();
         }
+
+        IObservable<IReadOnlyCollection<IItemViewModel>?> InitAsd(
+            IObservable<IObservable<IChangeSet<IItemViewModel>>?> source)
+        {
+            return source
+                .Select(c =>
+                    c != null ? c.ToCollection() : Observable.Return((IReadOnlyCollection<IItemViewModel>?) null))
+                .Switch()
+                .Publish(null)
+                .RefCount();
+        }
     }
 
     private static async Task<IItem> MapItem(IAbsolutePath item)
-        => await item.ResolveAsync(forceResolve: true, itemInitializationSettings: new ItemInitializationSettings(true));
+        => await item.ResolveAsync(forceResolve: true,
+            itemInitializationSettings: new ItemInitializationSettings(true));
 
-    private IItemViewModel MapItemToViewModel(IItem item)
+    private IItemViewModel MapItemToViewModel(IItem item, ItemViewModelType type)
     {
         if (item is IContainer container)
         {
-            var containerViewModel = _serviceProvider.GetInitableResolver<IContainer, ITabViewModel>(container, this).GetRequiredService<IContainerViewModel>();
+            var containerViewModel = _serviceProvider
+                .GetInitableResolver<IContainer, ITabViewModel, ItemViewModelType>(container, this, type)
+                .GetRequiredService<IContainerViewModel>();
 
             return containerViewModel;
         }
         else if (item is IFileElement fileElement)
         {
-            var fileViewModel = _serviceProvider.GetInitableResolver<IFileElement, ITabViewModel>(fileElement, this).GetRequiredService<IFileViewModel>();
+            var fileViewModel = _serviceProvider
+                .GetInitableResolver<IFileElement, ITabViewModel, ItemViewModelType>(fileElement, this, type)
+                .GetRequiredService<IFileViewModel>();
             fileViewModel.Size = fileElement.Size;
 
             return fileViewModel;
         }
         else if (item is IElement element)
         {
-            var elementViewModel = _serviceProvider.GetInitableResolver<IElement, ITabViewModel>(element, this).GetRequiredService<IElementViewModel>();
+            var elementViewModel = _serviceProvider
+                .GetInitableResolver<IElement, ITabViewModel, ItemViewModelType>(element, this, type)
+                .GetRequiredService<IElementViewModel>();
 
             return elementViewModel;
         }
@@ -237,9 +259,12 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                 {
                     disposable.Dispose();
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
+
         disposed = true;
     }
 }

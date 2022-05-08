@@ -7,6 +7,7 @@
     xmlns:local="using:FileTime.GuiApp.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileTime.GuiApp.ViewModels"
+    xmlns:config="using:FileTime.GuiApp.Configuration"
     Title="FileTime"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -180,7 +181,8 @@
                                 Fill="{DynamicResource ContentSeparatorBrush}" />
 
                             <Grid Grid.Column="4">
-                                <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <Grid
+                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}}">
                                     <ListBox
                                         x:Name="ChildItems"
                                         x:CompileBindings="False"
@@ -230,6 +232,42 @@
                                     </ItemsRepeater>
                                 </Grid>
                             </Grid>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Row="3">
+                        <Grid
+                            IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Rectangle
+                                Height="1"
+                                Margin="10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Fill="{DynamicResource ContentSeparatorBrush}" />
+
+                            <ItemsRepeater
+                                Grid.Row="1"
+                                Items="{Binding AppState.PossibleCommands}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="config:CommandBindingConfiguration">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Text="{Binding KeysDisplayText}" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
                         </Grid>
                     </Grid>
                 </Grid>

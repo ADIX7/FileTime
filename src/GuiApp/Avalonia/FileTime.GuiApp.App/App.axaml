@@ -44,33 +44,39 @@
             </LinearGradientBrush>
 
 
-
             <SolidColorBrush Color="{DynamicResource AppBackgroundColor}" x:Key="AppBackgroundBrush" />
             <SolidColorBrush Color="{DynamicResource ContainerBackgroundColor}" x:Key="ContainerBackgroundBrush" />
-            <SolidColorBrush Color="{DynamicResource TransparentContainerBackgroundColor}" x:Key="TransparentContainerBackgroundBrush" />
+            <SolidColorBrush Color="{DynamicResource TransparentContainerBackgroundColor}"
+                             x:Key="TransparentContainerBackgroundBrush" />
 
             <SolidColorBrush Color="{DynamicResource ItemBackgroundColor}" x:Key="ItemBackgroundBrush" />
-            <SolidColorBrush Color="{DynamicResource AlternativeItemBackgroundColor}" x:Key="AlternativeItemBackgroundBrush" />
+            <SolidColorBrush Color="{DynamicResource AlternativeItemBackgroundColor}"
+                             x:Key="AlternativeItemBackgroundBrush" />
             <SolidColorBrush Color="{DynamicResource SelectedItemBackgroundColor}" x:Key="SelectedItemBackgroundBrush" />
             <SolidColorBrush Color="{DynamicResource MarkedItemBackgroundColor}" x:Key="MarkedItemBackgroundBrush" />
-            <SolidColorBrush Color="{DynamicResource MarkedSelectedItemBackgroundColor}" x:Key="MarkedSelectedItemBackgroundBrush" />
-            <SolidColorBrush Color="{DynamicResource MarkedAlternativeItemBackgroundColor}" x:Key="MarkedAlternativeItemBackgroundBrush" />
+            <SolidColorBrush Color="{DynamicResource MarkedSelectedItemBackgroundColor}"
+                             x:Key="MarkedSelectedItemBackgroundBrush" />
+            <SolidColorBrush Color="{DynamicResource MarkedAlternativeItemBackgroundColor}"
+                             x:Key="MarkedAlternativeItemBackgroundBrush" />
 
             <SolidColorBrush Color="{DynamicResource ForegroundColor}" x:Key="ForegroundBrush" />
             <SolidColorBrush Color="{DynamicResource AccentColor}" x:Key="AccentBrush" />
             <SolidColorBrush Color="{DynamicResource AccentComplementColor}" x:Key="AccentComplementBrush" />
             <SolidColorBrush Color="{DynamicResource LightForegroundColor}" x:Key="LightForegroundBrush" />
-            <SolidColorBrush Color="{DynamicResource AlternativeItemForegroundColor}" x:Key="AlternativeItemForegroundBrush" />
+            <SolidColorBrush Color="{DynamicResource AlternativeItemForegroundColor}"
+                             x:Key="AlternativeItemForegroundBrush" />
             <SolidColorBrush Color="{DynamicResource SelectedItemForegroundColor}" x:Key="SelectedItemForegroundBrush" />
             <SolidColorBrush Color="{DynamicResource MarkedItemForegroundColor}" x:Key="MarkedItemForegroundBrush" />
-            <SolidColorBrush Color="{DynamicResource MarkedAlternativeItemForegroundColor}" x:Key="MarkedAlternativeItemForegroundBrush" />
-            <SolidColorBrush Color="{DynamicResource MarkedSelectedItemForegroundColor}" x:Key="MarkedSelectedItemForegroundBrush" />
+            <SolidColorBrush Color="{DynamicResource MarkedAlternativeItemForegroundColor}"
+                             x:Key="MarkedAlternativeItemForegroundBrush" />
+            <SolidColorBrush Color="{DynamicResource MarkedSelectedItemForegroundColor}"
+                             x:Key="MarkedSelectedItemForegroundBrush" />
 
             <SolidColorBrush Color="{DynamicResource ErrorColor}" x:Key="ErrorBrush" />
 
 
-            <SolidColorBrush Color="{DynamicResource SelectedItemBackgroundColor}" x:Key="SystemControlHighlightListAccentLowBrush" />
-
+            <SolidColorBrush Color="{DynamicResource SelectedItemBackgroundColor}"
+                             x:Key="SystemControlHighlightListAccentLowBrush" />
 
 
             <converters:ItemViewModeToBrushConverter
@@ -91,14 +97,17 @@
                 x:Key="ItemViewModeToBackgroundConverter" />
             <converters:NamePartShrinkerConverter x:Key="NamePartShrinkerConverter" />
             <converters:ItemViewModelIsAttributeTypeConverter x:Key="ItemViewModelIsAttributeTypeConverter" />
-            <converters:ItemViewModelIsAttributeTypeConverter Invert="true" x:Key="ItemViewModelIsNotAttributeTypeConverter" />
+            <converters:ItemViewModelIsAttributeTypeConverter Invert="true"
+                                                              x:Key="ItemViewModelIsNotAttributeTypeConverter" />
             <converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter" />
             <converters:FormatSizeConverter x:Key="FormatSizeConverter" />
             <converters:DateTimeConverter x:Key="DateTimeConverter" />
             <converters:SplitStringConverter x:Key="SplitStringConverter" />
             <converters:CompareConverter x:Key="EqualityConverter" />
-            <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}" x:Key="NotEqualsConverter" />
+            <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}"
+                                         x:Key="NotEqualsConverter" />
             <converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter" />
+            <converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter" />
         </ResourceDictionary>
     </Application.Resources>
 

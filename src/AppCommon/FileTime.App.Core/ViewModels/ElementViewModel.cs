@@ -1,3 +1,4 @@
+using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
 using MvvmGen;
@@ -10,12 +11,12 @@ public partial class ElementViewModel : ItemViewModel, IElementViewModel
     [Property]
     private long? _size;
 
-    public ElementViewModel(IItemNameConverterService _itemNameConverterService, IAppState _appState) : base(_itemNameConverterService, _appState)
+    public ElementViewModel(IItemNameConverterService itemNameConverterService, IAppState appState) : base(itemNameConverterService, appState)
     {
     }
 
-    public void Init(IElement item, ITabViewModel parentTab)
+    public void Init(IElement item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
     {
-        Init((IItem)item, parentTab);
+        Init((IItem)item, parentTab, itemViewModelType);
     }
 }

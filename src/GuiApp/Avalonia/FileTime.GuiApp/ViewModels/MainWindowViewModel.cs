@@ -14,7 +14,7 @@ using MvvmGen;
 namespace FileTime.GuiApp.ViewModels;
 
 [ViewModel]
-[Inject(typeof(IAppState), "_appState")]
+[Inject(typeof(IGuiAppState), "_appState")]
 [Inject(typeof(ILocalContentProvider), "_localContentProvider")]
 [Inject(typeof(IServiceProvider), PropertyName = "_serviceProvider")]
 [Inject(typeof(ILogger<MainWindowViewModel>), PropertyName = "_logger")]
@@ -22,7 +22,7 @@ namespace FileTime.GuiApp.ViewModels;
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;
-    public IAppState AppState => _appState;
+    public IGuiAppState AppState => _appState;
     public string Title { get; private set; }
 
     partial void OnInitialize()
@@ -30,7 +30,7 @@ public partial class MainWindowViewModel : IMainWindowViewModelBase
         _logger?.LogInformation($"Starting {nameof(MainWindowViewModel)} initialization...");
 
         var version = Assembly.GetEntryAssembly()!.GetName().Version;
-        var versionString = "Unknwon version";
+        var versionString = "Unknown version";
         if (version != null)
         {
             versionString = $"{version.Major}.{version.Minor}.{version.Build}";

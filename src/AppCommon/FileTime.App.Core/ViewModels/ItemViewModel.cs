@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reactive.Linq;
 using DynamicData;
 using FileTime.App.Core.Models;
@@ -41,21 +42,29 @@ public abstract partial class ItemViewModel : IItemViewModel
     [Property]
     private IObservable<bool> _isAlternative;
 
-    public void Init(IItem item, ITabViewModel parentTab)
+    public void Init(IItem item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
     {
+        var sourceCollection = itemViewModelType switch
+        {
+            ItemViewModelType.Main => parentTab.CurrentItemsCollectionObservable,
+            ItemViewModelType.Parent => parentTab.ParentsChildrenCollectionObservable,
+            ItemViewModelType.SelectedChild => parentTab.SelectedsChildrenCollectionObservable,
+            _ => throw new InvalidEnumArgumentException()
+        };
+        
         BaseItem = item;
         DisplayName = _appState.SearchText.Select(s => _itemNameConverterService.GetDisplayName(item.DisplayName, s));
         DisplayNameText = item.DisplayName;
         IsMarked = parentTab.MarkedItems.ToCollection().Select(m => m.Any(i => i.Path.Path == item.FullName?.Path));
         IsSelected = parentTab.CurrentSelectedItem.Select(EqualsTo);
-        IsAlternative = parentTab.CurrentItemsCollectionObservable.Select(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
+        IsAlternative = sourceCollection.Select(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
         ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode);
         Attributes = item.Attributes;
         CreatedAt = item.CreatedAt;
     }
 
-    private ItemViewMode GenerateViewMode(bool isMarked, bool isSelected, bool sAlternative)
-        => (isMarked, isSelected, sAlternative) switch
+    private ItemViewMode GenerateViewMode(bool isMarked, bool isSelected, bool isAlternative)
+        => (isMarked, isSelected, isAlternative) switch
         {
             (true, true, _) => ItemViewMode.MarkedSelected,
             (true, false, true) => ItemViewMode.MarkedAlternative,

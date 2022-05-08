@@ -22,6 +22,8 @@ public interface ITabViewModel : IInitable<ITab, int>
     BindedCollection<IItemViewModel>? SelectedsChildrenCollection { get; }
     BindedCollection<IItemViewModel>? ParentsChildrenCollection { get; }
     IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; }
+    IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; }
+    IObservable<IReadOnlyCollection<IItemViewModel>?> SelectedsChildrenCollectionObservable { get; }
     void ClearMarkedItems();
     void RemoveMarkedItem(IAbsolutePath item);
     void AddMarkedItem(IAbsolutePath item);

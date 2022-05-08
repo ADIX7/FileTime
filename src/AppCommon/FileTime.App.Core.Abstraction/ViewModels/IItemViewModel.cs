@@ -5,7 +5,7 @@ using InitableService;
 
 namespace FileTime.App.Core.ViewModels;
 
-public interface IItemViewModel : IInitable<IItem, ITabViewModel>
+public interface IItemViewModel : IInitable<IItem, ITabViewModel, ItemViewModelType>
 {
     IItem? BaseItem { get; set; }
     IObservable<IReadOnlyList<ItemNamePart>>? DisplayName { get; set; }
