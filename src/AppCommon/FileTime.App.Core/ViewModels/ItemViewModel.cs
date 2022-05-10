@@ -55,10 +55,18 @@ public abstract partial class ItemViewModel : IItemViewModel
         BaseItem = item;
         DisplayName = _appState.SearchText.Select(s => _itemNameConverterService.GetDisplayName(item.DisplayName, s));
         DisplayNameText = item.DisplayName;
-        IsMarked = parentTab.MarkedItems.ToCollection().Select(m => m.Any(i => i.Path.Path == item.FullName?.Path));
-        IsSelected = parentTab.CurrentSelectedItem.Select(EqualsTo);
+        
+        IsMarked = itemViewModelType is ItemViewModelType.Main 
+            ? parentTab.MarkedItems.ToCollection().Select(m => m.Any(i => i.Path.Path == item.FullName?.Path))
+            : Observable.Return(false);
+        
+        IsSelected = itemViewModelType is ItemViewModelType.Main
+            ? parentTab.CurrentSelectedItem.Select(EqualsTo)
+            : Observable.Return(false);
+        
         IsAlternative = sourceCollection.Select(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
-        ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode);
+        
+        ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode).Throttle(TimeSpan.FromMilliseconds(10));
         Attributes = item.Attributes;
         CreatedAt = item.CreatedAt;
     }

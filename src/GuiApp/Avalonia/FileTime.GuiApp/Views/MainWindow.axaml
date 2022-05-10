@@ -182,7 +182,7 @@
 
                             <Grid Grid.Column="4">
                                 <Grid
-                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                                     <ListBox
                                         x:Name="ChildItems"
                                         x:CompileBindings="False"
@@ -210,7 +210,7 @@
                                 </Grid>
 
                                 <Grid
-                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0}"
+                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}"
                                     RowDefinitions="Auto, Auto">
                                     <TextBlock
                                         Margin="0,0,0,10"
