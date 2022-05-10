@@ -11,8 +11,8 @@ public interface ITab : IInitable<IContainer>
     IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
 
     void SetCurrentLocation(IContainer newLocation);
-    void AddSelectedItemsTransformator(ItemsTransformator transformator);
-    void RemoveSelectedItemsTransformator(ItemsTransformator transformator);
-    void RemoveSelectedItemsTransformatorByName(string name);
+    void AddItemFilter(ItemFilter filter);
+    void RemoveItemFilter(ItemFilter filter);
+    void RemoveItemFilter(string name);
     void SetSelectedItem(IAbsolutePath newSelectedItem);
 }

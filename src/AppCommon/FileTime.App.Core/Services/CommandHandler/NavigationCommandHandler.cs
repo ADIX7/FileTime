@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using FileTime.App.Core.Command;
 using FileTime.App.Core.Extensions;
+using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 
@@ -8,6 +9,7 @@ namespace FileTime.App.Core.Services.CommandHandler;
 
 public class NavigationCommandHandler : CommandHandlerBase
 {
+    private readonly IAppState _appState;
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
@@ -15,6 +17,8 @@ public class NavigationCommandHandler : CommandHandlerBase
 
     public NavigationCommandHandler(IAppState appState) : base(appState)
     {
+        _appState = appState;
+
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
         SaveCurrentLocation(l => _currentLocation = l);
@@ -22,6 +26,7 @@ public class NavigationCommandHandler : CommandHandlerBase
 
         AddCommandHandlers(new (Commands, Func<Task>)[]
         {
+            (Commands.EnterRapidTravel, EnterRapidTravel),
             (Commands.GoUp, GoUp),
             (Commands.MoveCursorDown, MoveCursorDown),
             (Commands.MoveCursorUp, MoveCursorUp),
@@ -63,5 +68,11 @@ public class NavigationCommandHandler : CommandHandlerBase
         if (newSelectedItem == null) return;
 
         _selectedTab.Tab?.SetSelectedItem(newSelectedItem.ToAbsolutePath());
+    }
+
+    private Task EnterRapidTravel()
+    {
+        _appState.SwitchViewMode(ViewMode.RapidTravel);
+        return Task.CompletedTask;
     }
 }

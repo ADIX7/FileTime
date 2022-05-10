@@ -13,17 +13,21 @@ public abstract partial class AppStateBase : IAppState
     private readonly BehaviorSubject<string?> _searchText = new(null);
     private readonly BehaviorSubject<ITabViewModel?> _selectedTab = new(null);
     private readonly BehaviorSubject<IEnumerable<ITabViewModel>> _tabs = new(Enumerable.Empty<ITabViewModel>());
+    private readonly BehaviorSubject<ViewMode> _viewMode = new(Models.Enums.ViewMode.Default);
 
-    [Property]
-    private ViewMode _viewMode;
+    public IObservable<ViewMode> ViewMode { get; private set; }
 
     public ObservableCollection<ITabViewModel> Tabs { get; } = new();
     public IObservable<string?> SearchText { get; private set; }
 
     public IObservable<ITabViewModel?> SelectedTab { get; private set; }
 
+    [Property] private string _rapidTravelText = "";
+
     partial void OnInitialize()
     {
+        ViewMode = _viewMode.AsObservable();
+
         Tabs.CollectionChanged += (_, _) => _tabs.OnNext(Tabs);
         SearchText = _searchText.AsObservable();
         SelectedTab = Observable.CombineLatest(_tabs, _selectedTab, GetSelectedTab);
@@ -42,6 +46,11 @@ public abstract partial class AppStateBase : IAppState
     }
 
     public void SetSearchText(string? searchText) => _searchText.OnNext(searchText);
+
+    public void SwitchViewMode(ViewMode newViewMode)
+    {
+        _viewMode.OnNext(newViewMode);
+    }
 
     public void SetSelectedTab(ITabViewModel tabToSelect) => _selectedTab.OnNext(tabToSelect);
 

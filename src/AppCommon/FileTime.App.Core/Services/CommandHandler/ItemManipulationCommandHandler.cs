@@ -1,4 +1,4 @@
-using DynamicData;
+using System.Reactive.Linq;
 using FileTime.App.Core.Command;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
@@ -14,7 +14,7 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
     private IItemViewModel? _currentSelectedItem;
     private readonly ICommandHandlerService _commandHandlerService;
     private readonly IClipboardService _clipboardService;
-    private BindedCollection<IAbsolutePath>? _markedItems;
+    private readonly BindedCollection<IAbsolutePath>? _markedItems;
 
     public ItemManipulationCommandHandler(
         IAppState appState,
@@ -24,13 +24,10 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
         _commandHandlerService = commandHandlerService;
         _clipboardService = clipboardService;
 
-        SaveSelectedTab(t =>
-        {
-            _selectedTab = t;
-            _markedItems?.Dispose();
-            _markedItems = t == null ? null : new BindedCollection<IAbsolutePath>(t.MarkedItems);
-        });
+        SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
+
+        _markedItems = new BindedCollection<IAbsolutePath>(appState.SelectedTab.Select(t => t?.MarkedItems));
 
         AddCommandHandlers(new (Commands, Func<Task>)[]
         {
@@ -55,9 +52,9 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
         _clipboardService.Clear();
         _clipboardService.SetCommand<CopyCommand>();
 
-        if ((_markedItems?.Collection.Count ?? 0) > 0)
+        if ((_markedItems?.Collection?.Count ?? 0) > 0)
         {
-            foreach (var item in _markedItems!.Collection)
+            foreach (var item in _markedItems!.Collection!)
             {
                 _clipboardService.AddContent(item);
             }

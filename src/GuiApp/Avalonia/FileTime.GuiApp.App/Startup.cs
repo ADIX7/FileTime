@@ -30,7 +30,8 @@ public static class Startup
             .AddSingleton<IKeyInputHandlerService, KeyInputHandlerService>()
             .AddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>()
             .AddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>()
-            .AddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>();
+            .AddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>()
+            .AddSingleton<IModalService, ModalService>();
     }
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)

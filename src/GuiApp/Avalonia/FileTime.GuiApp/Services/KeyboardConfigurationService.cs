@@ -49,12 +49,6 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
 
     private static bool IsUniversal(CommandBindingConfiguration keyMapping)
     {
-        return keyMapping.Command == Commands.GoUp
-               || keyMapping.Command == Commands.Open
-               || keyMapping.Command == Commands.OpenOrRun
-               || keyMapping.Command == Commands.MoveCursorUp
-               || keyMapping.Command == Commands.MoveCursorDown
-               || keyMapping.Command == Commands.MoveCursorUpPage
-               || keyMapping.Command == Commands.MoveCursorDownPage;
+        return keyMapping.Command is Commands.GoUp or Commands.Open or Commands.OpenOrRun or Commands.MoveCursorUp or Commands.MoveCursorDown or Commands.MoveCursorUpPage or Commands.MoveCursorDownPage;
     }
 }

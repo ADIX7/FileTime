@@ -237,6 +237,35 @@
 
                     <Grid Grid.Row="3">
                         <Grid
+                            IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualityConverter},ConverterParameter=RapidTravel}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Rectangle
+                                Height="1"
+                                Margin="10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Fill="{DynamicResource ContentSeparatorBrush}" />
+
+                            <StackPanel
+                                Grid.Row="1"
+                                Margin="30,10,10,10"
+                                Orientation="Horizontal">
+
+                                <TextBlock
+                                    Margin="0,0,30,0"
+                                    Text="Rapid travel mode" />
+
+                                <TextBlock Text="Filter " />
+
+                                <TextBlock Text="{Binding AppState.RapidTravelText}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid
                             IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1" />

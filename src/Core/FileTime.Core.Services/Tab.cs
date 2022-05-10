@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
+using DynamicData.Alias;
 using FileTime.Core.Models;
 
 namespace FileTime.Core.Services;
@@ -9,7 +10,7 @@ public class Tab : ITab
 {
     private readonly BehaviorSubject<IContainer?> _currentLocation = new(null);
     private readonly BehaviorSubject<IAbsolutePath?> _currentSelectedItem = new(null);
-    private readonly List<ItemsTransformator> _transformators = new();
+    private readonly SourceList<ItemFilter> _itemFilters = new();
     private IAbsolutePath? _currentSelectedItemCached;
 
     public IObservable<IContainer?> CurrentLocation { get; }
@@ -21,16 +22,19 @@ public class Tab : ITab
         CurrentLocation = _currentLocation.DistinctUntilChanged().Publish(null).RefCount();
         CurrentItems =
             Observable.Merge(
-                    CurrentLocation
-                        .Where(c => c is not null)
-                        .Select(c => c!.Items)
-                        .Switch()
-                        .Select(items => items?.TransformAsync(MapItem)),
+                    Observable.CombineLatest(
+                        CurrentLocation
+                            .Where(c => c is not null)
+                            .Select(c => c!.Items)
+                            .Switch()
+                            .Select(items => items?.TransformAsync(MapItem)),
+                        _itemFilters.Connect().StartWithEmpty().ToCollection(),
+                        (items, filters) => items?.Where(i => filters.All(f => f.Filter(i)))),
                     CurrentLocation
                         .Where(c => c is null)
-                        .Select(_ => (IObservable<IChangeSet<IItem>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItem>>?) null)
                 )
-                .Publish((IObservable<IChangeSet<IItem>>?)null)
+                .Publish((IObservable<IChangeSet<IItem>>?) null)
                 .RefCount();
 
         CurrentSelectedItem =
@@ -79,9 +83,14 @@ public class Tab : ITab
 
     public void SetSelectedItem(IAbsolutePath newSelectedItem) => _currentSelectedItem.OnNext(newSelectedItem);
 
-    public void AddSelectedItemsTransformator(ItemsTransformator transformator) => _transformators.Add(transformator);
-    public void RemoveSelectedItemsTransformator(ItemsTransformator transformator) => _transformators.Remove(transformator);
-    public void RemoveSelectedItemsTransformatorByName(string name) => _transformators.RemoveAll(t => t.Name == name);
+    public void AddItemFilter(ItemFilter filter) => _itemFilters.Add(filter);
+    public void RemoveItemFilter(ItemFilter filter) => _itemFilters.Remove(filter);
+
+    public void RemoveItemFilter(string name)
+    {
+        var itemsToRemove = _itemFilters.Items.Where(t => t.Name == name).ToList();
+        _itemFilters.RemoveMany(itemsToRemove);
+    }
 
     public async Task OpenSelected()
     {

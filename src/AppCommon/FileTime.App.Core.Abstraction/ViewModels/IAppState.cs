@@ -8,9 +8,11 @@ public interface IAppState
     ObservableCollection<ITabViewModel> Tabs { get; }
     IObservable<ITabViewModel?> SelectedTab { get; }
     IObservable<string?> SearchText { get; }
-    ViewMode ViewMode { get; }
+    IObservable<ViewMode> ViewMode { get; }
+    string RapidTravelText { get; set; }
 
     void AddTab(ITabViewModel tabViewModel);
     void RemoveTab(ITabViewModel tabViewModel);
     void SetSearchText(string? searchText);
+    void SwitchViewMode(ViewMode newViewMode);
 }

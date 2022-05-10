@@ -11,6 +11,7 @@ public class KeyInputHandlerService : IKeyInputHandlerService
     private readonly IGuiAppState _appState;
     private readonly IDefaultModeKeyInputHandler _defaultModeKeyInputHandler;
     private readonly IRapidTravelModeKeyInputHandler _rapidTravelModeKeyInputHandler;
+    private ViewMode _viewMode;
 
     public KeyInputHandlerService(
         IGuiAppState appState,
@@ -21,16 +22,18 @@ public class KeyInputHandlerService : IKeyInputHandlerService
         _appState = appState;
         _defaultModeKeyInputHandler = defaultModeKeyInputHandler;
         _rapidTravelModeKeyInputHandler = rapidTravelModeKeyInputHandler;
+
+        appState.ViewMode.Subscribe(v => _viewMode = v);
     }
 
     public async Task ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
     {
-        if (key == Key.LeftAlt
-            || key == Key.RightAlt
-            || key == Key.LeftShift
-            || key == Key.RightShift
-            || key == Key.LeftCtrl
-            || key == Key.RightCtrl)
+        if (key is Key.LeftAlt
+            or Key.RightAlt
+            or Key.LeftShift
+            or Key.RightShift
+            or Key.LeftCtrl
+            or Key.RightCtrl)
         {
             return;
         }
@@ -43,7 +46,7 @@ public class KeyInputHandlerService : IKeyInputHandlerService
 
         var specialKeyStatus = new SpecialKeysStatus(isAltPressed, isShiftPressed, isCtrlPressed);
 
-        if (_appState.ViewMode == ViewMode.Default)
+        if (_viewMode == ViewMode.Default)
         {
             await _defaultModeKeyInputHandler.HandleInputKey(key, specialKeyStatus, setHandled);
         }

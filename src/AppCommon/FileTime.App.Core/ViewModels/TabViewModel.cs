@@ -6,7 +6,6 @@ using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
-using FileTime.Tools.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using MvvmGen;
 
@@ -21,7 +20,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
     private readonly IRxSchedulerService _rxSchedulerService;
     private readonly SourceList<IAbsolutePath> _markedItems = new();
     private readonly List<IDisposable> _disposables = new();
-    private bool disposed;
+    private bool _disposed;
 
     public ITab? Tab { get; private set; }
     public int TabNumber { get; private set; }
@@ -96,23 +95,9 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         SelectedsChildrenCollectionObservable = InitAsd(SelectedsChildren);
         ParentsChildrenCollectionObservable = InitAsd(ParentsChildren);
 
-        CurrentItems.Subscribe(children =>
-        {
-            CurrentItemsCollection?.Dispose();
-            CurrentItemsCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
-        });
-
-        ParentsChildren.Subscribe(children =>
-        {
-            ParentsChildrenCollection?.Dispose();
-            ParentsChildrenCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
-        });
-
-        SelectedsChildren.Subscribe(children =>
-        {
-            SelectedsChildrenCollection?.Dispose();
-            SelectedsChildrenCollection = children.MapNull(c => new BindedCollection<IItemViewModel>(c!));
-        });
+        CurrentItemsCollection = new(CurrentItems);
+        ParentsChildrenCollection = new(ParentsChildren);
+        SelectedsChildrenCollection = new(SelectedsChildren);
 
         tab.CurrentLocation.Subscribe((_) => _markedItems.Clear());
 
@@ -131,7 +116,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                             i?.TransformAsync(MapItem)
                                 .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))),
                     currentSelectedItemThrottled
-                        .Where(c => c is null || c is not IContainerViewModel)
+                        .Where(c => c is null or not IContainerViewModel)
                         .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?) null)
                 )
                 .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
@@ -251,7 +236,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
 
     private void Dispose(bool disposing)
     {
-        if (!disposed && disposing)
+        if (!_disposed && disposing)
         {
             foreach (var disposable in _disposables)
             {
@@ -265,6 +250,6 @@ public partial class TabViewModel : ITabViewModel, IDisposable
             }
         }
 
-        disposed = true;
+        _disposed = true;
     }
 }
