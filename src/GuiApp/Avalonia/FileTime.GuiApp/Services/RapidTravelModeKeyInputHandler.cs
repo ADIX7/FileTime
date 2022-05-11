@@ -122,7 +122,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         }
     }
 
-    private async Task CallCommandAsync(Commands command)
+    private async Task CallCommandAsync(Command command)
     {
         try
         {

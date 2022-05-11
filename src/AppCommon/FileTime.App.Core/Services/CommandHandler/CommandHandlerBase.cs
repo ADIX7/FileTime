@@ -8,7 +8,7 @@ namespace FileTime.App.Core.Services.CommandHandler;
 
 public abstract class CommandHandlerBase : ICommandHandler
 {
-    private readonly Dictionary<Commands, Func<Task>> _commandHandlers = new();
+    private readonly Dictionary<Command.Command, Func<Task>> _commandHandlers = new();
     private readonly IAppState? _appState;
 
     protected CommandHandlerBase(IAppState? appState = null)
@@ -16,12 +16,12 @@ public abstract class CommandHandlerBase : ICommandHandler
         _appState = appState;
     }
 
-    public bool CanHandleCommand(Commands command) => _commandHandlers.ContainsKey(command);
+    public bool CanHandleCommand(Command.Command command) => _commandHandlers.ContainsKey(command);
 
-    public async Task HandleCommandAsync(Commands command) => await _commandHandlers[command].Invoke();
+    public async Task HandleCommandAsync(Command.Command command) => await _commandHandlers[command].Invoke();
 
-    protected void AddCommandHandler(Commands command, Func<Task> handler) => _commandHandlers.Add(command, handler);
-    protected void AddCommandHandlers(IEnumerable<(Commands command, Func<Task> handler)> commandHandlers)
+    protected void AddCommandHandler(Command.Command command, Func<Task> handler) => _commandHandlers.Add(command, handler);
+    protected void AddCommandHandlers(IEnumerable<(Command.Command command, Func<Task> handler)> commandHandlers)
     {
         foreach (var (command, handler) in commandHandlers)
         {
@@ -29,7 +29,7 @@ public abstract class CommandHandlerBase : ICommandHandler
         }
     }
 
-    protected void RemoveCommandHandler(Commands command) => _commandHandlers.Remove(command);
+    protected void RemoveCommandHandler(Command.Command command) => _commandHandlers.Remove(command);
 
     protected IDisposable SaveSelectedTab(Action<ITabViewModel?> handler) => RunWithAppState(appState => appState.SelectedTab.Subscribe(handler));
     protected IDisposable SaveCurrentSelectedItem(Action<IItemViewModel?> handler)

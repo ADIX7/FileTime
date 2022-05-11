@@ -23,7 +23,7 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
 
         foreach (var keyBinding in keyBindings)
         {
-            if (keyBinding.Command == Commands.None)
+            if (keyBinding.Command == Command.None)
             {
                 throw new FormatException($"No command is set in keybinding for keys '{keyBinding.KeysDisplayText}'");
             }
@@ -49,6 +49,6 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
 
     private static bool IsUniversal(CommandBindingConfiguration keyMapping)
     {
-        return keyMapping.Command is Commands.GoUp or Commands.Open or Commands.OpenOrRun or Commands.MoveCursorUp or Commands.MoveCursorDown or Commands.MoveCursorUpPage or Commands.MoveCursorDownPage;
+        return keyMapping.Command is Command.GoUp or Command.Open or Command.OpenOrRun or Command.MoveCursorUp or Command.MoveCursorDown or Command.MoveCursorUpPage or Command.MoveCursorDownPage;
     }
 }

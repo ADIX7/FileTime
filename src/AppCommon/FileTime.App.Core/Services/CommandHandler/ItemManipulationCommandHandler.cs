@@ -29,13 +29,13 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
 
         _markedItems = new BindedCollection<IAbsolutePath>(appState.SelectedTab.Select(t => t?.MarkedItems));
 
-        AddCommandHandlers(new (Commands, Func<Task>)[]
+        AddCommandHandlers(new (Command.Command, Func<Task>)[]
         {
-            (Commands.Copy, Copy),
-            (Commands.Mark, MarkItem),
-            (Commands.PasteMerge, PasteMerge),
-            (Commands.PasteOverwrite, PasteOverwrite),
-            (Commands.PasteSkip, PasteSkip),
+            (Command.Command.Copy, Copy),
+            (Command.Command.Mark, MarkItem),
+            (Command.Command.PasteMerge, PasteMerge),
+            (Command.Command.PasteOverwrite, PasteOverwrite),
+            (Command.Command.PasteSkip, PasteSkip),
         });
     }
 
@@ -44,7 +44,7 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
         if (_selectedTab == null || _currentSelectedItem?.BaseItem?.FullName == null) return;
 
         _selectedTab.ToggleMarkedItem(new AbsolutePath(_currentSelectedItem.BaseItem));
-        await _commandHandlerService.HandleCommandAsync(Commands.MoveCursorDown);
+        await _commandHandlerService.HandleCommandAsync(Command.Command.MoveCursorDown);
     }
 
     private Task Copy()

@@ -67,7 +67,7 @@ public class CommandHandlerService : ICommandHandlerService
         //(Commands.ToggleHidden, ToggleHidden),
     }
 
-    public async Task HandleCommandAsync(Commands command)
+    public async Task HandleCommandAsync(Command.Command command)
     {
         var handler = _commandHandlers.Value.FirstOrDefault(h => h.CanHandleCommand(command));
 

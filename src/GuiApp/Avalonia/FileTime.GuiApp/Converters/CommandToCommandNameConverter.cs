@@ -8,7 +8,7 @@ public class CommandToCommandNameConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if(value is not Commands command) return value;
+        if(value is not Command command) return value;
 
         //TODO: implement
         return command.ToString();

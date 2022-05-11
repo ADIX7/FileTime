@@ -4,5 +4,5 @@ namespace FileTime.App.Core.Services;
 
 public interface ICommandHandlerService
 {
-    Task HandleCommandAsync(Commands command);
+    Task HandleCommandAsync(Command.Command command);
 }

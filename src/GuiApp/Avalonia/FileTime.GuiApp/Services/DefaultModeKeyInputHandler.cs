@@ -136,7 +136,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         }
     }
 
-    private async Task CallCommandAsync(Commands command)
+    private async Task CallCommandAsync(Command command)
     {
         try
         {

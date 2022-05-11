@@ -7,31 +7,31 @@ public class CommandBindingConfiguration
 {
     public List<KeyConfig> Keys { get; set; } = new List<KeyConfig>();
 
-    public Commands Command { get; set; } = Commands.None;
+    public Command Command { get; set; } = Command.None;
 
     public string KeysDisplayText => GetKeysDisplayText();
 
     public CommandBindingConfiguration() { }
 
-    public CommandBindingConfiguration(Commands command, IEnumerable<KeyConfig> keys)
+    public CommandBindingConfiguration(Command command, IEnumerable<KeyConfig> keys)
     {
         Keys = new List<KeyConfig>(keys);
         Command = command;
     }
 
-    public CommandBindingConfiguration(Commands command, KeyConfig key)
+    public CommandBindingConfiguration(Command command, KeyConfig key)
     {
         Keys = new List<KeyConfig>() { key };
         Command = command;
     }
 
-    public CommandBindingConfiguration(Commands command, IEnumerable<Key> keys)
+    public CommandBindingConfiguration(Command command, IEnumerable<Key> keys)
     {
         Keys = keys.Select(k => new KeyConfig(k)).ToList();
         Command = command;
     }
 
-    public CommandBindingConfiguration(Commands command, Key key)
+    public CommandBindingConfiguration(Command command, Key key)
     {
         Keys = new List<KeyConfig>() { new KeyConfig(key) };
         Command = command;

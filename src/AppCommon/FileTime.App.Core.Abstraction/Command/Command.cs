@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.Command;
 
-public enum Commands
+public enum Command
 {
     None,
 

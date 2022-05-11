@@ -24,13 +24,13 @@ public class NavigationCommandHandler : CommandHandlerBase
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentItems(i => _currentItems = i);
 
-        AddCommandHandlers(new (Commands, Func<Task>)[]
+        AddCommandHandlers(new (Command.Command, Func<Task>)[]
         {
-            (Commands.EnterRapidTravel, EnterRapidTravel),
-            (Commands.GoUp, GoUp),
-            (Commands.MoveCursorDown, MoveCursorDown),
-            (Commands.MoveCursorUp, MoveCursorUp),
-            (Commands.Open, OpenContainer),
+            (Command.Command.EnterRapidTravel, EnterRapidTravel),
+            (Command.Command.GoUp, GoUp),
+            (Command.Command.MoveCursorDown, MoveCursorDown),
+            (Command.Command.MoveCursorUp, MoveCursorUp),
+            (Command.Command.Open, OpenContainer),
         });
     }
 
