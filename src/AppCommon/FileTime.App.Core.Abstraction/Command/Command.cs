@@ -16,6 +16,7 @@ public enum Command
     Cut,
     Edit,
     EnterRapidTravel,
+    ExitRapidTravel,
     FindByName,
     FindByNameRegex,
     GoToHome,

@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools\FileTime.Tools.csproj" />
     <ProjectReference Include="..\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Command\FileTime.Core.Command.csproj" />

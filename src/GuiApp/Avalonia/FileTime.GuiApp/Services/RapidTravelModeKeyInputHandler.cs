@@ -56,7 +56,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
             }
             else
             {
-                _appState.SwitchViewMode(ViewMode.Default);
+                await CallCommandAsync(Command.ExitRapidTravel);
             }
         }
         else if (key == Key.Back)
