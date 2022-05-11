@@ -46,7 +46,7 @@ public enum Command
     Rename,
     RunCommand,
     ScanContainerSize,
-    ShowAllShotcut,
+    ShowAllShortcut,
     SoftDelete,
     SwitchToLastTab,
     SwitchToTab1,

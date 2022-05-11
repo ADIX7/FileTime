@@ -80,7 +80,7 @@ public static class MainConfiguration
             new CommandBindingConfiguration(Command.Rename, new[] { Key.C, Key.W }),
             new CommandBindingConfiguration(Command.RunCommand, new KeyConfig(Key.D4, shift: true)),
             new CommandBindingConfiguration(Command.ScanContainerSize, new[] { Key.C, Key.S }),
-            new CommandBindingConfiguration(Command.ShowAllShotcut, Key.F1),
+            new CommandBindingConfiguration(Command.ShowAllShortcut, Key.F1),
             new CommandBindingConfiguration(Command.SoftDelete, new[] { new KeyConfig(Key.D), new KeyConfig(Key.D, shift: true) }),
             new CommandBindingConfiguration(Command.SwitchToLastTab, Key.D9),
             new CommandBindingConfiguration(Command.SwitchToTab1, Key.D1),
