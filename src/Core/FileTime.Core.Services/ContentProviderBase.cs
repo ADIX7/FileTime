@@ -8,7 +8,7 @@ namespace FileTime.Core.Services;
 
 public abstract class ContentProviderBase : IContentProvider
 {
-    protected BehaviorSubject<IObservable<IChangeSet<IAbsolutePath>>?> Items { get; } = new (null);
+    protected BehaviorSubject<IObservable<IChangeSet<IAbsolutePath>>?> Items { get; } = new(null);
 
     IObservable<IObservable<IChangeSet<IAbsolutePath>>?> IContainer.Items => Items;
 
@@ -16,7 +16,7 @@ public abstract class ContentProviderBase : IContentProvider
 
     public string DisplayName { get; }
 
-    public FullName? FullName => null;
+    public FullName? FullName { get; }
 
     public NativePath? NativePath => null;
 
@@ -47,20 +47,24 @@ public abstract class ContentProviderBase : IContentProvider
     protected ContentProviderBase(string name)
     {
         DisplayName = Name = name;
+        FullName = new FullName(name);
     }
 
     public virtual Task OnEnter() => Task.CompletedTask;
+
     public virtual async Task<IItem> GetItemByFullNameAsync(
         FullName fullName,
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default)
         => await GetItemByNativePathAsync(GetNativePath(fullName), forceResolve, forceResolvePathType, itemInitializationSettings);
+
     public abstract Task<IItem> GetItemByNativePathAsync(
         NativePath nativePath,
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default);
+
     public abstract Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName);
     public abstract NativePath GetNativePath(FullName fullName);
 }

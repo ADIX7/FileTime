@@ -2,6 +2,7 @@
 using System.Reflection;
 using Avalonia.Input;
 using FileTime.App.Core;
+using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
@@ -19,6 +20,8 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IServiceProvider), PropertyName = "_serviceProvider")]
 [Inject(typeof(ILogger<MainWindowViewModel>), PropertyName = "_logger")]
 [Inject(typeof(IKeyInputHandlerService), PropertyName = "_keyInputHandlerService")]
+[Inject(typeof(ICommandHandlerService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(LifecycleService), PropertyName = "_lifecycleService")]
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;

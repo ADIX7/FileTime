@@ -13,10 +13,15 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.14" />
+    <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
   </ItemGroup>
 
 </Project>

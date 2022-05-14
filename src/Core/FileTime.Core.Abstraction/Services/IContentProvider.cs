@@ -19,4 +19,5 @@ public interface IContentProvider : IContainer, IOnContainerEnter
         ItemInitializationSettings itemInitializationSettings = default);
 
     Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName);
+    NativePath GetNativePath(FullName fullName);
 }

@@ -7,10 +7,14 @@ namespace FileTime.App.Core.Models;
 
 public partial class BindedCollection<T> : IDisposable, INotifyPropertyChanged
 {
-    private readonly IDisposable _disposable;
+    private readonly IDisposable? _disposable;
     private IDisposable? _innerDisposable;
 
     [Notify] private ReadOnlyObservableCollection<T>? _collection;
+
+    public BindedCollection()
+    {
+    }
 
     public BindedCollection(IObservable<IChangeSet<T>> dynamicList)
     {
@@ -45,7 +49,7 @@ public partial class BindedCollection<T> : IDisposable, INotifyPropertyChanged
 
     public void Dispose()
     {
-        _disposable.Dispose();
+        _disposable?.Dispose();
         _innerDisposable?.Dispose();
         GC.SuppressFinalize(this);
     }

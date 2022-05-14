@@ -31,6 +31,8 @@ public static class Startup
             .AddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>()
             .AddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>()
             .AddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>()
+            .AddSingleton<IStartupHandler, RootDriveInfoService>()
+            .AddSingleton<LifecycleService>()
             .AddSingleton<IModalService, ModalService>();
     }
 

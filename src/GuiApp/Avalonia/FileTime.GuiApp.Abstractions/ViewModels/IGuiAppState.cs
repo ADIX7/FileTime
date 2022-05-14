@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.GuiApp.Configuration;
 
@@ -10,4 +12,5 @@ public interface IGuiAppState : IAppState
     bool NoCommandFound { get; set; }
     string? MessageBoxText { get; set; }
     List<CommandBindingConfiguration> PossibleCommands { get; set; }
+    BindedCollection<RootDriveInfo> RootDriveInfos { get; set; }
 }

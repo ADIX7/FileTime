@@ -1,7 +1,10 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
+using FileTime.Core.Models;
 using FileTime.GuiApp.Models;
 using FileTime.GuiApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +69,43 @@ public partial class MainWindow : Window
         else
         {
             BeginMoveDrag(e);
+        }
+    }
+
+    private async void OnHasContainerPointerPressed(object sender, PointerPressedEventArgs e)
+    {
+        if (!e.Handled
+            && ViewModel != null
+            && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+            && sender is StyledElement control)
+        {
+            IAbsolutePath? path = null;
+            if (control.DataContext is IHaveAbsolutePath {Path: { }} haveAbsolutePath)
+            {
+                path = haveAbsolutePath.Path;
+            }
+            else if (control.DataContext is IAbsolutePath p)
+            {
+                path = p;
+            }
+            /*else if (control.DataContext is IElement element && element.GetParent() is IContainer parentContainer)
+            {
+                Task.Run(async () =>
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ViewModel.AppState.SelectedTab.OpenContainer(parentContainer);
+                        await ViewModel.AppState.SelectedTab.SetCurrentSelectedItem(element);
+                    });
+                });
+            }*/
+
+            if (path is null) return;
+
+            var resolvedItem = await path.ResolveAsync();
+            if (resolvedItem is not IContainer resolvedContainer) return;
+            //ViewModel.CommandHandlerService.HandleCommandAsync()
+            e.Handled = true;
         }
     }
 }
