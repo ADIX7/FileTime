@@ -6,7 +6,7 @@ public class OpenContainerCommand : IUserCommand
 {
     public IAbsolutePath Path { get; }
 
-    private OpenContainerCommand(IAbsolutePath path)
+    public OpenContainerCommand(IAbsolutePath path)
     {
         Path = path;
     }

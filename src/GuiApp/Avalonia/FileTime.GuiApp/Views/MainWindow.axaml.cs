@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using FileTime.App.Core.UserCommand;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Models;
 using FileTime.GuiApp.ViewModels;
@@ -101,7 +102,7 @@ public partial class MainWindow : Window
 
             var resolvedItem = await path.ResolveAsync();
             if (resolvedItem is not IContainer resolvedContainer) return;
-            //ViewModel.CommandHandlerService.HandleCommandAsync()
+            await ViewModel.UserCommandHandlerService.HandleCommandAsync(new OpenContainerCommand(new AbsolutePath(resolvedContainer)));
             e.Handled = true;
         }
     }

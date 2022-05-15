@@ -67,8 +67,8 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         CurrentLocation = tab.CurrentLocation.AsObservable();
         CurrentItems = tab.CurrentItems
             .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
-            .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-            .SubscribeOn(_rxSchedulerService.GetUIScheduler())
+            /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
+            .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
             .Publish(null)
             .RefCount();
 
@@ -119,8 +119,8 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                         .Where(c => c is null or not IContainerViewModel)
                         .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?) null)
                 )
-                .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-                .SubscribeOn(_rxSchedulerService.GetUIScheduler())
+                /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
+                .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
                 .Publish(null)
                 .RefCount();
         }
@@ -147,8 +147,8 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                         .Where(p => p is null)
                         .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?) null)
                 )
-                .ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-                .SubscribeOn(_rxSchedulerService.GetUIScheduler())
+                /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
+                .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
                 .Publish(null)
                 .RefCount();
         }

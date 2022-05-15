@@ -47,12 +47,21 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<GoUpCommand>(GoUp),
             new TypeUserCommandHandler<MoveCursorDownCommand>(MoveCursorDown),
             new TypeUserCommandHandler<MoveCursorUpCommand>(MoveCursorUp),
-            new TypeUserCommandHandler<OpenSelectedCommand>(OpenContainer),
+            new TypeUserCommandHandler<OpenContainerCommand>(OpenContainer),
+            new TypeUserCommandHandler<OpenSelectedCommand>(OpenSelected),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
     }
 
-    private Task OpenContainer()
+    private async Task OpenContainer(OpenContainerCommand command)
+    {
+        var resolvedPath = await command.Path.ResolveAsync();
+        if (resolvedPath is not IContainer resolvedContainer) return;
+
+        _selectedTab?.Tab?.SetCurrentLocation(resolvedContainer);
+    }
+
+    private Task OpenSelected()
     {
         if (_currentSelectedItem is not IContainerViewModel containerViewModel || containerViewModel.Container is null) return Task.CompletedTask;
 
@@ -132,9 +141,9 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private Task CloseTab()
     {
         if (_appState.Tabs.Count < 2) return Task.CompletedTask;
-        
+
         _appState.RemoveTab(_selectedTab!);
-        
+
         return Task.CompletedTask;
     }
 }
