@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
 using Avalonia.Input;
-using FileTime.App.Core.Command;
 using FileTime.App.Core.Services;
+using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Configuration;
@@ -20,18 +20,21 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private readonly ILogger<DefaultModeKeyInputHandler> _logger;
-    private readonly ICommandHandlerService _commandHandlerService;
+    private readonly IUserCommandHandlerService _userCommandHandlerService;
+    private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
 
     public DefaultModeKeyInputHandler(
         IGuiAppState appState,
         IKeyboardConfigurationService keyboardConfigurationService,
         ILogger<DefaultModeKeyInputHandler> logger,
-        ICommandHandlerService commandHandlerService)
+        IUserCommandHandlerService userCommandHandlerService,
+        IIdentifiableUserCommandService identifiableUserCommandService)
     {
         _appState = appState;
         _keyboardConfigurationService = keyboardConfigurationService;
         _logger = logger;
-        _commandHandlerService = commandHandlerService;
+        _userCommandHandlerService = userCommandHandlerService;
+        _identifiableUserCommandService = identifiableUserCommandService;
 
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
         _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation!).Switch().Subscribe(l => _currentLocation = l);
@@ -51,8 +54,8 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         var keyWithModifiers = new KeyConfig(key, shift: specialKeysStatus.IsShiftPressed, alt: specialKeysStatus.IsAltPressed, ctrl: specialKeysStatus.IsCtrlPressed);
         _appState.PreviousKeys.Add(keyWithModifiers);
 
-        var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
-        selectedCommandBinding ??= _keyboardConfigurationService.CommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
+        var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.Values.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
+        selectedCommandBinding ??= _keyboardConfigurationService.CommandBindings.Values.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
 
         if (key == Key.Escape)
         {
@@ -104,7 +107,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             setHandled(true);
             _appState.PreviousKeys.Clear();
             _appState.PossibleCommands = new();
-            await CallCommandAsync(selectedCommandBinding.Command);
+            await CallCommandAsync(_identifiableUserCommandService.GetCommand(selectedCommandBinding.Command));
         }
         else if (_keysToSkip.Any(k => k.AreKeysEqual(_appState.PreviousKeys)))
         {
@@ -122,7 +125,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         else
         {
             setHandled(true);
-            var possibleCommands = _keyboardConfigurationService.AllShortcut.Where(c => c.Keys[0].AreEquals(keyWithModifiers)).ToList();
+            var possibleCommands = _keyboardConfigurationService.AllShortcut.Values.Where(c => c.Keys[0].AreEquals(keyWithModifiers)).ToList();
 
             if (possibleCommands.Count == 0)
             {
@@ -136,15 +139,15 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         }
     }
 
-    private async Task CallCommandAsync(Command command)
+    private async Task CallCommandAsync(IUserCommand command)
     {
         try
         {
-            await _commandHandlerService.HandleCommandAsync(command);
+            await _userCommandHandlerService.HandleCommandAsync(command);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unknown error while running command. {Command} {Error}", command, e);
+            _logger.LogError(e, "Unknown error while running command. {Command} {Error}", command.GetType().Name, e);
         }
     }
 }

@@ -1,6 +1,11 @@
-namespace FileTime.App.Core.Command;
+namespace FileTime.App.Core.UserCommand;
 
-public enum Command
+public interface IUserCommand
+{
+    
+}
+
+/*public enum Command
 {
     None,
 
@@ -63,4 +68,4 @@ public enum Command
     TimelineStart,
     ToggleAdvancedIcons,
     ToggleHidden,
-}
+}*/

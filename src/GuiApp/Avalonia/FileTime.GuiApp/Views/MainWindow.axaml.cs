@@ -1,9 +1,6 @@
-using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Models;
 using FileTime.GuiApp.ViewModels;

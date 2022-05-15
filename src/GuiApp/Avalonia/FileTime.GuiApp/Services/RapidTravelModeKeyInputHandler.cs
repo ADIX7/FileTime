@@ -1,8 +1,7 @@
 using Avalonia.Input;
-using FileTime.App.Core.Command;
 using FileTime.App.Core.Models;
-using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
+using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
@@ -15,12 +14,14 @@ namespace FileTime.GuiApp.Services;
 
 public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
 {
-    private const string RAPIDTRAVELFILTERNAME = "rapid_travel_filter";
+    private const string RapidTravelFilterName = "rapid_travel_filter";
+    
     private readonly IAppState _appState;
     private readonly IModalService _modalService;
     private readonly IKeyboardConfigurationService _keyboardConfigurationService;
-    private readonly ICommandHandlerService _commandHandlerService;
+    private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly ILogger<RapidTravelModeKeyInputHandler> _logger;
+    private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
     private readonly BindedCollection<IModalViewModelBase> _openModals;
     private ITabViewModel? _selectedTab;
 
@@ -28,15 +29,17 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         IAppState appState,
         IModalService modalService,
         IKeyboardConfigurationService keyboardConfigurationService,
-        ICommandHandlerService commandHandlerService,
-        ILogger<RapidTravelModeKeyInputHandler> logger)
+        IUserCommandHandlerService userCommandHandlerService,
+        ILogger<RapidTravelModeKeyInputHandler> logger,
+        IIdentifiableUserCommandService identifiableUserCommandService)
     {
         _appState = appState;
         _modalService = modalService;
         _keyboardConfigurationService = keyboardConfigurationService;
-        _commandHandlerService = commandHandlerService;
+        _userCommandHandlerService = userCommandHandlerService;
         _logger = logger;
-        
+        _identifiableUserCommandService = identifiableUserCommandService;
+
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
 
         _openModals = new BindedCollection<IModalViewModelBase>(modalService.OpenModals);
@@ -56,7 +59,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
             }
             else
             {
-                await CallCommandAsync(Command.ExitRapidTravel);
+                await CallCommandAsync(ExitRapidTravelCommand.Instance);
             }
         }
         else if (key == Key.Back)
@@ -77,11 +80,11 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         else
         {
             var currentKeyAsList = new List<KeyConfig>() {new KeyConfig(key)};
-            var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(currentKeyAsList));
+            var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.Values.FirstOrDefault(c => c.Keys.AreKeysEqual(currentKeyAsList));
             if (selectedCommandBinding != null)
             {
                 setHandled(true);
-                await CallCommandAsync(selectedCommandBinding.Command);
+                await CallCommandAsync(_identifiableUserCommandService.GetCommand(selectedCommandBinding.Command));
             }
         }
 
@@ -89,8 +92,8 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         {
             if (_selectedTab?.Tab is not ITab tab) return;
             
-            tab.RemoveItemFilter(RAPIDTRAVELFILTERNAME);
-            tab.AddItemFilter(new ItemFilter(RAPIDTRAVELFILTERNAME, i => i.Name.ToLower().Contains(_appState.RapidTravelText)));
+            tab.RemoveItemFilter(RapidTravelFilterName);
+            tab.AddItemFilter(new ItemFilter(RapidTravelFilterName, i => i.Name.ToLower().Contains(_appState.RapidTravelText)));
             /*var currentLocation = await _appState.SelectedTab.CurrentLocation.Container.WithoutVirtualContainer(MainPageViewModel.RAPIDTRAVEL);
             var newLocation = new VirtualContainer(
                 currentLocation,
@@ -122,15 +125,15 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         }
     }
 
-    private async Task CallCommandAsync(Command command)
+    private async Task CallCommandAsync(IUserCommand command)
     {
         try
         {
-            await _commandHandlerService.HandleCommandAsync(command);
+            await _userCommandHandlerService.HandleCommandAsync(command);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unknown error while running command. {Command} {Error}", command, e);
+            _logger.LogError(e, "Unknown error while running command. {Command} {Error}", command.GetType().Name, e);
         }
     }
 }

@@ -1,27 +1,28 @@
 using System.Reactive.Linq;
-using FileTime.App.Core.Command;
 using FileTime.App.Core.Models;
+using FileTime.App.Core.Models.Enums;
+using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Command;
-using FileTime.Core.Command.Copy;
 using FileTime.Core.Models;
+using CopyCommand = FileTime.Core.Command.Copy.CopyCommand;
 
-namespace FileTime.App.Core.Services.CommandHandler;
+namespace FileTime.App.Core.Services.UserCommandHandler;
 
-public class ItemManipulationCommandHandler : CommandHandlerBase
+public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServiceBase
 {
     private ITabViewModel? _selectedTab;
     private IItemViewModel? _currentSelectedItem;
-    private readonly ICommandHandlerService _commandHandlerService;
+    private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IClipboardService _clipboardService;
     private readonly BindedCollection<IAbsolutePath>? _markedItems;
 
-    public ItemManipulationCommandHandler(
+    public ItemManipulationUserCommandHandlerService(
         IAppState appState,
-        ICommandHandlerService commandHandlerService,
+        IUserCommandHandlerService userCommandHandlerService,
         IClipboardService clipboardService) : base(appState)
     {
-        _commandHandlerService = commandHandlerService;
+        _userCommandHandlerService = userCommandHandlerService;
         _clipboardService = clipboardService;
 
         SaveSelectedTab(t => _selectedTab = t);
@@ -29,13 +30,11 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
 
         _markedItems = new BindedCollection<IAbsolutePath>(appState.SelectedTab.Select(t => t?.MarkedItems));
 
-        AddCommandHandlers(new (Command.Command, Func<Task>)[]
+        AddCommandHandlers(new IUserCommandHandler[]
         {
-            (Command.Command.Copy, Copy),
-            (Command.Command.Mark, MarkItem),
-            (Command.Command.PasteMerge, PasteMerge),
-            (Command.Command.PasteOverwrite, PasteOverwrite),
-            (Command.Command.PasteSkip, PasteSkip),
+            new TypeUserCommandHandler<CopyCommand>(Copy),
+            new TypeUserCommandHandler<MarkCommand>(MarkItem),
+            new TypeUserCommandHandler<PasteCommand>(Paste),
         });
     }
 
@@ -44,7 +43,7 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
         if (_selectedTab == null || _currentSelectedItem?.BaseItem?.FullName == null) return;
 
         _selectedTab.ToggleMarkedItem(new AbsolutePath(_currentSelectedItem.BaseItem));
-        await _commandHandlerService.HandleCommandAsync(Command.Command.MoveCursorDown);
+        await _userCommandHandlerService.HandleCommandAsync(MoveCursorDownCommand.Instance);
     }
 
     private Task Copy()
@@ -67,6 +66,17 @@ public class ItemManipulationCommandHandler : CommandHandlerBase
         }
 
         return Task.CompletedTask;
+    }
+
+    private async Task Paste(PasteCommand command)
+    {
+        await (command.PasteMode switch
+        {
+            PasteMode.Merge => PasteMerge(),
+            PasteMode.Overwrite => PasteOverwrite(),
+            PasteMode.Skip => PasteSkip(),
+            _ => throw new ArgumentException($"Unknown {nameof(PasteMode)} value: {command.PasteMode}")
+        });
     }
 
     private async Task PasteMerge()

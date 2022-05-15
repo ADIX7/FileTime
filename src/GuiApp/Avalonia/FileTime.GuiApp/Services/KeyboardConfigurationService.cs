@@ -1,4 +1,4 @@
-using FileTime.App.Core.Command;
+using System.Collections.ObjectModel;
 using FileTime.GuiApp.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -6,14 +6,14 @@ namespace FileTime.GuiApp.Services;
 
 public class KeyboardConfigurationService : IKeyboardConfigurationService
 {
-    public IReadOnlyList<CommandBindingConfiguration> CommandBindings { get; }
-    public IReadOnlyList<CommandBindingConfiguration> UniversalCommandBindings { get; }
-    public IReadOnlyList<CommandBindingConfiguration> AllShortcut { get; }
+    public IReadOnlyDictionary<string, CommandBindingConfiguration> CommandBindings { get; }
+    public IReadOnlyDictionary<string, CommandBindingConfiguration> UniversalCommandBindings { get; }
+    public IReadOnlyDictionary<string, CommandBindingConfiguration> AllShortcut { get; }
 
     public KeyboardConfigurationService(IOptions<KeyBindingConfiguration> keyBindingConfiguration)
     {
-        var commandBindings = new List<CommandBindingConfiguration>();
-        var universalCommandBindings = new List<CommandBindingConfiguration>();
+        var commandBindings = new Dictionary<string, CommandBindingConfiguration>();
+        var universalCommandBindings = new Dictionary<string, CommandBindingConfiguration>();
         IEnumerable<CommandBindingConfiguration> keyBindings = keyBindingConfiguration.Value.KeyBindings;
 
         if (keyBindingConfiguration.Value.UseDefaultBindings)
@@ -23,7 +23,7 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
 
         foreach (var keyBinding in keyBindings)
         {
-            if (keyBinding.Command == Command.None)
+            if (string.IsNullOrWhiteSpace(keyBinding.Command))
             {
                 throw new FormatException($"No command is set in keybinding for keys '{keyBinding.KeysDisplayText}'");
             }
@@ -34,21 +34,22 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
 
             if (IsUniversal(keyBinding))
             {
-                universalCommandBindings.Add(keyBinding);
+                universalCommandBindings.Add(keyBinding.Command, keyBinding);
             }
             else
             {
-                commandBindings.Add(keyBinding);
+                commandBindings.Add(keyBinding.Command, keyBinding);
             }
         }
 
-        CommandBindings = commandBindings.AsReadOnly();
-        UniversalCommandBindings = universalCommandBindings.AsReadOnly();
-        AllShortcut = new List<CommandBindingConfiguration>(CommandBindings.Concat(UniversalCommandBindings)).AsReadOnly();
+        CommandBindings = new ReadOnlyDictionary<string, CommandBindingConfiguration>(commandBindings);
+        UniversalCommandBindings = new ReadOnlyDictionary<string, CommandBindingConfiguration>(universalCommandBindings);
+        AllShortcut = new ReadOnlyDictionary<string, CommandBindingConfiguration>(new Dictionary<string, CommandBindingConfiguration>(CommandBindings.Concat(UniversalCommandBindings)));
     }
 
     private static bool IsUniversal(CommandBindingConfiguration keyMapping)
     {
-        return keyMapping.Command is Command.GoUp or Command.Open or Command.OpenOrRun or Command.MoveCursorUp or Command.MoveCursorDown or Command.MoveCursorUpPage or Command.MoveCursorDownPage;
+        return false;
+        //return keyMapping.Command is ConfigCommand.GoUp or ConfigCommand.Open or ConfigCommand.OpenOrRun or ConfigCommand.MoveCursorUp or ConfigCommand.MoveCursorDown or ConfigCommand.MoveCursorUpPage or ConfigCommand.MoveCursorDownPage;
     }
 }

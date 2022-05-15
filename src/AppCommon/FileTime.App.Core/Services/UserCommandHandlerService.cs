@@ -1,15 +1,14 @@
-using FileTime.App.Core.Command;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.App.Core.Services;
 
-public class CommandHandlerService : ICommandHandlerService
+public class UserCommandHandlerService : IUserCommandHandlerService
 {
-    private readonly Lazy<IEnumerable<ICommandHandler>> _commandHandlers;
+    private readonly Lazy<IEnumerable<IUserCommandHandler>> _commandHandlers;
 
-    public CommandHandlerService(IServiceProvider serviceProvider)
+    public UserCommandHandlerService(IServiceProvider serviceProvider)
     {
-        _commandHandlers = new Lazy<IEnumerable<ICommandHandler>>(() => serviceProvider.GetServices<ICommandHandler>());
+        _commandHandlers = new Lazy<IEnumerable<IUserCommandHandler>>(serviceProvider.GetServices<IUserCommandHandler>);
 
         //(Commands.AutoRefresh, ToggleAutoRefresh),
         //(Commands.ChangeTimelineMode, ChangeTimelineMode),
@@ -67,7 +66,7 @@ public class CommandHandlerService : ICommandHandlerService
         //(Commands.ToggleHidden, ToggleHidden),
     }
 
-    public async Task HandleCommandAsync(Command.Command command)
+    public async Task HandleCommandAsync(UserCommand.IUserCommand command)
     {
         var handler = _commandHandlers.Value.FirstOrDefault(h => h.CanHandleCommand(command));
 
@@ -76,4 +75,7 @@ public class CommandHandlerService : ICommandHandlerService
             await handler.HandleCommandAsync(command);
         }
     }
+
+    public async Task HandleCommandAsync<TUserCommand>() where TUserCommand : UserCommand.IUserCommand, new()
+        => await HandleCommandAsync(new TUserCommand());
 }

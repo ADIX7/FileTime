@@ -1,37 +1,36 @@
-using System.Reactive.Linq;
-using FileTime.App.Core.Command;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
+using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FileTime.App.Core.Services.CommandHandler;
+namespace FileTime.App.Core.Services.UserCommandHandler;
 
-public class NavigationCommandHandler : CommandHandlerBase
+public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 {
     private readonly IAppState _appState;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILocalContentProvider _localContentProvider;
-    private readonly ICommandHandlerService _commandHandlerService;
+    private readonly IUserCommandHandlerService _userCommandHandlerService;
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
     private IEnumerable<IItemViewModel> _currentItems = Enumerable.Empty<IItemViewModel>();
     private ViewMode _viewMode;
 
-    public NavigationCommandHandler(
+    public NavigationUserCommandHandlerService(
         IAppState appState,
         IServiceProvider serviceProvider,
         ILocalContentProvider localContentProvider,
-        ICommandHandlerService commandHandlerService) : base(appState)
+        IUserCommandHandlerService userCommandHandlerService) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
         _localContentProvider = localContentProvider;
-        _commandHandlerService = commandHandlerService;
+        _userCommandHandlerService = userCommandHandlerService;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -40,24 +39,16 @@ public class NavigationCommandHandler : CommandHandlerBase
 
         appState.ViewMode.Subscribe(v => _viewMode = v);
 
-        AddCommandHandlers(new (Command.Command, Func<Task>)[]
+        AddCommandHandlers(new IUserCommandHandler[]
         {
-            (Command.Command.CloseTab, CloseTab),
-            (Command.Command.EnterRapidTravel, EnterRapidTravel),
-            (Command.Command.ExitRapidTravel, ExitRapidTravel),
-            (Command.Command.GoUp, GoUp),
-            (Command.Command.MoveCursorDown, MoveCursorDown),
-            (Command.Command.MoveCursorUp, MoveCursorUp),
-            (Command.Command.Open, OpenContainer),
-            (Command.Command.SwitchToLastTab, async () => await SwitchToTab(-1)),
-            (Command.Command.SwitchToTab1, async () => await SwitchToTab(1)),
-            (Command.Command.SwitchToTab2, async () => await SwitchToTab(2)),
-            (Command.Command.SwitchToTab3, async () => await SwitchToTab(3)),
-            (Command.Command.SwitchToTab4, async () => await SwitchToTab(4)),
-            (Command.Command.SwitchToTab5, async () => await SwitchToTab(5)),
-            (Command.Command.SwitchToTab6, async () => await SwitchToTab(6)),
-            (Command.Command.SwitchToTab7, async () => await SwitchToTab(7)),
-            (Command.Command.SwitchToTab8, async () => await SwitchToTab(8)),
+            new TypeUserCommandHandler<CloseTabCommand>(CloseTab),
+            new TypeUserCommandHandler<EnterRapidTravelCommand>(EnterRapidTravel),
+            new TypeUserCommandHandler<ExitRapidTravelCommand>(ExitRapidTravel),
+            new TypeUserCommandHandler<GoUpCommand>(GoUp),
+            new TypeUserCommandHandler<MoveCursorDownCommand>(MoveCursorDown),
+            new TypeUserCommandHandler<MoveCursorUpCommand>(MoveCursorUp),
+            new TypeUserCommandHandler<OpenSelectedCommand>(OpenContainer),
+            new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
     }
 
@@ -109,8 +100,9 @@ public class NavigationCommandHandler : CommandHandlerBase
         return Task.CompletedTask;
     }
 
-    private Task SwitchToTab(int number)
+    private Task SwitchToTab(SwitchToTabCommand command)
     {
+        var number = command.TabNumber;
         var tabViewModel = _appState.Tabs.FirstOrDefault(t => t.TabNumber == number);
 
         if (number == -1)
@@ -129,7 +121,7 @@ public class NavigationCommandHandler : CommandHandlerBase
 
         if (_viewMode == ViewMode.RapidTravel)
         {
-            _commandHandlerService.HandleCommandAsync(Command.Command.ExitRapidTravel);
+            _userCommandHandlerService.HandleCommandAsync(ExitRapidTravelCommand.Instance);
         }
 
         _appState.SetSelectedTab(tabViewModel!);

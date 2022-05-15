@@ -1,37 +1,40 @@
 using Avalonia.Input;
-using FileTime.App.Core.Command;
 
 namespace FileTime.GuiApp.Configuration;
 
 public class CommandBindingConfiguration
 {
-    public List<KeyConfig> Keys { get; set; } = new List<KeyConfig>();
+    public List<KeyConfig> Keys { get; set; }
 
-    public Command Command { get; set; } = Command.None;
+    public string Command { get; set; }
 
     public string KeysDisplayText => GetKeysDisplayText();
 
-    public CommandBindingConfiguration() { }
+    public CommandBindingConfiguration()
+    {
+        Command = null!;
+        Keys = null!;
+    }
 
-    public CommandBindingConfiguration(Command command, IEnumerable<KeyConfig> keys)
+    public CommandBindingConfiguration(string command, IEnumerable<KeyConfig> keys)
     {
         Keys = new List<KeyConfig>(keys);
         Command = command;
     }
 
-    public CommandBindingConfiguration(Command command, KeyConfig key)
+    public CommandBindingConfiguration(string command, KeyConfig key)
     {
         Keys = new List<KeyConfig>() { key };
         Command = command;
     }
 
-    public CommandBindingConfiguration(Command command, IEnumerable<Key> keys)
+    public CommandBindingConfiguration(string command, IEnumerable<Key> keys)
     {
         Keys = keys.Select(k => new KeyConfig(k)).ToList();
         Command = command;
     }
 
-    public CommandBindingConfiguration(Command command, Key key)
+    public CommandBindingConfiguration(string command, Key key)
     {
         Keys = new List<KeyConfig>() { new KeyConfig(key) };
         Command = command;
@@ -62,7 +65,7 @@ public class CommandBindingConfiguration
     {
         var s = "";
 
-        bool ctrlOrAlt = key.Ctrl || key.Alt;
+        var ctrlOrAlt = key.Ctrl || key.Alt;
 
         if (ctrlOrAlt && currentText.Length > 0 && currentText.Last() != ' ') s += " ";
 

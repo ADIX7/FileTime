@@ -1,5 +1,6 @@
 using FileTime.App.Core.Services;
-using FileTime.App.Core.Services.CommandHandler;
+using FileTime.App.Core.Services.UserCommandHandler;
+using FileTime.App.Core.StartupServices;
 using FileTime.App.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,15 +15,17 @@ public static class Startup
             .AddTransient<IContainerViewModel, ContainerViewModel>()
             .AddTransient<IElementViewModel, ElementViewModel>()
             .AddTransient<IItemNameConverterService, ItemNameConverterService>()
-            .AddSingleton<ICommandHandlerService, CommandHandlerService>()
+            .AddSingleton<IUserCommandHandlerService, UserCommandHandlerService>()
             .AddSingleton<IClipboardService, ClipboardService>()
+            .AddSingleton<IIdentifiableUserCommandService, IdentifiableUserCommandService>()
+            .AddSingleton<IStartupHandler, DefaultIdentifiableCommandHandlerRegister>()
             .AddCommandHandlers();
     }
 
     private static IServiceCollection AddCommandHandlers(this IServiceCollection serviceCollection)
     {
         return serviceCollection
-            .AddSingleton<ICommandHandler, NavigationCommandHandler>()
-            .AddSingleton<ICommandHandler, ItemManipulationCommandHandler>();
+            .AddSingleton<IUserCommandHandler, NavigationUserCommandHandlerService>()
+            .AddSingleton<IUserCommandHandler, ItemManipulationUserCommandHandlerService>();
     }
 }
