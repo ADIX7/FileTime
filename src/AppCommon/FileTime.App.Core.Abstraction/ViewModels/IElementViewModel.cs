@@ -6,5 +6,6 @@ namespace FileTime.App.Core.ViewModels;
 
 public interface IElementViewModel : IItemViewModel, IInitable<IElement, ITabViewModel, ItemViewModelType>
 {
+    IElement? Element { get; }
     long? Size { get; set; }
 }

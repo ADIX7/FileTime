@@ -1,0 +1,34 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="using:FileTime.GuiApp.Converters">
+    <converters:ItemViewModeToBrushConverter
+        AlternativeBrush="{StaticResource AlternativeItemForegroundBrush}"
+        DefaultBrush="{StaticResource ForegroundBrush}"
+        MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemForegroundBrush}"
+        MarkedBrush="{StaticResource MarkedItemForegroundBrush}"
+        MarkedSelectedBrush="{StaticResource MarkedSelectedItemForegroundBrush}"
+        SelectedBrush="{StaticResource SelectedItemForegroundBrush}"
+        x:Key="ItemViewModeToForegroundConverter" />
+    <converters:ItemViewModeToBrushConverter
+        AlternativeBrush="{StaticResource AlternativeItemBackgroundBrush}"
+        DefaultBrush="{StaticResource ItemBackgroundBrush}"
+        MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemBackgroundBrush}"
+        MarkedBrush="{StaticResource MarkedItemBackgroundBrush}"
+        MarkedSelectedBrush="{StaticResource MarkedSelectedItemBackgroundBrush}"
+        SelectedBrush="{StaticResource SelectedItemBackgroundBrush}"
+        x:Key="ItemViewModeToBackgroundConverter" />
+    <converters:NamePartShrinkerConverter x:Key="NamePartShrinkerConverter" />
+    <converters:ItemViewModelIsAttributeTypeConverter x:Key="ItemViewModelIsAttributeTypeConverter" />
+    <converters:ItemViewModelIsAttributeTypeConverter Invert="true"
+                                                      x:Key="ItemViewModelIsNotAttributeTypeConverter" />
+    <converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter" />
+    <converters:FormatSizeConverter x:Key="FormatSizeConverter" />
+    <converters:DateTimeConverter x:Key="DateTimeConverter" />
+    <converters:SplitStringConverter x:Key="SplitStringConverter" />
+    <converters:CompareConverter x:Key="EqualityConverter" />
+    <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}"
+                                 x:Key="NotEqualsConverter" />
+    <converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter" />
+    <converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter" />
+    <converters:ItemToImageConverter x:Key="ItemToImageConverter" />
+</ResourceDictionary>

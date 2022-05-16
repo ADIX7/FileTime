@@ -3,6 +3,7 @@ using System.IO;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.GuiApp.Configuration;
+using FileTime.GuiApp.IconProviders;
 using FileTime.GuiApp.Logging;
 using FileTime.GuiApp.Services;
 using FileTime.GuiApp.ViewModels;
@@ -33,6 +34,7 @@ public static class Startup
             .AddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>()
             .AddSingleton<IStartupHandler, RootDriveInfoService>()
             .AddSingleton<LifecycleService>()
+            .AddSingleton<IIconProvider, MaterialIconProvider>()
             .AddSingleton<IModalService, ModalService>();
     }
 

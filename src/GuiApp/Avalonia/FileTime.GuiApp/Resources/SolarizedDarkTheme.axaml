@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="AppBackgroundColor">#E7073642</Color>
+    <Color x:Key="ContainerBackgroundColor">#083e4c</Color>
+    <Color x:Key="TransparentContainerBackgroundColor">#D0083e4c</Color>
+    <Color x:Key="BarelyTransparentBackgroundColor">#80083e4c</Color>
+
+    <Color x:Key="ItemBackgroundColor">#00000000</Color>
+    <Color x:Key="AlternativeItemBackgroundColor">#10000000</Color>
+    <Color x:Key="SelectedItemBackgroundColor">#93a1a1</Color>
+    <Color x:Key="MarkedItemBackgroundColor">#00000000</Color>
+    <Color x:Key="MarkedAlternativeItemBackgroundColor">#10000000</Color>
+    <Color x:Key="MarkedSelectedItemBackgroundColor">#b58900</Color>
+
+    <Color x:Key="ForegroundColor">#93a1a1</Color>
+    <Color x:Key="AccentColor">#268bd2</Color>
+    <Color x:Key="AccentComplementColor">#fdf6e3</Color>
+    <Color x:Key="LightForegroundColor">#7793a1a1</Color>
+    <Color x:Key="AlternativeItemForegroundColor">#93a1a1</Color>
+    <Color x:Key="SelectedItemForegroundColor">#073642</Color>
+    <Color x:Key="MarkedItemForegroundColor">#b58900</Color>
+    <Color x:Key="MarkedAlternativeItemForegroundColor">#b58900</Color>
+    <Color x:Key="MarkedSelectedItemForegroundColor">#002b36</Color>
+
+    <Color x:Key="ErrorColor">#dc322f</Color>
+</ResourceDictionary>

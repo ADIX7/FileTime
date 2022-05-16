@@ -19,12 +19,12 @@
 				<Setter x:CompileBindings="False" Property="Foreground" Value="{Binding DataContext.ViewMode^,Converter={StaticResource ItemViewModeToForegroundConverter},ElementName=ItemRoot}"/>
 			</Style>
 		</Grid.Styles>
-		<!--Image
+		<Image
 			Width="18"
 			Height="18"
 			HorizontalAlignment="Left"
 			VerticalAlignment="Center"
-			Source="{Binding Converter={StaticResource ItemToImageConverter}}" /-->
+			Source="{Binding Converter={StaticResource ItemToImageConverter}}" />
 
 		<ItemsControl
 			Margin="5,0,0,0"

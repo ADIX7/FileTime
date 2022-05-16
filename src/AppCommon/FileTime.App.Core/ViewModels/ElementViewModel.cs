@@ -8,6 +8,8 @@ namespace FileTime.App.Core.ViewModels;
 [ViewModel(GenerateConstructor = false)]
 public partial class ElementViewModel : ItemViewModel, IElementViewModel
 {
+    public IElement? Element => BaseItem as Element;
+    
     [Property]
     private long? _size;
 
