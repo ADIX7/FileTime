@@ -47,7 +47,7 @@
                     <StackPanel
                         Margin="20,10"
                         Orientation="Horizontal">
-                        <!--  local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}"/  -->
+                        <local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}"/>
                         <TextBlock
                             Foreground="{StaticResource AccentBrush}"
                             Text="{Binding AppState.SelectedTab^.CurrentSelectedItem^.DisplayNameText}" />

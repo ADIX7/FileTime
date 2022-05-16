@@ -31,4 +31,5 @@
     <converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter" />
     <converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter" />
     <converters:ItemToImageConverter x:Key="ItemToImageConverter" />
+    <converters:StringReplaceConverter x:Key="PathPreformatter" OldValue="://" NewValue="/"/>
 </ResourceDictionary>

@@ -14,6 +14,8 @@ public static class Startup
             .AddTransient<ITabViewModel, TabViewModel>()
             .AddTransient<IContainerViewModel, ContainerViewModel>()
             .AddTransient<IElementViewModel, ElementViewModel>()
+            .AddTransient<IFileViewModel, FileViewModel>()
+            .AddTransient<IContainerSizeContainerViewModel, ContainerSizeContainerViewModel>()
             .AddTransient<IItemNameConverterService, ItemNameConverterService>()
             .AddSingleton<IUserCommandHandlerService, UserCommandHandlerService>()
             .AddSingleton<IClipboardService, ClipboardService>()

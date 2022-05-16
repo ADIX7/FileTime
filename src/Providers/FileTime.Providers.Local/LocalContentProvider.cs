@@ -12,6 +12,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 {
     private readonly SourceList<IAbsolutePath> _rootDirectories = new();
     private readonly bool _isCaseInsensitive;
+
     public LocalContentProvider() : base("local")
     {
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -53,15 +54,15 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         {
             if ((path?.Length ?? 0) == 0)
             {
-                return Task.FromResult((IItem)this);
+                return Task.FromResult((IItem) this);
             }
             else if (Directory.Exists(path))
             {
-                return Task.FromResult((IItem)DirectoryToContainer(new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar), !itemInitializationSettings.SkipChildInitialization));
+                return Task.FromResult((IItem) DirectoryToContainer(new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar), !itemInitializationSettings.SkipChildInitialization));
             }
             else if (File.Exists(path))
             {
-                return Task.FromResult((IItem)FileToElement(new FileInfo(path)));
+                return Task.FromResult((IItem) FileToElement(new FileInfo(path)));
             }
 
             var type = forceResolvePathType switch
@@ -85,7 +86,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
         return forceResolvePathType switch
         {
-            AbsolutePathType.Container => Task.FromResult((IItem)CreateEmptyContainer(nativePath, Observable.Return(new List<Exception>() { innerException }))),
+            AbsolutePathType.Container => Task.FromResult((IItem) CreateEmptyContainer(nativePath, Observable.Return(new List<Exception>() {innerException}))),
             AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
             _ => throw new Exception($"Could not resolve path '{nativePath.Path}' and could not force create, because {nameof(forceResolvePathType)} is {nameof(AbsolutePathType.Unknown)}.", innerException)
         };
@@ -174,7 +175,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             SourceList<IAbsolutePath>? result = null;
             try
             {
-                var items = initializeChildren ? (List<IAbsolutePath>?)GetItemsByContainer(directoryInfo) : null;
+                var items = initializeChildren ? (List<IAbsolutePath>?) GetItemsByContainer(directoryInfo) : null;
                 if (items != null)
                 {
                     result = new SourceList<IAbsolutePath>();
@@ -183,7 +184,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             }
             catch (Exception e)
             {
-                exceptions.OnNext(new List<Exception>() { e });
+                exceptions.OnNext(new List<Exception>() {e});
             }
 
             return Task.FromResult(result?.Connect());
@@ -196,7 +197,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var parentFullName = fullName.GetParent() ?? throw new Exception($"Path does not have parent: '{fileInfo.FullName}'");
         var parent = new AbsolutePath(this, parentFullName, AbsolutePathType.Container);
 
-        return new(
+        return new FileElement(
             fileInfo.Name,
             fileInfo.Name,
             fullName,
@@ -209,7 +210,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             true,
             GetFileAttributes(fileInfo),
             this,
-            Observable.Return(Enumerable.Empty<Exception>())
+            Observable.Return(Enumerable.Empty<Exception>()),
+            fileInfo.Length
         );
     }
 
