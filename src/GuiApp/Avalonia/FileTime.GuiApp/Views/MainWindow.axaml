@@ -20,9 +20,6 @@
     Opened="OnWindowOpened"
     TransparencyLevelHint="Blur"
     mc:Ignorable="d">
-    <Design.DataContext>
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
 
     <Grid Background="{DynamicResource AppBackgroundBrush}">
         <Grid
