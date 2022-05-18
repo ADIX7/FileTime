@@ -4,6 +4,7 @@ using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
+using FileTime.App.Core.ViewModels.ItemPreview;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,9 +35,14 @@ public partial class TabViewModel : ITabViewModel, IDisposable
     public IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; private set; } = null!;
     public IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; private set; } = null!;
 
-    public IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; private set; } = null!;
-    public IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; private set; } = null!;
-    public IObservable<IReadOnlyCollection<IItemViewModel>?> SelectedsChildrenCollectionObservable { get; private set; } = null!;
+    public IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; private set; } =
+        null!;
+
+    public IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; private set; } =
+        null!;
+
+    public IObservable<IReadOnlyCollection<IItemViewModel>?>
+        SelectedsChildrenCollectionObservable { get; private set; } = null!;
 
     [Property] private BindedCollection<IItemViewModel>? _currentItemsCollection;
 
@@ -78,7 +84,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                     tab.CurrentSelectedItem,
                     (currentItems, currentSelectedItemPath) =>
                         currentItems == null
-                            ? Observable.Return((IItemViewModel?) null)
+                            ? Observable.Return((IItemViewModel?)null)
                             : currentItems
                                 .ToCollection()
                                 .Select(items =>
@@ -117,7 +123,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                                 .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))),
                     currentSelectedItemThrottled
                         .Where(c => c is null or not IContainerViewModel)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?) null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?)null)
                 )
                 /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
@@ -136,7 +142,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
             return Observable.Merge(
                     parentThrottled
                         .Where(p => p is not null)
-                        .Select(p => Observable.FromAsync(async () => (IContainer) await p!.ResolveAsync()))
+                        .Select(p => Observable.FromAsync(async () => (IContainer)await p!.ResolveAsync()))
                         .Switch()
                         .Select(p => p.Items)
                         .Switch()
@@ -145,7 +151,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
                                 .Transform(i => MapItemToViewModel(i, ItemViewModelType.Parent))),
                     parentThrottled
                         .Where(p => p is null)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?) null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?)null)
                 )
                 /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
@@ -158,7 +164,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         {
             return source
                 .Select(c =>
-                    c != null ? c.ToCollection() : Observable.Return((IReadOnlyCollection<IItemViewModel>?) null))
+                    c != null ? c.ToCollection() : Observable.Return((IReadOnlyCollection<IItemViewModel>?)null))
                 .Switch()
                 .Publish(null)
                 .RefCount();
@@ -179,22 +185,27 @@ public partial class TabViewModel : ITabViewModel, IDisposable
 
             return containerViewModel;
         }
-        else if (item is IFileElement fileElement)
-        {
-            var fileViewModel = _serviceProvider
-                .GetInitableResolver<IFileElement, ITabViewModel, ItemViewModelType>(fileElement, this, type)
-                .GetRequiredService<IFileViewModel>();
-            fileViewModel.Size = fileElement.Size;
-
-            return fileViewModel;
-        }
         else if (item is IElement element)
         {
-            var elementViewModel = _serviceProvider
-                .GetInitableResolver<IElement, ITabViewModel, ItemViewModelType>(element, this, type)
-                .GetRequiredService<IElementViewModel>();
+            var fileExtension = element.GetExtension<FileExtension>();
 
-            return elementViewModel;
+            if (fileExtension is not null)
+            {
+                var fileViewModel = _serviceProvider
+                    .GetInitableResolver<IElement, FileExtension, ITabViewModel, ItemViewModelType>(
+                        element, fileExtension, this, type)
+                    .GetRequiredService<IFileViewModel>();
+
+                return fileViewModel;
+            }
+            else
+            {
+                var elementViewModel = _serviceProvider
+                    .GetInitableResolver<IElement, ITabViewModel, ItemViewModelType>(element, this, type)
+                    .GetRequiredService<IElementViewModel>();
+
+                return elementViewModel;
+            }
         }
 
         throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neither {nameof(IElement)}");

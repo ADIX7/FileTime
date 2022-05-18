@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
@@ -8,7 +9,10 @@ namespace FileTime.Core.Services;
 
 public abstract class ContentProviderBase : IContentProvider
 {
+    private readonly ReadOnlyExtensionCollection _extensions;
+
     protected BehaviorSubject<IObservable<IChangeSet<IAbsolutePath>>?> Items { get; } = new(null);
+    protected ExtensionCollection Extensions { get; }
 
     IObservable<IObservable<IChangeSet<IAbsolutePath>>?> IContainer.Items => Items;
 
@@ -44,10 +48,14 @@ public abstract class ContentProviderBase : IContentProvider
 
     public IObservable<IEnumerable<Exception>> Exceptions => Observable.Return(Enumerable.Empty<Exception>());
 
+    ReadOnlyExtensionCollection IItem.Extensions => _extensions;
+
     protected ContentProviderBase(string name)
     {
         DisplayName = Name = name;
         FullName = new FullName(name);
+        Extensions = new ExtensionCollection();
+        _extensions = Extensions.AsReadOnly();
     }
 
     public virtual Task OnEnter() => Task.CompletedTask;
@@ -57,7 +65,8 @@ public abstract class ContentProviderBase : IContentProvider
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default)
-        => await GetItemByNativePathAsync(GetNativePath(fullName), forceResolve, forceResolvePathType, itemInitializationSettings);
+        => await GetItemByNativePathAsync(GetNativePath(fullName), forceResolve, forceResolvePathType,
+            itemInitializationSettings);
 
     public abstract Task<IItem> GetItemByNativePathAsync(
         NativePath nativePath,
@@ -67,4 +76,8 @@ public abstract class ContentProviderBase : IContentProvider
 
     public abstract Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName);
     public abstract NativePath GetNativePath(FullName fullName);
+
+    public abstract Task<byte[]?> GetContentAsync(IElement element,
+        int? maxLength = null,
+        CancellationToken cancellationToken = default);
 }

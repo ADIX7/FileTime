@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using DynamicData;
+using FileTime.App.Core.Models;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
@@ -133,6 +134,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             "???",
             this,
             nonNullExceptions,
+            new ExtensionCollection().AsReadOnly(),
             Observable.Return<IObservable<IChangeSet<IAbsolutePath>>?>(null)
         );
     }
@@ -195,6 +197,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             GetDirectoryAttributes(directoryInfo),
             this,
             exceptions,
+            new ExtensionCollection().AsReadOnly(),
             Observable.FromAsync(async () => await Task.Run(InitChildren))
         );
 
@@ -226,7 +229,12 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                              throw new Exception($"Path does not have parent: '{fileInfo.FullName}'");
         var parent = new AbsolutePath(this, parentFullName, AbsolutePathType.Container);
 
-        return new FileElement(
+        var extensions = new ExtensionCollection()
+        {
+            new FileExtension(fileInfo.Length)
+        };
+
+        return new Element(
             fileInfo.Name,
             fileInfo.Name,
             fullName,
@@ -240,7 +248,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             GetFileAttributes(fileInfo),
             this,
             Observable.Return(Enumerable.Empty<Exception>()),
-            fileInfo.Length
+            extensions.AsReadOnly()
         );
     }
 
@@ -260,5 +268,29 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var path = string.Join(Path.DirectorySeparatorChar, fullName.Path.Split(Constants.SeparatorChar).Skip(1));
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !path.StartsWith("/")) path = "/" + path;
         return new NativePath(path);
+    }
+
+    public override async Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (cancellationToken.IsCancellationRequested) return null;
+        if (!File.Exists(element.NativePath!.Path))
+            throw new FileNotFoundException("File does not exist", element.NativePath.Path);
+        
+        await using var reader = new FileStream(element.NativePath!.Path, FileMode.Open, FileAccess.Read, FileShare.Read,
+            bufferSize: 1, // bufferSize == 1 used to avoid unnecessary buffer in FileStream
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+        var realFileSize = new FileInfo(element.NativePath!.Path).Length;
+        
+        var size = maxLength ?? realFileSize switch
+        {
+            > int.MaxValue => int.MaxValue,
+            _ => (int)realFileSize
+        };
+        var buffer = new byte[size];
+        await reader.ReadAsync(buffer, 0, size);
+
+        return buffer;
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
@@ -20,6 +21,7 @@ public record Container(
     string? Attributes,
     IContentProvider Provider,
     IObservable<IEnumerable<Exception>> Exceptions,
+    ReadOnlyExtensionCollection Extensions,
     IObservable<IObservable<IChangeSet<IAbsolutePath>>?> Items) : IContainer
 {
     BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);

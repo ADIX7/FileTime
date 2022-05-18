@@ -20,6 +20,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IKeyInputHandlerService), PropertyName = "_keyInputHandlerService")]
 [Inject(typeof(IUserCommandHandlerService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(LifecycleService), PropertyName = "_lifecycleService")]
+[Inject(typeof(IItemPreviewService), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;

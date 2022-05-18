@@ -1,3 +1,4 @@
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
@@ -12,8 +13,9 @@ public partial class FileViewModel : ElementViewModel, IFileViewModel
     {
     }
 
-    public void Init(IFileElement item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
+    public void Init(IElement item, FileExtension fileExtension, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
     {
         Init((IElement)item, parentTab, itemViewModelType);
+        Size = fileExtension.Size;
     }
 }

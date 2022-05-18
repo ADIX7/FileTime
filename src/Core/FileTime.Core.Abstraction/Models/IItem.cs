@@ -1,3 +1,4 @@
+using System.Reactive.Linq;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
 
@@ -19,4 +20,7 @@ public interface IItem
     string? Attributes { get; }
     AbsolutePathType Type { get; }
     IObservable<IEnumerable<Exception>> Exceptions { get; }
+    ReadOnlyExtensionCollection Extensions { get; }
+
+    T? GetExtension<T>() => (T?)Extensions.FirstOrDefault(i => i is T);
 }

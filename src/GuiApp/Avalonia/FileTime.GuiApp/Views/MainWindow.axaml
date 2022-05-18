@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileTime.GuiApp.ViewModels"
     xmlns:config="using:FileTime.GuiApp.Configuration"
+    xmlns:appCoreModels="using:FileTime.App.Core.Models"
     Title="FileTime"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -44,89 +45,97 @@
                     <StackPanel
                         Margin="20,10"
                         Orientation="Horizontal">
-                        <local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}"/>
+                        <local:PathPresenter
+                            DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}" />
                         <TextBlock
                             Foreground="{StaticResource AccentBrush}"
                             Text="{Binding AppState.SelectedTab^.CurrentSelectedItem^.DisplayNameText}" />
                     </StackPanel>
                 </Grid>
 
-				<Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
 
-					<Border CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="10" Margin="10">
-						<Grid RowDefinitions="Auto,Auto">
+                    <Border CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="10"
+                            Margin="10">
+                        <Grid RowDefinitions="Auto,Auto">
 
-							<TextBlock
-								Margin="0,0,0,10"
-								Text="Drives" />
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                Text="Drives" />
 
-							<ItemsRepeater
-								Grid.Row="1"
-								Items="{Binding AppState.RootDriveInfos.Collection}">
-								<ItemsRepeater.ItemTemplate>
-									<DataTemplate x:DataType="vm:RootDriveInfo">
-										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
-											<Grid Margin="0,5" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
-												<Image
-													Grid.RowSpan="2"
-													Width="20"
-													Height="20"
-													HorizontalAlignment="Left"
-													VerticalAlignment="Center"
-													Source="{SvgImage /Assets/material/folder.svg}" />
+                            <ItemsRepeater
+                                Grid.Row="1"
+                                Items="{Binding AppState.RootDriveInfos.Collection}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:RootDriveInfo">
+                                        <Grid Classes="SidebarContainerPresenter"
+                                              PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
+                                            <Grid Margin="0,5" ColumnDefinitions="Auto,*,Auto"
+                                                  RowDefinitions="Auto,Auto">
+                                                <Image
+                                                    Grid.RowSpan="2"
+                                                    Width="20"
+                                                    Height="20"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Source="{SvgImage /Assets/material/folder.svg}" />
 
-												<StackPanel
-													Grid.Column="1"
-													VerticalAlignment="Center"
-													HorizontalAlignment="Stretch"
-													Orientation="Horizontal">
+                                                <StackPanel
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Stretch"
+                                                    Orientation="Horizontal">
 
-													<TextBlock
-														Margin="5,0,0,0"
-														VerticalAlignment="Center"
-														Text="{Binding FullName}" />
+                                                    <TextBlock
+                                                        Margin="5,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding FullName}" />
 
-													<TextBlock
-														Margin="5,0,0,0"
-														VerticalAlignment="Center"
-														Classes="ExtraSmallText"
-														Text="{Binding Label}" IsVisible="{Binding Label,Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-												</StackPanel>
+                                                    <TextBlock
+                                                        Margin="5,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Classes="ExtraSmallText"
+                                                        Text="{Binding Label}"
+                                                        IsVisible="{Binding Label,Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                </StackPanel>
 
-												<StackPanel
-													HorizontalAlignment="Right"
-													Grid.Column="2"
-													Orientation="Horizontal"
-													VerticalAlignment="Center">
+                                                <StackPanel
+                                                    HorizontalAlignment="Right"
+                                                    Grid.Column="2"
+                                                    Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
 
-													<TextBlock Classes="SmallText" VerticalAlignment="Center" Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
-													</TextBlock>
+                                                    <TextBlock Classes="SmallText" VerticalAlignment="Center"
+                                                               Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
+                                                    </TextBlock>
 
-													<TextBlock Classes="SmallText" VerticalAlignment="Center" Text=" / ">
-													</TextBlock>
+                                                    <TextBlock Classes="SmallText" VerticalAlignment="Center"
+                                                               Text=" / ">
+                                                    </TextBlock>
 
-													<TextBlock Classes="SmallText" VerticalAlignment="Center" Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
-													</TextBlock>
-												</StackPanel>
+                                                    <TextBlock Classes="SmallText" VerticalAlignment="Center"
+                                                               Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
+                                                    </TextBlock>
+                                                </StackPanel>
 
-												<ProgressBar
-													Margin="5,0,0,0"
-													Grid.Column="1"
-													Grid.ColumnSpan="2"
-													Grid.Row="1"
-													MinWidth="100"
-													HorizontalAlignment="Stretch"
-													Maximum="100"
-													Value="{Binding UsedPercentage}" />
-											</Grid>
-										</Grid>
-									</DataTemplate>
-								</ItemsRepeater.ItemTemplate>
-							</ItemsRepeater>
-						</Grid>
-					</Border>
+                                                <ProgressBar
+                                                    Margin="5,0,0,0"
+                                                    Grid.Column="1"
+                                                    Grid.ColumnSpan="2"
+                                                    Grid.Row="1"
+                                                    MinWidth="100"
+                                                    HorizontalAlignment="Stretch"
+                                                    Maximum="100"
+                                                    Value="{Binding UsedPercentage}" />
+                                            </Grid>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </Grid>
+                    </Border>
 
-					<!--Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+                    <!--Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
 						<Grid RowDefinitions="Auto,Auto">
 
 							<TextBlock
@@ -220,9 +229,9 @@
 								</ItemsRepeater.ItemTemplate>
 							</ItemsRepeater>
 						</Grid>
-					</Border-->				
-					
-				</Grid>
+					</Border-->
+
+                </Grid>
 
                 <Grid
                     Grid.Row="1"
@@ -353,54 +362,68 @@
 
                             <Grid Grid.Column="4">
                                 <Grid
-                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
-                                    <ListBox
-                                        x:Name="ChildItems"
-                                        x:CompileBindings="False"
-                                        AutoScrollToSelectedItem="True"
-                                        Classes="ContentListView"
-                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
-                                        Items="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection}">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate x:DataType="corevm:IItemViewModel">
-                                                <local:ItemView />
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
+                                    IsVisible="{Binding ItemPreviewService.ItemPreview^,Converter={x:Static ObjectConverters.IsNull}}">
+                                    <Grid
+                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                                        <ListBox
+                                            x:Name="ChildItems"
+                                            x:CompileBindings="False"
+                                            AutoScrollToSelectedItem="True"
+                                            Classes="ContentListView"
+                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
+                                            Items="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection}">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="corevm:IItemViewModel">
+                                                    <local:ItemView />
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
 
-                                    <TextBlock
-                                        x:Name="ChildEmpty"
-                                        Margin="10"
-                                        HorizontalAlignment="Center"
-                                        x:CompileBindings="False"
-                                        FontWeight="Bold"
-                                        Foreground="{DynamicResource ErrorBrush}"
-                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
-                                        Empty
-                                    </TextBlock>
+                                        <TextBlock
+                                            x:Name="ChildEmpty"
+                                            Margin="10"
+                                            HorizontalAlignment="Center"
+                                            x:CompileBindings="False"
+                                            FontWeight="Bold"
+                                            Foreground="{DynamicResource ErrorBrush}"
+                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}">
+                                            Empty
+                                        </TextBlock>
+                                    </Grid>
+
+                                    <Grid
+                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}"
+                                        RowDefinitions="Auto, Auto">
+                                        <TextBlock
+                                            Margin="0,0,0,10"
+                                            HorizontalAlignment="Center"
+                                            Foreground="{DynamicResource ErrorBrush}"
+                                            Text="There were some errors while opening container."
+                                            TextWrapping="Wrap" />
+
+                                        <ItemsRepeater
+                                            Grid.Row="1"
+                                            Items="{Binding AppState.SelectedTab^.CurrentSelectedItem^.BaseItem.Exceptions^}">
+                                            <ItemsRepeater.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock
+                                                        Margin="5,0,5,10"
+                                                        Text="{Binding Converter={StaticResource ExceptionToStringConverter}}" />
+                                                </DataTemplate>
+                                            </ItemsRepeater.ItemTemplate>
+                                        </ItemsRepeater>
+                                    </Grid>
                                 </Grid>
-
                                 <Grid
-                                    IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}"
-                                    RowDefinitions="Auto, Auto">
-                                    <TextBlock
-                                        Margin="0,0,0,10"
-                                        HorizontalAlignment="Center"
-                                        Foreground="{DynamicResource ErrorBrush}"
-                                        Text="There were some errors while opening container."
-                                        TextWrapping="Wrap" />
-
-                                    <ItemsRepeater
-                                        Grid.Row="1"
-                                        Items="{Binding AppState.SelectedTab^.CurrentSelectedItem^.BaseItem.Exceptions^}">
-                                        <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock
-                                                    Margin="5,0,5,10"
-                                                    Text="{Binding Converter={StaticResource ExceptionToStringConverter}}" />
-                                            </DataTemplate>
-                                        </ItemsRepeater.ItemTemplate>
-                                    </ItemsRepeater>
+                                    IsVisible="{Binding ItemPreviewService.ItemPreview^,Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    <TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this item." IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}}"/>
+                                    <TextBlock HorizontalAlignment="Center" Text="Empty" IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}}"/>
+                                    <ScrollViewer IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}}">
+                                        <TextBox
+                                            IsReadOnly="True"
+                                            x:CompileBindings="False"
+                                            Text="{Binding ItemPreviewService.ItemPreview^.TextContent}" />
+                                    </ScrollViewer>
                                 </Grid>
                             </Grid>
                         </Grid>

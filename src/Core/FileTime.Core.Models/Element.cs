@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
 
@@ -16,7 +17,8 @@ public record Element(
     bool CanRename,
     string? Attributes,
     IContentProvider Provider,
-    IObservable<IEnumerable<Exception>> Exceptions) : IElement
+    IObservable<IEnumerable<Exception>> Exceptions,
+    ReadOnlyExtensionCollection Extensions) : IElement
 {
     public AbsolutePathType Type => AbsolutePathType.Element;
 }
