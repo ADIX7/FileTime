@@ -80,7 +80,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         else
         {
             var currentKeyAsList = new List<KeyConfig>() {new KeyConfig(key)};
-            var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.Values.FirstOrDefault(c => c.Keys.AreKeysEqual(currentKeyAsList));
+            var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(currentKeyAsList));
             if (selectedCommandBinding != null)
             {
                 setHandled(true);

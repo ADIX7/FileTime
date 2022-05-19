@@ -9,6 +9,7 @@
     xmlns:vm="using:FileTime.GuiApp.ViewModels"
     xmlns:config="using:FileTime.GuiApp.Configuration"
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
+    xmlns:interactions="using:FileTime.Core.Interactions"
     Title="FileTime"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -416,9 +417,12 @@
                                 </Grid>
                                 <Grid
                                     IsVisible="{Binding ItemPreviewService.ItemPreview^,Converter={x:Static ObjectConverters.IsNotNull}}">
-                                    <TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this item." IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}}"/>
-                                    <TextBlock HorizontalAlignment="Center" Text="Empty" IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}}"/>
-                                    <ScrollViewer IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}}">
+                                    <TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this item."
+                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}}" />
+                                    <TextBlock HorizontalAlignment="Center" Text="Empty"
+                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}}" />
+                                    <ScrollViewer
+                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}}">
                                         <TextBox
                                             IsReadOnly="True"
                                             x:CompileBindings="False"
@@ -495,7 +499,72 @@
                     </Grid>
                 </Grid>
             </Grid>
-            <!--  Borders  -->
+
+            <Border
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsVisible="{Binding DialogService.ReadInput^, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Border
+                    Background="{DynamicResource ContainerBackgroundBrush}"
+                    Padding="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                    <Grid RowDefinitions="Auto,Auto">
+
+                        <ItemsControl
+                            x:Name="InputList"
+                            Items="{Binding DialogService.ReadInput^.Inputs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid MinWidth="500" ColumnDefinitions="250,*" Margin="10,5" x:Name="ItemRoot">
+                                        <TextBlock
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Text="{Binding Label}" />
+                                        <Grid Grid.Column="1">
+                                            <TextBox
+                                                x:DataType="interactions:TextInputElement"
+                                                IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Text}}"
+                                                VerticalAlignment="Top"
+                                                Text="{Binding Value, Mode=TwoWay}" />
+                                            <TextBox
+                                                x:DataType="interactions:PasswordInputElement"
+                                                IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Password}}"
+                                                PasswordChar="{Binding PasswordChar}"
+                                                VerticalAlignment="Top"
+                                                Text="{Binding Value, Mode=TwoWay}" />
+                                            <ListBox
+                                                x:DataType="interactions:IOptionsInputElement"
+                                                Classes="RadioButtonListBox"
+                                                IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
+                                                Items="{Binding Options}"
+                                                SelectedItem="{Binding Value}" />
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <StackPanel
+                            DataContext="{Binding DialogService.ReadInput^}"
+                            Grid.Row="1"
+                            Orientation="Horizontal"
+                            Margin="0,10,0,0">
+                            <Button
+                                HorizontalContentAlignment="Center"
+                                Width="80"
+                                Command="{Binding ProcessCommand}"
+                                Content="Ok" />
+                            <Button
+                                HorizontalContentAlignment="Center"
+                                Width="80"
+                                Margin="10,0,0,0"
+                                Command="{Binding CancelCommand}"
+                                Content="Cancel" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Border>
 
         </Grid>
 

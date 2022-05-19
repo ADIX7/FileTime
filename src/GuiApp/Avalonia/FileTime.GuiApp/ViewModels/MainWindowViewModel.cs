@@ -21,6 +21,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IUserCommandHandlerService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(LifecycleService), PropertyName = "_lifecycleService")]
 [Inject(typeof(IItemPreviewService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IDialogService), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;

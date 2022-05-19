@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
+using FileTime.Core.Interactions;
 using FileTime.GuiApp.Configuration;
 using FileTime.GuiApp.IconProviders;
 using FileTime.GuiApp.Logging;
@@ -35,7 +36,9 @@ public static class Startup
             .AddSingleton<IStartupHandler, RootDriveInfoService>()
             .AddSingleton<LifecycleService>()
             .AddSingleton<IIconProvider, MaterialIconProvider>()
-            .AddSingleton<IModalService, ModalService>();
+            .AddSingleton<IModalService, ModalService>()
+            .AddSingleton<IDialogService, DialogService>()
+            .AddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
     }
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)

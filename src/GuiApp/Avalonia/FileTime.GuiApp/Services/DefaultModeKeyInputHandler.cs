@@ -54,8 +54,8 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         var keyWithModifiers = new KeyConfig(key, shift: specialKeysStatus.IsShiftPressed, alt: specialKeysStatus.IsAltPressed, ctrl: specialKeysStatus.IsCtrlPressed);
         _appState.PreviousKeys.Add(keyWithModifiers);
 
-        var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.Values.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
-        selectedCommandBinding ??= _keyboardConfigurationService.CommandBindings.Values.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
+        var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
+        selectedCommandBinding ??= _keyboardConfigurationService.CommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
 
         if (key == Key.Escape)
         {
@@ -125,7 +125,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         else
         {
             setHandled(true);
-            var possibleCommands = _keyboardConfigurationService.AllShortcut.Values.Where(c => c.Keys[0].AreEquals(keyWithModifiers)).ToList();
+            var possibleCommands = _keyboardConfigurationService.AllShortcut.Where(c => c.Keys[0].AreEquals(keyWithModifiers)).ToList();
 
             if (possibleCommands.Count == 0)
             {

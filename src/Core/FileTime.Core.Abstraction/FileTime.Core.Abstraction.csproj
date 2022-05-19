@@ -13,6 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="DynamicData" Version="7.7.14" />
+    <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 

@@ -13,7 +13,6 @@ namespace FileTime.GuiApp.Views;
 public partial class MainWindow : Window
 {
     private readonly ILogger<MainWindow>? _logger;
-    private InputElementWrapper? _inputElementWrapper;
 
     public MainWindowViewModel? ViewModel
     {
@@ -38,17 +37,15 @@ public partial class MainWindow : Window
     {
         if (DataContext is not MainWindowViewModel)
         {
-            _logger?.LogInformation($"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
+            _logger?.LogInformation(
+                $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
             ViewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
         }
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
-        if (_inputElementWrapper == null)
-        {
-            ViewModel?.ProcessKeyDown(e.Key, e.KeyModifiers, h => e.Handled = h);
-        }
+        ViewModel?.ProcessKeyDown(e.Key, e.KeyModifiers, h => e.Handled = h);
     }
 
     private void HeaderPointerPressed(object sender, PointerPressedEventArgs e)
@@ -78,7 +75,7 @@ public partial class MainWindow : Window
             && sender is StyledElement control)
         {
             IAbsolutePath? path = null;
-            if (control.DataContext is IHaveAbsolutePath {Path: { }} haveAbsolutePath)
+            if (control.DataContext is IHaveAbsolutePath { Path: { } } haveAbsolutePath)
             {
                 path = haveAbsolutePath.Path;
             }
@@ -102,7 +99,8 @@ public partial class MainWindow : Window
 
             var resolvedItem = await path.ResolveAsync();
             if (resolvedItem is not IContainer resolvedContainer) return;
-            await ViewModel.UserCommandHandlerService.HandleCommandAsync(new OpenContainerCommand(new AbsolutePath(resolvedContainer)));
+            await ViewModel.UserCommandHandlerService.HandleCommandAsync(
+                new OpenContainerCommand(new AbsolutePath(resolvedContainer)));
             e.Handled = true;
         }
     }

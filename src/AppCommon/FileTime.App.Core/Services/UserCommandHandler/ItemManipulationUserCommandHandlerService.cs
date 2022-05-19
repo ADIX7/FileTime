@@ -4,7 +4,9 @@ using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Command;
+using FileTime.Core.Interactions;
 using FileTime.Core.Models;
+using Microsoft.Extensions.Logging;
 using CopyCommand = FileTime.Core.Command.Copy.CopyCommand;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
@@ -15,15 +17,21 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private IItemViewModel? _currentSelectedItem;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IClipboardService _clipboardService;
+    private readonly IInputInterface _inputInterface;
+    private readonly ILogger<ItemManipulationUserCommandHandlerService> _logger;
     private readonly BindedCollection<IAbsolutePath>? _markedItems;
 
     public ItemManipulationUserCommandHandlerService(
         IAppState appState,
         IUserCommandHandlerService userCommandHandlerService,
-        IClipboardService clipboardService) : base(appState)
+        IClipboardService clipboardService,
+        IInputInterface inputInterface,
+        ILogger<ItemManipulationUserCommandHandlerService> logger) : base(appState)
     {
         _userCommandHandlerService = userCommandHandlerService;
         _clipboardService = clipboardService;
+        _inputInterface = inputInterface;
+        _logger = logger;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -35,6 +43,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             new TypeUserCommandHandler<CopyCommand>(Copy),
             new TypeUserCommandHandler<MarkCommand>(MarkItem),
             new TypeUserCommandHandler<PasteCommand>(Paste),
+            new TypeUserCommandHandler<CreateContainer>(CreateContainer),
         });
     }
 
@@ -98,5 +107,15 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     {
         if (_clipboardService.CommandType is null) return Task.CompletedTask;
         return Task.CompletedTask;
+    }
+
+    private async Task CreateContainer()
+    {
+        var containerNameInput = new TextInputElement("Container name");
+
+        await _inputInterface.ReadInputs(new List<IInputElement>() { containerNameInput });
+        
+        //TODO: message on empty result
+        var newContainerName = containerNameInput.Value;
     }
 }

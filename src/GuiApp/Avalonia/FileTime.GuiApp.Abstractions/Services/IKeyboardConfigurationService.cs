@@ -4,7 +4,7 @@ namespace FileTime.GuiApp.Services;
 
 public interface IKeyboardConfigurationService
 {
-    IReadOnlyDictionary<string, CommandBindingConfiguration> CommandBindings { get; }
-    IReadOnlyDictionary<string, CommandBindingConfiguration> UniversalCommandBindings { get; }
-    IReadOnlyDictionary<string, CommandBindingConfiguration> AllShortcut { get; }
+    IReadOnlyList<CommandBindingConfiguration> CommandBindings { get; }
+    IReadOnlyList<CommandBindingConfiguration> UniversalCommandBindings { get; }
+    IReadOnlyList<CommandBindingConfiguration> AllShortcut { get; }
 }

@@ -6,14 +6,12 @@ namespace FileTime.GuiApp.Services;
 
 public class KeyboardConfigurationService : IKeyboardConfigurationService
 {
-    public IReadOnlyDictionary<string, CommandBindingConfiguration> CommandBindings { get; }
-    public IReadOnlyDictionary<string, CommandBindingConfiguration> UniversalCommandBindings { get; }
-    public IReadOnlyDictionary<string, CommandBindingConfiguration> AllShortcut { get; }
+    public IReadOnlyList<CommandBindingConfiguration> CommandBindings { get; }
+    public IReadOnlyList<CommandBindingConfiguration> UniversalCommandBindings { get; }
+    public IReadOnlyList<CommandBindingConfiguration> AllShortcut { get; }
 
     public KeyboardConfigurationService(IOptions<KeyBindingConfiguration> keyBindingConfiguration)
     {
-        var commandBindings = new Dictionary<string, CommandBindingConfiguration>();
-        var universalCommandBindings = new Dictionary<string, CommandBindingConfiguration>();
         IEnumerable<CommandBindingConfiguration> keyBindings = keyBindingConfiguration.Value.KeyBindings;
 
         if (keyBindingConfiguration.Value.UseDefaultBindings)
@@ -21,6 +19,8 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
             keyBindings = keyBindings.Concat(keyBindingConfiguration.Value.DefaultKeyBindings);
         }
 
+        var commandBindings = new List<CommandBindingConfiguration>();
+        var universalCommandBindings = new List<CommandBindingConfiguration>();
         foreach (var keyBinding in keyBindings)
         {
             if (string.IsNullOrWhiteSpace(keyBinding.Command))
@@ -34,17 +34,17 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
 
             if (IsUniversal(keyBinding))
             {
-                universalCommandBindings.Add(keyBinding.Command, keyBinding);
+                universalCommandBindings.Add(keyBinding);
             }
             else
             {
-                commandBindings.Add(keyBinding.Command, keyBinding);
+                commandBindings.Add(keyBinding);
             }
         }
 
-        CommandBindings = new ReadOnlyDictionary<string, CommandBindingConfiguration>(commandBindings);
-        UniversalCommandBindings = new ReadOnlyDictionary<string, CommandBindingConfiguration>(universalCommandBindings);
-        AllShortcut = new ReadOnlyDictionary<string, CommandBindingConfiguration>(new Dictionary<string, CommandBindingConfiguration>(CommandBindings.Concat(UniversalCommandBindings)));
+        CommandBindings = commandBindings.AsReadOnly();
+        UniversalCommandBindings = universalCommandBindings.AsReadOnly();
+        AllShortcut = new List<CommandBindingConfiguration>(UniversalCommandBindings.Concat(CommandBindings)).AsReadOnly();
     }
 
     private static bool IsUniversal(CommandBindingConfiguration keyMapping)
