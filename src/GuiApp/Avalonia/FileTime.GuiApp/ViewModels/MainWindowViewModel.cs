@@ -1,9 +1,11 @@
 ﻿using System.Reflection;
 using Avalonia.Input;
 using FileTime.App.Core.Services;
+using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 using FileTime.GuiApp.Services;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(LifecycleService), PropertyName = "_lifecycleService")]
 [Inject(typeof(IItemPreviewService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IDialogService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(ITimelessContentProvider), PropertyName = "_timelessContentProvider")]
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;
@@ -42,12 +45,14 @@ public partial class MainWindowViewModel : IMainWindowViewModelBase
                 versionString += $" ({version.Revision})";
             }
         }
+
         Title = "FileTime " + versionString;
 
         //TODO: refactor
         if (AppState.Tabs.Count == 0)
         {
-            var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider).GetRequiredService<ITab>();
+            var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider)
+                .GetRequiredService<ITab>();
             var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
 
             _appState.AddTab(tabViewModel);
@@ -57,5 +62,13 @@ public partial class MainWindowViewModel : IMainWindowViewModelBase
     public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
     {
         _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
+    }
+
+    public async Task OpenContainerByFullName(FullName fullName)
+    {
+        var resolvedItem = await _timelessContentProvider.GetItemByFullNameAsync(fullName, PointInTime.Present);
+        if (resolvedItem is not IContainer resolvedContainer) return;
+        await UserCommandHandlerService.HandleCommandAsync(
+            new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, resolvedContainer)));
     }
 }

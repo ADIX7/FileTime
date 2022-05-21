@@ -14,6 +14,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\FileTime.Core.Timeline\FileTime.Core.Timeline.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
     <ProjectReference Include="..\FileTime.App.Core\FileTime.App.Core.csproj" />
   </ItemGroup>

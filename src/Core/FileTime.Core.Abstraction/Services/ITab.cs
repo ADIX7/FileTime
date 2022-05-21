@@ -7,12 +7,12 @@ namespace FileTime.Core.Services;
 public interface ITab : IInitable<IContainer>
 {
     IObservable<IContainer?> CurrentLocation { get; }
-    IObservable<IAbsolutePath?> CurrentSelectedItem { get; }
+    IObservable<AbsolutePath?> CurrentSelectedItem { get; }
     IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
 
     void SetCurrentLocation(IContainer newLocation);
     void AddItemFilter(ItemFilter filter);
     void RemoveItemFilter(ItemFilter filter);
     void RemoveItemFilter(string name);
-    void SetSelectedItem(IAbsolutePath newSelectedItem);
+    void SetSelectedItem(AbsolutePath newSelectedItem);
 }

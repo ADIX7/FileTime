@@ -1,5 +1,6 @@
 using FileTime.App.Core;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,8 @@ public static class DependencyInjection
 
         return serviceCollection
             .AddTransient<ITab, Tab>()
+            .AddSingleton<ICommandScheduler, CommandScheduler>()
+            .AddSingleton<ITimelessContentProvider, TimelessContentProvider>()
             .AddCoreAppServices()
             .AddLocalServices();
     }

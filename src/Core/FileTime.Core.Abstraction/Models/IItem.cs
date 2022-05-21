@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Models;
 
@@ -10,7 +11,7 @@ public interface IItem
     string DisplayName { get; }
     FullName? FullName { get; }
     NativePath? NativePath { get; }
-    IAbsolutePath? Parent { get; }
+    AbsolutePath? Parent { get; }
     bool IsHidden { get; }
     bool IsExists { get; }
     DateTime? CreatedAt { get; }
@@ -19,6 +20,7 @@ public interface IItem
     IContentProvider Provider { get; }
     string? Attributes { get; }
     AbsolutePathType Type { get; }
+    PointInTime PointInTime { get; }
     IObservable<IEnumerable<Exception>> Exceptions { get; }
     ReadOnlyExtensionCollection Extensions { get; }
 

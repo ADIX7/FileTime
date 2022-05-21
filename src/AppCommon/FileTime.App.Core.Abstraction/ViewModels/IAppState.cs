@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Reactive.Subjects;
 using FileTime.App.Core.Models.Enums;
+using FileTime.Core.Timeline;
 
 namespace FileTime.App.Core.ViewModels;
 

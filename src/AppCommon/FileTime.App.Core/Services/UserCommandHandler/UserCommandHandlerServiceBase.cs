@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using DynamicData;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
+using FileTime.Core.Timeline;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
@@ -9,10 +10,14 @@ public abstract class UserCommandHandlerServiceBase : IUserCommandHandler
 {
     private readonly List<IUserCommandHandler> _userCommandHandlers = new();
     private readonly IAppState? _appState;
+    private readonly ITimelessContentProvider? _timelessContentProvider;
 
-    protected UserCommandHandlerServiceBase(IAppState? appState = null)
+    protected UserCommandHandlerServiceBase(
+        IAppState? appState = null,
+        ITimelessContentProvider? timelessContentProvider = null)
     {
         _appState = appState;
+        _timelessContentProvider = timelessContentProvider;
     }
 
     public bool CanHandleCommand(UserCommand.IUserCommand command) => _userCommandHandlers.Any(h => h.CanHandleCommand(command));
@@ -48,13 +53,23 @@ public abstract class UserCommandHandlerServiceBase : IUserCommandHandler
     protected IDisposable SaveCurrentItems(Action<IEnumerable<IItemViewModel>> handler)
         => RunWithAppState(appState => appState.SelectedTab.Select(t => t?.CurrentItemsCollectionObservable ?? Observable.Return((IEnumerable<IItemViewModel>?) Enumerable.Empty<IItemViewModel>())).Switch().Subscribe(i => handler(i ?? Enumerable.Empty<IItemViewModel>())));
 
-    protected IDisposable SaveMarkedItems(Action<IChangeSet<IAbsolutePath>> handler)
-        => RunWithAppState(appState => appState.SelectedTab.Select(t => t == null ? Observable.Empty<IChangeSet<IAbsolutePath>>() : t.MarkedItems).Switch().Subscribe(handler));
+    protected IDisposable SaveMarkedItems(Action<IChangeSet<FullName>> handler)
+        => RunWithAppState(appState => appState.SelectedTab.Select(t => t == null ? Observable.Empty<IChangeSet<FullName>>() : t.MarkedItems).Switch().Subscribe(handler));
+    
+    protected IDisposable SaveCurrentPointInTime(Action<PointInTime> handler)
+        => RunWithTimelessContentProvider(timelessContentProvider => timelessContentProvider.CurrentPointInTime.Subscribe(handler));
 
     private IDisposable RunWithAppState(Func<IAppState, IDisposable> act)
     {
-        if (_appState == null) throw new NullReferenceException($"AppState is nit initialized in {nameof(UserCommandHandlerServiceBase)}.");
+        if (_appState == null) throw new NullReferenceException($"AppState is not initialized in {nameof(UserCommandHandlerServiceBase)}.");
 
         return act(_appState);
+    }
+
+    private IDisposable RunWithTimelessContentProvider(Func<ITimelessContentProvider, IDisposable> act)
+    {
+        if (_timelessContentProvider == null) throw new NullReferenceException($"TimelessContainer is not initialized in {nameof(UserCommandHandlerServiceBase)}.");
+
+        return act(_timelessContentProvider);
     }
 }

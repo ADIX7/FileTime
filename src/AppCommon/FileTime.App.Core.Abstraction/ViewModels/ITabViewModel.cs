@@ -15,7 +15,7 @@ public interface ITabViewModel : IInitable<ITab, int>
     IObservable<IContainer?> CurrentLocation { get; }
     IObservable<IItemViewModel?> CurrentSelectedItem { get; }
     IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; }
-    IObservable<IChangeSet<IAbsolutePath>> MarkedItems { get; }
+    IObservable<IChangeSet<FullName>> MarkedItems { get; }
     IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; }
     IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; }
     BindedCollection<IItemViewModel>? CurrentItemsCollection { get; }
@@ -25,7 +25,7 @@ public interface ITabViewModel : IInitable<ITab, int>
     IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; }
     IObservable<IReadOnlyCollection<IItemViewModel>?> SelectedsChildrenCollectionObservable { get; }
     void ClearMarkedItems();
-    void RemoveMarkedItem(IAbsolutePath item);
-    void AddMarkedItem(IAbsolutePath item);
-    void ToggleMarkedItem(IAbsolutePath item);
+    void RemoveMarkedItem(FullName fullName);
+    void AddMarkedItem(FullName fullName);
+    void ToggleMarkedItem(FullName fullName);
 }

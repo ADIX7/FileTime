@@ -4,6 +4,7 @@ using System.Reactive.Subjects;
 using DynamicData;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Models;
 
@@ -12,7 +13,7 @@ public record Container(
     string DisplayName,
     FullName FullName,
     NativePath NativePath,
-    IAbsolutePath? Parent,
+    AbsolutePath? Parent,
     bool IsHidden,
     bool IsExists,
     DateTime? CreatedAt,
@@ -20,9 +21,10 @@ public record Container(
     bool CanRename,
     string? Attributes,
     IContentProvider Provider,
+    PointInTime PointInTime,
     IObservable<IEnumerable<Exception>> Exceptions,
     ReadOnlyExtensionCollection Extensions,
-    IObservable<IObservable<IChangeSet<IAbsolutePath>>?> Items) : IContainer
+    IObservable<IObservable<IChangeSet<AbsolutePath>>?> Items) : IContainer
 {
     BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();

@@ -7,7 +7,7 @@ using IContainer = FileTime.Core.Models.IContainer;
 
 namespace FileTime.GuiApp.ViewModels;
 
-public partial class RootDriveInfo : IHaveAbsolutePath, INotifyPropertyChanged
+public partial class RootDriveInfo : IHaveFullPath, INotifyPropertyChanged
 {
     private readonly DriveInfo _driveInfo;
 
@@ -25,7 +25,7 @@ public partial class RootDriveInfo : IHaveAbsolutePath, INotifyPropertyChanged
 
     [Notify] public long UsedPercentage => Size == 0 ? 0 : Used * 100 / Size;
 
-    public IAbsolutePath Path { get; }
+    public FullName Path { get; }
 
     public RootDriveInfo(DriveInfo driveInfo, IContainer container)
     {
@@ -42,7 +42,7 @@ public partial class RootDriveInfo : IHaveAbsolutePath, INotifyPropertyChanged
         {
         }
 
-        Path = new AbsolutePath(container);
+        Path = container.FullName ?? throw new NullReferenceException($"Container does not have a {nameof(FullName)}");
 
         Refresh();
     }

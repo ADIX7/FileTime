@@ -1,8 +1,8 @@
 using FileTime.Core.Timeline;
 
-namespace FileTime.Core.Command.Copy;
+namespace FileTime.Core.Command.CreateContainer;
 
-public class CopyCommand : ITransportationCommand
+public class CreateContainerCommand : IExecutableCommand
 {
     public Task<CanCommandRun> CanRun(PointInTime currentTime)
     {
@@ -10,6 +10,11 @@ public class CopyCommand : ITransportationCommand
     }
 
     public Task<PointInTime?> SimulateCommand(PointInTime? currentTime)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Execute(ICommandScheduler commandScheduler)
     {
         throw new NotImplementedException();
     }

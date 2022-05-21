@@ -74,12 +74,12 @@ public partial class MainWindow : Window
             && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
             && sender is StyledElement control)
         {
-            IAbsolutePath? path = null;
-            if (control.DataContext is IHaveAbsolutePath { Path: { } } haveAbsolutePath)
+            FullName? path = null;
+            if (control.DataContext is IHaveFullPath { Path: { } } hasFullPath)
             {
-                path = haveAbsolutePath.Path;
+                path = hasFullPath.Path;
             }
-            else if (control.DataContext is IAbsolutePath p)
+            else if (control.DataContext is FullName p)
             {
                 path = p;
             }
@@ -97,10 +97,7 @@ public partial class MainWindow : Window
 
             if (path is null) return;
 
-            var resolvedItem = await path.ResolveAsync();
-            if (resolvedItem is not IContainer resolvedContainer) return;
-            await ViewModel.UserCommandHandlerService.HandleCommandAsync(
-                new OpenContainerCommand(new AbsolutePath(resolvedContainer)));
+            await ViewModel.OpenContainerByFullName(path);
             e.Handled = true;
         }
     }

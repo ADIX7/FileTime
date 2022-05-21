@@ -6,10 +6,10 @@ namespace FileTime.App.Core.Services;
 public interface IClipboardService
 {
     Type? CommandType { get; }
-    IReadOnlyList<IAbsolutePath> Content { get; }
+    IReadOnlyList<FullName> Content { get; }
 
-    void AddContent(IAbsolutePath absolutePath);
-    void RemoveContent(IAbsolutePath absolutePath);
+    void AddContent(FullName absolutePath);
+    void RemoveContent(FullName absolutePath);
     void Clear();
     void SetCommand<T>() where T : ITransportationCommand;
 }

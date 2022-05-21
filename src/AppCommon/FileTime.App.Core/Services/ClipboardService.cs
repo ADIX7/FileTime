@@ -5,17 +5,17 @@ namespace FileTime.App.Core.Services;
 
 public class ClipboardService : IClipboardService
 {
-    private List<IAbsolutePath> _content;
-    public IReadOnlyList<IAbsolutePath> Content { get; private set; }
+    private List<FullName> _content;
+    public IReadOnlyList<FullName> Content { get; private set; }
     public Type? CommandType { get; private set; }
 
     public ClipboardService()
     {
-        _content = new List<IAbsolutePath>();
+        _content = new List<FullName>();
         Content = _content.AsReadOnly();
     }
 
-    public void AddContent(IAbsolutePath absolutePath)
+    public void AddContent(FullName absolutePath)
     {
         foreach (var content in _content)
         {
@@ -25,7 +25,7 @@ public class ClipboardService : IClipboardService
         _content.Add(absolutePath);
     }
 
-    public void RemoveContent(IAbsolutePath absolutePath)
+    public void RemoveContent(FullName absolutePath)
     {
         for (var i = 0; i < _content.Count; i++)
         {
@@ -38,7 +38,7 @@ public class ClipboardService : IClipboardService
 
     public void Clear()
     {
-        _content = new List<IAbsolutePath>();
+        _content = new List<FullName>();
         Content = _content.AsReadOnly();
         CommandType = null;
     }

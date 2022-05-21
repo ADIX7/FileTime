@@ -19,7 +19,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
     private readonly IItemNameConverterService _itemNameConverterService;
     private readonly IAppState _appState;
     private readonly IRxSchedulerService _rxSchedulerService;
-    private readonly SourceList<IAbsolutePath> _markedItems = new();
+    private readonly SourceList<FullName> _markedItems = new();
     private readonly List<IDisposable> _disposables = new();
     private bool _disposed;
 
@@ -31,7 +31,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
     public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
     public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
     public IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; private set; } = null!;
-    public IObservable<IChangeSet<IAbsolutePath>> MarkedItems { get; }
+    public IObservable<IChangeSet<FullName>> MarkedItems { get; }
     public IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; private set; } = null!;
     public IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; private set; } = null!;
 
@@ -171,7 +171,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         }
     }
 
-    private static async Task<IItem> MapItem(IAbsolutePath item)
+    private static async Task<IItem> MapItem(AbsolutePath item)
         => await item.ResolveAsync(forceResolve: true,
             itemInitializationSettings: new ItemInitializationSettings(true));
 
@@ -211,24 +211,24 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neither {nameof(IElement)}");
     }
 
-    public void AddMarkedItem(IAbsolutePath item) => _markedItems.Add(item);
+    public void AddMarkedItem(FullName fullName) => _markedItems.Add(fullName);
 
-    public void RemoveMarkedItem(IAbsolutePath item)
+    public void RemoveMarkedItem(FullName fullName)
     {
-        var itemsToRemove = _markedItems.Items.Where(i => i.Path.Path == item.Path.Path).ToList();
+        var itemsToRemove = _markedItems.Items.Where(i => i.Path == fullName.Path).ToList();
 
         _markedItems.RemoveMany(itemsToRemove);
     }
 
-    public void ToggleMarkedItem(IAbsolutePath item)
+    public void ToggleMarkedItem(FullName fullName)
     {
-        if (_markedItems.Items.Any(i => i.Path.Path == item.Path.Path))
+        if (_markedItems.Items.Any(i => i.Path == fullName.Path))
         {
-            RemoveMarkedItem(item);
+            RemoveMarkedItem(fullName);
         }
         else
         {
-            AddMarkedItem(item);
+            AddMarkedItem(fullName);
         }
     }
 

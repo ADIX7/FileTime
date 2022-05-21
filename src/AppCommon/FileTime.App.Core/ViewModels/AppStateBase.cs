@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
 using FileTime.App.Core.Models.Enums;
+using FileTime.Core.Timeline;
 using MvvmGen;
 using MoreLinq;
 

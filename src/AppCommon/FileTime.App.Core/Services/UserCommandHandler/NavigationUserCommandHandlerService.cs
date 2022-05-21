@@ -4,6 +4,7 @@ using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IServiceProvider _serviceProvider;
     private readonly ILocalContentProvider _localContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
+    private readonly ITimelessContentProvider _timelessContentProvider;
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
@@ -25,12 +27,14 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         IAppState appState,
         IServiceProvider serviceProvider,
         ILocalContentProvider localContentProvider,
-        IUserCommandHandlerService userCommandHandlerService) : base(appState)
+        IUserCommandHandlerService userCommandHandlerService,
+        ITimelessContentProvider timelessContentProvider) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
         _localContentProvider = localContentProvider;
         _userCommandHandlerService = userCommandHandlerService;
+        _timelessContentProvider = timelessContentProvider;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -71,7 +75,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task GoUp()
     {
-        if (_currentLocation?.Parent is not IAbsolutePath parentPath || await parentPath.ResolveAsyncSafe() is not IContainer newContainer) return;
+        if (_currentLocation?.Parent is not AbsolutePath parentPath || await parentPath.ResolveAsyncSafe() is not IContainer newContainer) return;
         _selectedTab?.Tab?.SetCurrentLocation(newContainer);
     }
 
@@ -94,7 +98,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         var newSelectedItem = getNewSelected(_currentItems);
         if (newSelectedItem == null) return;
 
-        _selectedTab.Tab?.SetSelectedItem(newSelectedItem.ToAbsolutePath());
+        _selectedTab.Tab?.SetSelectedItem(newSelectedItem.ToAbsolutePath(_timelessContentProvider));
     }
 
     private Task EnterRapidTravel()

@@ -2,7 +2,7 @@ using FileTime.Core.Models;
 
 namespace FileTime.GuiApp.Models;
 
-public interface IHaveAbsolutePath
+public interface IHaveFullPath
 {
-    IAbsolutePath Path { get; }
+    FullName Path { get; }
 }

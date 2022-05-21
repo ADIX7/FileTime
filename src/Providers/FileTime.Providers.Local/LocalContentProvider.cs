@@ -6,16 +6,19 @@ using FileTime.App.Core.Models;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Providers.Local;
 
 public sealed partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
 {
-    private readonly SourceList<IAbsolutePath> _rootDirectories = new();
+    private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly SourceList<AbsolutePath> _rootDirectories = new();
     private readonly bool _isCaseInsensitive;
 
-    public LocalContentProvider() : base("local")
+    public LocalContentProvider(ITimelessContentProvider timelessContentProvider) : base("local")
     {
+        _timelessContentProvider = timelessContentProvider;
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         RefreshRootDirectories();
@@ -39,12 +42,12 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         _rootDirectories.Edit(actions =>
         {
             actions.Clear();
-            actions.AddRange(rootDirectories.Select(DirectoryToAbsolutePath));
+            actions.AddRange(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
         });
     }
 
-    public override Task<IItem> GetItemByNativePathAsync(
-        NativePath nativePath,
+    public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath,
+        PointInTime pointInTime,
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default)
@@ -61,12 +64,13 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             {
                 return Task.FromResult((IItem)DirectoryToContainer(
                     new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
+                    pointInTime,
                     !itemInitializationSettings.SkipChildInitialization)
                 );
             }
             else if (File.Exists(path))
             {
-                return Task.FromResult((IItem)FileToElement(new FileInfo(path)));
+                return Task.FromResult((IItem)FileToElement(new FileInfo(path), pointInTime));
             }
 
             var type = forceResolvePathType switch
@@ -98,7 +102,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         return forceResolvePathType switch
         {
             AbsolutePathType.Container => Task.FromResult(
-                (IItem)CreateEmptyContainer(nativePath, Observable.Return(new List<Exception>() { innerException }))
+                (IItem)CreateEmptyContainer(
+                    nativePath,
+                    pointInTime,
+                    Observable.Return(new List<Exception>() { innerException })
+                )
             ),
             AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
             _ => throw new Exception(
@@ -108,6 +116,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     }
 
     private Container CreateEmptyContainer(NativePath nativePath,
+        PointInTime pointInTime,
         IObservable<IEnumerable<Exception>>? exceptions = null)
     {
         var nonNullExceptions = exceptions ?? Observable.Return(Enumerable.Empty<Exception>());
@@ -116,7 +125,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
         var parentFullName = fullName.GetParent();
         var parent = new AbsolutePath(
-            this,
+            _timelessContentProvider,
+            pointInTime,
             parentFullName ?? new FullName(""),
             AbsolutePathType.Container);
 
@@ -133,9 +143,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             false,
             "???",
             this,
+            pointInTime,
             nonNullExceptions,
             new ExtensionCollection().AsReadOnly(),
-            Observable.Return<IObservable<IChangeSet<IAbsolutePath>>?>(null)
+            Observable.Return<IObservable<IChangeSet<AbsolutePath>>?>(null)
         );
     }
 
@@ -144,41 +155,43 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         throw new NotImplementedException();
     }
 
-    public override Task<List<IAbsolutePath>> GetItemsByContainerAsync(FullName fullName)
-        => Task.FromResult(GetItemsByContainer(fullName));
+    public override Task<List<AbsolutePath>> GetItemsByContainerAsync(FullName fullName, PointInTime pointInTime)
+        => Task.FromResult(GetItemsByContainer(fullName, pointInTime));
 
-    private List<IAbsolutePath> GetItemsByContainer(FullName fullName)
-        => GetItemsByContainer(new DirectoryInfo(GetNativePath(fullName).Path));
+    private List<AbsolutePath> GetItemsByContainer(FullName fullName, PointInTime pointInTime)
+        => GetItemsByContainer(new DirectoryInfo(GetNativePath(fullName).Path), pointInTime);
 
-    private List<IAbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo)
+    private List<AbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo, PointInTime pointInTime)
         => directoryInfo
             .GetDirectories()
-            .Select(DirectoryToAbsolutePath)
+            .Select(d => DirectoryToAbsolutePath(d, pointInTime))
             .Concat(
                 directoryInfo
                     .GetFiles()
-                    .Select(FileToAbsolutePath)
+                    .Select(f => FileToAbsolutePath(f, pointInTime))
             )
             .ToList();
 
-    private IAbsolutePath DirectoryToAbsolutePath(DirectoryInfo directoryInfo)
+    private AbsolutePath DirectoryToAbsolutePath(DirectoryInfo directoryInfo, PointInTime pointInTime)
     {
         var fullName = GetFullName(directoryInfo);
-        return new AbsolutePath(this, fullName, AbsolutePathType.Container);
+        return new AbsolutePath(_timelessContentProvider, pointInTime, fullName, AbsolutePathType.Container);
     }
 
-    private IAbsolutePath FileToAbsolutePath(FileInfo file)
+    private AbsolutePath FileToAbsolutePath(FileInfo file, PointInTime pointInTime)
     {
         var fullName = GetFullName(file);
-        return new AbsolutePath(this, fullName, AbsolutePathType.Element);
+        return new AbsolutePath(_timelessContentProvider, pointInTime, fullName, AbsolutePathType.Element);
     }
 
-    private Container DirectoryToContainer(DirectoryInfo directoryInfo, bool initializeChildren = true)
+    private Container DirectoryToContainer(DirectoryInfo directoryInfo, PointInTime pointInTime,
+        bool initializeChildren = true)
     {
         var fullName = GetFullName(directoryInfo.FullName);
         var parentFullName = fullName.GetParent();
         var parent = new AbsolutePath(
-            this,
+            _timelessContentProvider,
+            pointInTime,
             parentFullName ?? new FullName(""),
             AbsolutePathType.Container);
         var exceptions = new BehaviorSubject<IEnumerable<Exception>>(Enumerable.Empty<Exception>());
@@ -196,20 +209,21 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             true,
             GetDirectoryAttributes(directoryInfo),
             this,
+            pointInTime,
             exceptions,
             new ExtensionCollection().AsReadOnly(),
             Observable.FromAsync(async () => await Task.Run(InitChildren))
         );
 
-        Task<IObservable<IChangeSet<IAbsolutePath>>?> InitChildren()
+        Task<IObservable<IChangeSet<AbsolutePath>>?> InitChildren()
         {
-            SourceList<IAbsolutePath>? result = null;
+            SourceList<AbsolutePath>? result = null;
             try
             {
-                var items = initializeChildren ? (List<IAbsolutePath>?)GetItemsByContainer(directoryInfo) : null;
+                var items = initializeChildren ? (List<AbsolutePath>?)GetItemsByContainer(directoryInfo, pointInTime) : null;
                 if (items != null)
                 {
-                    result = new SourceList<IAbsolutePath>();
+                    result = new SourceList<AbsolutePath>();
                     result.AddRange(items);
                 }
             }
@@ -222,12 +236,13 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         }
     }
 
-    private Element FileToElement(FileInfo fileInfo)
+    private Element FileToElement(FileInfo fileInfo, PointInTime pointInTime)
     {
         var fullName = GetFullName(fileInfo);
         var parentFullName = fullName.GetParent() ??
                              throw new Exception($"Path does not have parent: '{fileInfo.FullName}'");
-        var parent = new AbsolutePath(this, parentFullName, AbsolutePathType.Container);
+        var parent = new AbsolutePath(_timelessContentProvider, pointInTime, parentFullName,
+            AbsolutePathType.Container);
 
         var extensions = new ExtensionCollection()
         {
@@ -247,6 +262,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             true,
             GetFileAttributes(fileInfo),
             this,
+            pointInTime,
             Observable.Return(Enumerable.Empty<Exception>()),
             extensions.AsReadOnly()
         );
@@ -276,13 +292,14 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         if (cancellationToken.IsCancellationRequested) return null;
         if (!File.Exists(element.NativePath!.Path))
             throw new FileNotFoundException("File does not exist", element.NativePath.Path);
-        
-        await using var reader = new FileStream(element.NativePath!.Path, FileMode.Open, FileAccess.Read, FileShare.Read,
+
+        await using var reader = new FileStream(element.NativePath!.Path, FileMode.Open, FileAccess.Read,
+            FileShare.Read,
             bufferSize: 1, // bufferSize == 1 used to avoid unnecessary buffer in FileStream
             FileOptions.Asynchronous | FileOptions.SequentialScan);
 
         var realFileSize = new FileInfo(element.NativePath!.Path).Length;
-        
+
         var size = maxLength ?? realFileSize switch
         {
             > int.MaxValue => int.MaxValue,

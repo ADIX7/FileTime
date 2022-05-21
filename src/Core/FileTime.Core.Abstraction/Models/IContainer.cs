@@ -4,6 +4,6 @@ namespace FileTime.Core.Models;
 
 public interface IContainer : IItem
 {
-    IObservable<IObservable<IChangeSet<IAbsolutePath>>?> Items { get; }
+    IObservable<IObservable<IChangeSet<AbsolutePath>>?> Items { get; }
     IObservable<bool> IsLoading { get; }
 }

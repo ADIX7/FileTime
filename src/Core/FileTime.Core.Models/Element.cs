@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Models;
 
@@ -9,7 +10,7 @@ public record Element(
     string DisplayName,
     FullName FullName,
     NativePath NativePath,
-    IAbsolutePath? Parent,
+    AbsolutePath? Parent,
     bool IsHidden,
     bool IsExists,
     DateTime? CreatedAt,
@@ -17,6 +18,7 @@ public record Element(
     bool CanRename,
     string? Attributes,
     IContentProvider Provider,
+    PointInTime PointInTime,
     IObservable<IEnumerable<Exception>> Exceptions,
     ReadOnlyExtensionCollection Extensions) : IElement
 {

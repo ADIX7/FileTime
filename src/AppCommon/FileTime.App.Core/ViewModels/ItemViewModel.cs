@@ -57,7 +57,7 @@ public abstract partial class ItemViewModel : IItemViewModel
         DisplayNameText = item.DisplayName;
         
         IsMarked = itemViewModelType is ItemViewModelType.Main 
-            ? parentTab.MarkedItems.ToCollection().Select(m => m.Any(i => i.Path.Path == item.FullName?.Path))
+            ? parentTab.MarkedItems.ToCollection().Select(m => m.Any(i => i.Path == item.FullName?.Path))
             : Observable.Return(false);
         
         IsSelected = itemViewModelType is ItemViewModelType.Main

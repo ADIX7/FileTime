@@ -4,9 +4,9 @@ namespace FileTime.App.Core.UserCommand;
 
 public class OpenContainerCommand : IUserCommand
 {
-    public IAbsolutePath Path { get; }
+    public AbsolutePath Path { get; }
 
-    public OpenContainerCommand(IAbsolutePath path)
+    public OpenContainerCommand(AbsolutePath path)
     {
         Path = path;
     }

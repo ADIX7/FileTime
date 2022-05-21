@@ -4,8 +4,10 @@ using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Command;
+using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
+using FileTime.Core.Timeline;
 using Microsoft.Extensions.Logging;
 using CopyCommand = FileTime.Core.Command.Copy.CopyCommand;
 
@@ -19,24 +21,30 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly IClipboardService _clipboardService;
     private readonly IInputInterface _inputInterface;
     private readonly ILogger<ItemManipulationUserCommandHandlerService> _logger;
-    private readonly BindedCollection<IAbsolutePath>? _markedItems;
+    private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly BindedCollection<FullName>? _markedItems;
+    private PointInTime _currentPointInTime;
 
     public ItemManipulationUserCommandHandlerService(
         IAppState appState,
         IUserCommandHandlerService userCommandHandlerService,
         IClipboardService clipboardService,
         IInputInterface inputInterface,
-        ILogger<ItemManipulationUserCommandHandlerService> logger) : base(appState)
+        ILogger<ItemManipulationUserCommandHandlerService> logger,
+        ITimelessContentProvider timelessContentProvider) : base(appState, timelessContentProvider)
     {
         _userCommandHandlerService = userCommandHandlerService;
         _clipboardService = clipboardService;
         _inputInterface = inputInterface;
         _logger = logger;
+        _timelessContentProvider = timelessContentProvider;
+        _currentPointInTime = null!;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
+        SaveCurrentPointInTime(t => _currentPointInTime = t);
 
-        _markedItems = new BindedCollection<IAbsolutePath>(appState.SelectedTab.Select(t => t?.MarkedItems));
+        _markedItems = new BindedCollection<FullName>(appState.SelectedTab.Select(t => t?.MarkedItems));
 
         AddCommandHandlers(new IUserCommandHandler[]
         {
@@ -51,7 +59,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     {
         if (_selectedTab == null || _currentSelectedItem?.BaseItem?.FullName == null) return;
 
-        _selectedTab.ToggleMarkedItem(new AbsolutePath(_currentSelectedItem.BaseItem));
+        _selectedTab.ToggleMarkedItem(_currentSelectedItem.BaseItem.FullName);
         await _userCommandHandlerService.HandleCommandAsync(MoveCursorDownCommand.Instance);
     }
 
@@ -71,7 +79,8 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         }
         else if (_currentSelectedItem?.BaseItem != null)
         {
-            _clipboardService.AddContent(new AbsolutePath(_currentSelectedItem.BaseItem));
+            var item = _currentSelectedItem.BaseItem;
+            _clipboardService.AddContent(item.FullName ?? throw new ArgumentException($"{nameof(item.FullName)} can not be null.", nameof(item)));
         }
 
         return Task.CompletedTask;
@@ -114,8 +123,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         var containerNameInput = new TextInputElement("Container name");
 
         await _inputInterface.ReadInputs(new List<IInputElement>() { containerNameInput });
-        
+
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;
+
+        var command = new CreateContainerCommand();
     }
 }
