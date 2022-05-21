@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="MvvmGen" Version="1.1.5" />
-    <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.3">
+    <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
