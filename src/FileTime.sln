@@ -57,6 +57,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Core.Timeline", "C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Core.ContentAccess", "Core\FileTime.Core.ContentAccess\FileTime.Core.ContentAccess.csproj", "{88BBB541-7306-44AE-95B1-0F8765AF1D4E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Misc", ".Misc", "{7E02988B-BA6C-4281-9A8F-779A90616FE9}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
