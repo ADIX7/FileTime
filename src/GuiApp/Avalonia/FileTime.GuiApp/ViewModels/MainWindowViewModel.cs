@@ -8,6 +8,7 @@ using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.GuiApp.Services;
 using FileTime.Providers.Local;
+using InitableService;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MvvmGen;

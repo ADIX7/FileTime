@@ -3,7 +3,7 @@ using System.IO;
 using Avalonia;
 using Avalonia.ReactiveUI;
 
-namespace FileTime.GuiApp;
+namespace FileTime.GuiApp.App;
 
 public static class Program
 {

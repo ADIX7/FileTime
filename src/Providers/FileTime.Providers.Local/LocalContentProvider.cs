@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using DynamicData;
 using FileTime.App.Core.Models;
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Services;

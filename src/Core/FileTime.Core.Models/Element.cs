@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;

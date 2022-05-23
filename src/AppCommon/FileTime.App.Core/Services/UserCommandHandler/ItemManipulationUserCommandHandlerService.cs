@@ -25,6 +25,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly ICommandScheduler _commandScheduler;
     private readonly BindedCollection<FullName>? _markedItems;
     private PointInTime _currentPointInTime;
+    private IContainer? _currentLocation;
 
     public ItemManipulationUserCommandHandlerService(
         IAppState appState,
@@ -44,6 +45,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         _currentPointInTime = null!;
 
         SaveSelectedTab(t => _selectedTab = t);
+        SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
         SaveCurrentPointInTime(t => _currentPointInTime = t);
 
@@ -130,7 +132,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;
 
-        var command = new CreateContainerCommand();
+        if (_currentLocation?.FullName is null || newContainerName is null) return;
+
+        var command = new CreateContainerCommand(_currentLocation.FullName, newContainerName, _timelessContentProvider);
         await _commandScheduler.AddCommand(command);
     }
 }

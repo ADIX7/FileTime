@@ -1,5 +1,5 @@
 <Application
-    x:Class="FileTime.GuiApp.App"
+    x:Class="FileTime.GuiApp.App.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:converters="using:FileTime.GuiApp.Converters"
     xmlns:local="using:FileTime.GuiApp"

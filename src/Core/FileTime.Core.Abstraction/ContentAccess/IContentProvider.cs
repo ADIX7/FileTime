@@ -3,7 +3,7 @@ using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
-namespace FileTime.Core.Services;
+namespace FileTime.Core.ContentAccess;
 
 public interface IContentProvider : IContainer, IOnContainerEnter
 {

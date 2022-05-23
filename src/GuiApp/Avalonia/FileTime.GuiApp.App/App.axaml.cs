@@ -7,7 +7,7 @@ using FileTime.GuiApp.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace FileTime.GuiApp;
+namespace FileTime.GuiApp.App;
 
 public partial class App : Application
 {

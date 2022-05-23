@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;

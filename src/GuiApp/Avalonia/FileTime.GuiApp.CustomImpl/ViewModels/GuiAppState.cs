@@ -1,9 +1,10 @@
 using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.GuiApp.Configuration;
+using FileTime.GuiApp.ViewModels;
 using MvvmGen;
 
-namespace FileTime.GuiApp.ViewModels;
+namespace FileTime.GuiApp.CustomImpl.ViewModels;
 
 [ViewModel]
 public partial class GuiAppState : AppStateBase, IGuiAppState

@@ -4,6 +4,7 @@ using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
 using FileTime.GuiApp.Configuration;
+using FileTime.GuiApp.CustomImpl.ViewModels;
 using FileTime.GuiApp.IconProviders;
 using FileTime.GuiApp.Logging;
 using FileTime.GuiApp.Services;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Configuration;
 
-namespace FileTime.GuiApp;
+namespace FileTime.GuiApp.App;
 
 public static class Startup
 {
