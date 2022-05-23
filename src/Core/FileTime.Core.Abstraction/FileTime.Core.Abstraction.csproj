@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\Library\InitableService\InitableService.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ContentAccess" />
+  </ItemGroup>
+
 </Project>

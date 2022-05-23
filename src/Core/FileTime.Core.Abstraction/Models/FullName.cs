@@ -4,8 +4,6 @@ public record FullName(string Path)
 {
     public FullName? GetParent()
     {
-        if (Path is null) return null;
-
         var pathParts = Path.TrimEnd(Constants.SeparatorChar).Split(Constants.SeparatorChar);
         return pathParts.Length switch
         {
@@ -13,4 +11,10 @@ public record FullName(string Path)
             _ => null
         };
     }
+
+    public string GetName()
+        => Path.Split(Constants.SeparatorChar).Last();
+
+    public FullName GetChild(string childName)
+        => new FullName(Path + Constants.SeparatorChar + childName);
 }

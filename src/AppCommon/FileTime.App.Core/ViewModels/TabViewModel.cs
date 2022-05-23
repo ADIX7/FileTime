@@ -13,7 +13,7 @@ using MvvmGen;
 namespace FileTime.App.Core.ViewModels;
 
 [ViewModel]
-public partial class TabViewModel : ITabViewModel, IDisposable
+public partial class TabViewModel : ITabViewModel
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IItemNameConverterService _itemNameConverterService;
@@ -70,6 +70,8 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         Tab = tab;
         TabNumber = tabNumber;
 
+        tab.AddToDisposables(_disposables);
+
         CurrentLocation = tab.CurrentLocation.AsObservable();
         CurrentItems = tab.CurrentItems
             .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
@@ -105,7 +107,7 @@ public partial class TabViewModel : ITabViewModel, IDisposable
         ParentsChildrenCollection = new(ParentsChildren);
         SelectedsChildrenCollection = new(SelectedsChildren);
 
-        tab.CurrentLocation.Subscribe((_) => _markedItems.Clear());
+        tab.CurrentLocation.Subscribe((_) => _markedItems.Clear()).AddToDisposables(_disposables);
 
         IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitSelectedsChildren()
         {

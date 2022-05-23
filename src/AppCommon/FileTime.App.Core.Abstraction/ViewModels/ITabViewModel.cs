@@ -7,7 +7,7 @@ using InitableService;
 
 namespace FileTime.App.Core.ViewModels;
 
-public interface ITabViewModel : IInitable<ITab, int>
+public interface ITabViewModel : IInitable<ITab, int>, IDisposable
 {
     ITab? Tab { get; }
     int TabNumber { get; }

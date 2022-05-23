@@ -2,9 +2,10 @@ namespace FileTime.Core.Timeline;
 
 public class PointInTime
 {
-    private readonly List<Difference> _differences;
     public static readonly PointInTime Eternal = new PointInTime();
     public static readonly PointInTime Present = new PointInTime();
+
+    private readonly List<Difference> _differences;
 
     public IReadOnlyList<Difference> Differences { get; }
 
@@ -25,6 +26,14 @@ public class PointInTime
 
     public PointInTime WithDifferences(IEnumerable<Difference> differences) =>
         new(this, differences);
+
+    public PointInTime WithDifferences(Func<PointInTime, IEnumerable<Difference>> differenceGenerator)
+    {
+        var newPointInTime = new PointInTime();
+        newPointInTime._differences.AddRange(differenceGenerator(newPointInTime));
+
+        return newPointInTime;
+    }
 
     private static List<Difference> MergeDifferences(IEnumerable<Difference> previouses,
         IEnumerable<Difference> differences)

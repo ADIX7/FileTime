@@ -9,7 +9,7 @@ public class CopyCommand : ITransportationCommand
         throw new NotImplementedException();
     }
 
-    public Task<PointInTime?> SimulateCommand(PointInTime? currentTime)
+    public Task<PointInTime> SimulateCommand(PointInTime currentTime)
     {
         throw new NotImplementedException();
     }

@@ -4,5 +4,5 @@ namespace FileTime.Core.Command;
 
 public interface IExecutableCommand : ICommand
 {
-    Task Execute(ICommandScheduler commandScheduler);
+    Task Execute();
 }

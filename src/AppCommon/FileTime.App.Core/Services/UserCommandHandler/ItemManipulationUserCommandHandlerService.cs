@@ -22,6 +22,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly IInputInterface _inputInterface;
     private readonly ILogger<ItemManipulationUserCommandHandlerService> _logger;
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly ICommandScheduler _commandScheduler;
     private readonly BindedCollection<FullName>? _markedItems;
     private PointInTime _currentPointInTime;
 
@@ -31,13 +32,15 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         IClipboardService clipboardService,
         IInputInterface inputInterface,
         ILogger<ItemManipulationUserCommandHandlerService> logger,
-        ITimelessContentProvider timelessContentProvider) : base(appState, timelessContentProvider)
+        ITimelessContentProvider timelessContentProvider,
+        ICommandScheduler commandScheduler) : base(appState, timelessContentProvider)
     {
         _userCommandHandlerService = userCommandHandlerService;
         _clipboardService = clipboardService;
         _inputInterface = inputInterface;
         _logger = logger;
         _timelessContentProvider = timelessContentProvider;
+        _commandScheduler = commandScheduler;
         _currentPointInTime = null!;
 
         SaveSelectedTab(t => _selectedTab = t);
@@ -128,5 +131,6 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         var newContainerName = containerNameInput.Value;
 
         var command = new CreateContainerCommand();
+        await _commandScheduler.AddCommand(command);
     }
 }

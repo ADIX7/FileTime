@@ -7,6 +7,7 @@ public class CommandTimeState
     public ICommand Command { get; }
     public CanCommandRun CanRun { get; private set; } = CanCommandRun.False;
     public bool ForceRun { get; set; }
+    public ExecutionState ExecutionState { get; set; }
 
     public CommandTimeState(ICommand command, PointInTime? startTime)
     {

@@ -5,7 +5,7 @@ namespace FileTime.Core.Timeline;
 public class ParallelCommands
 {
     private static ushort _idCounter;
-    public List<CommandTimeState> _commands;
+    private List<CommandTimeState> _commands;
     public ushort Id { get; }
     public IReadOnlyList<CommandTimeState> Commands { get; }
     public PointInTime? Result { get; private set; }

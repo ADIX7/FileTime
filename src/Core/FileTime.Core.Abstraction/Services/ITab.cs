@@ -4,7 +4,7 @@ using InitableService;
 
 namespace FileTime.Core.Services;
 
-public interface ITab : IInitable<IContainer>
+public interface ITab : IInitable<IContainer>, IDisposable
 {
     IObservable<IContainer?> CurrentLocation { get; }
     IObservable<AbsolutePath?> CurrentSelectedItem { get; }

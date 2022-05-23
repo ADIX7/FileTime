@@ -109,4 +109,11 @@ public class Tab : ITab
         if (resolvedSelectedItem is not IContainer resolvedContainer) return;
         SetCurrentLocation(resolvedContainer);
     }
+
+    public void Dispose()
+    {
+        _currentLocation.Dispose();
+        _currentSelectedItem.Dispose();
+        _itemFilters.Dispose();
+    }
 }

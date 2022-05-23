@@ -67,7 +67,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private Task OpenSelected()
     {
-        if (_currentSelectedItem is not IContainerViewModel containerViewModel || containerViewModel.Container is null) return Task.CompletedTask;
+        if (_currentSelectedItem is not IContainerViewModel containerViewModel || containerViewModel.Container is null)
+            return Task.CompletedTask;
 
         _selectedTab?.Tab?.SetCurrentLocation(containerViewModel.Container);
         return Task.CompletedTask;
@@ -75,7 +76,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task GoUp()
     {
-        if (_currentLocation?.Parent is not AbsolutePath parentPath || await parentPath.ResolveAsyncSafe() is not IContainer newContainer) return;
+        if (_currentLocation?.Parent is not AbsolutePath parentPath ||
+            await parentPath.ResolveAsyncSafe() is not IContainer newContainer) return;
         _selectedTab?.Tab?.SetCurrentLocation(newContainer);
     }
 
@@ -125,7 +127,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         }
         else if (tabViewModel == null)
         {
-            var tab = _serviceProvider.GetInitableResolver<IContainer>(_currentLocation ?? _localContentProvider).GetRequiredService<ITab>();
+            var tab = _serviceProvider.GetInitableResolver<IContainer>(_currentLocation ?? _localContentProvider)
+                .GetRequiredService<ITab>();
             var newTabViewModel = _serviceProvider.GetInitableResolver(tab, number).GetRequiredService<ITabViewModel>();
 
             _appState.AddTab(newTabViewModel);
@@ -144,9 +147,18 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private Task CloseTab()
     {
-        if (_appState.Tabs.Count < 2) return Task.CompletedTask;
+        if (_appState.Tabs.Count < 2 || _selectedTab == null) return Task.CompletedTask;
 
-        _appState.RemoveTab(_selectedTab!);
+        var tabToRemove = _selectedTab;
+        _appState.RemoveTab(tabToRemove!);
+
+        try
+        {
+            tabToRemove.Dispose();
+        }
+        catch
+        {
+        }
 
         return Task.CompletedTask;
     }
