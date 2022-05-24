@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.UserCommand;
 
-public class CopyCommand : IIdentifiableUserCommand
+public sealed class CopyCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "copy";
     public static CopyCommand Instance { get; } = new CopyCommand();

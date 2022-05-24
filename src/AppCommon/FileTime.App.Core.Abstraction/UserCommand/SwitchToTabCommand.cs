@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.UserCommand;
 
-public class SwitchToTabCommand : IIdentifiableUserCommand
+public sealed class SwitchToTabCommand : IIdentifiableUserCommand
 {
     private const string SwitchToTabBase = "switch_to_tab";
     public const string SwitchToTab1CommandName = SwitchToTabBase + "1";
@@ -12,7 +12,7 @@ public class SwitchToTabCommand : IIdentifiableUserCommand
     public const string SwitchToTab7CommandName = SwitchToTabBase + "7";
     public const string SwitchToTab8CommandName = SwitchToTabBase + "8";
     public const string SwitchToLastTabCommandName = "switch_to_last_tab";
-    
+
     public static SwitchToTabCommand SwitchToTab1 { get; } = new(1, SwitchToTab1CommandName);
     public static SwitchToTabCommand SwitchToTab2 { get; } = new(2, SwitchToTab2CommandName);
     public static SwitchToTabCommand SwitchToTab3 { get; } = new(3, SwitchToTab3CommandName);
@@ -22,7 +22,7 @@ public class SwitchToTabCommand : IIdentifiableUserCommand
     public static SwitchToTabCommand SwitchToTab7 { get; } = new(7, SwitchToTab7CommandName);
     public static SwitchToTabCommand SwitchToTab8 { get; } = new(8, SwitchToTab8CommandName);
     public static SwitchToTabCommand SwitchToLastTab { get; } = new(-1, SwitchToLastTabCommandName);
-    
+
     private SwitchToTabCommand(int tabNumber, string commandName)
     {
         TabNumber = tabNumber;

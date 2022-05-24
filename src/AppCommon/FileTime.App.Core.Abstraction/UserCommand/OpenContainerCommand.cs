@@ -2,7 +2,7 @@ using FileTime.Core.Models;
 
 namespace FileTime.App.Core.UserCommand;
 
-public class OpenContainerCommand : IUserCommand
+public sealed class OpenContainerCommand : IUserCommand
 {
     public AbsolutePath Path { get; }
 
