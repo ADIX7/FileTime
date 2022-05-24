@@ -1,6 +1,6 @@
 using FileTime.Core.ContentAccess;
-using FileTime.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FileTime.Providers.Local;
 
@@ -8,8 +8,10 @@ public static class Startup
 {
     public static IServiceCollection AddLocalServices(this IServiceCollection serviceCollection)
     {
-        return serviceCollection
-            .AddSingleton<ILocalContentProvider, LocalContentProvider>()
-            .AddSingleton<IContentProvider, ILocalContentProvider>(sp => sp.GetRequiredService<ILocalContentProvider>());
+        serviceCollection.TryAddSingleton<ILocalContentProvider, LocalContentProvider>();
+        serviceCollection.TryAddSingleton<IContentProvider>(sp => sp.GetRequiredService<ILocalContentProvider>());
+        serviceCollection.TryAddSingleton<IItemCreator<ILocalContentProvider>, LocalItemCreator>();
+        serviceCollection.TryAddSingleton<IItemCreator<LocalContentProvider>>(sp => sp.GetRequiredService<IItemCreator<ILocalContentProvider>>());
+        return serviceCollection;
     }
 }

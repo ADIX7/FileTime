@@ -1,28 +1,36 @@
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using InitableService;
 
 namespace FileTime.Core.Command.CreateContainer;
 
-public class CreateContainerCommand : IExecutableCommand
+public class CreateContainerCommand : IExecutableCommand, IInitable<FullName, string>
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
-    public FullName Parent { get; }
-    public string NewContainerName { get; }
+    private readonly IContentAccessorFactory _contentAccessorFactory;
+    public FullName? Parent { get; private set; }
+    public string? NewContainerName { get; private set; }
 
     public CreateContainerCommand(
-        FullName parent,
-        string newContainerName,
-        ITimelessContentProvider timelessContentProvider)
+        ITimelessContentProvider timelessContentProvider,
+        IContentAccessorFactory contentAccessorFactory)
     {
         _timelessContentProvider = timelessContentProvider;
-        Parent = parent;
-        NewContainerName = newContainerName;
+        _contentAccessorFactory = contentAccessorFactory;
     }
 
     public async Task<CanCommandRun> CanRun(PointInTime currentTime)
     {
+        if (Parent is null)
+            throw new ArgumentNullException(nameof(Parent),
+                $"Property {nameof(Parent)} is not initialized. Call the {nameof(Init)} method before using the command.");
+        if (NewContainerName is null)
+            throw new ArgumentNullException(nameof(NewContainerName),
+                $"Property {nameof(NewContainerName)} is not initialized. Call the {nameof(Init)} method before using the command.");
+
         try
         {
             var parent = await ResolveParentAsync();
@@ -49,6 +57,13 @@ public class CreateContainerCommand : IExecutableCommand
 
     public Task<PointInTime> SimulateCommand(PointInTime currentTime)
     {
+        if (Parent is null)
+            throw new ArgumentNullException(nameof(Parent),
+                $"Property {nameof(Parent)} is not initialized. Call the {nameof(Init)} method before using the command.");
+        if (NewContainerName is null)
+            throw new ArgumentNullException(nameof(NewContainerName),
+                $"Property {nameof(NewContainerName)} is not initialized. Call the {nameof(Init)} method before using the command.");
+
         return Task.FromResult(
             currentTime.WithDifferences(newPointInTime =>
                 new List<Difference>()
@@ -66,11 +81,35 @@ public class CreateContainerCommand : IExecutableCommand
         );
     }
 
-    public Task Execute()
+    public async Task Execute()
     {
-        return Task.CompletedTask;
+        if (Parent is null)
+            throw new ArgumentNullException(nameof(Parent),
+                $"Property {nameof(Parent)} is not initialized. Call the {nameof(Init)} method before using the command.");
+        if (NewContainerName is null)
+            throw new ArgumentNullException(nameof(NewContainerName),
+                $"Property {nameof(NewContainerName)} is not initialized. Call the {nameof(Init)} method before using the command.");
+
+        var resolvedParent = await _timelessContentProvider.GetItemByFullNameAsync(Parent, PointInTime.Present);
+        var itemCreator = _contentAccessorFactory.GetItemCreator(resolvedParent.Provider);
+        await itemCreator.CreateContainerAsync(resolvedParent.Provider, Parent.GetChild(NewContainerName));
     }
 
     private async Task<IItem> ResolveParentAsync()
-        => await _timelessContentProvider.GetItemByFullNameAsync(Parent, PointInTime.Present);
+    {
+        if (Parent is null)
+            throw new ArgumentNullException(nameof(Parent),
+                $"Property {nameof(Parent)} is not initialized. Call the {nameof(Init)} method before using the command.");
+        if (NewContainerName is null)
+            throw new ArgumentNullException(nameof(NewContainerName),
+                $"Property {nameof(NewContainerName)} is not initialized. Call the {nameof(Init)} method before using the command.");
+
+        return await _timelessContentProvider.GetItemByFullNameAsync(Parent, PointInTime.Present);
+    }
+
+    public void Init(FullName parent, string newContainerName)
+    {
+        Parent = parent;
+        NewContainerName = newContainerName;
+    }
 }

@@ -1,10 +1,12 @@
 using FileTime.App.Core;
 using FileTime.Core.Command;
+using FileTime.Core.Command.CreateContainer;
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
-using ICommandExecutor = FileTime.Core.Timeline.ICommandExecutor;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FileTime.App.DependencyInjection;
 
@@ -14,13 +16,21 @@ public static class DependencyInjection
     {
         serviceCollection ??= new ServiceCollection();
 
+        serviceCollection.TryAddSingleton<ICommandScheduler, CommandScheduler>();
+        serviceCollection.TryAddSingleton<ITimelessContentProvider, TimelessContentProvider>();
+        serviceCollection.TryAddSingleton<ICommandRunner, CommandRunner>();
+        serviceCollection.TryAddSingleton<IContentAccessorFactory, ContentAccessorFactory>();
+        serviceCollection.TryAddSingleton<ITab, Tab>();
+        serviceCollection.TryAddSingleton<ILocalCommandExecutor, LocalCommandExecutor>();
+
         return serviceCollection
-            .AddSingleton<ICommandScheduler, CommandScheduler>()
-            .AddSingleton<ITimelessContentProvider, TimelessContentProvider>()
-            .AddSingleton<ICommandRunner, CommandRunner>()
-            .AddTransient<ITab, Tab>()
-            .AddTransient<ILocalCommandExecutor, LocalCommandExecutor>()
             .AddCoreAppServices()
-            .AddLocalServices();
+            .AddLocalServices()
+            .RegisterCommands();
+    }
+
+    public static IServiceCollection RegisterCommands(this IServiceCollection serviceCollection)
+    {
+        return serviceCollection.AddTransient<CreateContainerCommand>();
     }
 }

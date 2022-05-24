@@ -8,6 +8,7 @@ using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using InitableService;
 using Microsoft.Extensions.Logging;
 using CopyCommand = FileTime.Core.Command.Copy.CopyCommand;
 
@@ -21,10 +22,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly IClipboardService _clipboardService;
     private readonly IInputInterface _inputInterface;
     private readonly ILogger<ItemManipulationUserCommandHandlerService> _logger;
-    private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandScheduler _commandScheduler;
+    private readonly IServiceProvider _serviceProvider;
     private readonly BindedCollection<FullName>? _markedItems;
-    private PointInTime _currentPointInTime;
     private IContainer? _currentLocation;
 
     public ItemManipulationUserCommandHandlerService(
@@ -34,20 +34,19 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         IInputInterface inputInterface,
         ILogger<ItemManipulationUserCommandHandlerService> logger,
         ITimelessContentProvider timelessContentProvider,
-        ICommandScheduler commandScheduler) : base(appState, timelessContentProvider)
+        ICommandScheduler commandScheduler,
+        IServiceProvider serviceProvider) : base(appState, timelessContentProvider)
     {
         _userCommandHandlerService = userCommandHandlerService;
         _clipboardService = clipboardService;
         _inputInterface = inputInterface;
         _logger = logger;
-        _timelessContentProvider = timelessContentProvider;
         _commandScheduler = commandScheduler;
-        _currentPointInTime = null!;
+        _serviceProvider = serviceProvider;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
-        SaveCurrentPointInTime(t => _currentPointInTime = t);
 
         _markedItems = new BindedCollection<FullName>(appState.SelectedTab.Select(t => t?.MarkedItems));
 
@@ -85,7 +84,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         else if (_currentSelectedItem?.BaseItem != null)
         {
             var item = _currentSelectedItem.BaseItem;
-            _clipboardService.AddContent(item.FullName ?? throw new ArgumentException($"{nameof(item.FullName)} can not be null.", nameof(item)));
+            _clipboardService.AddContent(item.FullName ??
+                                         throw new ArgumentException($"{nameof(item.FullName)} can not be null.",
+                                             nameof(item)));
         }
 
         return Task.CompletedTask;
@@ -134,7 +135,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
         if (_currentLocation?.FullName is null || newContainerName is null) return;
 
-        var command = new CreateContainerCommand(_currentLocation.FullName, newContainerName, _timelessContentProvider);
+        var command = _serviceProvider
+            .GetInitableResolver<FullName, string>(_currentLocation.FullName, newContainerName)
+            .GetRequiredService<CreateContainerCommand>();
         await _commandScheduler.AddCommand(command);
     }
 }

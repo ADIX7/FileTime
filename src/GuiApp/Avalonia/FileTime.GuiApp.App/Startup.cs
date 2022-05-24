@@ -11,6 +11,7 @@ using FileTime.GuiApp.Services;
 using FileTime.GuiApp.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 using Serilog.Configuration;
 
@@ -20,26 +21,27 @@ public static class Startup
 {
     internal static IServiceCollection AddViewModels(this IServiceCollection serviceCollection)
     {
-        return serviceCollection
-            .AddSingleton<MainWindowViewModel>()
-            .AddSingleton<GuiAppState>()
-            .AddSingleton<IAppState, GuiAppState>(s => s.GetRequiredService<GuiAppState>())
-            .AddSingleton<IGuiAppState, GuiAppState>(s => s.GetRequiredService<GuiAppState>());
+        serviceCollection.TryAddSingleton<MainWindowViewModel>();
+        serviceCollection.TryAddSingleton<GuiAppState>();
+        serviceCollection.TryAddSingleton<IAppState>(s => s.GetRequiredService<GuiAppState>());
+        serviceCollection.TryAddSingleton<IGuiAppState>(s => s.GetRequiredService<GuiAppState>());
+        return serviceCollection;
     }
+
     internal static IServiceCollection RegisterServices(this IServiceCollection serviceCollection)
     {
-        return serviceCollection
-            .AddSingleton<IRxSchedulerService, AvaloniaRxSchedulerService>()
-            .AddSingleton<IKeyInputHandlerService, KeyInputHandlerService>()
-            .AddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>()
-            .AddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>()
-            .AddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>()
-            .AddSingleton<IStartupHandler, RootDriveInfoService>()
-            .AddSingleton<LifecycleService>()
-            .AddSingleton<IIconProvider, MaterialIconProvider>()
-            .AddSingleton<IModalService, ModalService>()
-            .AddSingleton<IDialogService, DialogService>()
-            .AddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
+        serviceCollection.TryAddSingleton<IRxSchedulerService, AvaloniaRxSchedulerService>();
+        serviceCollection.TryAddSingleton<IKeyInputHandlerService, KeyInputHandlerService>();
+        serviceCollection.TryAddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>();
+        serviceCollection.TryAddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>();
+        serviceCollection.TryAddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>();
+        serviceCollection.TryAddSingleton<IStartupHandler, RootDriveInfoService>();
+        serviceCollection.TryAddSingleton<LifecycleService>();
+        serviceCollection.TryAddSingleton<IIconProvider, MaterialIconProvider>();
+        serviceCollection.TryAddSingleton<IModalService, ModalService>();
+        serviceCollection.TryAddSingleton<IDialogService, DialogService>();
+        serviceCollection.TryAddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
+        return serviceCollection;
     }
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)
@@ -79,7 +81,7 @@ public static class Startup
         return serviceProvider;
     }
 
-    internal static LoggerConfiguration MessageBoxSink(
+    private static LoggerConfiguration MessageBoxSink(
         this LoggerSinkConfiguration loggerConfiguration,
         IServiceProvider serviceProvider)
     {

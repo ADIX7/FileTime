@@ -10,6 +10,8 @@
     xmlns:config="using:FileTime.GuiApp.Configuration"
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
     xmlns:interactions="using:FileTime.Core.Interactions"
+    MinHeight="600"
+    MinWidth="800"
     Title="FileTime"
     d:DesignHeight="450"
     d:DesignWidth="800"
