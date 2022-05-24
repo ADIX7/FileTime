@@ -80,26 +80,7 @@ public class TabPersistenceService : ITabPersistenceService
 
     private async Task LoadStatesAsync()
     {
-        if (!File.Exists(_settingsPath)) return;
-
-        try
-        {
-            await using var stateReader = File.OpenRead(_settingsPath);
-            var state = await JsonSerializer.DeserializeAsync<PersistenceRoot>(stateReader);
-            if (state != null)
-            {
-                await RestoreTabs(state.TabStates);
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Unknown exception while restoring app state");
-        }
-    }
-    private async Task RestoreTabs(TabStates? tabStates)
-    {
-        if (tabStates == null
-            || tabStates.Tabs == null)
+        if (!File.Exists(_settingsPath))
         {
             CreateEmptyTab();
             return;
@@ -107,7 +88,40 @@ public class TabPersistenceService : ITabPersistenceService
 
         try
         {
+            await using var stateReader = File.OpenRead(_settingsPath);
+            var state = await JsonSerializer.DeserializeAsync<PersistenceRoot>(stateReader);
+            if (state != null)
+            {
+                if (await RestoreTabs(state.TabStates)) return;
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unknown exception while restoring app state");
+        }
 
+        CreateEmptyTab();
+
+        void CreateEmptyTab()
+        {
+            var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider)
+                .GetRequiredService<ITab>();
+            var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
+
+            _appState.AddTab(tabViewModel);
+        }
+    }
+
+    private async Task<bool> RestoreTabs(TabStates? tabStates)
+    {
+        if (tabStates == null
+            || tabStates.Tabs == null)
+        {
+            return false;
+        }
+
+        try
+        {
             foreach (var tab in tabStates.Tabs)
             {
                 try
@@ -120,12 +134,16 @@ public class TabPersistenceService : ITabPersistenceService
                     {
                         try
                         {
-                            var pathItem = await _timelessContentProvider.GetItemByFullNameAsync(path, PointInTime.Present);
+                            var pathItem =
+                                await _timelessContentProvider.GetItemByFullNameAsync(path, PointInTime.Present);
 
                             container = pathItem switch
                             {
                                 IContainer c => c,
-                                IElement e => e.Parent?.ResolveAsync() as IContainer,
+                                IElement e =>
+                                    e.Parent is null
+                                        ? null
+                                        : await e.Parent.ResolveAsync() as IContainer,
                                 _ => null
                             };
                             break;
@@ -144,39 +162,30 @@ public class TabPersistenceService : ITabPersistenceService
 
                     var tabToLoad = _serviceProvider.GetInitableResolver(container)
                         .GetRequiredService<ITab>();
-                    var tabViewModel = _serviceProvider.GetInitableResolver(tabToLoad, tab.Number).GetRequiredService<ITabViewModel>();
+                    var tabViewModel = _serviceProvider.GetInitableResolver(tabToLoad, tab.Number)
+                        .GetRequiredService<ITabViewModel>();
 
                     _appState.AddTab(tabViewModel);
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Unkown exception while restoring tab. {TabState}", JsonSerializer.Serialize(tab, _jsonOptions));
+                    _logger.LogError(e, "Unknown exception while restoring tab. {TabState}",
+                        JsonSerializer.Serialize(tab, _jsonOptions));
                 }
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unkown exception while restoring tabs.");
+            _logger.LogError(e, "Unknown exception while restoring tabs");
+            return false;
         }
 
-        if (_appState.Tabs.Count == 0)
-        {
-            CreateEmptyTab();
-        }
-        else
-        {
-            var tabToActivate = _appState.Tabs.FirstOrDefault(t => t.TabNumber == tabStates.ActiveTabNumber);
-            if (tabToActivate is not null) _appState.SetSelectedTab(tabToActivate);
-        }
+        if (_appState.Tabs.Count == 0) return false;
 
-        void CreateEmptyTab()
-        {
-            var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider)
-                .GetRequiredService<ITab>();
-            var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
+        var tabToActivate = _appState.Tabs.FirstOrDefault(t => t.TabNumber == tabStates.ActiveTabNumber);
+        if (tabToActivate is not null) _appState.SetSelectedTab(tabToActivate);
 
-            _appState.AddTab(tabViewModel);
-        }
+        return true;
     }
 
     public void SaveStates()
@@ -185,7 +194,8 @@ public class TabPersistenceService : ITabPersistenceService
         {
             TabStates = SerializeTabStates()
         };
-        var settingsDirectory = new DirectoryInfo(string.Join(Path.DirectorySeparatorChar, _settingsPath.Split(Path.DirectorySeparatorChar)[0..^1]));
+        var settingsDirectory = new DirectoryInfo(string.Join(Path.DirectorySeparatorChar,
+            _settingsPath.Split(Path.DirectorySeparatorChar)[0..^1]));
         if (!settingsDirectory.Exists) settingsDirectory.Create();
         var serializedData = JsonSerializer.Serialize(state, _jsonOptions);
         File.WriteAllText(_settingsPath, serializedData);
