@@ -17,10 +17,17 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(CreateElement.Instance);
         AddUserCommand(EnterRapidTravelCommand.Instance);
         AddUserCommand(ExitRapidTravelCommand.Instance);
+        AddUserCommand(GoToHomeCommand.Instance);
+        AddUserCommand(GoToProviderCommand.Instance);
+        AddUserCommand(GoToRootCommand.Instance);
         AddUserCommand(GoUpCommand.Instance);
         AddUserCommand(MarkCommand.Instance);
         AddUserCommand(MoveCursorDownCommand.Instance);
+        AddUserCommand(MoveCursorDownPageCommand.Instance);
+        AddUserCommand(MoveCursorToFirstCommand.Instance);
+        AddUserCommand(MoveCursorToLastCommand.Instance);
         AddUserCommand(MoveCursorUpCommand.Instance);
+        AddUserCommand(MoveCursorUpPageCommand.Instance);
         AddUserCommand(OpenSelectedCommand.Instance);
         AddUserCommand(PasteCommand.Merge);
         AddUserCommand(PasteCommand.Overwrite);

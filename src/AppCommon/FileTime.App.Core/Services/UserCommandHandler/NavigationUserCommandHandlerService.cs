@@ -13,6 +13,7 @@ namespace FileTime.App.Core.Services.UserCommandHandler;
 
 public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 {
+    private const int PageSize = 8;
     private readonly IAppState _appState;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILocalContentProvider _localContentProvider;
@@ -49,9 +50,16 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<CloseTabCommand>(CloseTab),
             new TypeUserCommandHandler<EnterRapidTravelCommand>(EnterRapidTravel),
             new TypeUserCommandHandler<ExitRapidTravelCommand>(ExitRapidTravel),
+            new TypeUserCommandHandler<GoToHomeCommand>(GoToHome),
+            new TypeUserCommandHandler<GoToProviderCommand>(GoToProvider),
+            new TypeUserCommandHandler<GoToRootCommand>(GoToRoot),
             new TypeUserCommandHandler<GoUpCommand>(GoUp),
             new TypeUserCommandHandler<MoveCursorDownCommand>(MoveCursorDown),
+            new TypeUserCommandHandler<MoveCursorDownPageCommand>(MoveCursorDownPage),
+            new TypeUserCommandHandler<MoveCursorToFirstCommand>(MoveCursorToFirst),
+            new TypeUserCommandHandler<MoveCursorToLastCommand>(MoveCursorToLast),
             new TypeUserCommandHandler<MoveCursorUpCommand>(MoveCursorUp),
+            new TypeUserCommandHandler<MoveCursorUpPageCommand>(MoveCursorUpPage),
             new TypeUserCommandHandler<OpenContainerCommand>(OpenContainer),
             new TypeUserCommandHandler<OpenSelectedCommand>(OpenSelected),
             new TypeUserCommandHandler<RefreshCommand>(Refresh),
@@ -59,10 +67,48 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         });
     }
 
-    private async Task Refresh(RefreshCommand command)
+    private async Task GoToHome()
+    {
+        var path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var resolvedPath =
+            await _localContentProvider.GetItemByNativePathAsync(new NativePath(path), PointInTime.Present);
+        if (resolvedPath is IContainer homeFolder)
+        {
+            await _userCommandHandlerService.HandleCommandAsync(
+                new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, homeFolder)));
+        }
+    }
+
+    private async Task GoToRoot()
+    {
+        var root = _currentLocation;
+        if (root is null) return;
+
+        while (true)
+        {
+            var parent = root.Parent;
+            if (parent is null || string.IsNullOrWhiteSpace(parent.Path.Path)) break;
+            if (await parent.ResolveAsync() is not IContainer next) break;
+            root = next;
+        }
+
+        await _userCommandHandlerService.HandleCommandAsync(
+            new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, root)));
+    }
+
+    private async Task GoToProvider()
+    {
+        if (_currentLocation is null) return;
+
+        await _userCommandHandlerService.HandleCommandAsync(
+            new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, _currentLocation.Provider)));
+    }
+
+    private async Task Refresh()
     {
         if (_currentLocation?.FullName is null) return;
-        var refreshedItem = await _timelessContentProvider.GetItemByFullNameAsync(_currentLocation.FullName, PointInTime.Present);
+        var refreshedItem =
+            await _timelessContentProvider.GetItemByFullNameAsync(_currentLocation.FullName, PointInTime.Present);
 
         if (refreshedItem is not IContainer refreshedContainer) return;
 
@@ -95,13 +141,51 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private Task MoveCursorDown()
     {
-        SelectNewSelectedItem(i => i.SkipWhile(i => !i.EqualsTo(_currentSelectedItem)).Skip(1).FirstOrDefault());
+        SelectNewSelectedItem(items =>
+            items.SkipWhile(i => !i.EqualsTo(_currentSelectedItem)).Skip(1).FirstOrDefault());
         return Task.CompletedTask;
     }
 
     private Task MoveCursorUp()
     {
-        SelectNewSelectedItem(i => i.TakeWhile(i => !i.EqualsTo(_currentSelectedItem)).LastOrDefault());
+        SelectNewSelectedItem(items => items.TakeWhile(i => !i.EqualsTo(_currentSelectedItem)).LastOrDefault());
+        return Task.CompletedTask;
+    }
+
+    private Task MoveCursorDownPage()
+    {
+        SelectNewSelectedItem(items =>
+        {
+            var relevantItems = items.SkipWhile(i => !i.EqualsTo(_currentSelectedItem)).ToList();
+            var fallBackItems = relevantItems.Take(PageSize + 1).Reverse();
+            var preferredItems = relevantItems.Skip(PageSize + 1);
+
+            return preferredItems.Concat(fallBackItems).FirstOrDefault();
+        });
+        return Task.CompletedTask;
+    }
+
+    private Task MoveCursorUpPage()
+    {
+        SelectNewSelectedItem(items =>
+        {
+            var relevantItems = items.TakeWhile(i => !i.EqualsTo(_currentSelectedItem)).Reverse().ToList();
+            var fallBackItems = relevantItems.Take(PageSize).Reverse();
+            var preferredItems = relevantItems.Skip(PageSize);
+            return preferredItems.Concat(fallBackItems).FirstOrDefault();
+        });
+        return Task.CompletedTask;
+    }
+
+    private Task MoveCursorToFirst()
+    {
+        SelectNewSelectedItem(items => items.FirstOrDefault());
+        return Task.CompletedTask;
+    }
+
+    private Task MoveCursorToLast()
+    {
+        SelectNewSelectedItem(items => items.LastOrDefault());
         return Task.CompletedTask;
     }
 
