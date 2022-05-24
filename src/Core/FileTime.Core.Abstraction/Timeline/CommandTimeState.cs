@@ -9,13 +9,12 @@ public class CommandTimeState
     public bool ForceRun { get; set; }
     public ExecutionState ExecutionState { get; set; }
 
-    public CommandTimeState(ICommand command, PointInTime? startTime)
+    public CommandTimeState(ICommand command)
     {
         Command = command;
-        Task.Run(async () => await UpdateState(startTime)).Wait();
     }
 
-    public async Task UpdateState(PointInTime? startPoint)
+    public async Task UpdateStateAsync(PointInTime? startPoint)
     {
         CanRun = startPoint == null ? CanCommandRun.False : await Command.CanRun(startPoint);
     }

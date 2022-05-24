@@ -62,7 +62,7 @@ public class CommandScheduler : ICommandScheduler
             await batchToAdd.AddCommand(command);
 
             await RefreshCommands();
-            
+
             ExecuteCommands();
 
             /*if (_commandRunners.Count == 0)

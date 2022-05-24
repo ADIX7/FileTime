@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
 using DynamicData.Alias;
+using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -14,6 +15,7 @@ public class Tab : ITab
     private readonly BehaviorSubject<IContainer?> _currentLocationForced = new(null);
     private readonly BehaviorSubject<AbsolutePath?> _currentSelectedItem = new(null);
     private readonly SourceList<ItemFilter> _itemFilters = new();
+    private FullName? _lastDeepestSelected;
     private AbsolutePath? _currentSelectedItemCached;
     private PointInTime _currentPointInTime;
 
@@ -77,6 +79,11 @@ public class Tab : ITab
         {
             _currentSelectedItemCached = s;
             _currentSelectedItem.OnNext(s);
+
+            if (s is not null)
+            {
+                _lastDeepestSelected = new FullName(PathHelper.GetLongerPath(_lastDeepestSelected?.Path, s.Path.Path));
+            }
         });
     }
 
@@ -89,8 +96,32 @@ public class Tab : ITab
 
     private AbsolutePath? GetSelectedItemByItems(IEnumerable<IItem> items)
     {
-        //TODO: 
-        return new AbsolutePath(_timelessContentProvider, items.First());
+        if (!items.Any()) return null;
+
+        var newSelectedItem = new AbsolutePath(_timelessContentProvider, items.First());
+        if (_lastDeepestSelected is not null)
+        {
+            var parentPath = items.First().FullName?.GetParent()?.Path;
+
+            if (parentPath is not null && _lastDeepestSelected.Path.StartsWith(parentPath))
+            {
+                var itemNameToSelect = _lastDeepestSelected.Path
+                    .Split(Constants.SeparatorChar)
+                    .Skip((parentPath?.Split(Constants.SeparatorChar).Length) ?? 0)
+                    .FirstOrDefault();
+
+                var itemToSelect = items.FirstOrDefault(i => i.FullName?.GetName() == itemNameToSelect);
+
+                if (itemToSelect != null)
+                {
+                    newSelectedItem = new AbsolutePath(_timelessContentProvider, itemToSelect);
+                }
+            }
+        }
+
+        _lastDeepestSelected = new FullName(PathHelper.GetLongerPath(_lastDeepestSelected?.Path, newSelectedItem.Path.Path));
+
+        return newSelectedItem;
     }
 
     public void SetCurrentLocation(IContainer newLocation) => _currentLocation.OnNext(newLocation);

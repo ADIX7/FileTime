@@ -10,14 +10,14 @@ public class ContentAccessorFactory : IContentAccessorFactory
     {
         _serviceProvider = serviceProvider;
     }
-    
+
     public IItemCreator<TContentProvider> GetItemCreator<TContentProvider>() where TContentProvider : IContentProvider
     {
         var genericType = typeof(IItemCreator<>).MakeGenericType(typeof(TContentProvider));
 
         return (IItemCreator<TContentProvider>)_serviceProvider.GetRequiredService(genericType);
     }
-    
+
     public IItemCreator GetItemCreator(IContentProvider provider)
     {
         var genericType = typeof(IItemCreator<>).MakeGenericType(provider.GetType());

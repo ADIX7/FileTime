@@ -11,7 +11,7 @@ public class LocalCommandExecutor : ILocalCommandExecutor
     {
         _commandRunner = commandRunner;
     }
-    
+
     public void ExecuteCommand(ICommand command)
     {
         var context = new CommandRunnerContext(command);
@@ -27,8 +27,8 @@ public class LocalCommandExecutor : ILocalCommandExecutor
         {
             await _commandRunner.RunCommandAsync(context.Command);
         }
-        catch(Exception ex){}
-        
+        catch (Exception ex) { }
+
         CommandFinished.Invoke(this, context.Command);
     }
 }

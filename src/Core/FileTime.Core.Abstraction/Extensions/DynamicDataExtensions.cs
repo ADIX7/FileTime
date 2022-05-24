@@ -36,16 +36,16 @@ public static class DynamicDataExtensions
         public void OnCompleted()
         {
             Disposable?.Dispose();
-            _taskCompletionSource.SetResult(default(TTaskResult));
+            _taskCompletionSource.SetResult(default);
         }
     }
 
     public static async Task<IEnumerable<AbsolutePath>?> GetItemsAsync(
         this IObservable<IObservable<IChangeSet<AbsolutePath>>?> stream)
         => await GetItemsAsync(stream
-            .Select(s => 
-                s is null 
-                    ? new SourceList<AbsolutePath>().Connect().StartWithEmpty().ToCollection() 
+            .Select(s =>
+                s is null
+                    ? new SourceList<AbsolutePath>().Connect().StartWithEmpty().ToCollection()
                     : s.ToCollection())
             .Switch());
 
@@ -60,13 +60,12 @@ public static class DynamicDataExtensions
         var context = new DisposableContext<IReadOnlyCollection<AbsolutePath>, IEnumerable<AbsolutePath>?>(r => r,
             taskCompletionSource);
 
-        var disposable = stream
+        context.Disposable = stream
             .Subscribe(
                 context.OnNext,
                 context.OnError,
                 context.OnCompleted
             );
-        context.Disposable = disposable;
 
         return taskCompletionSource.Task;
     }

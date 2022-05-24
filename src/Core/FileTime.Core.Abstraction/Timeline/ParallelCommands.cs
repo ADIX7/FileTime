@@ -31,7 +31,8 @@ public class ParallelCommands
         var currentTime = startTime;
         foreach (var command in commands)
         {
-            CommandTimeState commandTimeState = new(command, currentTime);
+            var commandTimeState = new CommandTimeState(command);
+            await commandTimeState.UpdateStateAsync(currentTime);
             if (currentTime != null)
             {
                 var canRun = await command.CanRun(currentTime);
@@ -53,7 +54,9 @@ public class ParallelCommands
 
     public async Task AddCommand(ICommand command)
     {
-        _commands.Add(new CommandTimeState(command, Result));
+        var commandTimeState = new CommandTimeState(command);
+        await commandTimeState.UpdateStateAsync(Result);
+        _commands.Add(commandTimeState);
         if (Result != null)
         {
             Result = await command.SimulateCommand(Result);
@@ -63,15 +66,15 @@ public class ParallelCommands
     public async Task<PointInTime?> RefreshResult(PointInTime? startPoint)
     {
         var result = startPoint;
-        foreach (var command in _commands)
+        foreach (var commandTimeState in _commands)
         {
-            await command.UpdateState(result);
+            await commandTimeState.UpdateStateAsync(result);
             if (result != null)
             {
-                var canRun = await command.Command.CanRun(result);
-                if (canRun == CanCommandRun.True || (canRun == CanCommandRun.Forcable && command.ForceRun))
+                var canRun = await commandTimeState.Command.CanRun(result);
+                if (canRun == CanCommandRun.True || (canRun == CanCommandRun.Forcable && commandTimeState.ForceRun))
                 {
-                    result = await command.Command.SimulateCommand(result);
+                    result = await commandTimeState.Command.SimulateCommand(result);
                 }
                 else
                 {

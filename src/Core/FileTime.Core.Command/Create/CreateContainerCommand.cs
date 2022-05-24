@@ -41,7 +41,7 @@ public abstract class CreateItemBase : IExecutableCommand, IInitable<FullName, s
             var parent = await ResolveParentAsync();
             if (parent is not IContainer parentContainer) return CanCommandRun.False;
 
-            var items = await parentContainer.Items.GetItemsAsync();
+            var items = await parentContainer.Items.GetItemsAsync().AwaitWithTimeout(10, Enumerable.Empty<AbsolutePath>());
             if (items is null) return CanCommandRun.Forcable;
 
             var existingItem = items.FirstOrDefault(i => i.Path.GetName() == NewItemName);
