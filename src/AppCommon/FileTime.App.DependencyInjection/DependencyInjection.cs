@@ -1,6 +1,7 @@
 using FileTime.App.Core;
 using FileTime.Core.Command;
 using FileTime.Core.Command.CreateContainer;
+using FileTime.Core.Command.CreateElement;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
@@ -31,6 +32,8 @@ public static class DependencyInjection
 
     public static IServiceCollection RegisterCommands(this IServiceCollection serviceCollection)
     {
-        return serviceCollection.AddTransient<CreateContainerCommand>();
+        return serviceCollection
+            .AddTransient<CreateContainerCommand>()
+            .AddTransient<CreateElementCommand>();
     }
 }

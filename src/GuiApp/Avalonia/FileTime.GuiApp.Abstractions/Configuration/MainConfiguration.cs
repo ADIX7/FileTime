@@ -49,7 +49,7 @@ public static class MainConfiguration
             //new CommandBindingConfiguration(ConfigCommand.CopyPath, new[] { Key.C, Key.P }),
             new CommandBindingConfiguration(CreateContainer.CommandName, Key.F7),
             new CommandBindingConfiguration(CreateContainer.CommandName, new[] { Key.C, Key.C }),
-            //new CommandBindingConfiguration(ConfigCommand.CreateElement, new[] { Key.C, Key.E }),
+            new CommandBindingConfiguration(CreateElement.CommandName, new[] { Key.C, Key.E }),
             //new CommandBindingConfiguration(ConfigCommand.Cut, new[] { Key.D, Key.D }),
             //new CommandBindingConfiguration(ConfigCommand.Edit, new KeyConfig(Key.F4)),
             new CommandBindingConfiguration(EnterRapidTravelCommand.CommandName, new KeyConfig(Key.OemComma, shift: true)),

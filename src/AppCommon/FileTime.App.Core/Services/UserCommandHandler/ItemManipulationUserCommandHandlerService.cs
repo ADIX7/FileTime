@@ -5,6 +5,7 @@ using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Command.CreateContainer;
+using FileTime.Core.Command.CreateElement;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -56,6 +57,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             new TypeUserCommandHandler<MarkCommand>(MarkItem),
             new TypeUserCommandHandler<PasteCommand>(Paste),
             new TypeUserCommandHandler<CreateContainer>(CreateContainer),
+            new TypeUserCommandHandler<CreateElement>(CreateElement),
         });
     }
 
@@ -136,8 +138,25 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         if (_currentLocation?.FullName is null || newContainerName is null) return;
 
         var command = _serviceProvider
-            .GetInitableResolver<FullName, string>(_currentLocation.FullName, newContainerName)
+            .GetInitableResolver(_currentLocation.FullName, newContainerName)
             .GetRequiredService<CreateContainerCommand>();
+        await _commandScheduler.AddCommand(command);
+    }
+
+    private async Task CreateElement()
+    {
+        var containerNameInput = new TextInputElement("Element name");
+
+        await _inputInterface.ReadInputs(new List<IInputElement>() { containerNameInput });
+
+        //TODO: message on empty result
+        var newContainerName = containerNameInput.Value;
+
+        if (_currentLocation?.FullName is null || newContainerName is null) return;
+
+        var command = _serviceProvider
+            .GetInitableResolver(_currentLocation.FullName, newContainerName)
+            .GetRequiredService<CreateElementCommand>();
         await _commandScheduler.AddCommand(command);
     }
 }

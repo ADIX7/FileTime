@@ -14,6 +14,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(CloseTabCommand.Instance);
         AddUserCommand(CopyCommand.Instance);
         AddUserCommand(CreateContainer.Instance);
+        AddUserCommand(CreateElement.Instance);
         AddUserCommand(EnterRapidTravelCommand.Instance);
         AddUserCommand(ExitRapidTravelCommand.Instance);
         AddUserCommand(GoUpCommand.Instance);
