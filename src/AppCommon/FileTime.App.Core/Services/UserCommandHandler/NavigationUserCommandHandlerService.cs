@@ -54,8 +54,19 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<MoveCursorUpCommand>(MoveCursorUp),
             new TypeUserCommandHandler<OpenContainerCommand>(OpenContainer),
             new TypeUserCommandHandler<OpenSelectedCommand>(OpenSelected),
+            new TypeUserCommandHandler<RefreshCommand>(Refresh),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
+    }
+
+    private async Task Refresh(RefreshCommand command)
+    {
+        if (_currentLocation?.FullName is null) return;
+        var refreshedItem = await _timelessContentProvider.GetItemByFullNameAsync(_currentLocation.FullName, PointInTime.Present);
+
+        if (refreshedItem is not IContainer refreshedContainer) return;
+
+        _selectedTab?.Tab?.ForceSetCurrentLocation(refreshedContainer);
     }
 
     private async Task OpenContainer(OpenContainerCommand command)

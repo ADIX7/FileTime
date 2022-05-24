@@ -15,4 +15,5 @@ public interface ITab : IInitable<IContainer>, IDisposable
     void RemoveItemFilter(ItemFilter filter);
     void RemoveItemFilter(string name);
     void SetSelectedItem(AbsolutePath newSelectedItem);
+    void ForceSetCurrentLocation(IContainer newLocation);
 }

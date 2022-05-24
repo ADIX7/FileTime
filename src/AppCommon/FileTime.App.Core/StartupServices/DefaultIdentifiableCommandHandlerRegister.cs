@@ -24,6 +24,8 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(PasteCommand.Merge);
         AddUserCommand(PasteCommand.Overwrite);
         AddUserCommand(PasteCommand.Skip);
+        AddUserCommand(RefreshCommand.Instance);
+        AddUserCommand(SwitchToTabCommand.SwitchToLastTab);
         AddUserCommand(SwitchToTabCommand.SwitchToTab1);
         AddUserCommand(SwitchToTabCommand.SwitchToTab2);
         AddUserCommand(SwitchToTabCommand.SwitchToTab3);
@@ -32,7 +34,6 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(SwitchToTabCommand.SwitchToTab6);
         AddUserCommand(SwitchToTabCommand.SwitchToTab7);
         AddUserCommand(SwitchToTabCommand.SwitchToTab8);
-        AddUserCommand(SwitchToTabCommand.SwitchToLastTab);
     }
 
     private void AddUserCommand(IIdentifiableUserCommand command)

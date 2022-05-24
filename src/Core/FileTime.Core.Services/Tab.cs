@@ -11,6 +11,7 @@ public class Tab : ITab
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly BehaviorSubject<IContainer?> _currentLocation = new(null);
+    private readonly BehaviorSubject<IContainer?> _currentLocationForced = new(null);
     private readonly BehaviorSubject<AbsolutePath?> _currentSelectedItem = new(null);
     private readonly SourceList<ItemFilter> _itemFilters = new();
     private AbsolutePath? _currentSelectedItemCached;
@@ -24,10 +25,15 @@ public class Tab : ITab
     {
         _timelessContentProvider = timelessContentProvider;
         _currentPointInTime = null!;
-        
+
         _timelessContentProvider.CurrentPointInTime.Subscribe(p => _currentPointInTime = p);
-        
-        CurrentLocation = _currentLocation.DistinctUntilChanged().Publish(null).RefCount();
+
+        CurrentLocation = _currentLocation
+            .DistinctUntilChanged()
+            .Merge(_currentLocationForced)
+            .Publish(null)
+            .RefCount();
+
         CurrentItems =
             Observable.Merge(
                     Observable.CombineLatest(
@@ -88,6 +94,7 @@ public class Tab : ITab
     }
 
     public void SetCurrentLocation(IContainer newLocation) => _currentLocation.OnNext(newLocation);
+    public void ForceSetCurrentLocation(IContainer newLocation) => _currentLocationForced.OnNext(newLocation);
 
     public void SetSelectedItem(AbsolutePath newSelectedItem) => _currentSelectedItem.OnNext(newSelectedItem);
 

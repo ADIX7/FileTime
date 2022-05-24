@@ -73,7 +73,7 @@ public static class MainConfiguration
             //new CommandBindingConfiguration(ConfigCommand.PinFavorite, new[] { Key.F, Key.P }),
             //new CommandBindingConfiguration(ConfigCommand.PreviousTimelineBlock, Key.H ),
             //new CommandBindingConfiguration(ConfigCommand.PreviousTimelineCommand, Key.K ),
-            //new CommandBindingConfiguration(ConfigCommand.Refresh, Key.R),
+            new CommandBindingConfiguration(RefreshCommand.CommandName, Key.R),
             //new CommandBindingConfiguration(ConfigCommand.Rename, Key.F2),
             //new CommandBindingConfiguration(ConfigCommand.Rename, new[] { Key.C, Key.W }),
             //new CommandBindingConfiguration(ConfigCommand.RunCommand, new KeyConfig(Key.D4, shift: true)),
