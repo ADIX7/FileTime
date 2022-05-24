@@ -1,4 +1,7 @@
 using FileTime.App.Core;
+using FileTime.App.Core.Models;
+using FileTime.App.Core.Services;
+using FileTime.App.Core.Services.Persistence;
 using FileTime.Core.Command;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.CreateElement;
@@ -21,8 +24,12 @@ public static class DependencyInjection
         serviceCollection.TryAddSingleton<ITimelessContentProvider, TimelessContentProvider>();
         serviceCollection.TryAddSingleton<ICommandRunner, CommandRunner>();
         serviceCollection.TryAddSingleton<IContentAccessorFactory, ContentAccessorFactory>();
-        serviceCollection.TryAddSingleton<ITab, Tab>();
         serviceCollection.TryAddSingleton<ILocalCommandExecutor, LocalCommandExecutor>();
+        serviceCollection.TryAddSingleton<IApplicationSettings, ApplicationSettings>();
+        serviceCollection.TryAddSingleton<ITabPersistenceService, TabPersistenceService>();
+        serviceCollection.TryAddTransient<ITab, Tab>();
+        serviceCollection.AddSingleton<IExitHandler, ITabPersistenceService>(sp => sp.GetRequiredService<ITabPersistenceService>());
+        serviceCollection.AddSingleton<IStartupHandler, ITabPersistenceService>(sp => sp.GetRequiredService<ITabPersistenceService>());
 
         return serviceCollection
             .AddCoreAppServices()

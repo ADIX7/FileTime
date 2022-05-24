@@ -22,6 +22,7 @@
     Icon="/Assets/filetime.ico"
     InputElement.KeyDown="OnKeyDown"
     Opened="OnWindowOpened"
+    Closed="OnWindowClosed"
     TransparencyLevelHint="Blur"
     mc:Ignorable="d">
 

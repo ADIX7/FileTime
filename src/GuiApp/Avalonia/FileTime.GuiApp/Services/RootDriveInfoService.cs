@@ -38,7 +38,7 @@ public class RootDriveInfoService : IStartupHandler
                             {
                                 var containerPath = localContentProvider.GetNativePath(i.Path).Path;
                                 var drivePath = d.Name.TrimEnd(Path.DirectorySeparatorChar);
-                                return containerPath == drivePath 
+                                return containerPath == drivePath
                                        || (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && containerPath == "/" && d.Name == "/");
                             })))
                             .Filter(t => t.Drive is not null);
@@ -68,4 +68,6 @@ public class RootDriveInfoService : IStartupHandler
             _rootDrives.AddRange(drives);
         }
     }
+
+    public Task InitAsync() => Task.CompletedTask;
 }

@@ -22,9 +22,11 @@ public static class Startup
         serviceCollection.TryAddSingleton<IUserCommandHandlerService, UserCommandHandlerService>();
         serviceCollection.TryAddSingleton<IClipboardService, ClipboardService>();
         serviceCollection.TryAddSingleton<IIdentifiableUserCommandService, IdentifiableUserCommandService>();
-        serviceCollection.TryAddSingleton<IStartupHandler, DefaultIdentifiableCommandHandlerRegister>();
         serviceCollection.TryAddSingleton<IItemPreviewService, ItemPreviewService>();
-        return serviceCollection.AddCommandHandlers();
+
+        return serviceCollection
+            .AddCommandHandlers()
+            .AddSingleton<IStartupHandler, DefaultIdentifiableCommandHandlerRegister>();
     }
 
     private static IServiceCollection AddCommandHandlers(this IServiceCollection serviceCollection)

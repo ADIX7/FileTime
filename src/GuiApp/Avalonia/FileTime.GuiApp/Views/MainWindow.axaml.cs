@@ -82,7 +82,7 @@ public partial class MainWindow : Window
             && sender is StyledElement control)
         {
             FullName? path = null;
-            if (control.DataContext is IHaveFullPath { Path: { } } hasFullPath)
+            if (control.DataContext is IHaveFullPath {Path: { }} hasFullPath)
             {
                 path = hasFullPath.Path;
             }
@@ -107,5 +107,11 @@ public partial class MainWindow : Window
             await ViewModel.OpenContainerByFullName(path);
             e.Handled = true;
         }
+    }
+
+    private void OnWindowClosed(object? sender, EventArgs e)
+    {
+        var vm = ViewModel;
+        Task.Run(() => vm?.OnExit()).Wait();
     }
 }

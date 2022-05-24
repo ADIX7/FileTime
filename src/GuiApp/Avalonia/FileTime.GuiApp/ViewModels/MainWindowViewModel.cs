@@ -50,14 +50,16 @@ public partial class MainWindowViewModel : IMainWindowViewModelBase
         Title = "FileTime " + versionString;
 
         //TODO: refactor
-        if (AppState.Tabs.Count == 0)
+        /*if (AppState.Tabs.Count == 0)
         {
             var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider)
                 .GetRequiredService<ITab>();
             var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
 
             _appState.AddTab(tabViewModel);
-        }
+        }*/
+
+        _lifecycleService.InitStartupHandlersAsync().Wait();
     }
 
     public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
@@ -71,5 +73,10 @@ public partial class MainWindowViewModel : IMainWindowViewModelBase
         if (resolvedItem is not IContainer resolvedContainer) return;
         await UserCommandHandlerService.HandleCommandAsync(
             new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, resolvedContainer)));
+    }
+
+    public async Task OnExit()
+    {
+        await _lifecycleService.ExitAsync();
     }
 }

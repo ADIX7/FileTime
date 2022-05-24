@@ -37,6 +37,8 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(SwitchToTabCommand.SwitchToTab8);
     }
 
+    public Task InitAsync() => Task.CompletedTask;
+
     private void AddUserCommand(IIdentifiableUserCommand command)
         => _service.AddIdentifiableUserCommandFactory(command.UserCommandID, () => command);
 }

@@ -35,13 +35,14 @@ public static class Startup
         serviceCollection.TryAddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>();
         serviceCollection.TryAddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>();
         serviceCollection.TryAddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>();
-        serviceCollection.TryAddSingleton<IStartupHandler, RootDriveInfoService>();
         serviceCollection.TryAddSingleton<LifecycleService>();
         serviceCollection.TryAddSingleton<IIconProvider, MaterialIconProvider>();
         serviceCollection.TryAddSingleton<IModalService, ModalService>();
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
         serviceCollection.TryAddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
-        return serviceCollection;
+
+        return serviceCollection
+            .AddSingleton<IStartupHandler, RootDriveInfoService>();
     }
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)

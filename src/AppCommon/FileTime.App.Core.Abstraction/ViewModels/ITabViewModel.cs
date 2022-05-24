@@ -24,6 +24,8 @@ public interface ITabViewModel : IInitable<ITab, int>, IDisposable
     IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; }
     IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; }
     IObservable<IReadOnlyCollection<IItemViewModel>?> SelectedsChildrenCollectionObservable { get; }
+    IContainer? CachedCurrentLocation { get; }
+
     void ClearMarkedItems();
     void RemoveMarkedItem(FullName fullName);
     void AddMarkedItem(FullName fullName);

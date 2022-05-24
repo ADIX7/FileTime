@@ -43,13 +43,16 @@ public partial class TabViewModel : ITabViewModel
         null!;
 
     public IObservable<IReadOnlyCollection<IItemViewModel>?>
-        SelectedsChildrenCollectionObservable { get; private set; } = null!;
+        SelectedsChildrenCollectionObservable
+    { get; private set; } = null!;
 
     [Property] private BindedCollection<IItemViewModel>? _currentItemsCollection;
 
     [Property] private BindedCollection<IItemViewModel>? _parentsChildrenCollection;
 
     [Property] private BindedCollection<IItemViewModel>? _selectedsChildrenCollection;
+
+    public IContainer? CachedCurrentLocation { get; private set; }
 
     public TabViewModel(
         IServiceProvider serviceProvider,
@@ -74,6 +77,8 @@ public partial class TabViewModel : ITabViewModel
         tab.AddToDisposables(_disposables);
 
         CurrentLocation = tab.CurrentLocation.AsObservable();
+        CurrentLocation.Subscribe(l => CachedCurrentLocation = l).AddToDisposables(_disposables);
+
         CurrentItems = tab.CurrentItems
             .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
             /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
