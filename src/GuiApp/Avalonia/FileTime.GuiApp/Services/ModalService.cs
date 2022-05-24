@@ -11,9 +11,9 @@ public class ModalService : IModalService
 
     public ModalService()
     {
-        OpenModals = _openModals.Connect();
+        OpenModals = _openModals.Connect().StartWithEmpty();
     }
-    
+
     public void OpenModal(IModalViewModelBase modalToOpen) => _openModals.Add(modalToOpen);
 
     public void CloseModal(IModalViewModelBase modalToClose) => _openModals.Remove(modalToClose);
