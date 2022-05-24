@@ -15,13 +15,13 @@ public class Tab : ITab
     private readonly BehaviorSubject<IContainer?> _currentLocationForced = new(null);
     private readonly BehaviorSubject<AbsolutePath?> _currentSelectedItem = new(null);
     private readonly SourceList<ItemFilter> _itemFilters = new();
-    private FullName? _lastDeepestSelected;
     private AbsolutePath? _currentSelectedItemCached;
     private PointInTime _currentPointInTime;
 
     public IObservable<IContainer?> CurrentLocation { get; }
     public IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
     public IObservable<AbsolutePath?> CurrentSelectedItem { get; }
+    public FullName? LastDeepestSelectedPath { get; private set; }
 
     public Tab(ITimelessContentProvider timelessContentProvider)
     {
@@ -33,6 +33,13 @@ public class Tab : ITab
         CurrentLocation = _currentLocation
             .DistinctUntilChanged()
             .Merge(_currentLocationForced)
+            .Do(_ =>
+            {
+                if (_currentSelectedItemCached is not null)
+                {
+                    LastDeepestSelectedPath = new FullName(PathHelper.GetLongerPath(LastDeepestSelectedPath?.Path, _currentSelectedItemCached.Path.Path));
+                }
+            })
             .Publish(null)
             .RefCount();
 
@@ -79,11 +86,6 @@ public class Tab : ITab
         {
             _currentSelectedItemCached = s;
             _currentSelectedItem.OnNext(s);
-
-            if (s is not null)
-            {
-                _lastDeepestSelected = new FullName(PathHelper.GetLongerPath(_lastDeepestSelected?.Path, s.Path.Path));
-            }
         });
     }
 
@@ -99,13 +101,13 @@ public class Tab : ITab
         if (!items.Any()) return null;
 
         var newSelectedItem = new AbsolutePath(_timelessContentProvider, items.First());
-        if (_lastDeepestSelected is not null)
+        if (LastDeepestSelectedPath is not null)
         {
             var parentPath = items.First().FullName?.GetParent()?.Path;
 
-            if (parentPath is not null && _lastDeepestSelected.Path.StartsWith(parentPath))
+            if (parentPath is not null && LastDeepestSelectedPath.Path.StartsWith(parentPath))
             {
-                var itemNameToSelect = _lastDeepestSelected.Path
+                var itemNameToSelect = LastDeepestSelectedPath.Path
                     .Split(Constants.SeparatorChar)
                     .Skip((parentPath?.Split(Constants.SeparatorChar).Length) ?? 0)
                     .FirstOrDefault();
@@ -119,7 +121,7 @@ public class Tab : ITab
             }
         }
 
-        _lastDeepestSelected = new FullName(PathHelper.GetLongerPath(_lastDeepestSelected?.Path, newSelectedItem.Path.Path));
+        LastDeepestSelectedPath = new FullName(PathHelper.GetLongerPath(LastDeepestSelectedPath?.Path, newSelectedItem.Path.Path));
 
         return newSelectedItem;
     }

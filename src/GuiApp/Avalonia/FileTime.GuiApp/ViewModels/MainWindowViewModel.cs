@@ -49,17 +49,7 @@ public partial class MainWindowViewModel : IMainWindowViewModelBase
 
         Title = "FileTime " + versionString;
 
-        //TODO: refactor
-        /*if (AppState.Tabs.Count == 0)
-        {
-            var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider)
-                .GetRequiredService<ITab>();
-            var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
-
-            _appState.AddTab(tabViewModel);
-        }*/
-
-        _lifecycleService.InitStartupHandlersAsync().Wait();
+        Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
     }
 
     public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
