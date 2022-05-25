@@ -41,7 +41,7 @@ public static class DynamicDataExtensions
     }
 
     public static async Task<IEnumerable<AbsolutePath>?> GetItemsAsync(
-        this IObservable<IObservable<IChangeSet<AbsolutePath>>?> stream)
+        this IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> stream)
         => await GetItemsAsync(stream
             .Select(s =>
                 s is null
@@ -50,7 +50,7 @@ public static class DynamicDataExtensions
             .Switch());
 
     public static async Task<IEnumerable<AbsolutePath>?> GetItemsAsync(
-        this IObservable<IChangeSet<AbsolutePath>> stream)
+        this IObservable<IChangeSet<AbsolutePath, string>> stream)
         => await GetItemsAsync(stream.ToCollection());
 
     private static Task<IEnumerable<AbsolutePath>?> GetItemsAsync(

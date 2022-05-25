@@ -15,14 +15,15 @@ namespace FileTime.GuiApp.Services;
 public class RootDriveInfoService : IStartupHandler
 {
     private readonly SourceList<DriveInfo> _rootDrives = new();
-    private readonly IObservable<IChangeSet<AbsolutePath>> _localContentProviderStream;
+    private readonly IObservable<IChangeSet<AbsolutePath, string>> _localContentProviderStream;
 
-    public RootDriveInfoService(IGuiAppState guiAppState, ILocalContentProvider localContentProvider, ITimelessContentProvider timelessContentProvider)
+    public RootDriveInfoService(IGuiAppState guiAppState, ILocalContentProvider localContentProvider,
+        ITimelessContentProvider timelessContentProvider)
     {
         InitRootDrives();
 
-        var localContentProviderAsList = new SourceList<AbsolutePath>();
-        localContentProviderAsList.Add(new AbsolutePath(timelessContentProvider, localContentProvider));
+        var localContentProviderAsList = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
+        localContentProviderAsList.AddOrUpdate(new AbsolutePath(timelessContentProvider, localContentProvider));
         _localContentProviderStream = localContentProviderAsList.Connect();
 
         var rootDriveInfos = Observable.CombineLatest(
@@ -31,7 +32,7 @@ public class RootDriveInfoService : IStartupHandler
                 (items, drives) =>
                 {
                     return items is null
-                        ? Observable.Empty<IChangeSet<(AbsolutePath Path, DriveInfo? Drive)>>()
+                        ? Observable.Empty<IChangeSet<(AbsolutePath Path, DriveInfo? Drive), string>>()
                         : items!
                             .Or(new[] { _localContentProviderStream })
                             .Transform(i => (Path: i, Drive: drives.FirstOrDefault(d =>
@@ -39,7 +40,8 @@ public class RootDriveInfoService : IStartupHandler
                                 var containerPath = localContentProvider.GetNativePath(i.Path).Path;
                                 var drivePath = d.Name.TrimEnd(Path.DirectorySeparatorChar);
                                 return containerPath == drivePath
-                                       || (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && containerPath == "/" && d.Name == "/");
+                                       || (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && containerPath == "/" &&
+                                           d.Name == "/");
                             })))
                             .Filter(t => t.Drive is not null);
                 }
@@ -51,7 +53,7 @@ public class RootDriveInfoService : IStartupHandler
             .Transform(t => new RootDriveInfo(t.Drive, t.Container))
             .Sort(SortExpressionComparer<RootDriveInfo>.Ascending(d => d.Name));
 
-        guiAppState.RootDriveInfos = new BindedCollection<RootDriveInfo>(rootDriveInfos);
+        guiAppState.RootDriveInfos = new BindedCollection<RootDriveInfo, string>(rootDriveInfos);
 
         void InitRootDrives()
         {

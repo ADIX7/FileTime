@@ -25,7 +25,7 @@ public record Container(
     PointInTime PointInTime,
     IObservable<IEnumerable<Exception>> Exceptions,
     ReadOnlyExtensionCollection Extensions,
-    IObservable<IObservable<IChangeSet<AbsolutePath>>?> Items) : IContainer
+    IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> Items) : IContainer
 {
     BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();

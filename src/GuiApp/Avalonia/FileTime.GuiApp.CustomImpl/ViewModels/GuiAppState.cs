@@ -17,7 +17,7 @@ public partial class GuiAppState : AppStateBase, IGuiAppState
 
     [Property] private List<CommandBindingConfiguration> _possibleCommands = new();
 
-    [Property] private BindedCollection<RootDriveInfo> _rootDriveInfos = new();
+    [Property] private BindedCollection<RootDriveInfo, string> _rootDriveInfos = new();
 
     public List<KeyConfig> PreviousKeys { get; } = new();
 }

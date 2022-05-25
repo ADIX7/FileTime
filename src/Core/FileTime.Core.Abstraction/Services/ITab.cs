@@ -8,7 +8,7 @@ public interface ITab : IInitable<IContainer>, IDisposable
 {
     IObservable<IContainer?> CurrentLocation { get; }
     IObservable<AbsolutePath?> CurrentSelectedItem { get; }
-    IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
+    IObservable<IObservable<IChangeSet<IItem, string>>?> CurrentItems { get; }
     FullName? LastDeepestSelectedPath { get; }
 
     void SetCurrentLocation(IContainer newLocation);

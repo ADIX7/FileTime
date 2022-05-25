@@ -31,10 +31,10 @@ public partial class TabViewModel : ITabViewModel
 
     public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
     public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
-    public IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; private set; } = null!;
+    public IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> CurrentItems { get; private set; } = null!;
     public IObservable<IChangeSet<FullName>> MarkedItems { get; }
-    public IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; private set; } = null!;
-    public IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; private set; } = null!;
+    public IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> SelectedsChildren { get; private set; } = null!;
+    public IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> ParentsChildren { get; private set; } = null!;
 
     public IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; private set; } =
         null!;
@@ -46,11 +46,11 @@ public partial class TabViewModel : ITabViewModel
         SelectedsChildrenCollectionObservable
     { get; private set; } = null!;
 
-    [Property] private BindedCollection<IItemViewModel>? _currentItemsCollection;
+    [Property] private BindedCollection<IItemViewModel, string>? _currentItemsCollection;
 
-    [Property] private BindedCollection<IItemViewModel>? _parentsChildrenCollection;
+    [Property] private BindedCollection<IItemViewModel, string>? _parentsChildrenCollection;
 
-    [Property] private BindedCollection<IItemViewModel>? _selectedsChildrenCollection;
+    [Property] private BindedCollection<IItemViewModel, string>? _selectedsChildrenCollection;
 
     public IContainer? CachedCurrentLocation { get; private set; }
 
@@ -81,12 +81,10 @@ public partial class TabViewModel : ITabViewModel
 
         CurrentItems = tab.CurrentItems
             .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
-            /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-            .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
             .Publish(null)
             .RefCount();
 
-        CurrentSelectedItem =
+        /*CurrentSelectedItem =
             Observable.CombineLatest(
                     CurrentItems,
                     tab.CurrentSelectedItem,
@@ -96,18 +94,28 @@ public partial class TabViewModel : ITabViewModel
                             : currentItems
                                 .ToCollection()
                                 .Select(items =>
-                                    items.FirstOrDefault(i => i.BaseItem?.FullName == currentSelectedItemPath?.Path))
+                                    items.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItemPath?.Path.Path))
                 )
                 .Switch()
+                .Publish(null)
+                .RefCount();*/
+
+        CurrentSelectedItem =
+            Observable.CombineLatest(
+                    CurrentItems,
+                    tab.CurrentSelectedItem,
+                    (currentItems, currentSelectedItemPath) =>
+                        CurrentItemsCollection?.Collection?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItemPath?.Path.Path)
+            )
                 .Publish(null)
                 .RefCount();
 
         SelectedsChildren = InitSelectedsChildren();
         ParentsChildren = InitParentsChildren();
 
-        CurrentItemsCollectionObservable = InitAsd(CurrentItems);
-        SelectedsChildrenCollectionObservable = InitAsd(SelectedsChildren);
-        ParentsChildrenCollectionObservable = InitAsd(ParentsChildren);
+        CurrentItemsCollectionObservable = InitCollection(CurrentItems);
+        SelectedsChildrenCollectionObservable = InitCollection(SelectedsChildren);
+        ParentsChildrenCollectionObservable = InitCollection(ParentsChildren);
 
         CurrentItemsCollection = new(CurrentItems);
         ParentsChildrenCollection = new(ParentsChildren);
@@ -115,7 +123,7 @@ public partial class TabViewModel : ITabViewModel
 
         tab.CurrentLocation.Subscribe((_) => _markedItems.Clear()).AddToDisposables(_disposables);
 
-        IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitSelectedsChildren()
+        IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> InitSelectedsChildren()
         {
             var currentSelectedItemThrottled =
                 CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
@@ -131,7 +139,7 @@ public partial class TabViewModel : ITabViewModel
                                 .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))),
                     currentSelectedItemThrottled
                         .Where(c => c is null or not IContainerViewModel)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?)null)
                 )
                 /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
@@ -139,7 +147,7 @@ public partial class TabViewModel : ITabViewModel
                 .RefCount();
         }
 
-        IObservable<IObservable<IChangeSet<IItemViewModel>>?> InitParentsChildren()
+        IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> InitParentsChildren()
         {
             var parentThrottled = CurrentLocation
                 .Select(l => l?.Parent)
@@ -159,7 +167,7 @@ public partial class TabViewModel : ITabViewModel
                                 .Transform(i => MapItemToViewModel(i, ItemViewModelType.Parent))),
                     parentThrottled
                         .Where(p => p is null)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?)null)
                 )
                 /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
                 .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
@@ -167,8 +175,8 @@ public partial class TabViewModel : ITabViewModel
                 .RefCount();
         }
 
-        IObservable<IReadOnlyCollection<IItemViewModel>?> InitAsd(
-            IObservable<IObservable<IChangeSet<IItemViewModel>>?> source)
+        IObservable<IReadOnlyCollection<IItemViewModel>?> InitCollection(
+            IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> source)
         {
             return source
                 .Select(c =>

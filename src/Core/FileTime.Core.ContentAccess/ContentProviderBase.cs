@@ -11,10 +11,10 @@ public abstract class ContentProviderBase : IContentProvider
 {
     private readonly ReadOnlyExtensionCollection _extensions;
 
-    protected BehaviorSubject<IObservable<IChangeSet<AbsolutePath>>?> Items { get; } = new(null);
+    protected BehaviorSubject<IObservable<IChangeSet<AbsolutePath, string>>?> Items { get; } = new(null);
     protected ExtensionCollection Extensions { get; }
 
-    IObservable<IObservable<IChangeSet<AbsolutePath>>?> IContainer.Items => Items;
+    IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> IContainer.Items => Items;
 
     public string Name { get; }
 

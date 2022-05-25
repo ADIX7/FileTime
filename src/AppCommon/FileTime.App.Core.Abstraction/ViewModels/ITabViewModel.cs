@@ -14,13 +14,13 @@ public interface ITabViewModel : IInitable<ITab, int>, IDisposable
     IObservable<bool> IsSelected { get; }
     IObservable<IContainer?> CurrentLocation { get; }
     IObservable<IItemViewModel?> CurrentSelectedItem { get; }
-    IObservable<IObservable<IChangeSet<IItemViewModel>>?> CurrentItems { get; }
+    IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> CurrentItems { get; }
     IObservable<IChangeSet<FullName>> MarkedItems { get; }
-    IObservable<IObservable<IChangeSet<IItemViewModel>>?> SelectedsChildren { get; }
-    IObservable<IObservable<IChangeSet<IItemViewModel>>?> ParentsChildren { get; }
-    BindedCollection<IItemViewModel>? CurrentItemsCollection { get; }
-    BindedCollection<IItemViewModel>? SelectedsChildrenCollection { get; }
-    BindedCollection<IItemViewModel>? ParentsChildrenCollection { get; }
+    IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> SelectedsChildren { get; }
+    IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> ParentsChildren { get; }
+    BindedCollection<IItemViewModel, string>? CurrentItemsCollection { get; }
+    BindedCollection<IItemViewModel, string>? SelectedsChildrenCollection { get; }
+    BindedCollection<IItemViewModel, string>? ParentsChildrenCollection { get; }
     IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; }
     IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; }
     IObservable<IReadOnlyCollection<IItemViewModel>?> SelectedsChildrenCollectionObservable { get; }

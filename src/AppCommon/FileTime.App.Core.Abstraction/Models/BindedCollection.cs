@@ -54,3 +54,53 @@ public partial class BindedCollection<T> : IDisposable, INotifyPropertyChanged
         GC.SuppressFinalize(this);
     }
 }
+
+public partial class BindedCollection<T, TKey> : IDisposable, INotifyPropertyChanged where TKey : notnull
+{
+    private readonly IDisposable? _disposable;
+    private IDisposable? _innerDisposable;
+
+    [Notify] private ReadOnlyObservableCollection<T>? _collection;
+
+    public BindedCollection()
+    {
+    }
+
+    public BindedCollection(IObservable<IChangeSet<T, TKey>> dynamicList)
+    {
+        _disposable = dynamicList
+            .Bind(out var collection)
+            .DisposeMany()
+            .Subscribe();
+
+        _collection = collection;
+    }
+
+    public BindedCollection(IObservable<IObservable<IChangeSet<T, TKey>>?> dynamicListSource)
+    {
+        _disposable = dynamicListSource.Subscribe(dynamicList =>
+        {
+            _innerDisposable?.Dispose();
+            if (dynamicList is not null)
+            {
+                _innerDisposable = dynamicList
+                    .Bind(out var collection)
+                    .DisposeMany()
+                    .Subscribe();
+
+                Collection = collection;
+            }
+            else
+            {
+                Collection = null;
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposable?.Dispose();
+        _innerDisposable?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

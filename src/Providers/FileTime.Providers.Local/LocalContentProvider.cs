@@ -6,7 +6,6 @@ using FileTime.App.Core.Models;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
-using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 
 namespace FileTime.Providers.Local;
@@ -14,7 +13,7 @@ namespace FileTime.Providers.Local;
 public sealed partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
-    private readonly SourceList<AbsolutePath> _rootDirectories = new();
+    private readonly SourceCache<AbsolutePath, string> _rootDirectories = new(i => i.Path.Path);
     private readonly bool _isCaseInsensitive;
 
     public LocalContentProvider(ITimelessContentProvider timelessContentProvider) : base("local")
@@ -43,7 +42,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         _rootDirectories.Edit(actions =>
         {
             actions.Clear();
-            actions.AddRange(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
+            actions.AddOrUpdate(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
         });
     }
 
@@ -147,7 +146,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             pointInTime,
             nonNullExceptions,
             new ExtensionCollection().AsReadOnly(),
-            Observable.Return<IObservable<IChangeSet<AbsolutePath>>?>(null)
+            Observable.Return<IObservable<IChangeSet<AbsolutePath, string>>?>(null)
         );
     }
 
@@ -216,16 +215,16 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             Observable.FromAsync(async () => await Task.Run(InitChildren))
         );
 
-        Task<IObservable<IChangeSet<AbsolutePath>>?> InitChildren()
+        Task<IObservable<IChangeSet<AbsolutePath, string>>?> InitChildren()
         {
-            SourceList<AbsolutePath>? result = null;
+            SourceCache<AbsolutePath, string>? result = null;
             try
             {
                 var items = initializeChildren ? (List<AbsolutePath>?)GetItemsByContainer(directoryInfo, pointInTime) : null;
                 if (items != null)
                 {
-                    result = new SourceList<AbsolutePath>();
-                    result.AddRange(items);
+                    result = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
+                    result.AddOrUpdate(items);
                 }
             }
             catch (Exception e)

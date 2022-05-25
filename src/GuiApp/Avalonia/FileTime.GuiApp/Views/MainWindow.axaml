@@ -327,11 +327,11 @@
                                 <ListBox
                                     x:Name="CurrentItems"
                                     Grid.Row="1"
-                                    x:CompileBindings="False"
                                     AutoScrollToSelectedItem="True"
                                     Classes="ContentListView"
                                     IsTabStop="True"
                                     Items="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection}"
+                                    SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem^}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible">
                                     <ListBox.ItemTemplate>

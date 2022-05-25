@@ -19,7 +19,7 @@ public class Tab : ITab
     private PointInTime _currentPointInTime;
 
     public IObservable<IContainer?> CurrentLocation { get; }
-    public IObservable<IObservable<IChangeSet<IItem>>?> CurrentItems { get; }
+    public IObservable<IObservable<IChangeSet<IItem, string>>?> CurrentItems { get; }
     public IObservable<AbsolutePath?> CurrentSelectedItem { get; }
     public FullName? LastDeepestSelectedPath { get; private set; }
 
@@ -55,9 +55,9 @@ public class Tab : ITab
                         (items, filters) => items?.Where(i => filters.All(f => f.Filter(i)))),
                     CurrentLocation
                         .Where(c => c is null)
-                        .Select(_ => (IObservable<IChangeSet<IItem>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItem, string>>?)null)
                 )
-                .Publish((IObservable<IChangeSet<IItem>>?)null)
+                .Publish((IObservable<IChangeSet<IItem, string>>?)null)
                 .RefCount();
 
         CurrentSelectedItem =
