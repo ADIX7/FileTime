@@ -33,6 +33,7 @@ public static class Startup
     {
         return serviceCollection
             .AddSingleton<IUserCommandHandler, NavigationUserCommandHandlerService>()
-            .AddSingleton<IUserCommandHandler, ItemManipulationUserCommandHandlerService>();
+            .AddSingleton<IUserCommandHandler, ItemManipulationUserCommandHandlerService>()
+            .AddSingleton<IUserCommandHandler, ToolUserCommandHandlerService>();
     }
 }

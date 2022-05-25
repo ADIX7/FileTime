@@ -28,11 +28,12 @@
 
     <Grid Background="{DynamicResource AppBackgroundBrush}">
         <Grid
-            x:DataType="vm:MainWindowViewModel">
+            x:DataType="vm:MainWindowViewModel"
+            IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}, FallbackValue=False}">
+
             <Grid
                 ColumnDefinitions="250,*"
-                RowDefinitions="Auto,*"
-                IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}}">
+                RowDefinitions="Auto,*">
 
                 <Grid PointerPressed="HeaderPointerPressed">
                     <Rectangle Fill="#01000000" />

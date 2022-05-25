@@ -39,6 +39,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IIconProvider, MaterialIconProvider>();
         serviceCollection.TryAddSingleton<IModalService, ModalService>();
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
+        serviceCollection.TryAddSingleton<ISystemClipboardService, SystemClipboardService>();
         serviceCollection.TryAddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
 
         return serviceCollection

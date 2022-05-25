@@ -7,7 +7,6 @@ using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using InitableService;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 

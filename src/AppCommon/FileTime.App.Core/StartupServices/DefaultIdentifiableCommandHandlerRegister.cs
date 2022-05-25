@@ -13,6 +13,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
 
         AddUserCommand(CloseTabCommand.Instance);
         AddUserCommand(CopyCommand.Instance);
+        AddUserCommand(CopyNativePathCommand.Instance);
         AddUserCommand(CreateContainer.Instance);
         AddUserCommand(CreateElement.Instance);
         AddUserCommand(EnterRapidTravelCommand.Instance);
@@ -28,6 +29,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(MoveCursorToLastCommand.Instance);
         AddUserCommand(MoveCursorUpCommand.Instance);
         AddUserCommand(MoveCursorUpPageCommand.Instance);
+        AddUserCommand(OpenInDefaultFileExplorerCommand.Instance);
         AddUserCommand(OpenSelectedCommand.Instance);
         AddUserCommand(PasteCommand.Merge);
         AddUserCommand(PasteCommand.Overwrite);
