@@ -36,7 +36,7 @@ public class MaterialIconProvider : IIconProvider
     {
         item = item is ISymlinkElement symlinkElement ? symlinkElement.RealItem : item;
         var icon = item is IContainer ? "folder.svg" : "file.svg";
-        var localPath = item.NativePath?.Path;
+        var localPath = item.NativePath?.Path.TrimEnd(Path.DirectorySeparatorChar);
 
         if (!EnableAdvancedIcons) return GetAssetPath(icon);
 

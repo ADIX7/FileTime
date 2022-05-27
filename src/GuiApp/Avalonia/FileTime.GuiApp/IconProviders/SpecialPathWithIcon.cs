@@ -9,7 +9,7 @@ public class SpecialPathWithIcon
 
     public SpecialPathWithIcon(string path, ImagePath iconPath)
     {
-        Path = path;
+        Path = path.TrimEnd(System.IO.Path.DirectorySeparatorChar);
         IconPath = iconPath;
     }
 }
