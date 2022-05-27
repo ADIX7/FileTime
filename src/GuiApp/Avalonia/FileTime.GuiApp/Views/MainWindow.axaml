@@ -140,39 +140,39 @@
                         </Grid>
                     </Border>
 
-                    <!--Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
-						<Grid RowDefinitions="Auto,Auto">
+                    <Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+                        <Grid RowDefinitions="Auto,Auto">
 
-							<TextBlock
-								Margin="10,0,10,10"
-								Text="Places" />
+                            <TextBlock
+                                Margin="10,0,10,10"
+                                Text="Places" />
 
-							<ItemsRepeater
-								Grid.Row="1"
-								Items="{Binding Places}">
-								<ItemsRepeater.ItemTemplate>
-									<DataTemplate>
-										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
-											<StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
-												<Image
-													Width="20"
-													Height="20"
-													VerticalAlignment="Center"
-													Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" />
+                            <ItemsRepeater
+                                Grid.Row="1"
+                                Items="{Binding AppState.Places}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PlaceInfo">
+                                        <Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
+                                                <Image
+                                                    Width="20"
+                                                    Height="20"
+                                                    VerticalAlignment="Center"
+                                                    Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" />
 
-												<TextBlock
-													Margin="5,0,0,0"
-													VerticalAlignment="Center"
-													Text="{Binding Name}" />
-											</StackPanel>
-										</Grid>
-									</DataTemplate>
-								</ItemsRepeater.ItemTemplate>
-							</ItemsRepeater>
-						</Grid>
-					</Border>
+                                                <TextBlock
+                                                    Margin="5,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding DisplayName}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </Grid>
+                    </Border>
 
-					<Border Grid.Row="2" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+					<!--Border Grid.Row="2" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
 						<Grid RowDefinitions="Auto,Auto">
 
 							<TextBlock

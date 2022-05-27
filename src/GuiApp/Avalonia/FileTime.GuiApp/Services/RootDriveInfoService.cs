@@ -8,23 +8,23 @@ using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using FileTime.GuiApp.ViewModels;
 using FileTime.Providers.Local;
-using IContainer = FileTime.Core.Models.IContainer;
 
 namespace FileTime.GuiApp.Services;
 
 public class RootDriveInfoService : IStartupHandler
 {
     private readonly SourceList<DriveInfo> _rootDrives = new();
-    private readonly IObservable<IChangeSet<AbsolutePath, string>> _localContentProviderStream;
 
-    public RootDriveInfoService(IGuiAppState guiAppState, ILocalContentProvider localContentProvider,
+    public RootDriveInfoService(
+        IGuiAppState guiAppState, 
+        ILocalContentProvider localContentProvider,
         ITimelessContentProvider timelessContentProvider)
     {
         InitRootDrives();
 
         var localContentProviderAsList = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
         localContentProviderAsList.AddOrUpdate(new AbsolutePath(timelessContentProvider, localContentProvider));
-        _localContentProviderStream = localContentProviderAsList.Connect();
+        var localContentProviderStream = localContentProviderAsList.Connect();
 
         var rootDriveInfos = Observable.CombineLatest(
                 localContentProvider.Items,
@@ -34,7 +34,7 @@ public class RootDriveInfoService : IStartupHandler
                     return items is null
                         ? Observable.Empty<IChangeSet<(AbsolutePath Path, DriveInfo? Drive), string>>()
                         : items!
-                            .Or(new[] { _localContentProviderStream })
+                            .Or(new[] { localContentProviderStream })
                             .Transform(i => (Path: i, Drive: drives.FirstOrDefault(d =>
                             {
                                 var containerPath = localContentProvider.GetNativePath(i.Path).Path;

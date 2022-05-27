@@ -12,4 +12,5 @@ public interface IGuiAppState : IAppState
     string? MessageBoxText { get; set; }
     List<CommandBindingConfiguration> PossibleCommands { get; set; }
     BindedCollection<RootDriveInfo, string> RootDriveInfos { get; set; }
+    IReadOnlyList<PlaceInfo> Places { get; set; }
 }

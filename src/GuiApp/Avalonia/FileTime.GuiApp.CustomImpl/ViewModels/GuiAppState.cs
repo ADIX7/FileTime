@@ -19,5 +19,7 @@ public partial class GuiAppState : AppStateBase, IGuiAppState
 
     [Property] private BindedCollection<RootDriveInfo, string> _rootDriveInfos = new();
 
+    [Property] private IReadOnlyList<PlaceInfo> _places;
+
     public List<KeyConfig> PreviousKeys { get; } = new();
 }

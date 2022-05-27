@@ -43,7 +43,8 @@ public static class Startup
         serviceCollection.TryAddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
 
         return serviceCollection
-            .AddSingleton<IStartupHandler, RootDriveInfoService>();
+            .AddSingleton<IStartupHandler, RootDriveInfoService>()
+            .AddSingleton<IStartupHandler, PlacesService>();
     }
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)
