@@ -2,18 +2,19 @@ using System.Runtime.InteropServices;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using FileTime.GuiApp.IconProviders;
 using FileTime.GuiApp.ViewModels;
 using FileTime.Providers.Local;
 using Syroot.Windows.IO;
 
 namespace FileTime.GuiApp.Services;
 
-public class PlacesService : IStartupHandler
+public class WindowsPlacesService : IPlacesService
 {
     private readonly ILocalContentProvider _localContentProvider;
     private readonly IGuiAppState _guiAppState;
 
-    public PlacesService(
+    public WindowsPlacesService(
         ILocalContentProvider localContentProvider,
         IGuiAppState guiAppState)
     {
@@ -49,4 +50,16 @@ public class PlacesService : IStartupHandler
 
         _guiAppState.Places = places.AsReadOnly();
     }
+
+    public Dictionary<string, SpecialPathType> GetSpecialPaths() 
+        => new Dictionary<string, SpecialPathType>
+        {
+            {KnownFolders.Desktop.Path, SpecialPathType.Desktop},
+            {KnownFolders.Documents.Path, SpecialPathType.Documents},
+            {KnownFolders.DownloadsLocalized.Path, SpecialPathType.Downloads},
+            {KnownFolders.MusicLocalized.Path, SpecialPathType.Music},
+            {KnownFolders.Pictures.Path, SpecialPathType.Images},
+            {KnownFolders.Profile.Path, SpecialPathType.Home},
+            {KnownFolders.Videos.Path, SpecialPathType.Videos},
+        };
 }

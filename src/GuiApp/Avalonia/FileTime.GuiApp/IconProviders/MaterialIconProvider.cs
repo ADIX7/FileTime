@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Models;
+using FileTime.GuiApp.Services;
 using FileTime.Providers.Local;
-using Syroot.Windows.IO;
 
 namespace FileTime.GuiApp.IconProviders;
 
@@ -11,7 +11,7 @@ public class MaterialIconProvider : IIconProvider
     private static readonly Dictionary<string, string> _iconsByExtension = new();
     private static readonly Dictionary<string, string> _iconsByFileName = new();
 
-    private readonly List<SpecialPathWithIcon> _specialPaths = new();
+    private readonly Lazy<List<SpecialPathWithIcon>> _specialPaths;
     public bool EnableAdvancedIcons { get; set; } = true;
 
     static MaterialIconProvider()
@@ -19,17 +19,18 @@ public class MaterialIconProvider : IIconProvider
         InitMatches();
     }
 
-    public MaterialIconProvider()
+    public MaterialIconProvider(IPlacesService placesService)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+        _specialPaths = new Lazy<List<SpecialPathWithIcon>>(() =>
+        {
+            var result = new List<SpecialPathWithIcon>();
+            foreach (var kvp in placesService.GetSpecialPaths())
+            {
+                result.Add(new SpecialPathWithIcon(kvp.Key, GetAssetPath(GetSpecialPathIcon(kvp.Value))));
+            }
 
-        _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Desktop.Path, GetAssetPath("desktop.svg")));
-        _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Documents.Path, GetAssetPath("folder-resource.svg")));
-        _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.DownloadsLocalized.Path, GetAssetPath("folder-download.svg")));
-        _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.MusicLocalized.Path, GetAssetPath("folder-music.svg")));
-        _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Pictures.Path, GetAssetPath("folder-images.svg")));
-        _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Profile.Path, GetAssetPath("folder-home.svg")));
-        _specialPaths.Add(new SpecialPathWithIcon(KnownFolders.Videos.Path, GetAssetPath("folder-video.svg")));
+            return result;
+        });
     }
 
     public ImagePath GetImage(IItem item)
@@ -40,13 +41,13 @@ public class MaterialIconProvider : IIconProvider
 
         if (!EnableAdvancedIcons) return GetAssetPath(icon);
 
-        if (localPath != null && _specialPaths.Find(p => p.Path == localPath) is SpecialPathWithIcon specialPath)
+        if (localPath != null && _specialPaths.Value.Find(p => p.Path == localPath) is SpecialPathWithIcon specialPath)
         {
             return specialPath.IconPath;
         }
 
         if (item is not IElement element) return GetAssetPath(icon);
-        
+
         if (element.Provider is ILocalContentProvider && (localPath?.EndsWith(".svg") ?? false))
         {
             return new ImagePath(ImagePathType.Absolute, localPath);
@@ -66,6 +67,21 @@ public class MaterialIconProvider : IIconProvider
 
         return GetAssetPath(icon);
     }
+
+    private string GetSpecialPathIcon(SpecialPathType pathType)
+        => pathType switch
+        {
+            SpecialPathType.Desktop => "desktop.svg",
+            SpecialPathType.Documents => "folder-resource.svg",
+            SpecialPathType.Downloads => "folder-download.svg",
+            SpecialPathType.Music => "folder-music.svg",
+            SpecialPathType.Images => "folder-images.svg",
+            SpecialPathType.Home => "folder-home.svg",
+            SpecialPathType.Videos => "folder-video.svg",
+            SpecialPathType.Templates => "folder-resource.svg",
+            SpecialPathType.PublicShare => "folder-resource.svg",
+            _ => throw new NotImplementedException()
+        };
 
     private static ImagePath GetAssetPath(string iconName)
     {

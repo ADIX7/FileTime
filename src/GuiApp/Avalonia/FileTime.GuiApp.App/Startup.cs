@@ -45,16 +45,20 @@ public static class Startup
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            serviceCollection.AddSingleton<IContextMenuProvider, WindowsContextMenuProvider>();
+            serviceCollection
+                .AddSingleton<IContextMenuProvider, WindowsContextMenuProvider>()
+                .AddSingleton<IPlacesService, WindowsPlacesService>();
         }
         else
         {
-            serviceCollection.AddSingleton<IContextMenuProvider, LinuxContextMenuProvider>();
+            serviceCollection
+                .AddSingleton<IContextMenuProvider, LinuxContextMenuProvider>()
+                .AddSingleton<IPlacesService, LinuxPlacesService>();
         }
 
         return serviceCollection
             .AddSingleton<IStartupHandler, RootDriveInfoService>()
-            .AddSingleton<IStartupHandler, PlacesService>();
+            .AddSingleton<IStartupHandler>(sp => sp.GetRequiredService<IPlacesService>());
     }
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)
