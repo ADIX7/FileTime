@@ -1,6 +1,13 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="using:FileTime.GuiApp.Converters">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Brushes.axaml"></ResourceInclude>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
     <converters:ItemViewModeToBrushConverter
         AlternativeBrush="{StaticResource AlternativeItemForegroundBrush}"
         DefaultBrush="{StaticResource ForegroundBrush}"
@@ -32,4 +39,5 @@
     <converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter" />
     <converters:ItemToImageConverter x:Key="ItemToImageConverter" />
     <converters:StringReplaceConverter x:Key="PathPreformatter" OldValue="://" NewValue="/"/>
+    <converters:ContextMenuGenerator x:Key="ContextMenuGenerator"/>
 </ResourceDictionary>

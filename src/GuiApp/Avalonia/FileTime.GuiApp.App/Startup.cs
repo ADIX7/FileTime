@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
@@ -41,6 +42,15 @@ public static class Startup
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
         serviceCollection.TryAddSingleton<ISystemClipboardService, SystemClipboardService>();
         serviceCollection.TryAddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            serviceCollection.AddSingleton<IContextMenuProvider, WindowsContextMenuProvider>();
+        }
+        else
+        {
+            serviceCollection.AddSingleton<IContextMenuProvider, LinuxContextMenuProvider>();
+        }
 
         return serviceCollection
             .AddSingleton<IStartupHandler, RootDriveInfoService>()

@@ -1,9 +1,8 @@
 <Application
     x:Class="FileTime.GuiApp.App.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:converters="using:FileTime.GuiApp.Converters"
-    xmlns:local="using:FileTime.GuiApp"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -13,7 +12,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
-
+    
     <Application.Styles>
         <StyleInclude Source="avares://FileTime.GuiApp/Resources/Styles.axaml" />
     </Application.Styles>

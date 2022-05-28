@@ -25,6 +25,18 @@
     Closed="OnWindowClosed"
     TransparencyLevelHint="Blur"
     mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/SolarizedDarkTheme.axaml"></ResourceInclude>
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Brushes.axaml"></ResourceInclude>
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Converters.axaml"></ResourceInclude>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Styles>
+        <StyleInclude Source="avares://FileTime.GuiApp/Resources/Styles.axaml" />
+    </Window.Styles>
 
     <Grid Background="{DynamicResource AppBackgroundBrush}">
         <Grid
@@ -140,7 +152,8 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+                    <Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}"
+                            Padding="0,10" Margin="10">
                         <Grid RowDefinitions="Auto,Auto">
 
                             <TextBlock
@@ -152,8 +165,10 @@
                                 Items="{Binding AppState.Places}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:PlaceInfo">
-                                        <Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
-                                            <StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
+                                        <Grid Classes="SidebarContainerPresenter"
+                                              PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Margin="10,5"
+                                                        HorizontalAlignment="Stretch">
                                                 <Image
                                                     Width="20"
                                                     Height="20"
@@ -172,7 +187,7 @@
                         </Grid>
                     </Border>
 
-					<!--Border Grid.Row="2" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
+                    <!--Border Grid.Row="2" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
 						<Grid RowDefinitions="Auto,Auto">
 
 							<TextBlock
@@ -265,7 +280,7 @@
                                         <TextBlock
                                             Margin="5,0,0,0"
                                             VerticalAlignment="Center"
-                                            Text="{Binding CurrentLocation^.Name}" />
+                                            Text="{Binding CurrentLocation^.Name, FallbackValue=Loading...}" />
                                     </StackPanel>
 
                                     <Rectangle
@@ -280,14 +295,7 @@
                     <Grid
                         Grid.Row="2"
                         Margin="20,0,0,0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="15*" />
-                                <ColumnDefinition Width="10" />
-                                <ColumnDefinition Width="40*" />
-                                <ColumnDefinition Width="10" />
-                                <ColumnDefinition Width="45*" />
-                            </Grid.ColumnDefinitions>
+                        <Grid ColumnDefinitions="15*,10,40*,10,45*">
 
                             <ListBox
                                 x:CompileBindings="False"
@@ -318,7 +326,7 @@
                             <Grid
                                 Grid.Column="2"
                                 RowDefinitions="Auto,*">
-                                <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^}">
+                                <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^, FallbackValue=False}">
                                     <Image
                                         Width="40"
                                         Height="40"
@@ -422,11 +430,11 @@
                                 <Grid
                                     IsVisible="{Binding ItemPreviewService.ItemPreview^,Converter={x:Static ObjectConverters.IsNotNull}}">
                                     <TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this item."
-                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}}" />
+                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown},FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" />
                                     <TextBlock HorizontalAlignment="Center" Text="Empty"
-                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}}" />
+                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty},FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" />
                                     <ScrollViewer
-                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}}">
+                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text},FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}">
                                         <TextBox
                                             IsReadOnly="True"
                                             x:CompileBindings="False"
@@ -439,11 +447,8 @@
 
                     <Grid Grid.Row="3">
                         <Grid
-                            IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualityConverter},ConverterParameter=RapidTravel}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="1" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                            IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualityConverter},ConverterParameter=RapidTravel}"
+                            RowDefinitions="1,Auto">
 
                             <Rectangle
                                 Height="1"
