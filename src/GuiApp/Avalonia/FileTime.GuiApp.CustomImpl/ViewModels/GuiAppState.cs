@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.GuiApp.Configuration;
@@ -22,4 +23,5 @@ public partial class GuiAppState : AppStateBase, IGuiAppState
     [Property] private IReadOnlyList<PlaceInfo> _places;
 
     public List<KeyConfig> PreviousKeys { get; } = new();
+    public ObservableCollection<string> PopupTexts { get; } = new();
 }

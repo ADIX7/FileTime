@@ -443,6 +443,30 @@
                                 </Grid>
                             </Grid>
                         </Grid>
+                        
+                        <ItemsRepeater Items="{Binding AppState.PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Top" IsVisible="{Binding AppState.PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+                            <ItemsRepeater.Styles>
+                                <Style Selector="TextBlock">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:1">
+                                            <KeyFrame Cue="0%">
+                                                <Setter Property="Opacity" Value="0.0"/>
+                                            </KeyFrame>
+                                            <KeyFrame Cue="100%">
+                                                <Setter Property="Opacity" Value="1.0"/>
+                                            </KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </ItemsRepeater.Styles>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Border Background="{DynamicResource ContainerGradientBackgroundBrush}" Margin="5" Padding="5">
+                                        <TextBlock Text="{Binding}" Foreground="{DynamicResource AccentComplementBrush}" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
                     </Grid>
 
                     <Grid Grid.Row="3">

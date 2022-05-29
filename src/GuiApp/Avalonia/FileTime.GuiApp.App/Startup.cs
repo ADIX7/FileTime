@@ -41,6 +41,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IModalService, ModalService>();
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
         serviceCollection.TryAddSingleton<ISystemClipboardService, SystemClipboardService>();
+        serviceCollection.TryAddSingleton<ToastMessageSink>();
         serviceCollection.TryAddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -102,6 +103,6 @@ public static class Startup
         this LoggerSinkConfiguration loggerConfiguration,
         IServiceProvider serviceProvider)
     {
-        return loggerConfiguration.Sink(serviceProvider.GetService<ToastMessageSink>());
+        return loggerConfiguration.Sink(serviceProvider.GetRequiredService<ToastMessageSink>());
     }
 }

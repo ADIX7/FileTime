@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using Avalonia.Threading;
 using DynamicData;
 using FileTime.App.Core.Services;
 using FileTime.Core.Interactions;
@@ -9,12 +10,14 @@ namespace FileTime.GuiApp.Services;
 public class DialogService : IDialogService
 {
     private readonly IModalService _modalService;
+    private readonly IGuiAppState _guiAppState;
 
     public IObservable<ReadInputsViewModel?> ReadInput { get; }
 
-    public DialogService(IModalService modalService)
+    public DialogService(IModalService modalService, IGuiAppState guiAppState)
     {
         _modalService = modalService;
+        _guiAppState = guiAppState;
         ReadInput = modalService
             .OpenModals
             .ToCollection()
@@ -35,6 +38,16 @@ public class DialogService : IDialogService
         };
 
         _modalService.OpenModal(modalViewModel);
+    }
+
+    public void ShowToastMessage(string text)
+    {
+        Task.Run(async () =>
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => _guiAppState.PopupTexts.Add(text));
+            await Task.Delay(5000);
+            await Dispatcher.UIThread.InvokeAsync(() => _guiAppState.PopupTexts.Remove(text));
+        });
     }
 
     private void HandleReadInputsSuccess(ReadInputsViewModel readInputsViewModel)
