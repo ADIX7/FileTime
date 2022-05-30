@@ -24,4 +24,5 @@ public interface IContentProvider : IContainer, IOnContainerEnter
     NativePath GetNativePath(FullName fullName);
 
     Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default);
+    bool CanHandlePath(NativePath path);
 }

@@ -130,7 +130,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     {
         var containerNameInput = new TextInputElement("Container name");
 
-        await _inputInterface.ReadInputs(new List<IInputElement>() { containerNameInput });
+        await _inputInterface.ReadInputs(containerNameInput);
 
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;
@@ -147,7 +147,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     {
         var containerNameInput = new TextInputElement("Element name");
 
-        await _inputInterface.ReadInputs(new List<IInputElement>() { containerNameInput });
+        await _inputInterface.ReadInputs(containerNameInput);
 
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;

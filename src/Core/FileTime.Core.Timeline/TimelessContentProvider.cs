@@ -2,7 +2,6 @@ using System.Reactive.Subjects;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
-using FileTime.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.Core.Timeline;
@@ -11,8 +10,7 @@ public class TimelessContentProvider : ITimelessContentProvider
 {
     private readonly Lazy<List<IContentProvider>> _contentProviders;
 
-    public BehaviorSubject<PointInTime> CurrentPointInTime { get; } =
-        new BehaviorSubject<PointInTime>(PointInTime.Present);
+    public BehaviorSubject<PointInTime> CurrentPointInTime { get; } = new(PointInTime.Present);
 
     public TimelessContentProvider(IServiceProvider serviceProvider)
     {
@@ -35,5 +33,17 @@ public class TimelessContentProvider : ITimelessContentProvider
         return await contentProvider.GetItemByFullNameAsync(fullName, pointInTime ?? PointInTime.Present,
             forceResolve, forceResolvePathType,
             itemInitializationSettings);
+    }
+
+    public async Task<IItem?> GetItemByNativePathAsync(NativePath nativePath, PointInTime? pointInTime = null)
+    {
+        foreach (var contentProvider in _contentProviders.Value)
+        {
+            if(!contentProvider.CanHandlePath(nativePath)) continue;
+
+            return await contentProvider.GetItemByNativePathAsync(nativePath, pointInTime ?? PointInTime.Present);
+        }
+
+        return null;
     }
 }

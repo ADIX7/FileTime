@@ -2,6 +2,7 @@ using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
+using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
@@ -18,6 +19,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly ILocalContentProvider _localContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly IInputInterface _inputInterface;
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
@@ -29,13 +31,15 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         IServiceProvider serviceProvider,
         ILocalContentProvider localContentProvider,
         IUserCommandHandlerService userCommandHandlerService,
-        ITimelessContentProvider timelessContentProvider) : base(appState)
+        ITimelessContentProvider timelessContentProvider,
+        IInputInterface inputInterface) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
         _localContentProvider = localContentProvider;
         _userCommandHandlerService = userCommandHandlerService;
         _timelessContentProvider = timelessContentProvider;
+        _inputInterface = inputInterface;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -50,6 +54,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<EnterRapidTravelCommand>(EnterRapidTravel),
             new TypeUserCommandHandler<ExitRapidTravelCommand>(ExitRapidTravel),
             new TypeUserCommandHandler<GoToHomeCommand>(GoToHome),
+            new TypeUserCommandHandler<GoToPathCommand>(GoToPath),
             new TypeUserCommandHandler<GoToProviderCommand>(GoToProvider),
             new TypeUserCommandHandler<GoToRootCommand>(GoToRoot),
             new TypeUserCommandHandler<GoUpCommand>(GoUp),
@@ -64,6 +69,20 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<RefreshCommand>(Refresh),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
+    }
+
+    private async Task GoToPath()
+    {
+        var pathInput = new TextInputElement("Path");
+        await _inputInterface.ReadInputs(pathInput);
+        
+        //TODO: message on empty result and on null pathInput.Value
+        var resolvedPath = await _timelessContentProvider.GetItemByNativePathAsync(new NativePath(pathInput.Value));
+        if (resolvedPath is IContainer container)
+        {
+            await _userCommandHandlerService.HandleCommandAsync(
+                new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, container)));
+        }
     }
 
     private async Task GoToHome()

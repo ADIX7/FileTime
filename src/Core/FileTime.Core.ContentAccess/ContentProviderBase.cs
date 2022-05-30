@@ -81,4 +81,6 @@ public abstract class ContentProviderBase : IContentProvider
     public abstract Task<byte[]?> GetContentAsync(IElement element,
         int? maxLength = null,
         CancellationToken cancellationToken = default);
+
+    public abstract bool CanHandlePath(NativePath path);
 }

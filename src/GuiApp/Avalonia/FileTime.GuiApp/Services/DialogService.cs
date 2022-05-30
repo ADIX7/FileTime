@@ -62,7 +62,7 @@ public class DialogService : IDialogService
         readInputsViewModel.CancelHandler?.Invoke();
     }
 
-    public Task<bool> ReadInputs(IEnumerable<IInputElement> fields)
+    public Task<bool> ReadInputs(params IInputElement[] fields)
     {
         var taskCompletionSource = new TaskCompletionSource<bool>();
         ReadInputs(fields, () => taskCompletionSource.SetResult(true), () => taskCompletionSource.SetResult(false));

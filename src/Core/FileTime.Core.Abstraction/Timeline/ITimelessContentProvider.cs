@@ -13,4 +13,6 @@ public interface ITimelessContentProvider
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default);
+
+    Task<IItem?> GetItemByNativePathAsync(NativePath nativePath, PointInTime? pointInTime = null);
 }
