@@ -89,13 +89,13 @@
                                               PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
                                             <Grid Margin="0,5" ColumnDefinitions="Auto,*,Auto"
                                                   RowDefinitions="Auto,Auto">
-                                                <Image
+                                                <!--Image
                                                     Grid.RowSpan="2"
                                                     Width="20"
                                                     Height="20"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
-                                                    Source="{SvgImage /Assets/material/folder.svg}" />
+                                                    Source="{SvgImage /Assets/material/folder.svg}" /-->
 
                                                 <StackPanel
                                                     Grid.Column="1"
@@ -169,11 +169,11 @@
                                               PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
                                             <StackPanel Orientation="Horizontal" Margin="10,5"
                                                         HorizontalAlignment="Stretch">
-                                                <Image
+                                                <!--Image
                                                     Width="20"
                                                     Height="20"
                                                     VerticalAlignment="Center"
-                                                    Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" />
+                                                    Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" /-->
 
                                                 <TextBlock
                                                     Margin="5,0,0,0"
@@ -327,11 +327,11 @@
                                 Grid.Column="2"
                                 RowDefinitions="Auto,*">
                                 <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^, FallbackValue=False}">
-                                    <Image
+                                    <!--Image
                                         Width="40"
                                         Height="40"
                                         Classes="LoadingAnimation"
-                                        Source="{SvgImage /Assets/loading.svg}" />
+                                        Source="{SvgImage /Assets/loading.svg}" /-->
                                 </Grid>
                                 <ListBox
                                     x:Name="CurrentItems"
