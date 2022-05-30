@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Avalonia;
 using Avalonia.ReactiveUI;
 
@@ -7,16 +9,26 @@ namespace FileTime.GuiApp.App;
 
 public static class Program
 {
-    public static string AppDataRoot { get; }
-    public static string EnvironmentName { get; }
+    public static string AppDataRoot { get; private set; }
+    public static string EnvironmentName { get; private set; }
 
     static Program()
     {
 #if DEBUG
-        EnvironmentName = "Development";
-
-        AppDataRoot = Path.Combine(Environment.CurrentDirectory, "appdata");
+        InitDevelopment();
 #else
+        InitRelease();
+#endif
+
+        void InitDevelopment()
+        {
+            EnvironmentName = "Development";
+
+            AppDataRoot = Path.Combine(Environment.CurrentDirectory, "appdata");
+        }
+
+        void InitRelease()
+        {
             EnvironmentName = "Release";
 
             var possibleDataRootsPaths = new List<string>()
@@ -37,12 +49,13 @@ public static class Program
                     appDataRoot = possibleAppDataRoot;
                     break;
                 }
-                catch { }
+                catch
+                {
+                }
             }
 
-            if (appDataRoot == null) throw new UnauthorizedAccessException();
-            AppDataRoot = appDataRoot;
-#endif
+            AppDataRoot = appDataRoot ?? throw new UnauthorizedAccessException();
+        }
     }
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
