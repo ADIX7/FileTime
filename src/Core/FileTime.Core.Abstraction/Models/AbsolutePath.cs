@@ -50,4 +50,7 @@ public class AbsolutePath
             return null;
         }
     }
+
+    public AbsolutePath GetChild(string childName, AbsolutePathType type)
+        => new (TimelessProvider, PointInTime, Path.GetChild(childName), type);
 }
