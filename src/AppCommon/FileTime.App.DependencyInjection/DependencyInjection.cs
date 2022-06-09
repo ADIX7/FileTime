@@ -3,6 +3,7 @@ using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.Persistence;
 using FileTime.Core.Command;
+using FileTime.Core.Command.Copy;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.CreateElement;
 using FileTime.Core.CommandHandlers;
@@ -25,7 +26,11 @@ public static class DependencyInjection
         serviceCollection.TryAddSingleton<ITimelessContentProvider, TimelessContentProvider>();
         serviceCollection.TryAddSingleton<ICommandRunner, CommandRunner>();
         serviceCollection.TryAddSingleton<IContentAccessorFactory, ContentAccessorFactory>();
+        serviceCollection.TryAddSingleton<IContentProviderRegistry, ContentProviderRegistry>();
+        //TODO: check local/remote context 
         serviceCollection.TryAddSingleton<ILocalCommandExecutor, LocalCommandExecutor>();
+        serviceCollection.TryAddSingleton<ICommandSchedulerNotifier, LocalCommandSchedulerNotifier>();
+        
         serviceCollection.TryAddSingleton<IApplicationSettings, ApplicationSettings>();
         serviceCollection.TryAddSingleton<ITabPersistenceService, TabPersistenceService>();
         serviceCollection.TryAddTransient<ITab, Tab>();
@@ -43,6 +48,7 @@ public static class DependencyInjection
     {
         return serviceCollection
             .AddTransient<CreateContainerCommand>()
-            .AddTransient<CreateElementCommand>();
+            .AddTransient<CreateElementCommand>()
+            .AddTransient<CopyCommand>();
     }
 }

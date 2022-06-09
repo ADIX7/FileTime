@@ -42,7 +42,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
         serviceCollection.TryAddSingleton<ISystemClipboardService, SystemClipboardService>();
         serviceCollection.TryAddSingleton<ToastMessageSink>();
-        serviceCollection.TryAddSingleton<IInputInterface>(s => s.GetRequiredService<IDialogService>());
+        serviceCollection.TryAddSingleton<IUserCommunicationService>(s => s.GetRequiredService<IDialogService>());
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

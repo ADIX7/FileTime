@@ -9,6 +9,7 @@ using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 
 namespace FileTime.Providers.Local;
+
 public sealed partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
@@ -58,7 +59,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                         ? StringComparison.InvariantCultureIgnoreCase
                         : StringComparison.InvariantCulture
                 )
-        );
+            );
 
         return rootDrive is not null;
     }
@@ -75,11 +76,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         {
             if ((path?.Length ?? 0) == 0)
             {
-                return Task.FromResult((IItem)this);
+                return Task.FromResult((IItem) this);
             }
             else if (Directory.Exists(path))
             {
-                return Task.FromResult((IItem)DirectoryToContainer(
+                return Task.FromResult((IItem) DirectoryToContainer(
                     new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
                     pointInTime,
                     !itemInitializationSettings.SkipChildInitialization)
@@ -87,7 +88,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             }
             else if (File.Exists(path))
             {
-                return Task.FromResult((IItem)FileToElement(new FileInfo(path), pointInTime));
+                return Task.FromResult((IItem) FileToElement(new FileInfo(path), pointInTime));
             }
 
             var type = forceResolvePathType switch
@@ -119,10 +120,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         return forceResolvePathType switch
         {
             AbsolutePathType.Container => Task.FromResult(
-                (IItem)CreateEmptyContainer(
+                (IItem) CreateEmptyContainer(
                     nativePath,
                     pointInTime,
-                    Observable.Return(new List<Exception>() { innerException })
+                    Observable.Return(new List<Exception>() {innerException})
                 )
             ),
             AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
@@ -234,22 +235,25 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
         Task<IObservable<IChangeSet<AbsolutePath, string>>?> InitChildren()
         {
-            SourceCache<AbsolutePath, string>? result = null;
             try
             {
-                var items = initializeChildren ? (List<AbsolutePath>?)GetItemsByContainer(directoryInfo, pointInTime) : null;
+                var items = initializeChildren ? (List<AbsolutePath>?) GetItemsByContainer(directoryInfo, pointInTime) : null;
                 if (items != null)
                 {
-                    result = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
+                    var result = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
+
+                    if (items.Count == 0) return Task.FromResult((IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect().StartWithEmpty());
+
                     result.AddOrUpdate(items);
+                    return Task.FromResult((IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect());
                 }
             }
             catch (Exception e)
             {
-                exceptions.OnNext(new List<Exception>() { e });
+                exceptions.OnNext(new List<Exception>() {e});
             }
 
-            return Task.FromResult(result?.Connect());
+            return Task.FromResult((IObservable<IChangeSet<AbsolutePath, string>>?) null);
         }
     }
 
@@ -320,7 +324,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var size = maxLength ?? realFileSize switch
         {
             > int.MaxValue => int.MaxValue,
-            _ => (int)realFileSize
+            _ => (int) realFileSize
         };
         var buffer = new byte[size];
         await reader.ReadAsync(buffer.AsMemory(0, size), cancellationToken);

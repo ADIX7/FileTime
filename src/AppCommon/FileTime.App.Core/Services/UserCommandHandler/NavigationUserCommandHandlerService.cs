@@ -19,7 +19,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly ILocalContentProvider _localContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly ITimelessContentProvider _timelessContentProvider;
-    private readonly IInputInterface _inputInterface;
+    private readonly IUserCommunicationService _userCommunicationService;
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
@@ -32,14 +32,14 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         ILocalContentProvider localContentProvider,
         IUserCommandHandlerService userCommandHandlerService,
         ITimelessContentProvider timelessContentProvider,
-        IInputInterface inputInterface) : base(appState)
+        IUserCommunicationService userCommunicationService) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
         _localContentProvider = localContentProvider;
         _userCommandHandlerService = userCommandHandlerService;
         _timelessContentProvider = timelessContentProvider;
-        _inputInterface = inputInterface;
+        _userCommunicationService = userCommunicationService;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -74,7 +74,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private async Task GoToPath()
     {
         var pathInput = new TextInputElement("Path");
-        await _inputInterface.ReadInputs(pathInput);
+        await _userCommunicationService.ReadInputs(pathInput);
         
         //TODO: message on empty result and on null pathInput.Value
         var resolvedPath = await _timelessContentProvider.GetItemByNativePathAsync(new NativePath(pathInput.Value));

@@ -1,18 +1,22 @@
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using DynamicData;
 using FileTime.Core.Command;
-using Microsoft.Extensions.DependencyInjection;
+using FileTime.Core.Models;
 
 namespace FileTime.Core.Timeline;
 
 public class CommandScheduler : ICommandScheduler
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly SourceList<ParallelCommands> _commandsToRun = new();
     private readonly List<ICommandExecutor> _commandExecutors = new();
+    private readonly Subject<FullName> _containerToRefresh = new();
 
     private readonly object _guard = new();
     private bool _enableRunning = true;
     private bool _resourceIsInUse;
+
+    public IObservable<FullName> ContainerToRefresh { get; }
 
     public bool EnableRunning
     {
@@ -26,10 +30,10 @@ public class CommandScheduler : ICommandScheduler
         set { RunWithLock(() => _enableRunning = value); }
     }
 
-    public CommandScheduler(IServiceProvider serviceProvider)
+    public CommandScheduler(ILocalCommandExecutor localExecutor)
     {
-        _serviceProvider = serviceProvider;
-        var localExecutor = serviceProvider.GetRequiredService<ILocalCommandExecutor>();
+        ContainerToRefresh = _containerToRefresh.AsObservable();
+        
         localExecutor.CommandFinished += LocalExecutorOnCommandFinished;
         _commandExecutors.Add(localExecutor);
     }
@@ -73,6 +77,8 @@ public class CommandScheduler : ICommandScheduler
             await UpdateReadOnlyCommands();*/
         });
     }
+
+    public void RefreshContainer(FullName container) => _containerToRefresh.OnNext(container);
 
     private void ExecuteCommands()
     {

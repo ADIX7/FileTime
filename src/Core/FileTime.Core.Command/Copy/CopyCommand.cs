@@ -8,6 +8,7 @@ namespace FileTime.Core.Command.Copy;
 public class CopyCommand : ITransportationCommand
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
 
     private readonly List<OperationProgress> _operationProgresses = new();
 
@@ -18,9 +19,12 @@ public class CopyCommand : ITransportationCommand
     public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
     public OperationProgress? CurrentOperationProgress { get; private set; }
 
-    public CopyCommand(ITimelessContentProvider timelessContentProvider)
+    public CopyCommand(
+        ITimelessContentProvider timelessContentProvider,
+        ICommandSchedulerNotifier commandSchedulerNotifier)
     {
         _timelessContentProvider = timelessContentProvider;
+        _commandSchedulerNotifier = commandSchedulerNotifier;
     }
 
     public Task<CanCommandRun> CanRun(PointInTime currentTime)
@@ -58,7 +62,7 @@ public class CopyCommand : ITransportationCommand
 
         await CalculateProgressAsync(currentTime);
 
-        var copyOperation = new CopyStrategy(copy, new CopyStrategyParam(_operationProgresses));
+        var copyOperation = new CopyStrategy(copy, new CopyStrategyParam(_operationProgresses, _commandSchedulerNotifier.RefreshContainer));
 
         var resolvedTarget = await _timelessContentProvider.GetItemByFullNameAsync(Target, currentTime);
 
@@ -92,17 +96,17 @@ public class CopyCommand : ITransportationCommand
     }
 
     private async Task TraverseTree(
-        PointInTime curretnTime,
+        PointInTime currentTime,
         IEnumerable<FullName> sources,
         AbsolutePath target,
         TransportMode transportMode,
         ICopyStrategy copyOperation)
     {
-        var resolvedTarget = ((IContainer)await target.ResolveAsync()) ?? throw new Exception();
+        var resolvedTarget = ((IContainer) await target.ResolveAsync()) ?? throw new Exception();
 
         foreach (var source in sources)
         {
-            var item = await _timelessContentProvider.GetItemByFullNameAsync(source, curretnTime);
+            var item = await _timelessContentProvider.GetItemByFullNameAsync(source, currentTime);
 
             if (item is IContainer container)
             {
@@ -114,7 +118,7 @@ public class CopyCommand : ITransportationCommand
                 var children = await container.Items.GetItemsAsync();
                 if (children is null) continue;
 
-                await TraverseTree(curretnTime, children.Select(c => c.Path).ToList(), target.GetChild(item.Name, AbsolutePathType.Container), transportMode, copyOperation);
+                await TraverseTree(currentTime, children.Select(c => c.Path).ToList(), target.GetChild(item.Name, AbsolutePathType.Container), transportMode, copyOperation);
                 await copyOperation.ContainerCopyDoneAsync(new AbsolutePath(_timelessContentProvider, container));
             }
             else if (item is IElement element)

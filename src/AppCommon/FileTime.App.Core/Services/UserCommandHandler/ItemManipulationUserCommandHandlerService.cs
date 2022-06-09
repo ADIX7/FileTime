@@ -10,8 +10,8 @@ using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using InitableService;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using CopyCommand = FileTime.Core.Command.Copy.CopyCommand;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
@@ -21,7 +21,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private IItemViewModel? _currentSelectedItem;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IClipboardService _clipboardService;
-    private readonly IInputInterface _inputInterface;
+    private readonly IUserCommunicationService _userCommunicationService;
     private readonly ILogger<ItemManipulationUserCommandHandlerService> _logger;
     private readonly ICommandScheduler _commandScheduler;
     private readonly IServiceProvider _serviceProvider;
@@ -32,7 +32,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         IAppState appState,
         IUserCommandHandlerService userCommandHandlerService,
         IClipboardService clipboardService,
-        IInputInterface inputInterface,
+        IUserCommunicationService userCommunicationService,
         ILogger<ItemManipulationUserCommandHandlerService> logger,
         ITimelessContentProvider timelessContentProvider,
         ICommandScheduler commandScheduler,
@@ -40,7 +40,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     {
         _userCommandHandlerService = userCommandHandlerService;
         _clipboardService = clipboardService;
-        _inputInterface = inputInterface;
+        _userCommunicationService = userCommunicationService;
         _logger = logger;
         _commandScheduler = commandScheduler;
         _serviceProvider = serviceProvider;
@@ -72,7 +72,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private Task Copy()
     {
         _clipboardService.Clear();
-        _clipboardService.SetCommand<CopyCommand>();
+        _clipboardService.SetCommand<FileTime.Core.Command.Copy.CopyCommand>();
 
         if ((_markedItems?.Collection?.Count ?? 0) > 0)
         {
@@ -120,17 +120,38 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         await Paste(TransportMode.Skip);
     }
 
-    private Task Paste(TransportMode skip)
+    private async Task Paste(TransportMode mode)
     {
-        if (_clipboardService.CommandType is null) return Task.CompletedTask;
-        return Task.CompletedTask;
+        if (_clipboardService.CommandType is null)
+        {
+            _userCommunicationService.ShowToastMessage("Clipboard is empty.");
+            return;
+        }
+
+        var command = (ITransportationCommand) _serviceProvider.GetRequiredService(_clipboardService.CommandType);
+        command.TransportMode = mode;
+
+        command.Sources.Clear();
+
+        foreach (var item in _clipboardService.Content)
+        {
+            command.Sources.Add(item);
+        }
+
+        command.Target = _currentLocation?.FullName;
+
+        _clipboardService.Clear();
+
+        if (command is IRequireInputCommand requireInput) await requireInput.ReadInputs();
+        
+        await AddCommand(command);
     }
 
     private async Task CreateContainer()
     {
         var containerNameInput = new TextInputElement("Container name");
 
-        await _inputInterface.ReadInputs(containerNameInput);
+        await _userCommunicationService.ReadInputs(containerNameInput);
 
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;
@@ -140,14 +161,14 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         var command = _serviceProvider
             .GetInitableResolver(_currentLocation.FullName, newContainerName)
             .GetRequiredService<CreateContainerCommand>();
-        await _commandScheduler.AddCommand(command);
+        await AddCommand(command);
     }
 
     private async Task CreateElement()
     {
         var containerNameInput = new TextInputElement("Element name");
 
-        await _inputInterface.ReadInputs(containerNameInput);
+        await _userCommunicationService.ReadInputs(containerNameInput);
 
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;
@@ -157,6 +178,11 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         var command = _serviceProvider
             .GetInitableResolver(_currentLocation.FullName, newContainerName)
             .GetRequiredService<CreateElementCommand>();
+        await AddCommand(command);
+    }
+
+    private async Task AddCommand(ICommand command)
+    {
         await _commandScheduler.AddCommand(command);
     }
 }

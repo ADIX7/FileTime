@@ -1,7 +1,7 @@
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
+using FileTime.Core.Models.Extensions;
 using MvvmGen;
 
 namespace FileTime.App.Core.ViewModels;
