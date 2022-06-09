@@ -77,6 +77,6 @@ public abstract partial class AppStateBase : IAppState
     private ITabViewModel? GetSelectedTab(IEnumerable<ITabViewModel> tabs, ITabViewModel? expectedSelectedTab)
     {
         var (preferred, others) = tabs.OrderBy(t => t.TabNumber).Partition(t => t.TabNumber >= (expectedSelectedTab?.TabNumber ?? 0));
-        return preferred.Concat(others).FirstOrDefault();
+        return preferred.Concat(others.Reverse()).FirstOrDefault();
     }
 }
