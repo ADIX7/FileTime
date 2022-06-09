@@ -6,6 +6,7 @@ using FileTime.App.Core.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.CreateElement;
+using FileTime.Core.Extensions;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -23,6 +24,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly IClipboardService _clipboardService;
     private readonly IUserCommunicationService _userCommunicationService;
     private readonly ILogger<ItemManipulationUserCommandHandlerService> _logger;
+    private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandScheduler _commandScheduler;
     private readonly IServiceProvider _serviceProvider;
     private readonly BindedCollection<FullName>? _markedItems;
@@ -42,6 +44,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         _clipboardService = clipboardService;
         _userCommunicationService = userCommunicationService;
         _logger = logger;
+        _timelessContentProvider = timelessContentProvider;
         _commandScheduler = commandScheduler;
         _serviceProvider = serviceProvider;
 
@@ -54,6 +57,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         AddCommandHandlers(new IUserCommandHandler[]
         {
             new TypeUserCommandHandler<CopyCommand>(Copy),
+            new TypeUserCommandHandler<DeleteCommand>(Delete),
             new TypeUserCommandHandler<MarkCommand>(MarkItem),
             new TypeUserCommandHandler<PasteCommand>(Paste),
             new TypeUserCommandHandler<CreateContainer>(CreateContainer),
@@ -143,7 +147,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         _clipboardService.Clear();
 
         if (command is IRequireInputCommand requireInput) await requireInput.ReadInputs();
-        
+
         await AddCommand(command);
     }
 
@@ -179,6 +183,65 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             .GetInitableResolver(_currentLocation.FullName, newContainerName)
             .GetRequiredService<CreateElementCommand>();
         await AddCommand(command);
+    }
+
+    private async Task Delete(DeleteCommand command)
+    {
+        IList<FullName>? itemsToDelete = null;
+        var shouldDelete = false;
+        string? questionText = null;
+        if ((_markedItems?.Collection?.Count ?? 0) > 0)
+        {
+            itemsToDelete = new List<FullName>(_markedItems!.Collection!);
+        }
+        else if (_currentSelectedItem?.BaseItem?.FullName is not null)
+        {
+            itemsToDelete = new List<FullName>()
+            {
+                _currentSelectedItem.BaseItem.FullName
+            };
+        }
+
+        if ((itemsToDelete?.Count ?? 0) == 0) return;
+
+        if (itemsToDelete!.Count == 1)
+        {
+            var resolvedOnlyItem = await _timelessContentProvider.GetItemByFullNameAsync(itemsToDelete[0], PointInTime.Present);
+
+            if (resolvedOnlyItem is IContainer {AllowRecursiveDeletion: true} onlyContainer
+                && await onlyContainer.Items.GetItemsAsync() is { } children
+                && children.Any())
+            {
+                questionText = $"The container '{onlyContainer.DisplayName}' is not empty. Proceed with delete?";
+            }
+            else
+            {
+                shouldDelete = true;
+            }
+        }
+
+        if (itemsToDelete?.Count == 0) return;
+
+        if (questionText is { })
+        {
+            var proceedDelete = await _userCommunicationService.ShowMessageBox(questionText!);
+
+            if (proceedDelete == MessageBoxResult.Cancel) return;
+        }
+        else if (!shouldDelete)
+        {
+            return;
+        }
+
+        var deleteCommand = new FileTime.Core.Command.Delete.DeleteCommand()
+        {
+            HardDelete = command.IsHardDelete
+        };
+
+        deleteCommand.ItemsToDelete.AddRange(itemsToDelete!);
+        await AddCommand(deleteCommand);
+        
+        _selectedTab?.ClearMarkedItems();
     }
 
     private async Task AddCommand(ICommand command)

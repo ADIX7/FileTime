@@ -7,7 +7,7 @@ namespace FileTime.GuiApp.ViewModels;
 [ViewModel]
 [Inject(typeof(Action<ReadInputsViewModel>), "_cancel")]
 [Inject(typeof(Action<ReadInputsViewModel>), "_process")]
-public partial class ReadInputsViewModel : IModalViewModelBase
+public partial class ReadInputsViewModel : IModalViewModel
 {
     public string Name => "ReadInputs";
     public List<IInputElement> Inputs { get; set; }

@@ -16,7 +16,7 @@ public partial class MainWindow : Window
 {
     private readonly ILogger<MainWindow>? _logger;
     private readonly IModalService _modalService;
-    private IReadOnlyCollection<IModalViewModelBase>? _openModals;
+    private IReadOnlyCollection<IModalViewModel>? _openModals;
 
     public MainWindowViewModel? ViewModel
     {

@@ -326,7 +326,8 @@
                             <Grid
                                 Grid.Column="2"
                                 RowDefinitions="Auto,*">
-                                <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^, FallbackValue=False}">
+                                <Grid
+                                    IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^, FallbackValue=False}">
                                     <Image
                                         Width="40"
                                         Height="40"
@@ -443,17 +444,19 @@
                                 </Grid>
                             </Grid>
                         </Grid>
-                        
-                        <ItemsRepeater Items="{Binding AppState.PopupTexts}" Margin="0,0,0,20" HorizontalAlignment="Center" VerticalAlignment="Top" IsVisible="{Binding AppState.PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+
+                        <ItemsRepeater Items="{Binding AppState.PopupTexts}" Margin="0,0,0,20"
+                                       HorizontalAlignment="Center" VerticalAlignment="Top"
+                                       IsVisible="{Binding AppState.PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
                             <ItemsRepeater.Styles>
                                 <Style Selector="TextBlock">
                                     <Style.Animations>
                                         <Animation Duration="0:0:1">
                                             <KeyFrame Cue="0%">
-                                                <Setter Property="Opacity" Value="0.0"/>
+                                                <Setter Property="Opacity" Value="0.0" />
                                             </KeyFrame>
                                             <KeyFrame Cue="100%">
-                                                <Setter Property="Opacity" Value="1.0"/>
+                                                <Setter Property="Opacity" Value="1.0" />
                                             </KeyFrame>
                                         </Animation>
                                     </Style.Animations>
@@ -461,8 +464,11 @@
                             </ItemsRepeater.Styles>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
-                                    <Border Background="{DynamicResource ContainerGradientBackgroundBrush}" Margin="5" Padding="5">
-                                        <TextBlock Text="{Binding}" Foreground="{DynamicResource AccentComplementBrush}" HorizontalAlignment="Center"/>
+                                    <Border Background="{DynamicResource ContainerGradientBackgroundBrush}" Margin="5"
+                                            Padding="5">
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{DynamicResource AccentComplementBrush}"
+                                                   HorizontalAlignment="Center" />
                                     </Border>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
@@ -594,6 +600,38 @@
                                 Margin="10,0,0,0"
                                 Command="{Binding CancelCommand}"
                                 Content="Cancel" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Border>
+
+            <Border
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsVisible="{Binding DialogService.LastMessageBox^, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                <Border
+                    Background="{DynamicResource ContainerBackgroundBrush}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Padding="20">
+                    <Grid RowDefinitions="Auto,Auto">
+
+                        <TextBlock Text="{Binding DialogService.LastMessageBox^.Text}"/>
+                        <StackPanel
+                            Grid.Row="1"
+                            Orientation="Horizontal"
+                            Margin="0,10,0,0">
+                            <Button
+                                HorizontalContentAlignment="Center"
+                                Width="80"
+                                Command="{Binding DialogService.LastMessageBox^.OkCommand}"
+                                Content="Yes" />
+                            <Button
+                                HorizontalContentAlignment="Center"
+                                Width="80"
+                                Margin="10,0,0,0"
+                                Command="{Binding DialogService.LastMessageBox^.CancelCommand}"
+                                Content="No" />
                         </StackPanel>
                     </Grid>
                 </Border>

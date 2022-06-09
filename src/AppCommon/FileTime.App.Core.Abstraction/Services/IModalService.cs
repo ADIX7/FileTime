@@ -5,8 +5,8 @@ namespace FileTime.App.Core.Services;
 
 public interface IModalService
 {
-    IObservable<IChangeSet<IModalViewModelBase>> OpenModals { get; }
+    IObservable<IChangeSet<IModalViewModel>> OpenModals { get; }
 
-    void OpenModal(IModalViewModelBase modalToOpen);
-    void CloseModal(IModalViewModelBase modalToClose);
+    void OpenModal(IModalViewModel modalToOpen);
+    void CloseModal(IModalViewModel modalToClose);
 }

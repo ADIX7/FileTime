@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using Avalonia.Input;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
@@ -15,6 +16,7 @@ namespace FileTime.GuiApp.Services;
 public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 {
     private readonly IGuiAppState _appState;
+    private readonly IModalService _modalService;
     private readonly IKeyboardConfigurationService _keyboardConfigurationService;
     private readonly List<KeyConfig[]> _keysToSkip = new();
     private ITabViewModel? _selectedTab;
@@ -22,22 +24,27 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
     private readonly ILogger<DefaultModeKeyInputHandler> _logger;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
+    private readonly BindedCollection<IModalViewModel> _openModals;
 
     public DefaultModeKeyInputHandler(
         IGuiAppState appState,
+        IModalService modalService,
         IKeyboardConfigurationService keyboardConfigurationService,
         ILogger<DefaultModeKeyInputHandler> logger,
         IUserCommandHandlerService userCommandHandlerService,
         IIdentifiableUserCommandService identifiableUserCommandService)
     {
         _appState = appState;
+        _identifiableUserCommandService = identifiableUserCommandService;
         _keyboardConfigurationService = keyboardConfigurationService;
         _logger = logger;
+        _modalService = modalService;
         _userCommandHandlerService = userCommandHandlerService;
-        _identifiableUserCommandService = identifiableUserCommandService;
 
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
         _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation!).Switch().Subscribe(l => _currentLocation = l);
+        
+        _openModals = new BindedCollection<IModalViewModel>(modalService.OpenModals);
 
         _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Up) });
         _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Down) });
@@ -59,10 +66,11 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 
         if (key == Key.Escape)
         {
-            var doGeneralReset = false;
-            if (_appState.PreviousKeys.Count > 1 || _appState.IsAllShortcutVisible || _appState.MessageBoxText != null)
+            bool doGeneralReset = _appState.PreviousKeys.Count > 1 || _appState.IsAllShortcutVisible;
+
+            if ((_openModals.Collection?.Count ?? 0) > 0)
             {
-                doGeneralReset = true;
+                _modalService.CloseModal(_openModals.Collection!.Last());
             }
             /*else if (_currentLocation.Container.CanHandleEscape)
             {
@@ -90,18 +98,17 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             {
                 setHandled(true);
                 _appState.IsAllShortcutVisible = false;
-                _appState.MessageBoxText = null;
                 _appState.PreviousKeys.Clear();
                 _appState.PossibleCommands = new();
             }
         }
-        else if (key == Key.Enter
+        /*else if (key == Key.Enter
                  && _appState.MessageBoxText != null)
         {
             _appState.PreviousKeys.Clear();
             //_dialogService.ProcessMessageBox();
             setHandled(true);
-        }
+        }*/
         else if (selectedCommandBinding != null)
         {
             setHandled(true);

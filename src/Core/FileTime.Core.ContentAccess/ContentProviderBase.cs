@@ -41,6 +41,7 @@ public abstract class ContentProviderBase : IContentProvider
     public string? Attributes => null;
 
     protected BehaviorSubject<bool> IsLoading { get; } = new(false);
+    public bool AllowRecursiveDeletion => false;
 
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
 

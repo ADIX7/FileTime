@@ -16,6 +16,8 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(CopyNativePathCommand.Instance);
         AddUserCommand(CreateContainer.Instance);
         AddUserCommand(CreateElement.Instance);
+        AddUserCommand(DeleteCommand.HardDelete);
+        AddUserCommand(DeleteCommand.SoftDelete);
         AddUserCommand(EnterRapidTravelCommand.Instance);
         AddUserCommand(ExitRapidTravelCommand.Instance);
         AddUserCommand(GoToHomeCommand.Instance);

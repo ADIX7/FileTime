@@ -1,6 +1,8 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using Avalonia.Threading;
 using DynamicData;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.Core.Interactions;
 using FileTime.GuiApp.ViewModels;
@@ -13,6 +15,7 @@ public class DialogService : IDialogService
     private readonly IGuiAppState _guiAppState;
 
     public IObservable<ReadInputsViewModel?> ReadInput { get; }
+    public IObservable<MessageBoxViewModel?> LastMessageBox { get; }
 
     public DialogService(IModalService modalService, IGuiAppState guiAppState)
     {
@@ -22,10 +25,18 @@ public class DialogService : IDialogService
             .OpenModals
             .ToCollection()
             .Select(modals =>
-                (ReadInputsViewModel?)modals.FirstOrDefault(m => m is ReadInputsViewModel)
+                (ReadInputsViewModel?) modals.FirstOrDefault(m => m is ReadInputsViewModel)
             )
             .Publish(null)
             .RefCount();
+
+        LastMessageBox =
+            modalService
+                .OpenModals
+                .Filter(m => m is MessageBoxViewModel)
+                .Transform(m => (MessageBoxViewModel) m)
+                .ToCollection()
+                .Select(m => m.LastOrDefault());
     }
 
     public void ReadInputs(IEnumerable<IInputElement> inputs, Action inputHandler, Action? cancelHandler = null)
@@ -50,6 +61,18 @@ public class DialogService : IDialogService
         });
     }
 
+    public Task<MessageBoxResult> ShowMessageBox(string text)
+    {
+        var taskCompletionSource = new TaskCompletionSource<MessageBoxResult>();
+        _modalService.OpenModal(new MessageBoxViewModel(text, (vm, result) =>
+        {
+            _modalService.CloseModal(vm);
+            taskCompletionSource.SetResult(result);
+        }));
+
+        return taskCompletionSource.Task;
+    }
+
     private void HandleReadInputsSuccess(ReadInputsViewModel readInputsViewModel)
     {
         _modalService.CloseModal(readInputsViewModel);
@@ -66,7 +89,7 @@ public class DialogService : IDialogService
     {
         var taskCompletionSource = new TaskCompletionSource<bool>();
         ReadInputs(fields, () => taskCompletionSource.SetResult(true), () => taskCompletionSource.SetResult(false));
-        
+
         return taskCompletionSource.Task;
     }
 }

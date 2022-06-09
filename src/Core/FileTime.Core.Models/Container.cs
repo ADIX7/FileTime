@@ -22,6 +22,7 @@ public record Container(
     bool CanRename,
     string? Attributes,
     IContentProvider Provider,
+    bool AllowRecursiveDeletion,
     PointInTime PointInTime,
     IObservable<IEnumerable<Exception>> Exceptions,
     ReadOnlyExtensionCollection Extensions,

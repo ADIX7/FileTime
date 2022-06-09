@@ -10,7 +10,6 @@ public interface IGuiAppState : IAppState
     List<KeyConfig> PreviousKeys { get; }
     bool IsAllShortcutVisible { get; set; }
     bool NoCommandFound { get; set; }
-    string? MessageBoxText { get; set; }
     List<CommandBindingConfiguration> PossibleCommands { get; set; }
     BindedCollection<RootDriveInfo, string> RootDriveInfos { get; set; }
     IReadOnlyList<PlaceInfo> Places { get; set; }

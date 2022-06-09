@@ -14,8 +14,6 @@ public partial class GuiAppState : AppStateBase, IGuiAppState
 
     [Property] private bool _noCommandFound;
 
-    [Property] private string? _messageBoxText;
-
     [Property] private List<CommandBindingConfiguration> _possibleCommands = new();
 
     [Property] private BindedCollection<RootDriveInfo, string> _rootDriveInfos = new();

@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.ViewModels;
 
-public interface IModalViewModelBase
+public interface IModalViewModel
 {
     string Name { get; }
 }

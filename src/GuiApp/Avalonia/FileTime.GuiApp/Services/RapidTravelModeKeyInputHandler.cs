@@ -22,7 +22,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly ILogger<RapidTravelModeKeyInputHandler> _logger;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
-    private readonly BindedCollection<IModalViewModelBase> _openModals;
+    private readonly BindedCollection<IModalViewModel> _openModals;
     private ITabViewModel? _selectedTab;
 
     public RapidTravelModeKeyInputHandler(
@@ -42,7 +42,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
 
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
 
-        _openModals = new BindedCollection<IModalViewModelBase>(modalService.OpenModals);
+        _openModals = new BindedCollection<IModalViewModel>(modalService.OpenModals);
     }
 
     public async Task HandleInputKey(Key key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)

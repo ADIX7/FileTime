@@ -4,4 +4,5 @@ public interface IUserCommunicationService
 {
     Task<bool> ReadInputs(params IInputElement[] fields);
     void ShowToastMessage(string text);
+    Task<MessageBoxResult> ShowMessageBox(string text);
 }

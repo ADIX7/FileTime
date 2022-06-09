@@ -6,15 +6,15 @@ namespace FileTime.GuiApp.Services;
 
 public class ModalService : IModalService
 {
-    private readonly SourceList<IModalViewModelBase> _openModals = new();
-    public IObservable<IChangeSet<IModalViewModelBase>> OpenModals { get; }
+    private readonly SourceList<IModalViewModel> _openModals = new();
+    public IObservable<IChangeSet<IModalViewModel>> OpenModals { get; }
 
     public ModalService()
     {
         OpenModals = _openModals.Connect().StartWithEmpty();
     }
 
-    public void OpenModal(IModalViewModelBase modalToOpen) => _openModals.Add(modalToOpen);
+    public void OpenModal(IModalViewModel modalToOpen) => _openModals.Add(modalToOpen);
 
-    public void CloseModal(IModalViewModelBase modalToClose) => _openModals.Remove(modalToClose);
+    public void CloseModal(IModalViewModel modalToClose) => _openModals.Remove(modalToClose);
 }
