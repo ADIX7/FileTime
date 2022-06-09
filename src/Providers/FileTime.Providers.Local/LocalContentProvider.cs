@@ -2,14 +2,13 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using DynamicData;
-using FileTime.App.Core.Models;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
+using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 
 namespace FileTime.Providers.Local;
-
 public sealed partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
@@ -20,6 +19,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     {
         _timelessContentProvider = timelessContentProvider;
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        SupportsContentStreams = true;
 
         RefreshRootDirectories();
 
@@ -50,11 +51,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     {
         var rootDrive = _rootDirectories
             .Items
-            .FirstOrDefault(r => 
+            .FirstOrDefault(r =>
                 path.Path.StartsWith(
-                    GetNativePath(r.Path).Path, 
-                    _isCaseInsensitive 
-                        ? StringComparison.InvariantCultureIgnoreCase 
+                    GetNativePath(r.Path).Path,
+                    _isCaseInsensitive
+                        ? StringComparison.InvariantCultureIgnoreCase
                         : StringComparison.InvariantCulture
                 )
         );
@@ -74,11 +75,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         {
             if ((path?.Length ?? 0) == 0)
             {
-                return Task.FromResult((IItem) this);
+                return Task.FromResult((IItem)this);
             }
             else if (Directory.Exists(path))
             {
-                return Task.FromResult((IItem) DirectoryToContainer(
+                return Task.FromResult((IItem)DirectoryToContainer(
                     new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
                     pointInTime,
                     !itemInitializationSettings.SkipChildInitialization)
@@ -86,7 +87,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             }
             else if (File.Exists(path))
             {
-                return Task.FromResult((IItem) FileToElement(new FileInfo(path), pointInTime));
+                return Task.FromResult((IItem)FileToElement(new FileInfo(path), pointInTime));
             }
 
             var type = forceResolvePathType switch
@@ -118,10 +119,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         return forceResolvePathType switch
         {
             AbsolutePathType.Container => Task.FromResult(
-                (IItem) CreateEmptyContainer(
+                (IItem)CreateEmptyContainer(
                     nativePath,
                     pointInTime,
-                    Observable.Return(new List<Exception>() {innerException})
+                    Observable.Return(new List<Exception>() { innerException })
                 )
             ),
             AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
@@ -236,7 +237,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             SourceCache<AbsolutePath, string>? result = null;
             try
             {
-                var items = initializeChildren ? (List<AbsolutePath>?) GetItemsByContainer(directoryInfo, pointInTime) : null;
+                var items = initializeChildren ? (List<AbsolutePath>?)GetItemsByContainer(directoryInfo, pointInTime) : null;
                 if (items != null)
                 {
                     result = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
@@ -245,7 +246,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             }
             catch (Exception e)
             {
-                exceptions.OnNext(new List<Exception>() {e});
+                exceptions.OnNext(new List<Exception>() { e });
             }
 
             return Task.FromResult(result?.Connect());
@@ -319,10 +320,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var size = maxLength ?? realFileSize switch
         {
             > int.MaxValue => int.MaxValue,
-            _ => (int) realFileSize
+            _ => (int)realFileSize
         };
         var buffer = new byte[size];
-        await reader.ReadAsync(buffer, 0, size);
+        await reader.ReadAsync(buffer.AsMemory(0, size), cancellationToken);
 
         return buffer;
     }

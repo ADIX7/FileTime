@@ -5,6 +5,7 @@ using FileTime.App.Core.Services.Persistence;
 using FileTime.Core.Command;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.CreateElement;
+using FileTime.Core.CommandHandlers;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
@@ -34,10 +35,11 @@ public static class DependencyInjection
         return serviceCollection
             .AddCoreAppServices()
             .AddLocalServices()
-            .RegisterCommands();
+            .RegisterCommands()
+            .AddDefaultCommandHandlers();
     }
 
-    public static IServiceCollection RegisterCommands(this IServiceCollection serviceCollection)
+    private static IServiceCollection RegisterCommands(this IServiceCollection serviceCollection)
     {
         return serviceCollection
             .AddTransient<CreateContainerCommand>()

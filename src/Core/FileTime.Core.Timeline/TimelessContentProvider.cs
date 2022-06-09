@@ -2,20 +2,18 @@ using System.Reactive.Subjects;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.Core.Timeline;
 
 public class TimelessContentProvider : ITimelessContentProvider
 {
-    private readonly Lazy<List<IContentProvider>> _contentProviders;
+    private readonly IContentProviderRegistry _contentProviderRegistry;
 
     public BehaviorSubject<PointInTime> CurrentPointInTime { get; } = new(PointInTime.Present);
 
-    public TimelessContentProvider(IServiceProvider serviceProvider)
+    public TimelessContentProvider(IContentProviderRegistry contentProviderRegistry)
     {
-        _contentProviders =
-            new Lazy<List<IContentProvider>>(() => serviceProvider.GetServices<IContentProvider>().ToList());
+        _contentProviderRegistry = contentProviderRegistry;
     }
 
     public async Task<IItem> GetItemByFullNameAsync(FullName fullName, PointInTime? pointInTime,
@@ -25,7 +23,7 @@ public class TimelessContentProvider : ITimelessContentProvider
     {
         //TODO time modifications
         var contentProviderName = fullName.Path.Split(Constants.SeparatorChar).FirstOrDefault();
-        var contentProvider = _contentProviders.Value.FirstOrDefault(p => p.Name == contentProviderName);
+        var contentProvider = _contentProviderRegistry.ContentProviders.FirstOrDefault(p => p.Name == contentProviderName);
 
         if (contentProvider is null)
             throw new Exception($"No content provider is found for name '{contentProviderName}'");
@@ -37,7 +35,7 @@ public class TimelessContentProvider : ITimelessContentProvider
 
     public async Task<IItem?> GetItemByNativePathAsync(NativePath nativePath, PointInTime? pointInTime = null)
     {
-        foreach (var contentProvider in _contentProviders.Value)
+        foreach (var contentProvider in _contentProviderRegistry.ContentProviders)
         {
             if(!contentProvider.CanHandlePath(nativePath)) continue;
 

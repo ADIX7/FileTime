@@ -24,4 +24,32 @@ public class ContentAccessorFactory : IContentAccessorFactory
 
         return (IItemCreator)_serviceProvider.GetRequiredService(genericType);
     }
+
+    public IContentReaderFactory<TContentProvider> GetContentReaderFactory<TContentProvider>() where TContentProvider : IContentProvider
+    {
+        var genericType = typeof(IContentReaderFactory<>).MakeGenericType(typeof(TContentProvider));
+
+        return (IContentReaderFactory<TContentProvider>)_serviceProvider.GetRequiredService(genericType);
+    }
+
+    public IContentReaderFactory GetContentReaderFactory(IContentProvider provider)
+    {
+        var genericType = typeof(IContentReaderFactory<>).MakeGenericType(provider.GetType());
+
+        return (IContentReaderFactory)_serviceProvider.GetRequiredService(genericType);
+    }
+
+    public IContentWriterFactory<TContentProvider> GetContentWriterFactory<TContentProvider>() where TContentProvider : IContentProvider
+    {
+        var genericType = typeof(IContentWriterFactory<>).MakeGenericType(typeof(TContentProvider));
+
+        return (IContentWriterFactory<TContentProvider>)_serviceProvider.GetRequiredService(genericType);
+    }
+
+    public IContentWriterFactory GetContentWriterFactory(IContentProvider provider)
+    {
+        var genericType = typeof(IContentWriterFactory<>).MakeGenericType(provider.GetType());
+
+        return (IContentWriterFactory)_serviceProvider.GetRequiredService(genericType);
+    }
 }

@@ -61,6 +61,8 @@ public abstract class ContentProviderBase : IContentProvider
 
     public virtual Task OnEnter() => Task.CompletedTask;
 
+    public virtual bool SupportsContentStreams { get; protected set; }
+
     public virtual async Task<IItem> GetItemByFullNameAsync(FullName fullName,
         PointInTime pointInTime,
         bool forceResolve = false,
@@ -83,4 +85,5 @@ public abstract class ContentProviderBase : IContentProvider
         CancellationToken cancellationToken = default);
 
     public abstract bool CanHandlePath(NativePath path);
+    public bool CanHandlePath(FullName path) => CanHandlePath(GetNativePath(path));
 }

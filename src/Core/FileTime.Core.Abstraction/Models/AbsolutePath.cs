@@ -53,4 +53,7 @@ public class AbsolutePath
 
     public AbsolutePath GetChild(string childName, AbsolutePathType type)
         => new (TimelessProvider, PointInTime, Path.GetChild(childName), type);
+
+    public AbsolutePath? GetParent()
+        => Path.GetParent() is { } parentFullName ? new (TimelessProvider, PointInTime, parentFullName, AbsolutePathType.Container) : null;
 }
