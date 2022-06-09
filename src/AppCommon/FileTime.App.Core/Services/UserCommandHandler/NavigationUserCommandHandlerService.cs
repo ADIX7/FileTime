@@ -75,7 +75,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     {
         var pathInput = new TextInputElement("Path");
         await _userCommunicationService.ReadInputs(pathInput);
-        
+
         //TODO: message on empty result and on null pathInput.Value
         var resolvedPath = await _timelessContentProvider.GetItemByNativePathAsync(new NativePath(pathInput.Value));
         if (resolvedPath is IContainer container)
@@ -146,6 +146,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         if (_currentSelectedItem is not IContainerViewModel containerViewModel || containerViewModel.Container is null)
             return Task.CompletedTask;
 
+        _appState.RapidTravelText = "";
         _selectedTab?.Tab?.SetCurrentLocation(containerViewModel.Container);
         return Task.CompletedTask;
     }
@@ -153,7 +154,12 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private async Task GoUp()
     {
         if (_currentLocation?.Parent is not AbsolutePath parentPath ||
-            await parentPath.ResolveAsyncSafe() is not IContainer newContainer) return;
+            await parentPath.ResolveAsyncSafe() is not IContainer newContainer)
+        {
+            return;
+        }
+
+        _appState.RapidTravelText = "";
         _selectedTab?.Tab?.SetCurrentLocation(newContainer);
     }
 

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using FileTime.App.Core.UserCommand;
 using FileTime.GuiApp.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -49,7 +50,12 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
 
     private static bool IsUniversal(CommandBindingConfiguration keyMapping)
     {
-        return false;
-        //return keyMapping.Command is ConfigCommand.GoUp or ConfigCommand.Open or ConfigCommand.OpenOrRun or ConfigCommand.MoveCursorUp or ConfigCommand.MoveCursorDown or ConfigCommand.MoveCursorUpPage or ConfigCommand.MoveCursorDownPage;
+        return keyMapping.Command is
+            GoUpCommand.CommandName
+            or OpenSelectedCommand.CommandName
+            or MoveCursorDownCommand.CommandName
+            or MoveCursorDownPageCommand.CommandName
+            or MoveCursorUpCommand.CommandName
+            or MoveCursorUpPageCommand.CommandName;
     }
 }

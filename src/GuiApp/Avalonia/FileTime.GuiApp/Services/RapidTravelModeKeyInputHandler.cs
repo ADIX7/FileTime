@@ -15,7 +15,7 @@ namespace FileTime.GuiApp.Services;
 public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
 {
     private const string RapidTravelFilterName = "rapid_travel_filter";
-    
+
     private readonly IAppState _appState;
     private readonly IModalService _modalService;
     private readonly IKeyboardConfigurationService _keyboardConfigurationService;
@@ -79,7 +79,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         }
         else
         {
-            var currentKeyAsList = new List<KeyConfig>() {new KeyConfig(key)};
+            var currentKeyAsList = new List<KeyConfig>() { new KeyConfig(key) };
             var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(currentKeyAsList));
             if (selectedCommandBinding != null)
             {
@@ -91,7 +91,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         if (updateRapidTravelFilter)
         {
             if (_selectedTab?.Tab is not ITab tab) return;
-            
+
             tab.RemoveItemFilter(RapidTravelFilterName);
             tab.AddItemFilter(new ItemFilter(RapidTravelFilterName, i => i.Name.ToLower().Contains(_appState.RapidTravelText)));
             /*var currentLocation = await _appState.SelectedTab.CurrentLocation.Container.WithoutVirtualContainer(MainPageViewModel.RAPIDTRAVEL);
