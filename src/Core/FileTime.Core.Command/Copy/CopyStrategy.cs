@@ -28,6 +28,8 @@ public class CopyStrategy : ICopyStrategy
     {
         await _copy(from, to, context);
         context.CurrentProgress?.SetProgress(context.CurrentProgress.TotalCount);
+        if (to.Path.GetParent() is { } parent)
+            await _copyStrategyParam.RefreshContainerAsync(parent);
     }
 
     public Task CreateContainerAsync(IContainer target, string name, PointInTime currentTime)

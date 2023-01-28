@@ -29,7 +29,7 @@ public class LifecycleService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while running startup handler {handler}", startupHandler?.GetType().FullName);
+                _logger.LogError(ex, "Error while running startup handler {Handler}", startupHandler?.GetType().FullName);
             }
         }
     }
@@ -44,8 +44,19 @@ public class LifecycleService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while running exit handler {handler}", exitHandler?.GetType().FullName);
+                _logger.LogError(ex, "Error while running exit handler {Handler}", exitHandler?.GetType().FullName);
             }
+        }
+
+        foreach (var disposable in
+                 _startupHandlers
+                     .OfType<IDisposable>()
+                     .Concat(
+                         _exitHandlers.OfType<IDisposable>()
+                     )
+                )
+        {
+            disposable.Dispose();
         }
     }
 }

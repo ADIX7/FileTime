@@ -26,7 +26,8 @@ public static class Startup
 
         return serviceCollection
             .AddCommandHandlers()
-            .AddSingleton<IStartupHandler, DefaultIdentifiableCommandHandlerRegister>();
+            .AddSingleton<IStartupHandler, DefaultIdentifiableCommandHandlerRegister>()
+            .AddSingleton<IStartupHandler, ContainerRefreshHandler>();
     }
 
     private static IServiceCollection AddCommandHandlers(this IServiceCollection serviceCollection)

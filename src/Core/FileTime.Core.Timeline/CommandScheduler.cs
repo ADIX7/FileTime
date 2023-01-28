@@ -22,7 +22,7 @@ public class CommandScheduler : ICommandScheduler
     {
         get
         {
-            bool result = true;
+            var result = true;
             RunWithLock(() => result = _enableRunning);
             return result;
         }
@@ -33,7 +33,7 @@ public class CommandScheduler : ICommandScheduler
     public CommandScheduler(ILocalCommandExecutor localExecutor)
     {
         ContainerToRefresh = _containerToRefresh.AsObservable();
-        
+
         localExecutor.CommandFinished += LocalExecutorOnCommandFinished;
         _commandExecutors.Add(localExecutor);
     }
