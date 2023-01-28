@@ -6,6 +6,7 @@ using FileTime.Core.Command;
 using FileTime.Core.Command.Copy;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.CreateElement;
+using FileTime.Core.Command.Delete;
 using FileTime.Core.CommandHandlers;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Services;
@@ -49,6 +50,7 @@ public static class DependencyInjection
         return serviceCollection
             .AddTransient<CreateContainerCommand>()
             .AddTransient<CreateElementCommand>()
-            .AddTransient<CopyCommand>();
+            .AddTransient<CopyCommand>()
+            .AddTransient<DeleteCommand>();
     }
 }

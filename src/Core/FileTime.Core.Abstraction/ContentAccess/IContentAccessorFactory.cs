@@ -8,4 +8,6 @@ public interface IContentAccessorFactory
     IContentReaderFactory GetContentReaderFactory(IContentProvider provider);
     IContentWriterFactory<TContentProvider> GetContentWriterFactory<TContentProvider>() where TContentProvider : IContentProvider;
     IContentWriterFactory GetContentWriterFactory(IContentProvider provider);
+    IItemDeleter GetItemDeleter(IContentProvider provider);
+    IItemDeleter<TContentProvider> GetItemDeleter<TContentProvider>() where TContentProvider : IContentProvider;
 }

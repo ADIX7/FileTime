@@ -52,4 +52,18 @@ public class ContentAccessorFactory : IContentAccessorFactory
 
         return (IContentWriterFactory)_serviceProvider.GetRequiredService(genericType);
     }
+
+    public IItemDeleter<TContentProvider> GetItemDeleter<TContentProvider>() where TContentProvider : IContentProvider
+    {
+        var genericType = typeof(IItemDeleter<>).MakeGenericType(typeof(TContentProvider));
+
+        return (IItemDeleter<TContentProvider>)_serviceProvider.GetRequiredService(genericType);
+    }
+
+    public IItemDeleter GetItemDeleter(IContentProvider provider)
+    {
+        var genericType = typeof(IItemDeleter<>).MakeGenericType(provider.GetType());
+
+        return (IItemDeleter)_serviceProvider.GetRequiredService(genericType);
+    }
 }

@@ -12,6 +12,8 @@ public static class Startup
         serviceCollection.TryAddSingleton<IContentProvider>(sp => sp.GetRequiredService<ILocalContentProvider>());
         serviceCollection.TryAddSingleton<IItemCreator<ILocalContentProvider>, LocalItemCreator>();
         serviceCollection.TryAddSingleton<IItemCreator<LocalContentProvider>>(sp => sp.GetRequiredService<IItemCreator<ILocalContentProvider>>());
+        serviceCollection.TryAddSingleton<IItemDeleter<ILocalContentProvider>, LocalItemDeleter>();
+        serviceCollection.TryAddSingleton<IItemDeleter<LocalContentProvider>>(sp => sp.GetRequiredService<IItemDeleter<ILocalContentProvider>>());
         serviceCollection.TryAddSingleton<IContentReaderFactory<ILocalContentProvider>, LocalContentReaderFactory>();
         serviceCollection.TryAddSingleton<IContentReaderFactory<LocalContentProvider>>(sp => sp.GetRequiredService<IContentReaderFactory<ILocalContentProvider>>());
         serviceCollection.TryAddSingleton<IContentWriterFactory<ILocalContentProvider>, LocalContentWriterFactory>();

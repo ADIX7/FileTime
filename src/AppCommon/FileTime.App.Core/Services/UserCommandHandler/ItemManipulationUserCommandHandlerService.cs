@@ -90,9 +90,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         else if (_currentSelectedItem?.BaseItem != null)
         {
             var item = _currentSelectedItem.BaseItem;
-            _clipboardService.AddContent(item.FullName ??
-                                         throw new ArgumentException($"{nameof(item.FullName)} can not be null.",
-                                             nameof(item)));
+            _clipboardService.AddContent(
+                item.FullName
+                ?? throw new ArgumentException($"{nameof(item.FullName)} can not be null.", nameof(item))
+            );
         }
 
         return Task.CompletedTask;
@@ -233,14 +234,12 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             return;
         }
 
-        var deleteCommand = new FileTime.Core.Command.Delete.DeleteCommand()
-        {
-            HardDelete = command.IsHardDelete
-        };
-
+        
+        var deleteCommand = _serviceProvider.GetRequiredService<FileTime.Core.Command.Delete.DeleteCommand>();
+        deleteCommand.HardDelete = command.IsHardDelete;
         deleteCommand.ItemsToDelete.AddRange(itemsToDelete!);
         await AddCommand(deleteCommand);
-        
+
         _selectedTab?.ClearMarkedItems();
     }
 

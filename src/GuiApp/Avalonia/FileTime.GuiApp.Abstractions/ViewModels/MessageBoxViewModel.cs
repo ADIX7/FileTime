@@ -11,7 +11,7 @@ public partial class MessageBoxViewModel : IModalViewModel
     public string Text { get; }
     public string Name => "MessageBoxViewModel";
 
-    public MessageBoxViewModel(string text, Action<MessageBoxViewModel, MessageBoxResult> handler)
+    public MessageBoxViewModel(string text, Action<MessageBoxViewModel, MessageBoxResult> handler) : this()
     {
         _handler = handler;
         Text = text;
