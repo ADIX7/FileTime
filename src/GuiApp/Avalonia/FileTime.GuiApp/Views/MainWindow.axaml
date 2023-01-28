@@ -606,9 +606,11 @@
             </Border>
 
             <Border
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                IsVisible="{Binding DialogService.LastMessageBox^, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                DataContext="{Binding DialogService.LastMessageBox^}"
+                IsVisible="{Binding  Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                 <Border
                     Background="{DynamicResource ContainerBackgroundBrush}"
                     HorizontalAlignment="Center"
@@ -616,7 +618,7 @@
                     Padding="20">
                     <Grid RowDefinitions="Auto,Auto">
 
-                        <TextBlock Text="{Binding DialogService.LastMessageBox^.Text}"/>
+                        <TextBlock Text="{Binding Text}" />
                         <StackPanel
                             Grid.Row="1"
                             Orientation="Horizontal"
@@ -624,13 +626,13 @@
                             <Button
                                 HorizontalContentAlignment="Center"
                                 Width="80"
-                                Command="{Binding DialogService.LastMessageBox^.OkCommand}"
+                                Command="{Binding OkCommand}"
                                 Content="Yes" />
                             <Button
                                 HorizontalContentAlignment="Center"
                                 Width="80"
                                 Margin="10,0,0,0"
-                                Command="{Binding DialogService.LastMessageBox^.CancelCommand}"
+                                Command="{Binding CancelCommand}"
                                 Content="No" />
                         </StackPanel>
                     </Grid>
