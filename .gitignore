@@ -411,3 +411,5 @@ FodyWeavers.xsd
 *.vsix
 
 appdata
+
+**/.idea
