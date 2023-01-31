@@ -1,14 +1,31 @@
+using DynamicData;
 using FileTime.Core.Command;
+using FileTime.Core.Extensions;
+using FileTime.Core.Models;
 
 namespace FileTime.Core.Timeline;
 
-public class ParallelCommands
+public class ParallelCommands : IDisposable
 {
     private static ushort _idCounter;
-    private List<CommandTimeState> _commands;
+    private readonly SourceList<CommandTimeState> _commands;
+    private PointInTime? _startTime;
+
     public ushort Id { get; }
-    public IReadOnlyList<CommandTimeState> Commands { get; }
+
+    public IObservable<IChangeSet<CommandTimeState>> Commands { get; }
+
+    public BindedCollection<CommandTimeState> CommandsCollection { get; }
+
     public PointInTime? Result { get; private set; }
+
+    public PointInTime? StartTime => _startTime;
+
+    public async Task<PointInTime?> SetStartTimeAsync(PointInTime? startTime)
+    {
+        _startTime = startTime;
+        return await RefreshResult();
+    }
 
     public ParallelCommands(PointInTime? result)
         : this(new List<CommandTimeState>(), result)
@@ -19,8 +36,10 @@ public class ParallelCommands
     {
         Id = _idCounter++;
 
-        _commands = commands;
-        Commands = _commands.AsReadOnly();
+        _commands = new SourceList<CommandTimeState>();
+        _commands.Edit((innerList) => innerList.AddRange(commands));
+        Commands = _commands.Connect();
+        CommandsCollection = Commands.ToBindedCollection();
 
         Result = result;
     }
@@ -63,10 +82,17 @@ public class ParallelCommands
         }
     }
 
-    public async Task<PointInTime?> RefreshResult(PointInTime? startPoint)
+    public async Task RemoveCommand(ICommand command)
     {
-        var result = startPoint;
-        foreach (var commandTimeState in _commands)
+        var commandTimeState = _commands.Items.First(c => c.Command == command);
+        _commands.Remove(commandTimeState);
+        await RefreshResult();
+    }
+
+    public async Task<PointInTime?> RefreshResult()
+    {
+        var result = StartTime;
+        foreach (var commandTimeState in _commands.Items)
         {
             await commandTimeState.UpdateStateAsync(result);
             if (result != null)
@@ -87,7 +113,8 @@ public class ParallelCommands
         return Result;
     }
 
-    public void RemoveAt(int number) => _commands.RemoveAt(number);
-
-    internal void Remove(CommandTimeState command) => _commands.Remove(command);
+    public void Dispose()
+    {
+        CommandsCollection.Dispose();
+    }
 }

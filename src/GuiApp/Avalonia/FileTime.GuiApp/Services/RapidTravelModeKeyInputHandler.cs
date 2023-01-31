@@ -3,6 +3,7 @@ using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
+using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using FileTime.GuiApp.Configuration;
@@ -42,7 +43,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
 
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
 
-        _openModals = new BindedCollection<IModalViewModel>(modalService.OpenModals);
+        _openModals = modalService.OpenModals.ToBindedCollection();
     }
 
     public async Task HandleInputKey(Key key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)

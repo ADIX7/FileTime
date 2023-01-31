@@ -52,7 +52,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
 
-        _markedItems = new BindedCollection<FullName>(appState.SelectedTab.Select(t => t?.MarkedItems));
+        _markedItems = appState.SelectedTab.Select(t => t?.MarkedItems).ToBindedCollection();
 
         AddCommandHandlers(new IUserCommandHandler[]
         {

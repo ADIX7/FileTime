@@ -3,12 +3,14 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
 using FileTime.App.Core.Models.Enums;
+using FileTime.App.Core.ViewModels.Timeline;
 using MvvmGen;
 using MoreLinq;
 
 namespace FileTime.App.Core.ViewModels;
 
 [ViewModel]
+[Inject(typeof(ITimelineViewModel), "TimelineViewModel", PropertyAccessModifier = AccessModifier.Public)]
 public abstract partial class AppStateBase : IAppState
 {
     private readonly BehaviorSubject<string?> _searchText = new(null);
@@ -76,7 +78,10 @@ public abstract partial class AppStateBase : IAppState
 
     private ITabViewModel? GetSelectedTab(IEnumerable<ITabViewModel> tabs, ITabViewModel? expectedSelectedTab)
     {
-        var (preferred, others) = tabs.OrderBy(t => t.TabNumber).Partition(t => t.TabNumber >= (expectedSelectedTab?.TabNumber ?? 0));
+        var (preferred, others) =
+            tabs
+                .OrderBy(t => t.TabNumber)
+                .Partition(t => t.TabNumber >= (expectedSelectedTab?.TabNumber ?? 0));
         return preferred.Concat(others.Reverse()).FirstOrDefault();
     }
 }

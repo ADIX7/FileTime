@@ -232,30 +232,32 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             pointInTime,
             exceptions,
             new ExtensionCollection().AsReadOnly(),
-            Observable.FromAsync(async () => await Task.Run(InitChildren))
+            //Observable.FromAsync(async () => await Task.Run(InitChildrenHelper)
+            Observable.Return(InitChildren())
         );
 
-        Task<IObservable<IChangeSet<AbsolutePath, string>>?> InitChildren()
+        Task<IObservable<IChangeSet<AbsolutePath, string>>?> InitChildrenHelper() => Task.FromResult(InitChildren());
+
+        IObservable<IChangeSet<AbsolutePath, string>>? InitChildren()
         {
+            if (!initializeChildren) return null;
+
             try
             {
-                var items = initializeChildren ? (List<AbsolutePath>?) GetItemsByContainer(directoryInfo, pointInTime) : null;
-                if (items != null)
-                {
-                    var result = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
+                var items = GetItemsByContainer(directoryInfo, pointInTime);
+                var result = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
 
-                    if (items.Count == 0) return Task.FromResult((IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect().StartWithEmpty());
+                if (items.Count == 0) return (IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect().StartWithEmpty();
 
-                    result.AddOrUpdate(items);
-                    return Task.FromResult((IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect());
-                }
+                result.AddOrUpdate(items);
+                return (IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect();
             }
             catch (Exception e)
             {
-                exceptions.OnNext(new List<Exception>() {e});
+                exceptions.OnNext(new List<Exception> {e});
             }
 
-            return Task.FromResult((IObservable<IChangeSet<AbsolutePath, string>>?) null);
+            return null;
         }
     }
 

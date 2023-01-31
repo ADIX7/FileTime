@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
-using System.Reactive.Subjects;
 using FileTime.App.Core.Models.Enums;
-using FileTime.Core.Timeline;
+using FileTime.App.Core.ViewModels.Timeline;
 
 namespace FileTime.App.Core.ViewModels;
 
@@ -13,6 +12,7 @@ public interface IAppState
     IObservable<ViewMode> ViewMode { get; }
     string RapidTravelText { get; set; }
     ITabViewModel? CurrentSelectedTab { get; }
+    ITimelineViewModel TimelineViewModel { get; }
 
     void AddTab(ITabViewModel tabViewModel);
     void RemoveTab(ITabViewModel tabViewModel);

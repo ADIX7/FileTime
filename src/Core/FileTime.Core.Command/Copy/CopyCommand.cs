@@ -5,7 +5,7 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Command.Copy;
 
-public class CopyCommand : ITransportationCommand
+public class CopyCommand : CommandBase, ITransportationCommand
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
@@ -22,18 +22,19 @@ public class CopyCommand : ITransportationCommand
     public CopyCommand(
         ITimelessContentProvider timelessContentProvider,
         ICommandSchedulerNotifier commandSchedulerNotifier)
+        : base("Copy")
     {
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
     }
 
-    public Task<CanCommandRun> CanRun(PointInTime currentTime)
+    public override Task<CanCommandRun> CanRun(PointInTime currentTime)
     {
         //TODO: 
         return Task.FromResult(CanCommandRun.True);
     }
 
-    public async Task<PointInTime> SimulateCommand(PointInTime currentTime)
+    public override async Task<PointInTime> SimulateCommand(PointInTime currentTime)
     {
         if (Sources == null) throw new ArgumentException(nameof(Sources) + " can not be null");
         if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");

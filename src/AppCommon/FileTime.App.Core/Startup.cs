@@ -3,6 +3,7 @@ using FileTime.App.Core.Services.UserCommandHandler;
 using FileTime.App.Core.StartupServices;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.ItemPreview;
+using FileTime.App.Core.ViewModels.Timeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -23,6 +24,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IClipboardService, ClipboardService>();
         serviceCollection.TryAddSingleton<IIdentifiableUserCommandService, IdentifiableUserCommandService>();
         serviceCollection.TryAddSingleton<IItemPreviewService, ItemPreviewService>();
+        serviceCollection.TryAddSingleton<ITimelineViewModel, TimelineViewModel>();
 
         return serviceCollection
             .AddCommandHandlers()
@@ -35,6 +37,7 @@ public static class Startup
         return serviceCollection
             .AddSingleton<IUserCommandHandler, NavigationUserCommandHandlerService>()
             .AddSingleton<IUserCommandHandler, ItemManipulationUserCommandHandlerService>()
-            .AddSingleton<IUserCommandHandler, ToolUserCommandHandlerService>();
+            .AddSingleton<IUserCommandHandler, ToolUserCommandHandlerService>()
+            .AddSingleton<IUserCommandHandler, CommandSchedulerUserCommandHandlerService>();
     }
 }

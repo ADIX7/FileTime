@@ -4,6 +4,7 @@ using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
+using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Configuration;
 using FileTime.GuiApp.Extensions;
@@ -43,8 +44,8 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
         _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation!).Switch().Subscribe(l => _currentLocation = l);
-        
-        _openModals = new BindedCollection<IModalViewModel>(modalService.OpenModals);
+
+        _openModals = modalService.OpenModals.ToBindedCollection();
 
         _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Up) });
         _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Down) });

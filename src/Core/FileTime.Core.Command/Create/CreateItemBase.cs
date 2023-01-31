@@ -7,7 +7,7 @@ using InitableService;
 
 namespace FileTime.Core.Command.Create;
 
-public abstract class CreateItemBase : IExecutableCommand, IInitable<FullName, string>
+public abstract class CreateItemBase : CommandBase, IExecutableCommand, IInitable<FullName, string>
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IContentAccessorFactory _contentAccessorFactory;
@@ -17,12 +17,13 @@ public abstract class CreateItemBase : IExecutableCommand, IInitable<FullName, s
     protected CreateItemBase(
         ITimelessContentProvider timelessContentProvider,
         IContentAccessorFactory contentAccessorFactory)
+        : base("Create")
     {
         _timelessContentProvider = timelessContentProvider;
         _contentAccessorFactory = contentAccessorFactory;
     }
 
-    public async Task<CanCommandRun> CanRun(PointInTime currentTime)
+    public override async Task<CanCommandRun> CanRun(PointInTime currentTime)
     {
         if (Parent is null)
         {
@@ -49,7 +50,7 @@ public abstract class CreateItemBase : IExecutableCommand, IInitable<FullName, s
             return existingItem switch
             {
                 null => CanCommandRun.True,
-                { Type: AbsolutePathType.Container } => CanCommandRun.Forcable,
+                {Type: AbsolutePathType.Container} => CanCommandRun.Forcable,
                 _ => CanCommandRun.False
             };
         }
@@ -60,7 +61,7 @@ public abstract class CreateItemBase : IExecutableCommand, IInitable<FullName, s
         return CanCommandRun.False;
     }
 
-    public Task<PointInTime> SimulateCommand(PointInTime currentTime)
+    public override Task<PointInTime> SimulateCommand(PointInTime currentTime)
     {
         if (Parent is null)
         {

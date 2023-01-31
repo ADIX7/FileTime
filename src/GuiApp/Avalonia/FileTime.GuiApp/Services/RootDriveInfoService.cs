@@ -4,6 +4,7 @@ using DynamicData;
 using DynamicData.Binding;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
+using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using FileTime.GuiApp.ViewModels;
@@ -16,7 +17,7 @@ public class RootDriveInfoService : IStartupHandler
     private readonly SourceList<DriveInfo> _rootDrives = new();
 
     public RootDriveInfoService(
-        IGuiAppState guiAppState, 
+        IGuiAppState guiAppState,
         ILocalContentProvider localContentProvider,
         ITimelessContentProvider timelessContentProvider)
     {
@@ -53,7 +54,7 @@ public class RootDriveInfoService : IStartupHandler
             .Transform(t => new RootDriveInfo(t.Drive, t.Container))
             .Sort(SortExpressionComparer<RootDriveInfo>.Ascending(d => d.Name));
 
-        guiAppState.RootDriveInfos = new BindedCollection<RootDriveInfo, string>(rootDriveInfos);
+        guiAppState.RootDriveInfos = rootDriveInfos.ToBindedCollection();
 
         void InitRootDrives()
         {

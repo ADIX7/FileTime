@@ -1,9 +1,10 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Converters.axaml"></ResourceInclude>
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Converters.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>
@@ -28,7 +29,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
-    <Style Selector="ListBox.ContentListView > ListBoxItem">
+    <Style Selector="ListBox.ContentListView &gt; ListBoxItem">
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="Transparent" />
@@ -61,10 +62,10 @@
                 <ControlTemplate>
                     <Border>
                         <RadioButton
+                            VerticalAlignment="Center"
                             Content="{TemplateBinding ContentPresenter.Content}"
                             Foreground="{DynamicResource ForegroundBrush}"
-                            IsChecked="{Binding Path=IsSelected, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                            VerticalAlignment="Center" />
+                            IsChecked="{Binding Path=IsSelected, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -74,9 +75,9 @@
     <Style Selector="Image.LoadingAnimation">
         <Style.Animations>
             <Animation
-                Duration="0:0:2"
                 Easing="QuadraticEaseInOut"
-                IterationCount="INFINITE">
+                IterationCount="INFINITE"
+                Duration="0:0:2">
                 <KeyFrame Cue="0%">
                     <Setter Property="RotateTransform.Angle" Value="45" />
                 </KeyFrame>
@@ -85,5 +86,9 @@
                 </KeyFrame>
             </Animation>
         </Style.Animations>
+    </Style>
+
+    <Style Selector="Border.SelectedTimelineCommand">
+        <Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}" />
     </Style>
 </Styles>

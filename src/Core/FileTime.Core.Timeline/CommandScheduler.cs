@@ -13,28 +13,31 @@ public class CommandScheduler : ICommandScheduler
     private readonly Subject<FullName> _containerToRefresh = new();
 
     private readonly object _guard = new();
-    private bool _enableRunning = true;
+    private bool _isRunningEnabled = true;
     private bool _resourceIsInUse;
 
     public IObservable<FullName> ContainerToRefresh { get; }
 
-    public bool EnableRunning
-    {
-        get
-        {
-            var result = true;
-            RunWithLock(() => result = _enableRunning);
-            return result;
-        }
+    public bool IsRunningEnabled => _isRunningEnabled;
 
-        set { RunWithLock(() => _enableRunning = value); }
+    public async Task SetRunningEnabledAsync(bool value)
+    {
+        _isRunningEnabled = value;
+        if (value)
+        {
+            await RunWithLockAsync(ExecuteCommands);
+        }
     }
+
+    public IObservable<IChangeSet<ParallelCommands>> CommandsToRun { get; }
 
     public CommandScheduler(ILocalCommandExecutor localExecutor)
     {
+        CommandsToRun = _commandsToRun.Connect();
+
         ContainerToRefresh = _containerToRefresh.AsObservable();
 
-        localExecutor.CommandFinished += LocalExecutorOnCommandFinished;
+        localExecutor.CommandFinished += ExecutorOnCommandFinished;
         _commandExecutors.Add(localExecutor);
     }
 
@@ -46,6 +49,7 @@ public class CommandScheduler : ICommandScheduler
 
             if (_commandsToRun.Count == 0)
             {
+                //TODO: Add event handler to update
                 batchToAdd = new ParallelCommands(PointInTime.CreateEmpty());
                 _commandsToRun.Add(batchToAdd);
             }
@@ -82,13 +86,11 @@ public class CommandScheduler : ICommandScheduler
 
     private void ExecuteCommands()
     {
-        if (!_enableRunning) return;
+        if (!_isRunningEnabled) return;
 
-        var parallelCommandsToExecute = _commandsToRun.Items.FirstOrDefault();
-        if (parallelCommandsToExecute is null ||
-            parallelCommandsToExecute.Commands.All(c => c.ExecutionState != ExecutionState.Waiting)) return;
+        var commandsToExecute = _commandsToRun.Items.FirstOrDefault()?.CommandsCollection.Collection;
+        if (commandsToExecute is null || commandsToExecute.All(c => c.ExecutionState != ExecutionState.Initializing && c.ExecutionState != ExecutionState.Waiting)) return;
 
-        var commandsToExecute = parallelCommandsToExecute.Commands;
 
         foreach (var commandToExecute in commandsToExecute)
         {
@@ -108,15 +110,20 @@ public class CommandScheduler : ICommandScheduler
         return _commandExecutors[0];
     }
 
-    private void LocalExecutorOnCommandFinished(object? sender, ICommand command)
+    private async void ExecutorOnCommandFinished(object? sender, ICommand command)
     {
-        var parallelCommandsToExecute = _commandsToRun.Items.FirstOrDefault();
-        if (parallelCommandsToExecute is null) return;
+        var firstCommandBlock = _commandsToRun
+            .Items
+            .FirstOrDefault();
+        var state = firstCommandBlock
+            ?.CommandsCollection
+            .Collection
+            ?.FirstOrDefault(c => c.Command == command);
 
-        var state = parallelCommandsToExecute.Commands.FirstOrDefault(c => c.Command == command);
         if (state is null) return;
 
         state.ExecutionState = ExecutionState.Finished;
+        if (firstCommandBlock is not null) await firstCommandBlock.RemoveCommand(command);
     }
 
     private async Task RefreshCommands()
@@ -125,7 +132,7 @@ public class CommandScheduler : ICommandScheduler
 
         foreach (var batch in _commandsToRun.Items)
         {
-            currentTime = await batch.RefreshResult(currentTime);
+            currentTime = await batch.SetStartTimeAsync(currentTime);
         }
     }
 

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using DynamicData;
 using PropertyChanged.SourceGenerator;
 
-namespace FileTime.App.Core.Models;
+namespace FileTime.Core.Models;
 
 public partial class BindedCollection<T> : IDisposable, INotifyPropertyChanged
 {

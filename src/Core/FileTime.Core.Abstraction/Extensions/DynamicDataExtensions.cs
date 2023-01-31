@@ -53,7 +53,7 @@ public static class DynamicDataExtensions
         this IObservable<IChangeSet<AbsolutePath, string>> stream)
         => await GetItemsAsync(stream.ToCollection());
 
-    private static Task<IEnumerable<AbsolutePath>?> GetItemsAsync(
+    public static Task<IEnumerable<AbsolutePath>?> GetItemsAsync(
         this IObservable<IReadOnlyCollection<AbsolutePath>> stream)
     {
         var taskCompletionSource = new TaskCompletionSource<IEnumerable<AbsolutePath>?>();

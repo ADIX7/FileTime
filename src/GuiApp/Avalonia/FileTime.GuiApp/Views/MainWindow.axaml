@@ -2,35 +2,35 @@
     x:Class="FileTime.GuiApp.Views.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:appCoreModels="using:FileTime.App.Core.Models"
+    xmlns:config="using:FileTime.GuiApp.Configuration"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactions="using:FileTime.Core.Interactions"
     xmlns:local="using:FileTime.GuiApp.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:FileTime.GuiApp.ViewModels"
-    xmlns:config="using:FileTime.GuiApp.Configuration"
-    xmlns:appCoreModels="using:FileTime.App.Core.Models"
-    xmlns:interactions="using:FileTime.Core.Interactions"
-    MinHeight="600"
-    MinWidth="800"
     Title="FileTime"
+    MinWidth="800"
+    MinHeight="600"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:CompileBindings="True"
     x:DataType="vm:IMainWindowViewModelBase"
     Background="Transparent"
+    Closed="OnWindowClosed"
     ExtendClientAreaToDecorationsHint="True"
     Icon="/Assets/filetime.ico"
     InputElement.KeyDown="OnKeyDown"
     Opened="OnWindowOpened"
-    Closed="OnWindowClosed"
     TransparencyLevelHint="Blur"
     mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/SolarizedDarkTheme.axaml"></ResourceInclude>
-                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Brushes.axaml"></ResourceInclude>
-                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Converters.axaml"></ResourceInclude>
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/SolarizedDarkTheme.axaml" />
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Brushes.axaml" />
+                <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Converters.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -62,18 +62,22 @@
                     <StackPanel
                         Margin="20,10"
                         Orientation="Horizontal">
-                        <local:PathPresenter
-                            DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path,Converter={StaticResource PathPreformatter}}" />
+                        <local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
                         <TextBlock
                             Foreground="{StaticResource AccentBrush}"
                             Text="{Binding AppState.SelectedTab^.CurrentSelectedItem^.DisplayNameText}" />
                     </StackPanel>
                 </Grid>
 
-                <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid
+                    Grid.Row="1"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
 
-                    <Border CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="10"
-                            Margin="10">
+                    <Border
+                        Margin="10"
+                        Padding="10"
+                        Background="{DynamicResource ContainerBackgroundBrush}"
+                        CornerRadius="10">
                         <Grid RowDefinitions="Auto,Auto">
 
                             <TextBlock
@@ -85,10 +89,14 @@
                                 Items="{Binding AppState.RootDriveInfos.Collection}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:RootDriveInfo">
-                                        <Grid Classes="SidebarContainerPresenter"
-                                              PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
-                                            <Grid Margin="0,5" ColumnDefinitions="Auto,*,Auto"
-                                                  RowDefinitions="Auto,Auto">
+                                        <Grid
+                                            Classes="SidebarContainerPresenter"
+                                            Cursor="Hand"
+                                            PointerPressed="OnHasContainerPointerPressed">
+                                            <Grid
+                                                Margin="0,5"
+                                                ColumnDefinitions="Auto,*,Auto"
+                                                RowDefinitions="Auto,Auto">
                                                 <Image
                                                     Grid.RowSpan="2"
                                                     Width="20"
@@ -99,8 +107,8 @@
 
                                                 <StackPanel
                                                     Grid.Column="1"
-                                                    VerticalAlignment="Center"
                                                     HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Center"
                                                     Orientation="Horizontal">
 
                                                     <TextBlock
@@ -112,35 +120,38 @@
                                                         Margin="5,0,0,0"
                                                         VerticalAlignment="Center"
                                                         Classes="ExtraSmallText"
-                                                        Text="{Binding Label}"
-                                                        IsVisible="{Binding Label,Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                        IsVisible="{Binding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                        Text="{Binding Label}" />
                                                 </StackPanel>
 
                                                 <StackPanel
-                                                    HorizontalAlignment="Right"
                                                     Grid.Column="2"
-                                                    Orientation="Horizontal"
-                                                    VerticalAlignment="Center">
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Orientation="Horizontal">
 
-                                                    <TextBlock Classes="SmallText" VerticalAlignment="Center"
-                                                               Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
-                                                    </TextBlock>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Classes="SmallText"
+                                                        Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
 
-                                                    <TextBlock Classes="SmallText" VerticalAlignment="Center"
-                                                               Text=" / ">
-                                                    </TextBlock>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Classes="SmallText"
+                                                        Text=" / " />
 
-                                                    <TextBlock Classes="SmallText" VerticalAlignment="Center"
-                                                               Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
-                                                    </TextBlock>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Classes="SmallText"
+                                                        Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
                                                 </StackPanel>
 
                                                 <ProgressBar
-                                                    Margin="5,0,0,0"
+                                                    Grid.Row="1"
                                                     Grid.Column="1"
                                                     Grid.ColumnSpan="2"
-                                                    Grid.Row="1"
                                                     MinWidth="100"
+                                                    Margin="5,0,0,0"
                                                     HorizontalAlignment="Stretch"
                                                     Maximum="100"
                                                     Value="{Binding UsedPercentage}" />
@@ -152,8 +163,12 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}"
-                            Padding="0,10" Margin="10">
+                    <Border
+                        Grid.Row="1"
+                        Margin="10"
+                        Padding="0,10"
+                        Background="{DynamicResource ContainerBackgroundBrush}"
+                        CornerRadius="10">
                         <Grid RowDefinitions="Auto,Auto">
 
                             <TextBlock
@@ -165,15 +180,19 @@
                                 Items="{Binding AppState.Places}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:PlaceInfo">
-                                        <Grid Classes="SidebarContainerPresenter"
-                                              PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
-                                            <StackPanel Orientation="Horizontal" Margin="10,5"
-                                                        HorizontalAlignment="Stretch">
+                                        <Grid
+                                            Classes="SidebarContainerPresenter"
+                                            Cursor="Hand"
+                                            PointerPressed="OnHasContainerPointerPressed">
+                                            <StackPanel
+                                                Margin="10,5"
+                                                HorizontalAlignment="Stretch"
+                                                Orientation="Horizontal">
                                                 <Image
                                                     Width="20"
                                                     Height="20"
                                                     VerticalAlignment="Center"
-                                                    Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" />
+                                                    Source="{Binding Container, Converter={StaticResource ItemToImageConverter}}" />
 
                                                 <TextBlock
                                                     Margin="5,0,0,0"
@@ -258,6 +277,46 @@
                     Grid.Column="1"
                     RowDefinitions="Auto,40,*,Auto">
 
+                    <Grid>
+                        <ItemsControl Items="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        MaxHeight="200"
+                                        Margin="0,0,10,0"
+                                        Padding="5"
+                                        Background="{DynamicResource ContainerBackgroundColor}"
+                                        CornerRadius="10">
+                                        <ScrollViewer>
+                                            <ItemsControl Items="{Binding Commands.Collection}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            BorderThickness="1"
+                                                            Classes.SelectedTimelineCommand="{Binding IsSelected}">
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding DisplayLabel^}" />
+                                                                <ProgressBar
+                                                                    Margin="0,5,0,0"
+                                                                    Maximum="100"
+                                                                    Value="{Binding TotalProgress^}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+
                     <ItemsControl
                         Grid.Row="1"
                         Items="{Binding AppState.Tabs}">
@@ -308,9 +367,9 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="corevm:IItemViewModel">
                                         <local:ItemView
-                                            ShowAttributes="False"
                                             HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch" />
+                                            HorizontalContentAlignment="Stretch"
+                                            ShowAttributes="False" />
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
@@ -326,8 +385,7 @@
                             <Grid
                                 Grid.Column="2"
                                 RowDefinitions="Auto,*">
-                                <Grid
-                                    IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^, FallbackValue=False}">
+                                <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^, FallbackValue=False}">
                                     <Image
                                         Width="40"
                                         Height="40"
@@ -341,9 +399,9 @@
                                     Classes="ContentListView"
                                     IsTabStop="True"
                                     Items="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection}"
-                                    SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem^}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                                    ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem^}">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="corevm:IItemViewModel">
                                             <local:ItemView
@@ -375,10 +433,8 @@
                                 Fill="{DynamicResource ContentSeparatorBrush}" />
 
                             <Grid Grid.Column="4">
-                                <Grid
-                                    IsVisible="{Binding ItemPreviewService.ItemPreview^,Converter={x:Static ObjectConverters.IsNull}}">
-                                    <Grid
-                                        IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                                <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^, Converter={x:Static ObjectConverters.IsNull}}">
+                                    <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                                         <ListBox
                                             x:Name="ChildItems"
                                             x:CompileBindings="False"
@@ -428,26 +484,31 @@
                                         </ItemsRepeater>
                                     </Grid>
                                 </Grid>
-                                <Grid
-                                    IsVisible="{Binding ItemPreviewService.ItemPreview^,Converter={x:Static ObjectConverters.IsNotNull}}">
-                                    <TextBlock HorizontalAlignment="Center" Text="Don't know how to preview this item."
-                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown},FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" />
-                                    <TextBlock HorizontalAlignment="Center" Text="Empty"
-                                               IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty},FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" />
-                                    <ScrollViewer
-                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text},FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}">
+                                <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
+                                        Text="Don't know how to preview this item." />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
+                                        Text="Empty" />
+                                    <ScrollViewer IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}">
                                         <TextBox
-                                            IsReadOnly="True"
                                             x:CompileBindings="False"
+                                            IsReadOnly="True"
                                             Text="{Binding ItemPreviewService.ItemPreview^.TextContent}" />
                                     </ScrollViewer>
                                 </Grid>
                             </Grid>
                         </Grid>
 
-                        <ItemsRepeater Items="{Binding AppState.PopupTexts}" Margin="0,0,0,20"
-                                       HorizontalAlignment="Center" VerticalAlignment="Top"
-                                       IsVisible="{Binding AppState.PopupTexts.Count,Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+                        <ItemsRepeater
+                            Margin="0,0,0,20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            IsVisible="{Binding AppState.PopupTexts.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
+                            Items="{Binding AppState.PopupTexts}">
                             <ItemsRepeater.Styles>
                                 <Style Selector="TextBlock">
                                     <Style.Animations>
@@ -464,11 +525,14 @@
                             </ItemsRepeater.Styles>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
-                                    <Border Background="{DynamicResource ContainerGradientBackgroundBrush}" Margin="5"
-                                            Padding="5">
-                                        <TextBlock Text="{Binding}"
-                                                   Foreground="{DynamicResource AccentComplementBrush}"
-                                                   HorizontalAlignment="Center" />
+                                    <Border
+                                        Margin="5"
+                                        Padding="5"
+                                        Background="{DynamicResource ContainerGradientBackgroundBrush}">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Foreground="{DynamicResource AccentComplementBrush}"
+                                            Text="{Binding}" />
                                     </Border>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
@@ -477,7 +541,7 @@
 
                     <Grid Grid.Row="3">
                         <Grid
-                            IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualityConverter},ConverterParameter=RapidTravel}"
+                            IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualityConverter}, ConverterParameter=RapidTravel}"
                             RowDefinitions="1,Auto">
 
                             <Rectangle
@@ -502,8 +566,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <Grid
-                            IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+                        <Grid IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1" />
                                 <RowDefinition Height="Auto" />
@@ -528,8 +591,9 @@
                                             </Grid.ColumnDefinitions>
 
                                             <TextBlock Text="{Binding KeysDisplayText}" />
-                                            <TextBlock Grid.Column="1"
-                                                       Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsRepeater.ItemTemplate>
@@ -540,15 +604,15 @@
             </Grid>
 
             <Border
-                Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 IsVisible="{Binding DialogService.ReadInput^, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Border
-                    Background="{DynamicResource ContainerBackgroundBrush}"
                     Padding="20"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource ContainerBackgroundBrush}">
                     <Grid RowDefinitions="Auto,Auto">
 
                         <ItemsControl
@@ -556,22 +620,26 @@
                             Items="{Binding DialogService.ReadInput^.Inputs}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid MinWidth="500" ColumnDefinitions="250,*" Margin="10,5" x:Name="ItemRoot">
+                                    <Grid
+                                        x:Name="ItemRoot"
+                                        MinWidth="500"
+                                        Margin="10,5"
+                                        ColumnDefinitions="250,*">
                                         <TextBlock
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Top"
                                             Text="{Binding Label}" />
                                         <Grid Grid.Column="1">
                                             <TextBox
+                                                VerticalAlignment="Top"
                                                 x:DataType="interactions:TextInputElement"
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Text}}"
-                                                VerticalAlignment="Top"
                                                 Text="{Binding Value, Mode=TwoWay}" />
                                             <TextBox
+                                                VerticalAlignment="Top"
                                                 x:DataType="interactions:PasswordInputElement"
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Password}}"
                                                 PasswordChar="{Binding PasswordChar}"
-                                                VerticalAlignment="Top"
                                                 Text="{Binding Value, Mode=TwoWay}" />
                                             <ListBox
                                                 x:DataType="interactions:IOptionsInputElement"
@@ -587,17 +655,17 @@
                         <StackPanel
                             DataContext="{Binding DialogService.ReadInput^}"
                             Grid.Row="1"
-                            Orientation="Horizontal"
-                            Margin="0,10,0,0">
+                            Margin="0,10,0,0"
+                            Orientation="Horizontal">
                             <Button
-                                HorizontalContentAlignment="Center"
                                 Width="80"
+                                HorizontalContentAlignment="Center"
                                 Command="{Binding ProcessCommand}"
                                 Content="Ok" />
                             <Button
-                                HorizontalContentAlignment="Center"
                                 Width="80"
                                 Margin="10,0,0,0"
+                                HorizontalContentAlignment="Center"
                                 Command="{Binding CancelCommand}"
                                 Content="Cancel" />
                         </StackPanel>
@@ -606,32 +674,32 @@
             </Border>
 
             <Border
-                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                DataContext="{Binding DialogService.LastMessageBox^}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                DataContext="{Binding DialogService.LastMessageBox^}"
-                IsVisible="{Binding  Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                IsVisible="{Binding Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                 <Border
-                    Background="{DynamicResource ContainerBackgroundBrush}"
+                    Padding="20"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Padding="20">
+                    Background="{DynamicResource ContainerBackgroundBrush}">
                     <Grid RowDefinitions="Auto,Auto">
 
                         <TextBlock Text="{Binding Text}" />
                         <StackPanel
                             Grid.Row="1"
-                            Orientation="Horizontal"
-                            Margin="0,10,0,0">
+                            Margin="0,10,0,0"
+                            Orientation="Horizontal">
                             <Button
-                                HorizontalContentAlignment="Center"
                                 Width="80"
+                                HorizontalContentAlignment="Center"
                                 Command="{Binding OkCommand}"
                                 Content="Yes" />
                             <Button
-                                HorizontalContentAlignment="Center"
                                 Width="80"
                                 Margin="10,0,0,0"
+                                HorizontalContentAlignment="Center"
                                 Command="{Binding CancelCommand}"
                                 Content="No" />
                         </StackPanel>

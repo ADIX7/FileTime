@@ -5,7 +5,7 @@ namespace FileTime.Core.Timeline;
 public class LocalCommandExecutor : ILocalCommandExecutor
 {
     private readonly ICommandRunner _commandRunner;
-    public event EventHandler<ICommand> CommandFinished;
+    public event EventHandler<ICommand>? CommandFinished;
 
     public LocalCommandExecutor(ICommandRunner commandRunner)
     {
@@ -15,7 +15,7 @@ public class LocalCommandExecutor : ILocalCommandExecutor
     public void ExecuteCommand(ICommand command)
     {
         var context = new CommandRunnerContext(command);
-        var thread = new Thread(new ParameterizedThreadStart(RunCommand));
+        var thread = new Thread(RunCommand);
         thread.Start(context);
     }
 
@@ -29,6 +29,6 @@ public class LocalCommandExecutor : ILocalCommandExecutor
         }
         catch (Exception ex) { }
 
-        CommandFinished.Invoke(this, context.Command);
+        CommandFinished?.Invoke(this, context.Command);
     }
 }

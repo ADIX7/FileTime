@@ -37,7 +37,9 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(PasteCommand.Merge);
         AddUserCommand(PasteCommand.Overwrite);
         AddUserCommand(PasteCommand.Skip);
+        AddUserCommand(PauseCommandSchedulerCommand.Instance);
         AddUserCommand(RefreshCommand.Instance);
+        AddUserCommand(StartCommandSchedulerCommand.Instance);
         AddUserCommand(SwitchToTabCommand.SwitchToLastTab);
         AddUserCommand(SwitchToTabCommand.SwitchToTab1);
         AddUserCommand(SwitchToTabCommand.SwitchToTab2);
