@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using DynamicData;
+using DynamicData.Binding;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
@@ -80,6 +81,7 @@ public partial class TabViewModel : ITabViewModel
 
         CurrentItems = tab.CurrentItems
             .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
+            .Select(items => items?.Sort(SortItems()))
             .Publish(null)
             .RefCount();
 
@@ -134,8 +136,11 @@ public partial class TabViewModel : ITabViewModel
                         .Select(c => c.Container!.Items)
                         .Switch()
                         .Select(i =>
-                            i?.TransformAsync(MapItem)
-                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))),
+                            i
+                                ?.TransformAsync(MapItem)
+                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))
+                                .Sort(SortItems())
+                        ),
                     currentSelectedItemThrottled
                         .Where(c => c is null or not IContainerViewModel)
                         .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?)null)
@@ -162,8 +167,11 @@ public partial class TabViewModel : ITabViewModel
                         .Select(p => p.Items)
                         .Switch()
                         .Select(items =>
-                            items?.TransformAsync(MapItem)
-                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.Parent))),
+                            items
+                                ?.TransformAsync(MapItem)
+                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.Parent))
+                                .Sort(SortItems())
+                        ),
                     parentThrottled
                         .Where(p => p is null)
                         .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?)null)
@@ -185,6 +193,10 @@ public partial class TabViewModel : ITabViewModel
                 .RefCount();
         }
     }
+
+    private static SortExpressionComparer<IItemViewModel> SortItems()
+        //TODO: Order
+        => SortExpressionComparer<IItemViewModel>.Ascending(i => i.DisplayNameText ?? "");
 
     private static async Task<IItem> MapItem(AbsolutePath item)
         => await item.ResolveAsync(forceResolve: true,
