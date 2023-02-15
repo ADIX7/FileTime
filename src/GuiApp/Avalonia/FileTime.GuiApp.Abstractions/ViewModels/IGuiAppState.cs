@@ -3,6 +3,7 @@ using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Configuration;
+using FileTime.GuiApp.Models;
 
 namespace FileTime.GuiApp.ViewModels;
 
@@ -14,5 +15,8 @@ public interface IGuiAppState : IAppState
     List<CommandBindingConfiguration> PossibleCommands { get; set; }
     BindedCollection<RootDriveInfo, string> RootDriveInfos { get; set; }
     IReadOnlyList<PlaceInfo> Places { get; set; }
-    ObservableCollection<string> PopupTexts { get;  }
+    ObservableCollection<string> PopupTexts { get; }
+    IObservable<GuiPanel> ActivePanel { get; }
+
+    void SetActivePanel(GuiPanel newPanel);
 }
