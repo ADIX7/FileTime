@@ -91,10 +91,13 @@ public class CommandScheduler : ICommandScheduler
         var commandsToExecute = _commandsToRun.Items.FirstOrDefault()?.CommandsCollection.Collection;
         if (commandsToExecute is null || commandsToExecute.All(c => c.ExecutionState != ExecutionState.Initializing && c.ExecutionState != ExecutionState.Waiting)) return;
 
-
         foreach (var commandToExecute in commandsToExecute)
         {
-            if (commandToExecute.ExecutionState != ExecutionState.Waiting) continue;
+            if (commandToExecute.ExecutionState != ExecutionState.Waiting
+                && commandToExecute.ExecutionState != ExecutionState.Initializing )
+            {
+                continue;
+            }
 
             var commandExecutor = GetCommandExecutor();
 
