@@ -5,6 +5,7 @@ using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
+using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
 using FileTime.Core.Services;
@@ -196,7 +197,9 @@ public partial class TabViewModel : ITabViewModel
 
     private static SortExpressionComparer<IItemViewModel> SortItems()
         //TODO: Order
-        => SortExpressionComparer<IItemViewModel>.Ascending(i => i.DisplayNameText ?? "");
+        => SortExpressionComparer<IItemViewModel>
+            .Ascending(i => i.BaseItem?.Type ?? AbsolutePathType.Unknown)
+            .ThenByAscending(i => i.DisplayNameText?.ToLower() ?? "");
 
     private static async Task<IItem> MapItem(AbsolutePath item)
         => await item.ResolveAsync(forceResolve: true,
