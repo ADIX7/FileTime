@@ -107,7 +107,7 @@ public class NamePartShrinkerConverter : IMultiValueConverter
         else
         {
             var last = newNameParts.Last();
-            last.Text += "...";
+            newNameParts[^1] = new ItemNamePart(last.Text + "...");
         }
         return newNameParts;
     }
