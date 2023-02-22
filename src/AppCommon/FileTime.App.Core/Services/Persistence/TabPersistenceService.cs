@@ -128,7 +128,7 @@ public class TabPersistenceService : ITabPersistenceService
                     if (tab.Path == null) continue;
 
                     IContainer? container = null;
-                    var path = new FullName(tab.Path);
+                    var path = FullName.CreateSafe(tab.Path);
                     while (true)
                     {
                         try

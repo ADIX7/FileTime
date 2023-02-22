@@ -55,7 +55,7 @@ public abstract class ContentProviderBase : IContentProvider
     protected ContentProviderBase(string name)
     {
         DisplayName = Name = name;
-        FullName = new FullName(name);
+        FullName = FullName.CreateSafe(name);
         Extensions = new ExtensionCollection();
         _extensions = Extensions.AsReadOnly();
     }

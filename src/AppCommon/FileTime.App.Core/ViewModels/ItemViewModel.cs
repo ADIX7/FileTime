@@ -67,7 +67,7 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         IsSelected = itemViewModelType is ItemViewModelType.Main
             ? parentTab.CurrentSelectedItem.Select(EqualsTo)
-            : Observable.Return(IsInDeespestPath());
+            : Observable.Return(IsInDeepestPath());
 
         IsAlternative = sourceCollection.Select(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
 
@@ -92,7 +92,7 @@ public abstract partial class ItemViewModel : IItemViewModel
         return BaseItem?.FullName?.Path is string path && path == itemViewModel?.BaseItem?.FullName?.Path;
     }
 
-    private bool IsInDeespestPath()
+    private bool IsInDeepestPath()
     {
         if (_parentTab?.Tab?.LastDeepestSelectedPath is null
             || BaseItem?.FullName is null)
@@ -102,7 +102,7 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         var ownFullName = BaseItem.FullName;
         var deepestPath = _parentTab.Tab.LastDeepestSelectedPath;
-        var commonPath = new FullName(PathHelper.GetCommonPath(ownFullName.Path, deepestPath.Path));
+        var commonPath = FullName.CreateSafe(PathHelper.GetCommonPath(ownFullName.Path, deepestPath.Path));
 
         return commonPath.Path == ownFullName.Path;
     }

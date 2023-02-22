@@ -1,10 +1,8 @@
-using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
-using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Models;
@@ -28,7 +26,7 @@ public record Container(
     ReadOnlyExtensionCollection Extensions,
     IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> Items) : IContainer
 {
-    BehaviorSubject<bool> IsLoading { get; } = new BehaviorSubject<bool>(false);
+    BehaviorSubject<bool> IsLoading { get; } = new(false);
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
     public AbsolutePathType Type => AbsolutePathType.Container;
 }

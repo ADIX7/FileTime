@@ -37,7 +37,7 @@ public class Tab : ITab
             {
                 if (_currentSelectedItemCached is not null)
                 {
-                    LastDeepestSelectedPath = new FullName(PathHelper.GetLongerPath(LastDeepestSelectedPath?.Path, _currentSelectedItemCached.Path.Path));
+                    LastDeepestSelectedPath = FullName.CreateSafe(PathHelper.GetLongerPath(LastDeepestSelectedPath?.Path, _currentSelectedItemCached.Path.Path));
                 }
             })
             .Publish(null)
@@ -57,7 +57,7 @@ public class Tab : ITab
                         .Where(c => c is null)
                         .Select(_ => (IObservable<IChangeSet<IItem, string>>?)null)
                 )
-                .Publish((IObservable<IChangeSet<IItem, string>>?)null)
+                .Publish(null)
                 .RefCount();
 
         CurrentSelectedItem =
@@ -96,7 +96,7 @@ public class Tab : ITab
         _currentLocation.OnNext(currentLocation);
     }
 
-    private AbsolutePath? GetSelectedItemByItems(IEnumerable<IItem> items)
+    private AbsolutePath? GetSelectedItemByItems(IReadOnlyCollection<IItem> items)
     {
         if (!items.Any()) return null;
 
@@ -109,7 +109,7 @@ public class Tab : ITab
             {
                 var itemNameToSelect = LastDeepestSelectedPath.Path
                     .Split(Constants.SeparatorChar)
-                    .Skip((parentPath?.Split(Constants.SeparatorChar).Length) ?? 0)
+                    .Skip(parentPath.Split(Constants.SeparatorChar).Length)
                     .FirstOrDefault();
 
                 var itemToSelect = items.FirstOrDefault(i => i.FullName?.GetName() == itemNameToSelect);
@@ -121,7 +121,7 @@ public class Tab : ITab
             }
         }
 
-        LastDeepestSelectedPath = new FullName(PathHelper.GetLongerPath(LastDeepestSelectedPath?.Path, newSelectedItem.Path.Path));
+        LastDeepestSelectedPath = FullName.CreateSafe(PathHelper.GetLongerPath(LastDeepestSelectedPath?.Path, newSelectedItem.Path.Path));
 
         return newSelectedItem;
     }
