@@ -9,7 +9,7 @@ namespace FileTime.GuiApp.Services;
 public class FontService : IFontService
 {
     private readonly IOptionsMonitor<FontConfiguration> _fontConfiguration;
-    
+
     private readonly BehaviorSubject<string?> _mainFont = new(null);
     public IObservable<string?> MainFont => _mainFont.DistinctUntilChanged();
 
@@ -17,7 +17,7 @@ public class FontService : IFontService
     {
         _fontConfiguration = fontConfiguration;
         fontConfiguration.OnChange(UpdateFonts);
-        
+
         UpdateFonts(fontConfiguration.CurrentValue, null);
     }
 
@@ -29,6 +29,6 @@ public class FontService : IFontService
     public string? GetMainFont()
     {
         var installedFonts = FontManager.Current.GetInstalledFontFamilyNames().ToList();
-        return _fontConfiguration.CurrentValue.Main.FirstOrDefault(f => installedFonts.Contains(f));
+        return _fontConfiguration.CurrentValue.Main.Find(installedFonts.Contains);
     }
 }

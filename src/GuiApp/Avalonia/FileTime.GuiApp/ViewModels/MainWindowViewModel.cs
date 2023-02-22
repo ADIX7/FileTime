@@ -1,16 +1,12 @@
-﻿using System.Reflection;
+﻿using System.Reactive.Linq;
+using System.Reflection;
 using Avalonia.Input;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
-using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
-using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.GuiApp.Services;
 using FileTime.Providers.Local;
-using InitableService;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MvvmGen;
 
@@ -31,7 +27,7 @@ namespace FileTime.GuiApp.ViewModels;
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;
-    public IObservable<string?> MainFont => _fontService.MainFont;
+    public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
     public IGuiAppState AppState => _appState;
     public string Title { get; private set; }
 
