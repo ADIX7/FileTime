@@ -103,26 +103,11 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     {
         await (command.PasteMode switch
         {
-            PasteMode.Merge => PasteMerge(),
-            PasteMode.Overwrite => PasteOverwrite(),
-            PasteMode.Skip => PasteSkip(),
+            PasteMode.Merge => Paste(TransportMode.Merge),
+            PasteMode.Overwrite => Paste(TransportMode.Overwrite),
+            PasteMode.Skip => Paste(TransportMode.Skip),
             _ => throw new ArgumentException($"Unknown {nameof(PasteMode)} value: {command.PasteMode}")
         });
-    }
-
-    private async Task PasteMerge()
-    {
-        await Paste(TransportMode.Merge);
-    }
-
-    private async Task PasteOverwrite()
-    {
-        await Paste(TransportMode.Overwrite);
-    }
-
-    private async Task PasteSkip()
-    {
-        await Paste(TransportMode.Skip);
     }
 
     private async Task Paste(TransportMode mode)

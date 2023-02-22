@@ -20,9 +20,11 @@
     Background="Transparent"
     Closed="OnWindowClosed"
     ExtendClientAreaToDecorationsHint="True"
+    FontFamily="{Binding MainFont^, Mode=OneWay}"
     Icon="/Assets/filetime.ico"
-    InputElement.KeyDown="OnKeyDown"
+    KeyDown="OnKeyDown"
     Opened="OnWindowOpened"
+    RequestedThemeVariant="Dark"
     TransparencyLevelHint="Blur"
     mc:Ignorable="d">
     <Window.Resources>

@@ -59,6 +59,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Core.ContentAccess
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Core.CommandHandlers", "Core\FileTime.Core.CommandHandlers\FileTime.Core.CommandHandlers.csproj", "{9B161766-A672-4D59-B591-C68907905158}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.GuiApp.Font", "GuiApp\Avalonia\FileTime.GuiApp.Font\FileTime.GuiApp.Font.csproj", "{767F3868-11D0-445D-9B86-F81C7FCEB6FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.GuiApp.Font.Abstractions", "GuiApp\Avalonia\FileTime.GuiApp.Font.Abstractions\FileTime.GuiApp.Font.Abstractions.csproj", "{2D07F149-106B-4644-9586-D6218F78D868}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -145,6 +149,14 @@ Global
 		{9B161766-A672-4D59-B591-C68907905158}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B161766-A672-4D59-B591-C68907905158}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B161766-A672-4D59-B591-C68907905158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{767F3868-11D0-445D-9B86-F81C7FCEB6FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{767F3868-11D0-445D-9B86-F81C7FCEB6FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{767F3868-11D0-445D-9B86-F81C7FCEB6FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{767F3868-11D0-445D-9B86-F81C7FCEB6FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D07F149-106B-4644-9586-D6218F78D868}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D07F149-106B-4644-9586-D6218F78D868}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D07F149-106B-4644-9586-D6218F78D868}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D07F149-106B-4644-9586-D6218F78D868}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -171,6 +183,8 @@ Global
 		{2AC5CAFF-EBDA-4C6E-BCFF-304B651F2906} = {3324D046-1E05-46B5-B1BA-82910D56B332}
 		{88BBB541-7306-44AE-95B1-0F8765AF1D4E} = {3324D046-1E05-46B5-B1BA-82910D56B332}
 		{9B161766-A672-4D59-B591-C68907905158} = {3324D046-1E05-46B5-B1BA-82910D56B332}
+		{767F3868-11D0-445D-9B86-F81C7FCEB6FA} = {01F231DE-4A65-435F-B4BB-77EE5221890C}
+		{2D07F149-106B-4644-9586-D6218F78D868} = {01F231DE-4A65-435F-B4BB-77EE5221890C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

@@ -20,6 +20,25 @@ namespace FileTime.GuiApp.App;
 
 public static class Startup
 {
+    internal static IConfigurationRoot CreateConfiguration()
+    {
+        var configurationBuilder = new ConfigurationBuilder()
+            .AddInMemoryCollection(MainConfiguration.Configuration)
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{Program.EnvironmentName}.json", true);
+
+        var configurationDirectory = new DirectoryInfo(Path.Combine(Program.AppDataRoot, "config"));
+        if (configurationDirectory.Exists)
+        {
+            foreach (var settingsFile in configurationDirectory.GetFiles("*.json"))
+            {
+                configurationBuilder.AddJsonFile(settingsFile.FullName, optional: true, reloadOnChange: true);
+            }
+        }
+
+        return configurationBuilder.Build();
+    }
+
     internal static IServiceCollection AddViewModels(this IServiceCollection serviceCollection)
     {
         serviceCollection.TryAddSingleton<MainWindowViewModel>();
@@ -69,14 +88,8 @@ public static class Startup
         );
     }
 
-    internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection)
+    internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
     {
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(MainConfiguration.Configuration)
-            .AddJsonFile("appsettings.json", optional: true)
-            .AddJsonFile($"appsettings.{Program.EnvironmentName}.json", true)
-            .Build();
-
         return serviceCollection
             .Configure<ProgramsConfiguration>(configuration.GetSection(SectionNames.ProgramsSectionName))
             .Configure<KeyBindingConfiguration>(configuration.GetSection(SectionNames.KeybindingSectionName))

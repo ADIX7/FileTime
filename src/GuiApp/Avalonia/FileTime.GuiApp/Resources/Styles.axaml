@@ -9,7 +9,7 @@
         </ResourceDictionary>
     </Styles.Resources>
 
-    <FluentTheme Mode="Dark" />
+    <FluentTheme />
 
     <Style Selector="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />

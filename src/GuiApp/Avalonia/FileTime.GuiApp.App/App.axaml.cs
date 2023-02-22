@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FileTime.App.DependencyInjection;
+using FileTime.GuiApp.Font;
 using FileTime.GuiApp.ViewModels;
 using FileTime.GuiApp.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,9 +14,11 @@ public partial class App : Application
 {
     static App()
     {
-        DI.ServiceProvider ??= DependencyInjection
+        var configuration = Startup.CreateConfiguration();
+        DI.ServiceProvider = DependencyInjection
             .RegisterDefaultServices()
-            .AddConfiguration()
+            .AddConfiguration(configuration)
+            .ConfigureFont(configuration)
             .RegisterLogging()
             .RegisterServices()
             .AddViewModels()

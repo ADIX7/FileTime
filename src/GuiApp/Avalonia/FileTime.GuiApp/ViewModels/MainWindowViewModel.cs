@@ -9,6 +9,7 @@ using FileTime.Core.Timeline;
 using FileTime.GuiApp.Services;
 using FileTime.Providers.Local;
 using InitableService;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MvvmGen;
@@ -26,9 +27,11 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IItemPreviewService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IDialogService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(ITimelessContentProvider), PropertyName = "_timelessContentProvider")]
+[Inject(typeof(IFontService), "_fontService")]
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;
+    public IObservable<string?> MainFont => _fontService.MainFont;
     public IGuiAppState AppState => _appState;
     public string Title { get; private set; }
 
