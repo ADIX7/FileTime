@@ -82,7 +82,6 @@ public partial class TabViewModel : ITabViewModel
 
         CurrentItems = tab.CurrentItems
             .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
-            .Select(items => items?.Sort(SortItems()))
             .Publish(null)
             .RefCount();
 

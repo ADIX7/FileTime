@@ -78,7 +78,6 @@ public abstract class ContentProviderBase : IContentProvider
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default);
 
-    public abstract Task<List<AbsolutePath>> GetItemsByContainerAsync(FullName fullName, PointInTime pointInTime);
     public abstract NativePath GetNativePath(FullName fullName);
 
     public abstract Task<byte[]?> GetContentAsync(IElement element,

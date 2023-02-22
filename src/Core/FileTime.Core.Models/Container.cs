@@ -26,7 +26,14 @@ public record Container(
     ReadOnlyExtensionCollection Extensions,
     IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> Items) : IContainer
 {
-    BehaviorSubject<bool> IsLoading { get; } = new(false);
+    private readonly CancellationTokenSource _loadingCancellationTokenSource = new();
+    public CancellationToken LoadingCancellationToken => _loadingCancellationTokenSource.Token;
+    public BehaviorSubject<bool> IsLoading { get; } = new(false);
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
     public AbsolutePathType Type => AbsolutePathType.Container;
+
+    public void CancelLoading()
+    {
+        _loadingCancellationTokenSource.Cancel();
+    }
 }

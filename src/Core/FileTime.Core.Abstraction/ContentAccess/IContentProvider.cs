@@ -22,7 +22,6 @@ public interface IContentProvider : IContainer, IOnContainerEnter
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default);
 
-    Task<List<AbsolutePath>> GetItemsByContainerAsync(FullName fullName, PointInTime pointInTime);
     NativePath GetNativePath(FullName fullName);
 
     Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default);

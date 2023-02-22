@@ -177,23 +177,6 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         throw new NotImplementedException();
     }
 
-    public override Task<List<AbsolutePath>> GetItemsByContainerAsync(FullName fullName, PointInTime pointInTime)
-        => Task.FromResult(GetItemsByContainer(fullName, pointInTime));
-
-    private List<AbsolutePath> GetItemsByContainer(FullName fullName, PointInTime pointInTime)
-        => GetItemsByContainer(new DirectoryInfo(GetNativePath(fullName).Path), pointInTime);
-
-    private List<AbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo, PointInTime pointInTime)
-        => directoryInfo
-            .GetDirectories()
-            .Select(d => DirectoryToAbsolutePath(d, pointInTime))
-            .Concat(
-                directoryInfo
-                    .GetFiles()
-                    .Select(f => FileToAbsolutePath(f, pointInTime))
-            )
-            .ToList();
-
     private AbsolutePath DirectoryToAbsolutePath(DirectoryInfo directoryInfo, PointInTime pointInTime)
     {
         var fullName = GetFullName(directoryInfo);
@@ -221,7 +204,9 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                     AbsolutePathType.Container);
         var exceptions = new BehaviorSubject<IEnumerable<Exception>>(Enumerable.Empty<Exception>());
 
-        return new Container(
+        var children = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
+
+        var container = new Container(
             directoryInfo.Name,
             directoryInfo.Name,
             fullName,
@@ -239,10 +224,13 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             exceptions,
             new ExtensionCollection().AsReadOnly(),
             //Observable.FromAsync(async () => await Task.Run(InitChildrenHelper)
-            Observable.Return(InitChildren())
+            //Observable.Return(InitChildren())
+            Observable.Return(children.Connect())
         );
 
-        Task<IObservable<IChangeSet<AbsolutePath, string>>?> InitChildrenHelper() => Task.FromResult(InitChildren());
+        Task.Run(() => LoadChildren(container, directoryInfo, children, pointInTime));
+
+        return container;
 
         IObservable<IChangeSet<AbsolutePath, string>>? InitChildren()
         {
@@ -266,6 +254,69 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             return null;
         }
     }
+
+    private void LoadChildren(
+        Container container,
+        DirectoryInfo directoryInfo,
+        SourceCache<AbsolutePath, string> children,
+        PointInTime pointInTime)
+    {
+        var lockobj = new object();
+        var loadingIndicatorCancellation = new CancellationTokenSource();
+
+        Task.Run(DelayedLoadingIndicator);
+        LoadChildren();
+
+        lock (lockobj)
+        {
+            loadingIndicatorCancellation.Cancel();
+            container.IsLoading.OnNext(false);
+        }
+
+        void LoadChildren()
+        {
+            foreach (var directory in directoryInfo.EnumerateDirectories())
+            {
+                if (container.LoadingCancellationToken.IsCancellationRequested) break;
+                var absolutePath = DirectoryToAbsolutePath(directory, pointInTime);
+                children.AddOrUpdate(absolutePath);
+            }
+
+            foreach (var file in directoryInfo.EnumerateFiles())
+            {
+                if (container.LoadingCancellationToken.IsCancellationRequested) break;
+                var absolutePath = FileToAbsolutePath(file, pointInTime);
+                children.AddOrUpdate(absolutePath);
+            }
+        }
+
+        async Task DelayedLoadingIndicator()
+        {
+            var token = loadingIndicatorCancellation.Token;
+            try
+            {
+                await Task.Delay(500, token);
+            }
+            catch { }
+
+            lock (lockobj)
+            {
+                if (token.IsCancellationRequested) return;
+                container.IsLoading.OnNext(true);
+            }
+        }
+    }
+
+    private List<AbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo, PointInTime pointInTime)
+        => directoryInfo
+            .GetDirectories()
+            .Select(d => DirectoryToAbsolutePath(d, pointInTime))
+            .Concat(
+                directoryInfo
+                    .GetFiles()
+                    .Select(f => FileToAbsolutePath(f, pointInTime))
+            )
+            .ToList();
 
     private Element FileToElement(FileInfo fileInfo, PointInTime pointInTime)
     {

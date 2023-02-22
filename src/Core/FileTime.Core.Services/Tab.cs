@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
 using DynamicData.Alias;
+using DynamicData.Binding;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -52,7 +53,11 @@ public class Tab : ITab
                             .Switch()
                             .Select(items => items?.TransformAsync(MapItem)),
                         _itemFilters.Connect().StartWithEmpty().ToCollection(),
-                        (items, filters) => items?.Where(i => filters.All(f => f.Filter(i)))),
+                        (items, filters) =>
+                            items
+                                ?.Where(i => filters.All(f => f.Filter(i)))
+                                .Sort(SortItems())
+                    ),
                     CurrentLocation
                         .Where(c => c is null)
                         .Select(_ => (IObservable<IChangeSet<IItem, string>>?)null)
@@ -88,6 +93,12 @@ public class Tab : ITab
             _currentSelectedItem.OnNext(s);
         });
     }
+
+    private static SortExpressionComparer<IItem> SortItems()
+        //TODO: Order
+        => SortExpressionComparer<IItem>
+            .Ascending(i => i.Type)
+            .ThenByAscending(i => i.DisplayName?.ToLower() ?? "");
 
     private async Task<IItem> MapItem(AbsolutePath item) => await item.ResolveAsync(true);
 
