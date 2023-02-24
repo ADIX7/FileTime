@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.FrequencyNavigation.Abstractions\FileTime.App.FrequencyNavigation.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.Abstractions\FileTime.GuiApp.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.Font.Abstractions\FileTime.GuiApp.Font.Abstractions.csproj" />

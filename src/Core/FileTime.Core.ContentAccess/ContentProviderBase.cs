@@ -48,7 +48,8 @@ public abstract class ContentProviderBase : IContentProvider
     public AbsolutePathType Type => AbsolutePathType.Container;
     public PointInTime PointInTime { get; } = PointInTime.Eternal;
 
-    public IObservable<IEnumerable<Exception>> Exceptions => Observable.Return(Enumerable.Empty<Exception>());
+    protected SourceList<Exception> Exceptions { get; } = new();
+    IObservable<IChangeSet<Exception>> IItem.Exceptions => Exceptions.Connect();
 
     ReadOnlyExtensionCollection IItem.Extensions => _extensions;
 

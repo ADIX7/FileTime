@@ -9,4 +9,5 @@ public interface IModalService
 
     void OpenModal(IModalViewModel modalToOpen);
     void CloseModal(IModalViewModel modalToClose);
+    T OpenModal<T>() where T : IModalViewModel;
 }

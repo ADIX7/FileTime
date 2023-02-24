@@ -35,6 +35,7 @@ public static class DependencyInjection
         serviceCollection.TryAddSingleton<IApplicationSettings, ApplicationSettings>();
         serviceCollection.TryAddSingleton<ITabPersistenceService, TabPersistenceService>();
         serviceCollection.TryAddTransient<ITab, Tab>();
+        serviceCollection.TryAddSingleton<ITabEvents, TabEvents>();
         serviceCollection.AddSingleton<IExitHandler, ITabPersistenceService>(sp => sp.GetRequiredService<ITabPersistenceService>());
         serviceCollection.AddSingleton<IStartupHandler, ITabPersistenceService>(sp => sp.GetRequiredService<ITabPersistenceService>());
 

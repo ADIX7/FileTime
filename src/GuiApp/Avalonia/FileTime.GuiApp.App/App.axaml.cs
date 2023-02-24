@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FileTime.App.DependencyInjection;
+using FileTime.App.FrequencyNavigation;
 using FileTime.GuiApp.Font;
 using FileTime.GuiApp.ViewModels;
 using FileTime.GuiApp.Views;
@@ -17,6 +18,7 @@ public partial class App : Application
         var configuration = Startup.CreateConfiguration();
         DI.ServiceProvider = DependencyInjection
             .RegisterDefaultServices()
+            .AddFrequencyNavigation()
             .AddConfiguration(configuration)
             .ConfigureFont(configuration)
             .RegisterLogging()

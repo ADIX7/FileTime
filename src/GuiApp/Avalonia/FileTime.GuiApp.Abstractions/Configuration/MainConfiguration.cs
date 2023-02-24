@@ -59,6 +59,7 @@ public static class MainConfiguration
             new(EnterRapidTravelCommand.CommandName,new KeyConfig(Key.OemQuestion, shift: true)),
             //new CommandBindingConfiguration(ConfigCommand.FindByName, new[] { Key.F, Key.N }),
             //new CommandBindingConfiguration(ConfigCommand.FindByNameRegex, new[] { Key.F, Key.R }),
+            new(GoByFrequencyCommand.CommandName, Key.Z),
             new(GoToHomeCommand.CommandName, new[] { Key.G, Key.H }),
             new(GoToPathCommand.CommandName, new KeyConfig(Key.L, ctrl: true)),
             new(GoToPathCommand.CommandName, new[] { Key.G, Key.P }),

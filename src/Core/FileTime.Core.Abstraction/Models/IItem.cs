@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using DynamicData;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Timeline;
@@ -21,7 +22,7 @@ public interface IItem
     string? Attributes { get; }
     AbsolutePathType Type { get; }
     PointInTime PointInTime { get; }
-    IObservable<IEnumerable<Exception>> Exceptions { get; }
+    IObservable<IChangeSet<Exception>> Exceptions { get; }
     ReadOnlyExtensionCollection Extensions { get; }
 
     T? GetExtension<T>() => (T?)Extensions.FirstOrDefault(i => i is T);

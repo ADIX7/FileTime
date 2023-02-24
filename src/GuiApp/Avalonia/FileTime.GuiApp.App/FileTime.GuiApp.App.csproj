@@ -41,6 +41,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core\FileTime.App.Core.csproj" />
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.DependencyInjection\FileTime.App.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.FrequencyNavigation\FileTime.App.FrequencyNavigation.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.CustomImpl\FileTime.GuiApp.CustomImpl.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.Font\FileTime.GuiApp.Font.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp\FileTime.GuiApp.csproj" />

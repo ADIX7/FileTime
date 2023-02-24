@@ -2,6 +2,7 @@ using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
+using FileTime.App.FrequencyNavigation.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
@@ -20,6 +21,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IUserCommunicationService _userCommunicationService;
+    private readonly IFrequencyNavigationService _frequencyNavigationService;
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
@@ -32,7 +34,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         ILocalContentProvider localContentProvider,
         IUserCommandHandlerService userCommandHandlerService,
         ITimelessContentProvider timelessContentProvider,
-        IUserCommunicationService userCommunicationService) : base(appState)
+        IUserCommunicationService userCommunicationService,
+        IFrequencyNavigationService frequencyNavigationService) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
@@ -40,6 +43,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         _userCommandHandlerService = userCommandHandlerService;
         _timelessContentProvider = timelessContentProvider;
         _userCommunicationService = userCommunicationService;
+        _frequencyNavigationService = frequencyNavigationService;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -53,6 +57,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<CloseTabCommand>(CloseTab),
             new TypeUserCommandHandler<EnterRapidTravelCommand>(EnterRapidTravel),
             new TypeUserCommandHandler<ExitRapidTravelCommand>(ExitRapidTravel),
+            new TypeUserCommandHandler<GoByFrequencyCommand>(GoByFrequency),
             new TypeUserCommandHandler<GoToHomeCommand>(GoToHome),
             new TypeUserCommandHandler<GoToPathCommand>(GoToPath),
             new TypeUserCommandHandler<GoToProviderCommand>(GoToProvider),
@@ -69,6 +74,12 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<RefreshCommand>(Refresh),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
+    }
+
+    private Task GoByFrequency()
+    {
+        _frequencyNavigationService.OpenNavigationWindow();
+        return Task.CompletedTask;
     }
 
     private async Task GoToPath()

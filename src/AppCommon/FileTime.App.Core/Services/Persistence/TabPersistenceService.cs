@@ -63,7 +63,7 @@ public class TabPersistenceService : ITabPersistenceService
         _serviceProvider = serviceProvider;
         _localContentProvider = localContentProvider;
 
-        _jsonOptions = new JsonSerializerOptions()
+        _jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             WriteIndented = true

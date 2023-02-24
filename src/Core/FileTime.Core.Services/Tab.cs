@@ -12,6 +12,7 @@ namespace FileTime.Core.Services;
 public class Tab : ITab
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly ITabEvents _tabEvents;
     private readonly BehaviorSubject<IContainer?> _currentLocation = new(null);
     private readonly BehaviorSubject<IContainer?> _currentLocationForced = new(null);
     private readonly BehaviorSubject<AbsolutePath?> _currentSelectedItem = new(null);
@@ -24,9 +25,10 @@ public class Tab : ITab
     public IObservable<AbsolutePath?> CurrentSelectedItem { get; }
     public FullName? LastDeepestSelectedPath { get; private set; }
 
-    public Tab(ITimelessContentProvider timelessContentProvider)
+    public Tab(ITimelessContentProvider timelessContentProvider, ITabEvents tabEvents)
     {
         _timelessContentProvider = timelessContentProvider;
+        _tabEvents = tabEvents;
         _currentPointInTime = null!;
 
         _timelessContentProvider.CurrentPointInTime.Subscribe(p => _currentPointInTime = p);
@@ -60,7 +62,7 @@ public class Tab : ITab
                     ),
                     CurrentLocation
                         .Where(c => c is null)
-                        .Select(_ => (IObservable<IChangeSet<IItem, string>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItem, string>>?) null)
                 )
                 .Publish(null)
                 .RefCount();
@@ -137,8 +139,25 @@ public class Tab : ITab
         return newSelectedItem;
     }
 
-    public void SetCurrentLocation(IContainer newLocation) => _currentLocation.OnNext(newLocation);
-    public void ForceSetCurrentLocation(IContainer newLocation) => _currentLocationForced.OnNext(newLocation);
+    public void SetCurrentLocation(IContainer newLocation)
+    {
+        _currentLocation.OnNext(newLocation);
+
+        if (newLocation.FullName != null)
+        {
+            _tabEvents.OnLocationChanged(this, newLocation.FullName);
+        }
+    }
+
+    public void ForceSetCurrentLocation(IContainer newLocation)
+    {
+        _currentLocationForced.OnNext(newLocation);
+
+        if (newLocation.FullName != null)
+        {
+            _tabEvents.OnLocationChanged(this, newLocation.FullName);
+        }
+    }
 
     public void SetSelectedItem(AbsolutePath newSelectedItem) => _currentSelectedItem.OnNext(newSelectedItem);
 

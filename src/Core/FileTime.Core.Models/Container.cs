@@ -22,7 +22,7 @@ public record Container(
     IContentProvider Provider,
     bool AllowRecursiveDeletion,
     PointInTime PointInTime,
-    IObservable<IEnumerable<Exception>> Exceptions,
+    IObservable<IChangeSet<Exception>> Exceptions,
     ReadOnlyExtensionCollection Extensions,
     IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> Items) : IContainer
 {

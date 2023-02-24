@@ -20,6 +20,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(DeleteCommand.SoftDelete);
         AddUserCommand(EnterRapidTravelCommand.Instance);
         AddUserCommand(ExitRapidTravelCommand.Instance);
+        AddUserCommand(GoByFrequencyCommand.Instance);
         AddUserCommand(GoToHomeCommand.Instance);
         AddUserCommand(GoToPathCommand.Instance);
         AddUserCommand(GoToProviderCommand.Instance);
