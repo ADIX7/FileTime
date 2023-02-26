@@ -19,7 +19,7 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
     private DateTime _lastSave = DateTime.Now;
     private readonly ILogger<FrequencyNavigationService> _logger;
     private readonly IModalService _modalService;
-    private readonly SemaphoreSlim _saveLock = new(1);
+    private readonly SemaphoreSlim _saveLock = new(1, 1);
     private Dictionary<string, ContainerFrequencyData> _containerScores = new();
     private readonly BehaviorSubject<bool> _showWindow = new(false);
     private readonly string _dbPath;

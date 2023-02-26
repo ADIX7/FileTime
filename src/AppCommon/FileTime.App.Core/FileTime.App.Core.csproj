@@ -26,6 +26,7 @@
     <ProjectReference Include="..\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Command\FileTime.Core.Command.csproj" />
     <ProjectReference Include="..\FileTime.App.FrequencyNavigation.Abstractions\FileTime.App.FrequencyNavigation.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.App.Search\FileTime.App.Search.csproj" />
   </ItemGroup>
 
 </Project>

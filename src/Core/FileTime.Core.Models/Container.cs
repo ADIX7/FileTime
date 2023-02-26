@@ -32,8 +32,5 @@ public record Container(
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
     public AbsolutePathType Type => AbsolutePathType.Container;
 
-    public void CancelLoading()
-    {
-        _loadingCancellationTokenSource.Cancel();
-    }
+    public void CancelLoading() => _loadingCancellationTokenSource.Cancel();
 }

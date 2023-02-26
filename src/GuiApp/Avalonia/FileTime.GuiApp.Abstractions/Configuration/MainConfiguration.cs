@@ -39,42 +39,41 @@ public static class MainConfiguration
         }
     }
 
-    private static List<CommandBindingConfiguration> InitDefaultKeyBindings()
-    {
-        return new List<CommandBindingConfiguration>()
+    private static List<CommandBindingConfiguration> InitDefaultKeyBindings() =>
+        new List<CommandBindingConfiguration>()
         {
             //new CommandBindingConfiguration(ConfigCommand.AutoRefresh, new KeyConfig(Key.R, shift: true)),
             //new CommandBindingConfiguration(ConfigCommand.ChangeTimelineMode, new[] { Key.T, Key.M }),
             new(CloseTabCommand.CommandName, Key.Q),
             //new CommandBindingConfiguration(ConfigCommand.Compress, new[] { Key.Y, Key.C }),
-            new(CopyCommand.CommandName, new[] { Key.Y, Key.Y }),
+            new(CopyCommand.CommandName, new[] {Key.Y, Key.Y}),
             //new CommandBindingConfiguration(ConfigCommand.CopyHash, new[] { Key.C, Key.H }),
-            new(CopyNativePathCommand.CommandName, new[] { Key.C, Key.P }),
+            new(CopyNativePathCommand.CommandName, new[] {Key.C, Key.P}),
             new(CreateContainer.CommandName, Key.F7),
-            new(CreateContainer.CommandName, new[] { Key.C, Key.C }),
-            new(CreateElement.CommandName, new[] { Key.C, Key.E }),
+            new(CreateContainer.CommandName, new[] {Key.C, Key.C}),
+            new(CreateElement.CommandName, new[] {Key.C, Key.E}),
             //new CommandBindingConfiguration(ConfigCommand.Cut, new[] { Key.D, Key.D }),
             //new CommandBindingConfiguration(ConfigCommand.Edit, new KeyConfig(Key.F4)),
-            new(EnterRapidTravelCommand.CommandName,new KeyConfig(Key.OemComma, shift: true)),
-            new(EnterRapidTravelCommand.CommandName,new KeyConfig(Key.OemQuestion, shift: true)),
+            new(EnterRapidTravelCommand.CommandName, new KeyConfig(Key.OemComma, shift: true)),
+            new(EnterRapidTravelCommand.CommandName, new KeyConfig(Key.OemQuestion, shift: true)),
             //new CommandBindingConfiguration(ConfigCommand.FindByName, new[] { Key.F, Key.N }),
             //new CommandBindingConfiguration(ConfigCommand.FindByNameRegex, new[] { Key.F, Key.R }),
             new(GoByFrequencyCommand.CommandName, Key.Z),
-            new(GoToHomeCommand.CommandName, new[] { Key.G, Key.H }),
+            new(GoToHomeCommand.CommandName, new[] {Key.G, Key.H}),
             new(GoToPathCommand.CommandName, new KeyConfig(Key.L, ctrl: true)),
-            new(GoToPathCommand.CommandName, new[] { Key.G, Key.P }),
-            new(GoToProviderCommand.CommandName, new[] { Key.G, Key.T }),
-            new(GoToRootCommand.CommandName, new[] { Key.G, Key.R }),
-            new(DeleteCommand.HardDeleteCommandName, new[] { new KeyConfig(Key.D,shift: true), new KeyConfig(Key.D, shift: true) }),
+            new(GoToPathCommand.CommandName, new[] {Key.G, Key.P}),
+            new(GoToProviderCommand.CommandName, new[] {Key.G, Key.T}),
+            new(GoToRootCommand.CommandName, new[] {Key.G, Key.R}),
+            new(DeleteCommand.HardDeleteCommandName, new[] {new KeyConfig(Key.D, shift: true), new KeyConfig(Key.D, shift: true)}),
             new(MarkCommand.CommandName, Key.Space),
             new(MoveCursorToLastCommand.CommandName, new KeyConfig(Key.G, shift: true)),
-            new(MoveCursorToFirstCommand.CommandName, new[] { Key.G, Key.G }),
+            new(MoveCursorToFirstCommand.CommandName, new[] {Key.G, Key.G}),
             //new CommandBindingConfiguration(ConfigCommand.NextTimelineBlock, Key.L ),
             //new CommandBindingConfiguration(ConfigCommand.NextTimelineCommand, Key.J ),
-            new(OpenInDefaultFileExplorerCommand.CommandName, new[] { Key.O, Key.E }),
-            new(PasteCommand.PasteMergeCommandName, new[] { Key.P, Key.P }),
-            new(PasteCommand.PasteOverwriteCommandName, new[] { Key.P, Key.O }),
-            new(PasteCommand.PasteSkipCommandName, new[] { Key.P, Key.S }),
+            new(OpenInDefaultFileExplorerCommand.CommandName, new[] {Key.O, Key.E}),
+            new(PasteCommand.PasteMergeCommandName, new[] {Key.P, Key.P}),
+            new(PasteCommand.PasteOverwriteCommandName, new[] {Key.P, Key.O}),
+            new(PasteCommand.PasteSkipCommandName, new[] {Key.P, Key.S}),
             //new CommandBindingConfiguration(ConfigCommand.PinFavorite, new[] { Key.F, Key.P }),
             //new CommandBindingConfiguration(ConfigCommand.PreviousTimelineBlock, Key.H ),
             //new CommandBindingConfiguration(ConfigCommand.PreviousTimelineCommand, Key.K ),
@@ -84,7 +83,8 @@ public static class MainConfiguration
             //new CommandBindingConfiguration(ConfigCommand.RunCommand, new KeyConfig(Key.D4, shift: true)),
             //new CommandBindingConfiguration(ConfigCommand.ScanContainerSize, new[] { Key.C, Key.S }),
             //new CommandBindingConfiguration(ConfigCommand.ShowAllShortcut, Key.F1),
-            new(DeleteCommand.SoftDeleteCommandName, new[] { new KeyConfig(Key.D), new KeyConfig(Key.D, shift: true) }),
+            new(DeleteCommand.SoftDeleteCommandName, new[] {new KeyConfig(Key.D), new KeyConfig(Key.D, shift: true)}),
+            new(IdentifiableSearchCommand.SearchByNameContainsCommandName, new[] {Key.S, Key.N}),
             new(SwitchToTabCommand.SwitchToLastTabCommandName, Key.D9),
             new(SwitchToTabCommand.SwitchToTab1CommandName, Key.D1),
             new(SwitchToTabCommand.SwitchToTab2CommandName, Key.D2),
@@ -94,9 +94,9 @@ public static class MainConfiguration
             new(SwitchToTabCommand.SwitchToTab6CommandName, Key.D6),
             new(SwitchToTabCommand.SwitchToTab7CommandName, Key.D7),
             new(SwitchToTabCommand.SwitchToTab8CommandName, Key.D8),
-            new (PauseCommandSchedulerCommand.CommandName, new[] { Key.T, Key.P }),
+            new(PauseCommandSchedulerCommand.CommandName, new[] {Key.T, Key.P}),
             //new CommandBindingConfiguration(ConfigCommand.TimelineRefresh, new[] { Key.T, Key.R }),
-            new (StartCommandSchedulerCommand.CommandName, new[] { Key.T, Key.S }),
+            new(StartCommandSchedulerCommand.CommandName, new[] {Key.T, Key.S}),
             //new CommandBindingConfiguration(ConfigCommand.ToggleAdvancedIcons, new[] { Key.Z, Key.I }),
             new(GoUpCommand.CommandName, Key.Left),
             new(OpenSelectedCommand.CommandName, Key.Right),
@@ -106,7 +106,6 @@ public static class MainConfiguration
             new(MoveCursorUpPageCommand.CommandName, Key.PageUp),
             new(MoveCursorDownPageCommand.CommandName, Key.PageDown),
         };
-    }
 
     private static void PopulateDefaultEditorPrograms(Dictionary<string, string> configuration)
     {

@@ -2,7 +2,7 @@ using FileTime.App.Core.UserCommand;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
-public class TypeUserCommandHandler<T> : IUserCommandHandler
+public class TypeUserCommandHandler<T> : IUserCommandHandler where T : IUserCommand
 {
     private readonly Func<T, Task> _handler;
 
