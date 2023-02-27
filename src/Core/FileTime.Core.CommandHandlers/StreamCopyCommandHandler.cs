@@ -53,8 +53,8 @@ public class StreamCopyCommandHandler : ICommandHandler
     {
         var parent = (IContainer?) (await targetPath.GetParent()!.ResolveAsync())!;
         var elementName = targetPath.Path;
-        var parentChildren = await parent.Items.GetItemsAsync();
-        if (parentChildren!.All(e => e.Path.GetName() != elementName.GetName()))
+        var parentChildren = parent.ItemsCollection.ToList();
+        if (parentChildren.All(e => e.Path.GetName() != elementName.GetName()))
         {
             var itemCreator = _contentAccessorFactory.GetItemCreator(parent.Provider);
             await itemCreator.CreateElementAsync(parent.Provider, elementName);

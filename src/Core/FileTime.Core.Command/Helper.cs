@@ -7,7 +7,7 @@ public static class Helper
 {
     public static async Task<string?> GetNewNameAsync(IContainer resolvedTarget, string name, TransportMode transportMode)
     {
-        var items = (await resolvedTarget.Items.GetItemsAsync() ?? throw new NullReferenceException()).ToList();
+        var items = resolvedTarget.ItemsCollection.ToList();
         var newName = name;
         var targetNameExists = items.Any(i => i.Path.GetName() == newName);
         if (transportMode == TransportMode.Merge)

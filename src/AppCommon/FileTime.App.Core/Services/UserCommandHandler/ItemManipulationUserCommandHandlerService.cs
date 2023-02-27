@@ -195,8 +195,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             var resolvedOnlyItem = await _timelessContentProvider.GetItemByFullNameAsync(itemsToDelete[0], PointInTime.Present);
 
             if (resolvedOnlyItem is IContainer {AllowRecursiveDeletion: true} onlyContainer
-                && await onlyContainer.Items.GetItemsAsync() is { } children
-                && children.Any())
+                && onlyContainer.ItemsCollection.Any())
             {
                 questionText = $"The container '{onlyContainer.DisplayName}' is not empty. Proceed with delete?";
             }
@@ -206,7 +205,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             }
         }
 
-        if (itemsToDelete?.Count == 0) return;
+        if (itemsToDelete.Count == 0) return;
 
         if (questionText is { })
         {
@@ -219,7 +218,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             return;
         }
 
-        
+
         var deleteCommand = _serviceProvider.GetRequiredService<FileTime.Core.Command.Delete.DeleteCommand>();
         deleteCommand.HardDelete = command.IsHardDelete;
         deleteCommand.ItemsToDelete.AddRange(itemsToDelete!);

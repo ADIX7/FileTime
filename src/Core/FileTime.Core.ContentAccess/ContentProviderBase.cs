@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
@@ -13,6 +14,7 @@ public abstract class ContentProviderBase : IContentProvider
     private readonly IObservable<IChangeSet<AbsolutePath, string>> _items;
 
     protected SourceCache<AbsolutePath, string> Items { get; } = new(p => p.Path.Path);
+    public ReadOnlyObservableCollection<AbsolutePath> ItemsCollection { get; }
     protected ExtensionCollection Extensions { get; }
 
     IObservable<IChangeSet<AbsolutePath, string>> IContainer.Items => _items;
@@ -61,6 +63,8 @@ public abstract class ContentProviderBase : IContentProvider
         Extensions = new ExtensionCollection();
         _extensions = Extensions.AsReadOnly();
         _items = Items.Connect().StartWithEmpty();
+        _items.Bind(out var items).Subscribe();
+        ItemsCollection = items;
     }
 
     public virtual Task OnEnter() => Task.CompletedTask;

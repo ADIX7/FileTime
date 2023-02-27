@@ -71,7 +71,7 @@ public class DeleteCommand : CommandBase, IExecutableCommand
             {
                 await TraverseTree(
                     currentTime,
-                    (await container.Items.GetItemsAsync())?.Select(i => i.Path) ?? Enumerable.Empty<FullName>(),
+                    container.ItemsCollection.Select(i => i.Path),
                     itemDeleters,
                     deleteStrategy
                 );

@@ -80,8 +80,7 @@ public class SearchTask : ISearchTask
 
     private async Task TraverseTree(IContainer container)
     {
-        var items = (await container.Items.GetItemsAsync())?.ToList();
-        if (items is null) return;
+        var items = container.ItemsCollection.ToList();
 
         var childContainers = new List<IContainer>();
 

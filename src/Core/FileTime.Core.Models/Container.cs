@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DynamicData;
@@ -26,11 +27,19 @@ public record Container(
     ReadOnlyExtensionCollection Extensions,
     IObservable<IChangeSet<AbsolutePath, string>> Items) : IContainer
 {
+    private readonly Lazy<ReadOnlyObservableCollection<AbsolutePath>> _itemsCollectionLazy =
+        new (() =>
+        {
+            Items.Bind(out var items).Subscribe();
+            return items;
+        });
     private readonly CancellationTokenSource _loadingCancellationTokenSource = new();
     public CancellationToken LoadingCancellationToken => _loadingCancellationTokenSource.Token;
     public BehaviorSubject<bool> IsLoading { get; } = new(false);
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
     public AbsolutePathType Type => AbsolutePathType.Container;
+
+    public ReadOnlyObservableCollection<AbsolutePath> ItemsCollection => _itemsCollectionLazy.Value;
 
     public void CancelLoading() => _loadingCancellationTokenSource.Cancel();
 }
