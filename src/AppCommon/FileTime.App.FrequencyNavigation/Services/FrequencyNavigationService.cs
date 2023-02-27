@@ -89,7 +89,7 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
             if (TryAgeContainerScores() || DateTime.Now - _lastSave > TimeSpan.FromMinutes(5))
             {
             }
-
+            //TODO: move to if above
             await SaveStateAsync();
         }
         catch (Exception e)
@@ -113,7 +113,7 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         var itemsToRemove = new List<string>();
         foreach (var container in _containerScores)
         {
-            var newScore = (int) Math.Floor(container.Value.Score * 0.9);
+            var newScore = (int)Math.Floor(container.Value.Score * 0.9);
             if (newScore > 0)
             {
                 container.Value.Score = newScore;
@@ -136,14 +136,18 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
             return new List<string>();
 
         _saveLock.Wait();
-        var matchingContainers = _containerScores
-            .Where(c => c.Key.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(c => GetWeightedScore(c.Value.Score, c.Value.LastAccessed))
-            .Select(c => c.Key)
-            .ToList();
-
-        _saveLock.Release();
-        return matchingContainers;
+        try
+        {
+            return _containerScores
+                .Where(c => c.Key.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(c => GetWeightedScore(c.Value.Score, c.Value.LastAccessed))
+                .Select(c => c.Key)
+                .ToList();
+        }
+        finally
+        {
+            _saveLock.Release();
+        }
     }
 
     private int GetWeightedScore(int score, DateTime lastAccess)
@@ -159,36 +163,48 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         };
     }
 
-    public async Task InitAsync()
-    {
-        await LoadStateAsync();
-    }
+    public async Task InitAsync() => await LoadStateAsync();
 
     private async Task LoadStateAsync()
     {
         if (!File.Exists(_dbPath))
             return;
 
-        await _saveLock.WaitAsync();
-        await using var dbStream = File.OpenRead(_dbPath);
-        var containerScores = await JsonSerializer.DeserializeAsync<Dictionary<string, ContainerFrequencyData>>(dbStream);
-        if (containerScores is null) return;
+        try
+        {
+            await _saveLock.WaitAsync();
+            _logger.LogTrace("Loading frequency navigation state from file '{DbPath}'", _dbPath);
+            await using var dbStream = File.OpenRead(_dbPath);
+            var containerScores = await JsonSerializer.DeserializeAsync<Dictionary<string, ContainerFrequencyData>>(dbStream);
+            if (containerScores is null) return;
 
-        _containerScores = containerScores;
-        _saveLock.Release();
+            _containerScores = containerScores;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error loading frequency navigation state");
+        }
+        finally
+        {
+            _saveLock.Release();
+        }
     }
 
-    public async Task ExitAsync()
-    {
-        await SaveStateAsync();
-    }
+    public async Task ExitAsync() => await SaveStateAsync();
 
     private async Task SaveStateAsync()
     {
         await _saveLock.WaitAsync();
-        _lastSave = DateTime.Now;
-        await using var dbStream = File.OpenWrite(_dbPath);
-        await JsonSerializer.SerializeAsync(dbStream, _containerScores);
-        _saveLock.Release();
+        try
+        {
+            _lastSave = DateTime.Now;
+            await using var dbStream = File.Create(_dbPath);
+            await JsonSerializer.SerializeAsync(dbStream, _containerScores);
+            dbStream.Flush();
+        }
+        finally
+        {
+            _saveLock.Release();
+        }
     }
 }

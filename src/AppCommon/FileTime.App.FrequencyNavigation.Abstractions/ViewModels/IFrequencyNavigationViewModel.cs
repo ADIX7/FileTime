@@ -1,3 +1,4 @@
+using Avalonia.Input;
 using FileTime.App.Core.ViewModels;
 
 namespace FileTime.App.FrequencyNavigation.ViewModels;
@@ -9,4 +10,5 @@ public interface IFrequencyNavigationViewModel : IModalViewModel
     string SearchText { get; set; }
     string SelectedItem { get; set; }
     void Close();
+    void HandleKeyDown(KeyEventArgs keyEventArgs);
 }

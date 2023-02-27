@@ -18,6 +18,8 @@ public class ToastMessageSink : ILogEventSink
         if (logEvent.Level >= LogEventLevel.Error)
         {
             var message = logEvent.RenderMessage();
+            if (logEvent.Exception is not null)
+                message += $" {logEvent.Exception.Message}";
             dialogService.ShowToastMessage(message);
         }
     }

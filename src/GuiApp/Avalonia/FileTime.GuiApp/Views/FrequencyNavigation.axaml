@@ -9,21 +9,28 @@
     d:DesignWidth="800"
     x:CompileBindings="True"
     x:DataType="viewModels:IFrequencyNavigationViewModel"
+    Background="{DynamicResource ContainerBackgroundColor}"
     mc:Ignorable="d">
+    <UserControl.Styles>
+        <StyleInclude Source="avares://FileTime.GuiApp/Resources/Styles.axaml" />
+    </UserControl.Styles>
     <Grid RowDefinitions="Auto,*">
         <TextBox
+            Focusable="True"
             KeyDown="Search_OnKeyDown"
             Text="{Binding SearchText, Mode=TwoWay}" />
-        <ItemsRepeater
+        <ListBox
             Grid.Row="1"
-            Items="{Binding FilteredMatches}">
-            <ItemsRepeater.ItemTemplate>
+            Classes="CommandPalette"
+            Items="{Binding FilteredMatches}"
+            SelectedItem="{Binding SelectedItem}">
+            <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
                     <Grid Margin="5">
                         <TextBlock Text="{Binding}" />
                     </Grid>
                 </DataTemplate>
-            </ItemsRepeater.ItemTemplate>
-        </ItemsRepeater>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </UserControl>

@@ -26,5 +26,9 @@ public partial class FrequencyNavigation : UserControl
         {
             viewModel.Close();
         }
+        else
+        {
+            viewModel.HandleKeyDown(e);
+        }
     }
 }

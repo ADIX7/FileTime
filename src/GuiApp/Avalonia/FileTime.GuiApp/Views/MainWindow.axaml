@@ -719,12 +719,13 @@
 
             <Border
                 DataContext="{Binding FrequencyNavigationService.CurrentModal}"
-                Margin="100"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 IsVisible="{Binding ShowWindow^, FallbackValue=False}">
-                <local:FrequencyNavigation />
+                <Grid Margin="100">
+                    <local:FrequencyNavigation />
+                </Grid>
             </Border>
         </Grid>
 
