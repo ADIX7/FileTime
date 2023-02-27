@@ -24,7 +24,7 @@ public record Container(
     PointInTime PointInTime,
     IObservable<IChangeSet<Exception>> Exceptions,
     ReadOnlyExtensionCollection Extensions,
-    IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> Items) : IContainer
+    IObservable<IChangeSet<AbsolutePath, string>> Items) : IContainer
 {
     private readonly CancellationTokenSource _loadingCancellationTokenSource = new();
     public CancellationToken LoadingCancellationToken => _loadingCancellationTokenSource.Token;

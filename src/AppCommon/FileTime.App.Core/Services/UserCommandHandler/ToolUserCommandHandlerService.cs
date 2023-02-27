@@ -4,6 +4,7 @@ using FileTime.App.Core.ViewModels;
 using FileTime.App.Search;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
+using FileTime.Core.Timeline;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
@@ -13,6 +14,8 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IUserCommunicationService _userCommunicationService;
     private readonly ISearchManager _searchManager;
     private readonly IItemNameConverterService _itemNameConverterService;
+    private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly IUserCommandHandlerService _userCommandHandlerService;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
 
@@ -21,12 +24,16 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         ISystemClipboardService systemClipboardService,
         IUserCommunicationService userCommunicationService,
         ISearchManager searchManager,
-        IItemNameConverterService itemNameConverterService) : base(appState)
+        IItemNameConverterService itemNameConverterService,
+        ITimelessContentProvider timelessContentProvider,
+        IUserCommandHandlerService userCommandHandlerService) : base(appState)
     {
         _systemClipboardService = systemClipboardService;
         _userCommunicationService = userCommunicationService;
         _searchManager = searchManager;
         _itemNameConverterService = itemNameConverterService;
+        _timelessContentProvider = timelessContentProvider;
+        _userCommandHandlerService = userCommandHandlerService;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
 
@@ -40,8 +47,8 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task Search(SearchCommand searchCommand)
     {
-        if(_currentLocation is null) return;
-        
+        if (_currentLocation is null) return;
+
         var searchQuery = searchCommand.SearchText;
         if (string.IsNullOrEmpty(searchQuery))
         {
@@ -59,10 +66,10 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
                 searchQuery = containerNameInput.Value;
             }
         }
-        
+
         //TODO proper error message
-        if(string.IsNullOrWhiteSpace(searchQuery)) return;
-        
+        if (string.IsNullOrWhiteSpace(searchQuery)) return;
+
         var searchMatcher = searchCommand.SearchType switch
         {
             SearchType.NameContains => new NameContainsMatcher(_itemNameConverterService, searchQuery),
@@ -70,7 +77,9 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        await _searchManager.StartSearchAsync(searchMatcher, _currentLocation);
+        var searchTask = await _searchManager.StartSearchAsync(searchMatcher, _currentLocation);
+        var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, searchTask.SearchContainer));
+        await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
     }
 
     private async Task CopyNativePath()

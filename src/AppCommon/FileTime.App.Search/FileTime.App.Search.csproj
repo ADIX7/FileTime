@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\Core\FileTime.Core.ContentAccess\FileTime.Core.ContentAccess.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
     <ProjectReference Include="..\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\FileTime.App.Search.Abstractions\FileTime.App.Search.Abstractions.csproj" />

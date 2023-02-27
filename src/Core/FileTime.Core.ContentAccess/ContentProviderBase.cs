@@ -10,11 +10,12 @@ namespace FileTime.Core.ContentAccess;
 public abstract class ContentProviderBase : IContentProvider
 {
     private readonly ReadOnlyExtensionCollection _extensions;
+    private readonly IObservable<IChangeSet<AbsolutePath, string>> _items;
 
-    protected BehaviorSubject<IObservable<IChangeSet<AbsolutePath, string>>?> Items { get; } = new(null);
+    protected SourceCache<AbsolutePath, string> Items { get; } = new(p => p.Path.Path);
     protected ExtensionCollection Extensions { get; }
 
-    IObservable<IObservable<IChangeSet<AbsolutePath, string>>?> IContainer.Items => Items;
+    IObservable<IChangeSet<AbsolutePath, string>> IContainer.Items => _items;
 
     public string Name { get; }
 
@@ -59,6 +60,7 @@ public abstract class ContentProviderBase : IContentProvider
         FullName = FullName.CreateSafe(name);
         Extensions = new ExtensionCollection();
         _extensions = Extensions.AsReadOnly();
+        _items = Items.Connect().StartWithEmpty();
     }
 
     public virtual Task OnEnter() => Task.CompletedTask;

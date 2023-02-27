@@ -4,5 +4,6 @@ namespace FileTime.App.Search;
 
 public interface ISearchManager
 {
-    Task StartSearchAsync(ISearchMatcher matcher, IContainer searchIn);
+    Task<ISearchTask> StartSearchAsync(ISearchMatcher matcher, IContainer searchIn);
+    IReadOnlyList<ISearchTask> SearchTasks { get; }
 }

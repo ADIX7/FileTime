@@ -134,7 +134,6 @@ public partial class TabViewModel : ITabViewModel
                         .OfType<IContainerViewModel>()
                         .Where(c => c?.Container is not null)
                         .Select(c => c.Container!.Items)
-                        .Switch()
                         .Select(i =>
                             i
                                 ?.TransformAsync(MapItem)
@@ -165,7 +164,6 @@ public partial class TabViewModel : ITabViewModel
                         .Select(p => Observable.FromAsync(async () => (IContainer)await p!.ResolveAsync()))
                         .Switch()
                         .Select(p => p.Items)
-                        .Switch()
                         .Select(items =>
                             items
                                 ?.TransformAsync(MapItem)

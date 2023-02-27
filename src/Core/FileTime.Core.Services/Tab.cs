@@ -52,8 +52,7 @@ public class Tab : ITab
                         CurrentLocation
                             .Where(c => c is not null)
                             .Select(c => c!.Items)
-                            .Switch()
-                            .Select(items => items?.TransformAsync(MapItem)),
+                            .Select(items => items.TransformAsync(MapItem)),
                         _itemFilters.Connect().StartWithEmpty().ToCollection(),
                         (items, filters) =>
                             items

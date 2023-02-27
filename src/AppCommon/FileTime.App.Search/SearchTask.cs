@@ -8,7 +8,7 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.App.Search;
 
-public class SearchTask
+public class SearchTask : ISearchTask
 {
     private readonly IContainer _baseContainer;
     private readonly ISearchMatcher _matcher;
@@ -17,6 +17,9 @@ public class SearchTask
     private readonly SourceCache<AbsolutePath, string> _items = new(p => p.Path.Path);
     private readonly SemaphoreSlim _searchingLock = new(1, 1);
     private bool _isSearching;
+    private static int _searchId = 1;
+
+    public IContainer SearchContainer => _container;
 
     public SearchTask(
         IContainer baseContainer,
@@ -24,13 +27,14 @@ public class SearchTask
         ISearchMatcher matcher
     )
     {
+        var randomId = $"{SearchContentProvider.ContentProviderName}/{_searchId++}_{baseContainer.Name}";
         _baseContainer = baseContainer;
         _matcher = matcher;
         _container = new Container(
             baseContainer.Name,
             baseContainer.DisplayName,
-            new FullName(""),
-            new NativePath(""),
+            new FullName(randomId),
+            new NativePath(randomId),
             null,
             false,
             true,
@@ -43,7 +47,7 @@ public class SearchTask
             PointInTime.Present,
             _exceptions.Connect(),
             new ReadOnlyExtensionCollection(new ExtensionCollection()),
-            Observable.Return(_items.Connect())
+            _items.Connect().StartWithEmpty()
         );
     }
 

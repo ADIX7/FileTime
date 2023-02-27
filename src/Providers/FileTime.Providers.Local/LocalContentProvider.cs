@@ -1,5 +1,4 @@
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using DynamicData;
 using FileTime.Core.ContentAccess;
@@ -13,7 +12,6 @@ namespace FileTime.Providers.Local;
 public sealed partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
-    private readonly SourceCache<AbsolutePath, string> _rootDirectories = new(i => i.Path.Path);
     private readonly bool _isCaseInsensitive;
 
     public LocalContentProvider(ITimelessContentProvider timelessContentProvider) : base("local")
@@ -24,8 +22,6 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         SupportsContentStreams = true;
 
         RefreshRootDirectories();
-
-        Items.OnNext(_rootDirectories.Connect());
     }
 
     public override Task OnEnter()
@@ -41,7 +37,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             ? new DirectoryInfo("/").GetDirectories()
             : Environment.GetLogicalDrives().Select(d => new DirectoryInfo(d));
 
-        _rootDirectories.Edit(actions =>
+        Items.Edit(actions =>
         {
             actions.Clear();
             actions.AddOrUpdate(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
@@ -50,7 +46,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
     public override bool CanHandlePath(NativePath path)
     {
-        var rootDrive = _rootDirectories
+        var rootDrive = Items
             .Items
             .FirstOrDefault(r =>
                 path.Path.StartsWith(
@@ -173,7 +169,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             pointInTime,
             exceptions.Connect(),
             new ExtensionCollection().AsReadOnly(),
-            Observable.Return<IObservable<IChangeSet<AbsolutePath, string>>?>(null)
+            new SourceCache<AbsolutePath, string>(a => a.Path.Path).Connect()
         );
     }
 
@@ -228,9 +224,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             pointInTime,
             exceptions.Connect(),
             new ExtensionCollection().AsReadOnly(),
-            //Observable.FromAsync(async () => await Task.Run(InitChildrenHelper)
-            //Observable.Return(InitChildren())
-            Observable.Return(children.Connect())
+            children.Connect().StartWithEmpty()
         );
 
         Task.Run(() => LoadChildren(container, directoryInfo, children, pointInTime, exceptions));
