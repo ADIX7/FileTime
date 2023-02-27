@@ -392,7 +392,15 @@
                                         Width="40"
                                         Height="40"
                                         Classes="LoadingAnimation"
-                                        Source="{SvgImage /Assets/loading.svg}" />
+                                        Source="{SvgImage /Assets/loading.svg}">
+                                        <!--  https://github.com/AvaloniaUI/Avalonia/issues/8791  -->
+                                        <!--  Has to explicitly set RotateTransform or animation does not work  -->
+                                        <Image.RenderTransform>
+                                            <TransformGroup>
+                                                <RotateTransform />
+                                            </TransformGroup>
+                                        </Image.RenderTransform>
+                                    </Image>
                                 </Grid>
                                 <ListBox
                                     x:Name="CurrentItems"
