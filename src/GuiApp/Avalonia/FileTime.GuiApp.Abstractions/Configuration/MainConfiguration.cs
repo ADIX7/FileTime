@@ -74,6 +74,7 @@ public static class MainConfiguration
             new(PasteCommand.PasteMergeCommandName, new[] {Key.P, Key.P}),
             new(PasteCommand.PasteOverwriteCommandName, new[] {Key.P, Key.O}),
             new(PasteCommand.PasteSkipCommandName, new[] {Key.P, Key.S}),
+            new(PasteFilesFromClipboardCommand.PasteMergeCommandName, new[] {Key.C, Key.X}),
             //new CommandBindingConfiguration(ConfigCommand.PinFavorite, new[] { Key.F, Key.P }),
             //new CommandBindingConfiguration(ConfigCommand.PreviousTimelineBlock, Key.H ),
             //new CommandBindingConfiguration(ConfigCommand.PreviousTimelineCommand, Key.K ),

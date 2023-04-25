@@ -27,6 +27,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandScheduler _commandScheduler;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ISystemClipboardService _systemClipboardService;
     private readonly BindedCollection<FullName>? _markedItems;
     private IContainer? _currentLocation;
 
@@ -38,7 +39,8 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         ILogger<ItemManipulationUserCommandHandlerService> logger,
         ITimelessContentProvider timelessContentProvider,
         ICommandScheduler commandScheduler,
-        IServiceProvider serviceProvider) : base(appState, timelessContentProvider)
+        IServiceProvider serviceProvider,
+        ISystemClipboardService systemClipboardService) : base(appState, timelessContentProvider)
     {
         _userCommandHandlerService = userCommandHandlerService;
         _clipboardService = clipboardService;
@@ -47,6 +49,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         _timelessContentProvider = timelessContentProvider;
         _commandScheduler = commandScheduler;
         _serviceProvider = serviceProvider;
+        _systemClipboardService = systemClipboardService;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentLocation(l => _currentLocation = l);
@@ -62,7 +65,13 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             new TypeUserCommandHandler<PasteCommand>(Paste),
             new TypeUserCommandHandler<CreateContainer>(CreateContainer),
             new TypeUserCommandHandler<CreateElement>(CreateElement),
+            new TypeUserCommandHandler<PasteFilesFromClipboardCommand>(PasteFilesFromClipboard),
         });
+    }
+
+    private async Task PasteFilesFromClipboard(PasteFilesFromClipboardCommand arg)
+    {
+        await _systemClipboardService.GetFiles();
     }
 
     private async Task MarkItem()
