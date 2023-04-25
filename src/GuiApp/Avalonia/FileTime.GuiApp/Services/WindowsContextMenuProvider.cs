@@ -88,12 +88,16 @@ public class WindowsContextMenuProvider : IContextMenuProvider
                 }
                 else if (shellKey.GetValue("ExtendedSubCommandsKey") is string extendedCommands)
                 {
-                    var rootMenu = new MenuItem() {Header = text, Icon = image};
                     var rootMenuItems = new List<object>();
 
                     ProcessRegistryKey(Registry.ClassesRoot.OpenSubKey(extendedCommands), rootMenuItems, folderPath);
 
-                    rootMenu.Items = rootMenuItems.ToArray();
+                    var rootMenu = new MenuItem {Header = text, Icon = image};
+                    foreach (var item in rootMenuItems)
+                    {
+                        rootMenu.Items.Add(item);
+                    }
+
                     menuItems.Add(rootMenu);
                 }
             }

@@ -88,7 +88,7 @@
 
                             <ItemsRepeater
                                 Grid.Row="1"
-                                Items="{Binding AppState.RootDriveInfos.Collection}">
+                                ItemsSource="{Binding AppState.RootDriveInfos.Collection}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:RootDriveInfo">
                                         <Grid
@@ -179,7 +179,7 @@
 
                             <ItemsRepeater
                                 Grid.Row="1"
-                                Items="{Binding AppState.Places}">
+                                ItemsSource="{Binding AppState.Places}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:PlaceInfo">
                                         <Grid
@@ -280,7 +280,7 @@
                     RowDefinitions="Auto,40,*,Auto">
 
                     <Grid>
-                        <ItemsControl Items="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}">
+                        <ItemsControl ItemsSource="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal" />
@@ -295,7 +295,7 @@
                                         Background="{DynamicResource ContainerBackgroundColor}"
                                         CornerRadius="10">
                                         <ScrollViewer>
-                                            <ItemsControl Items="{Binding Commands.Collection}">
+                                            <ItemsControl ItemsSource="{Binding Commands.Collection}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border
@@ -321,7 +321,7 @@
 
                     <ItemsControl
                         Grid.Row="1"
-                        Items="{Binding AppState.Tabs}">
+                        ItemsSource="{Binding AppState.Tabs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />
@@ -363,7 +363,7 @@
                                 AutoScrollToSelectedItem="True"
                                 Classes="ContentListView"
                                 IsTabStop="True"
-                                Items="{Binding AppState.SelectedTab^.ParentsChildrenCollection.Collection}"
+                                ItemsSource="{Binding AppState.SelectedTab^.ParentsChildrenCollection.Collection}"
                                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                 ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <ListBox.ItemTemplate>
@@ -408,7 +408,7 @@
                                     AutoScrollToSelectedItem="True"
                                     Classes="ContentListView"
                                     IsTabStop="True"
-                                    Items="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection}"
+                                    ItemsSource="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem^}">
@@ -451,7 +451,7 @@
                                             AutoScrollToSelectedItem="True"
                                             Classes="ContentListView"
                                             IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
-                                            Items="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection}">
+                                            ItemsSource="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection}">
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate x:DataType="corevm:IItemViewModel">
                                                     <local:ItemView />
@@ -483,7 +483,7 @@
 
                                         <ItemsRepeater
                                             Grid.Row="1"
-                                            Items="{Binding AppState.SelectedTab^.CurrentSelectedItem^.BaseItem.Exceptions^}">
+                                            ItemsSource="{Binding AppState.SelectedTab^.CurrentSelectedItem^.BaseItem.Exceptions^}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock
@@ -518,7 +518,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
                             IsVisible="{Binding AppState.PopupTexts.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
-                            Items="{Binding AppState.PopupTexts}">
+                            ItemsSource="{Binding AppState.PopupTexts}">
                             <ItemsRepeater.Styles>
                                 <Style Selector="TextBlock">
                                     <Style.Animations>
@@ -591,7 +591,7 @@
 
                             <ItemsRepeater
                                 Grid.Row="1"
-                                Items="{Binding AppState.PossibleCommands}">
+                                ItemsSource="{Binding AppState.PossibleCommands}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="config:CommandBindingConfiguration">
                                         <Grid>
@@ -627,7 +627,7 @@
 
                         <ItemsControl
                             x:Name="InputList"
-                            Items="{Binding DialogService.ReadInput^.Inputs}">
+                            ItemsSource="{Binding DialogService.ReadInput^.Inputs}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid
@@ -655,7 +655,7 @@
                                                 x:DataType="interactions:IOptionsInputElement"
                                                 Classes="RadioButtonListBox"
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
-                                                Items="{Binding Options}"
+                                                ItemsSource="{Binding Options}"
                                                 SelectedItem="{Binding Value}" />
                                         </Grid>
                                     </Grid>

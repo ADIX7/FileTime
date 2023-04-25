@@ -28,7 +28,7 @@ public class FontService : IFontService
 
     public string? GetMainFont()
     {
-        var installedFonts = FontManager.Current.GetInstalledFontFamilyNames().ToList();
+        var installedFonts = FontManager.Current.SystemFonts.Select(f => f.Name).ToList();
         return _fontConfiguration.CurrentValue.Main.Find(installedFonts.Contains);
     }
 }

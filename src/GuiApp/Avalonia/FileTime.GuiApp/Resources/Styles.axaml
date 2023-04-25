@@ -36,7 +36,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="ContextMenu">
-            <ContextMenu Items="{Binding Converter={StaticResource ContextMenuGenerator}}" />
+            <ContextMenu ItemsSource="{Binding Converter={StaticResource ContextMenuGenerator}}" />
         </Setter>
     </Style>
 

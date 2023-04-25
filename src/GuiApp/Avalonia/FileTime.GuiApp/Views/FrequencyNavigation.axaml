@@ -22,7 +22,7 @@
         <ListBox
             Grid.Row="1"
             Classes="CommandPalette"
-            Items="{Binding FilteredMatches}"
+            ItemsSource="{Binding FilteredMatches}"
             SelectedItem="{Binding SelectedItem}">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
