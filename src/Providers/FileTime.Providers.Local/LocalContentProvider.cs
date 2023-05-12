@@ -388,15 +388,25 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             bufferSize: 1, // bufferSize == 1 used to avoid unnecessary buffer in FileStream
             FileOptions.Asynchronous | FileOptions.SequentialScan);
 
-        var realFileSize = new FileInfo(element.NativePath!.Path).Length;
+        var size = new FileInfo(element.NativePath!.Path).Length;
 
-        var size = maxLength ?? realFileSize switch
+        if (maxLength.HasValue && maxLength.Value < size)
+        {
+            size = maxLength.Value;
+        }
+
+        var finalSize = size switch
         {
             > int.MaxValue => int.MaxValue,
-            _ => (int) realFileSize
+            _ => (int) size
         };
-        var buffer = new byte[size];
-        await reader.ReadAsync(buffer.AsMemory(0, size), cancellationToken);
+        var buffer = new byte[finalSize];
+        var realSize = await reader.ReadAsync(buffer.AsMemory(0, finalSize), cancellationToken);
+
+        if (realSize == buffer.Length) return buffer;
+
+        var finalData = new byte[realSize];
+        Array.Copy(buffer, finalData, realSize);
 
         return buffer;
     }
