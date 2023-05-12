@@ -40,12 +40,13 @@ public static class MainConfiguration
     }
 
     private static List<CommandBindingConfiguration> InitDefaultKeyBindings() =>
-        new List<CommandBindingConfiguration>()
+        new List<CommandBindingConfiguration>
         {
             //new CommandBindingConfiguration(ConfigCommand.AutoRefresh, new KeyConfig(Key.R, shift: true)),
             //new CommandBindingConfiguration(ConfigCommand.ChangeTimelineMode, new[] { Key.T, Key.M }),
             new(CloseTabCommand.CommandName, Key.Q),
             //new CommandBindingConfiguration(ConfigCommand.Compress, new[] { Key.Y, Key.C }),
+            new(CopyBase64Command.CommandName, new[] {Key.C, Key.B}),
             new(CopyCommand.CommandName, new[] {Key.Y, Key.Y}),
             //new CommandBindingConfiguration(ConfigCommand.CopyHash, new[] { Key.C, Key.H }),
             new(CopyNativePathCommand.CommandName, new[] {Key.C, Key.P}),

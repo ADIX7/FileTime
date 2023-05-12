@@ -1,7 +1,11 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Search;
+using FileTime.Core.ContentAccess;
+using FileTime.Core.Enums;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -16,6 +20,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IItemNameConverterService _itemNameConverterService;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
+    private readonly IContentAccessorFactory _contentAccessorFactory;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
 
@@ -26,7 +31,8 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         ISearchManager searchManager,
         IItemNameConverterService itemNameConverterService,
         ITimelessContentProvider timelessContentProvider,
-        IUserCommandHandlerService userCommandHandlerService) : base(appState)
+        IUserCommandHandlerService userCommandHandlerService,
+        IContentAccessorFactory contentAccessorFactory) : base(appState)
     {
         _systemClipboardService = systemClipboardService;
         _userCommunicationService = userCommunicationService;
@@ -34,6 +40,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         _itemNameConverterService = itemNameConverterService;
         _timelessContentProvider = timelessContentProvider;
         _userCommandHandlerService = userCommandHandlerService;
+        _contentAccessorFactory = contentAccessorFactory;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
 
@@ -41,8 +48,28 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         {
             new TypeUserCommandHandler<OpenInDefaultFileExplorerCommand>(OpenInDefaultFileExplorer),
             new TypeUserCommandHandler<CopyNativePathCommand>(CopyNativePath),
+            new TypeUserCommandHandler<CopyBase64Command>(CopyBase64),
             new TypeUserCommandHandler<SearchCommand>(Search),
         });
+    }
+
+    private async Task CopyBase64()
+    {
+        var item = _currentSelectedItem?.BaseItem;
+        if (item?.Type != AbsolutePathType.Element || item is not IElement element) return;
+
+        var contentReader = await _contentAccessorFactory.GetContentReaderFactory(element.Provider).CreateContentReaderAsync(element);
+        using var ms = new MemoryStream();
+        while (true)
+        {
+            //TODO handle large files
+            var data = await contentReader.ReadBytesAsync(1048576);
+            if (data.Length == 0) break;
+            await ms.WriteAsync(data);
+        }
+
+        var base64Hash = Convert.ToBase64String(ms.ToArray());
+        await _systemClipboardService.CopyToClipboardAsync(base64Hash);
     }
 
     private async Task Search(SearchCommand searchCommand)

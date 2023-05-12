@@ -23,6 +23,7 @@ public class SystemClipboardService : ISystemClipboardService
         await clipboard.ClearAsync();
 
         var formats = await clipboard.GetFormatsAsync();
+        
         if (!formats.Contains("asd")) return;
         var obj = (await clipboard.GetDataAsync("PNG"));
         /*var ms = new MemoryStream();
