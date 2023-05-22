@@ -1,4 +1,3 @@
-using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using DynamicData;
 using FileTime.Core.ContentAccess;

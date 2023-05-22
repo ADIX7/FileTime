@@ -5,11 +5,11 @@ namespace FileTime.App.Core.StartupServices;
 
 public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
 {
-    private readonly IIdentifiableUserCommandService _service;
+    private readonly IIdentifiableUserCommandService _userCommandHandlerService;
 
-    public DefaultIdentifiableCommandHandlerRegister(IIdentifiableUserCommandService service)
+    public DefaultIdentifiableCommandHandlerRegister(IIdentifiableUserCommandService userCommandHandlerService)
     {
-        _service = service;
+        _userCommandHandlerService = userCommandHandlerService;
 
         AddUserCommand(CloseTabCommand.Instance);
         AddUserCommand(CopyCommand.Instance);
@@ -34,6 +34,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(MoveCursorToLastCommand.Instance);
         AddUserCommand(MoveCursorUpCommand.Instance);
         AddUserCommand(MoveCursorUpPageCommand.Instance);
+        AddUserCommand(OpenCommandPaletteCommand.Instance);
         AddUserCommand(OpenInDefaultFileExplorerCommand.Instance);
         AddUserCommand(OpenSelectedCommand.Instance);
         AddUserCommand(PasteCommand.Merge);
@@ -58,5 +59,5 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
     public Task InitAsync() => Task.CompletedTask;
 
     private void AddUserCommand(IIdentifiableUserCommand command)
-        => _service.AddIdentifiableUserCommandFactory(command.UserCommandID, () => command);
+        => _userCommandHandlerService.AddIdentifiableUserCommandFactory(command.UserCommandID, () => command);
 }

@@ -1,12 +1,9 @@
-using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using DynamicData;
 using DynamicData.Binding;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
-using FileTime.Core.Timeline;
 using FileTime.GuiApp.ViewModels;
 using FileTime.Providers.Local;
 

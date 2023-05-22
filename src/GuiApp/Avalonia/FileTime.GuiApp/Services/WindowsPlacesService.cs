@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using FileTime.App.Core.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using FileTime.GuiApp.IconProviders;

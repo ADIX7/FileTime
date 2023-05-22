@@ -1,5 +1,4 @@
 using FileTime.Core.ContentAccess;
-using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 

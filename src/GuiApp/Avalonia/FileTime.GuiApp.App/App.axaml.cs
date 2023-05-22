@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using FileTime.App.CommandPalette;
 using FileTime.App.DependencyInjection;
 using FileTime.App.FrequencyNavigation;
 using FileTime.App.Search;
@@ -20,6 +21,7 @@ public partial class App : Application
         DI.ServiceProvider = DependencyInjection
             .RegisterDefaultServices()
             .AddFrequencyNavigation()
+            .AddCommandPalette()
             .AddSearch()
             .AddConfiguration(configuration)
             .ConfigureFont(configuration)

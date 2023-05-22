@@ -1,8 +1,6 @@
-using System.Reactive.Linq;
 using DynamicData;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
-using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 

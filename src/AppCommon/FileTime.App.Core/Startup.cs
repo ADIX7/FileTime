@@ -1,3 +1,4 @@
+using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.UserCommandHandler;
 using FileTime.App.Core.StartupServices;
@@ -25,6 +26,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IIdentifiableUserCommandService, IdentifiableUserCommandService>();
         serviceCollection.TryAddSingleton<IItemPreviewService, ItemPreviewService>();
         serviceCollection.TryAddSingleton<ITimelineViewModel, TimelineViewModel>();
+        serviceCollection.TryAddSingleton<ICommandPaletteViewModel, CommandPaletteViewModel>();
 
         return serviceCollection
             .AddCommandHandlers()

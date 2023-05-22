@@ -3,7 +3,6 @@ using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.ItemPreview;
 using FileTime.Core.Models;
 using InitableService;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.App.Core.Services;
 

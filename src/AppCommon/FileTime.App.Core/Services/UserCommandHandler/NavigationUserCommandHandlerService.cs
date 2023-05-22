@@ -1,3 +1,4 @@
+using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
@@ -22,6 +23,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IUserCommunicationService _userCommunicationService;
     private readonly IFrequencyNavigationService _frequencyNavigationService;
+    private readonly ICommandPaletteService _commandPaletteService;
     private ITabViewModel? _selectedTab;
     private IContainer? _currentLocation;
     private IItemViewModel? _currentSelectedItem;
@@ -35,7 +37,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         IUserCommandHandlerService userCommandHandlerService,
         ITimelessContentProvider timelessContentProvider,
         IUserCommunicationService userCommunicationService,
-        IFrequencyNavigationService frequencyNavigationService) : base(appState)
+        IFrequencyNavigationService frequencyNavigationService,
+        ICommandPaletteService commandPaletteService) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
@@ -44,6 +47,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         _timelessContentProvider = timelessContentProvider;
         _userCommunicationService = userCommunicationService;
         _frequencyNavigationService = frequencyNavigationService;
+        _commandPaletteService = commandPaletteService;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -69,11 +73,18 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<MoveCursorToLastCommand>(MoveCursorToLast),
             new TypeUserCommandHandler<MoveCursorUpCommand>(MoveCursorUp),
             new TypeUserCommandHandler<MoveCursorUpPageCommand>(MoveCursorUpPage),
+            new TypeUserCommandHandler<OpenCommandPaletteCommand>(OpenCommandPalette),
             new TypeUserCommandHandler<OpenContainerCommand>(OpenContainer),
             new TypeUserCommandHandler<OpenSelectedCommand>(OpenSelected),
             new TypeUserCommandHandler<RefreshCommand>(Refresh),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
+    }
+
+    private Task OpenCommandPalette()
+    {
+        _commandPaletteService.OpenCommandPalette();
+        return Task.CompletedTask;
     }
 
     private Task GoByFrequency()

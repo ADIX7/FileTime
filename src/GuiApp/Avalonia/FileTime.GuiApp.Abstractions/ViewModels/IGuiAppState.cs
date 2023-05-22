@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Configuration;

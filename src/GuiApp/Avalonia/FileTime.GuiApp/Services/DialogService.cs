@@ -1,8 +1,6 @@
-using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using Avalonia.Threading;
 using DynamicData;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.Core.Interactions;
 using FileTime.GuiApp.ViewModels;

@@ -16,4 +16,6 @@ public class IdentifiableUserCommandService : IIdentifiableUserCommandService
 
         return _identifiableUserCommands[identifier].Invoke();
     }
+    
+    public IReadOnlyCollection<string> GetCommandIdentifiers() => _identifiableUserCommands.Keys.ToList();
 }

@@ -71,6 +71,8 @@ public static class MainConfiguration
             new(MoveCursorToFirstCommand.CommandName, new[] {Key.G, Key.G}),
             //new CommandBindingConfiguration(ConfigCommand.NextTimelineBlock, Key.L ),
             //new CommandBindingConfiguration(ConfigCommand.NextTimelineCommand, Key.J ),
+            new(OpenCommandPaletteCommand.CommandName, new[] {Key.F1}),
+            new(OpenCommandPaletteCommand.CommandName, new[] {new KeyConfig(Key.P, ctrl: true, shift: true)}),
             new(OpenInDefaultFileExplorerCommand.CommandName, new[] {Key.O, Key.E}),
             new(PasteCommand.PasteMergeCommandName, new[] {Key.P, Key.P}),
             new(PasteCommand.PasteOverwriteCommandName, new[] {Key.P, Key.O}),

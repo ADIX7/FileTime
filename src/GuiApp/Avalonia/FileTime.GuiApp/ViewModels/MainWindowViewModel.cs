@@ -1,10 +1,10 @@
 ﻿using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Input;
+using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.FrequencyNavigation.Services;
-using FileTime.App.FrequencyNavigation.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using FileTime.GuiApp.Services;
@@ -27,6 +27,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(ITimelessContentProvider), PropertyName = "_timelessContentProvider")]
 [Inject(typeof(IFontService), "_fontService")]
 [Inject(typeof(IFrequencyNavigationService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(ICommandPaletteService), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModelBase
 {
     public bool Loading => false;

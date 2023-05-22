@@ -1,13 +1,13 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using FileTime.App.FrequencyNavigation.ViewModels;
 
 namespace FileTime.GuiApp.Views;
 
-public partial class FrequencyNavigation : UserControl
+public partial class CommandPalette : UserControl
 {
-    public FrequencyNavigation()
+    public CommandPalette()
     {
         InitializeComponent();
     }

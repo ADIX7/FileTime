@@ -1,7 +1,6 @@
 using FileTime.Core.Command;
 using FileTime.Core.Command.Copy;
 using FileTime.Core.ContentAccess;
-using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 
 namespace FileTime.Core.CommandHandlers;

@@ -1,5 +1,4 @@
 using System.Reactive.Linq;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;

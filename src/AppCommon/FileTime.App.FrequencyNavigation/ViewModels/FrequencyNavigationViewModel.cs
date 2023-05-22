@@ -19,7 +19,7 @@ public partial class FrequencyNavigationViewModel : IFrequencyNavigationViewMode
 
     [Property] private IObservable<bool> _showWindow;
     [Property] private List<string> _filteredMatches;
-    [Property] private string _selectedItem;
+    [Property] private string? _selectedItem;
 
     public string SearchText
     {
@@ -68,12 +68,12 @@ public partial class FrequencyNavigationViewModel : IFrequencyNavigationViewMode
     }
 
     partial void OnInitialize()
-        => _showWindow = _frequencyNavigationService.ShowWindow;
+        => ShowWindow = _frequencyNavigationService.ShowWindow;
 
     private void UpdateFilteredMatches()
     {
         FilteredMatches = new List<string>(_frequencyNavigationService.GetMatchingContainers(_searchText));
-        if (FilteredMatches.Contains(SelectedItem)) return;
+        if (SelectedItem != null && FilteredMatches.Contains(SelectedItem)) return;
 
         SelectedItem = FilteredMatches.Count > 0
             ? FilteredMatches[0]

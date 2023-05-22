@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Text;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Search;

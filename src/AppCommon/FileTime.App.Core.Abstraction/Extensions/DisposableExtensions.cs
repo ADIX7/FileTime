@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace FileTime.App.Core.Extensions;
 
 public static class DisposableExtensions
