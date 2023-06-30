@@ -21,14 +21,12 @@ public class FontService : IFontService
         UpdateFonts(fontConfiguration.CurrentValue, null);
     }
 
-    private void UpdateFonts(FontConfiguration newConfiguration, string? arg2)
-    {
-        _mainFont.OnNext(GetMainFont());
-    }
+    private void UpdateFonts(FontConfiguration newConfiguration, string? _) => _mainFont.OnNext(GetMainFont());
 
-    public string? GetMainFont()
+    public string GetMainFont()
     {
         var installedFonts = FontManager.Current.SystemFonts.Select(f => f.Name).ToList();
-        return _fontConfiguration.CurrentValue.Main.Find(installedFonts.Contains);
+        return _fontConfiguration.CurrentValue.Main.FirstOrDefault(installedFonts.Contains) 
+               ?? FontManager.Current.DefaultFontFamily.Name;
     }
 }
