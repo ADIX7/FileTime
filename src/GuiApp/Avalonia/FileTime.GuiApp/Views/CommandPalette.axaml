@@ -12,9 +12,9 @@
     </UserControl.Styles>
     <Grid RowDefinitions="Auto,*">
         <TextBox
-            Focusable="True"
             KeyDown="Search_OnKeyDown"
-            Text="{Binding SearchText, Mode=TwoWay}" />
+            Text="{Binding SearchText, Mode=TwoWay}"
+            x:Name="SearchTextBox" />
         <ListBox
             Classes="CommandPalette"
             Grid.Row="1"

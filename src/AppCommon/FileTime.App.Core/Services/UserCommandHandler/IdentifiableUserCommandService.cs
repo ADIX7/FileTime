@@ -9,8 +9,9 @@ public class IdentifiableUserCommandService : IIdentifiableUserCommandService
     public void AddIdentifiableUserCommandFactory(string identifier, Func<IIdentifiableUserCommand> commandFactory)
         => _identifiableUserCommands.Add(identifier, commandFactory);
 
-    public IIdentifiableUserCommand GetCommand(string identifier)
+    public IIdentifiableUserCommand? GetCommand(string identifier)
     {
+        //TODO: refactor to not throw an exception
         if (!_identifiableUserCommands.ContainsKey(identifier))
             throw new IndexOutOfRangeException($"No command factory is registered for command {identifier}");
 

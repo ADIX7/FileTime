@@ -1,27 +1,27 @@
 <UserControl
+    Background="{DynamicResource ContainerBackgroundColor}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
     x:Class="FileTime.GuiApp.Views.FrequencyNavigation"
+    x:CompileBindings="True"
+    x:DataType="viewModels:IFrequencyNavigationViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="clr-namespace:FileTime.App.FrequencyNavigation.ViewModels;assembly=FileTime.App.FrequencyNavigation.Abstractions"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:CompileBindings="True"
-    x:DataType="viewModels:IFrequencyNavigationViewModel"
-    Background="{DynamicResource ContainerBackgroundColor}"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Styles>
         <StyleInclude Source="avares://FileTime.GuiApp/Resources/Styles.axaml" />
     </UserControl.Styles>
     <Grid RowDefinitions="Auto,*">
         <TextBox
-            Focusable="True"
             KeyDown="Search_OnKeyDown"
-            Text="{Binding SearchText, Mode=TwoWay}" />
+            Text="{Binding SearchText, Mode=TwoWay}"
+            x:Name="SearchTextBox" />
         <ListBox
-            Grid.Row="1"
             Classes="CommandPalette"
+            Grid.Row="1"
             ItemsSource="{Binding FilteredMatches}"
             SelectedItem="{Binding SelectedItem}">
             <ListBox.ItemTemplate>

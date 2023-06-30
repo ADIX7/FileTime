@@ -672,7 +672,7 @@
                 IsVisible="{Binding ShowWindow^, FallbackValue=False}"
                 VerticalAlignment="Stretch">
                 <Grid Margin="100">
-                    <local:FrequencyNavigation />
+                    <local:FrequencyNavigation IsVisible="{Binding ShowWindow^, FallbackValue=False}" />
                 </Grid>
             </Border>
 
@@ -683,7 +683,7 @@
                 IsVisible="{Binding ShowWindow^, FallbackValue=False}"
                 VerticalAlignment="Stretch">
                 <Grid Margin="100">
-                    <local:CommandPalette />
+                    <local:CommandPalette IsVisible="{Binding ShowWindow^, FallbackValue=False}" />
                 </Grid>
             </Border>
         </Grid>

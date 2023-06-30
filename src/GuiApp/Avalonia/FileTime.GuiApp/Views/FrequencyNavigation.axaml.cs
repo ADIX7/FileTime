@@ -1,6 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 using FileTime.App.FrequencyNavigation.ViewModels;
 
 namespace FileTime.GuiApp.Views;
@@ -10,11 +10,16 @@ public partial class FrequencyNavigation : UserControl
     public FrequencyNavigation()
     {
         InitializeComponent();
+        PropertyChanged += FrequencyNavigation_PropertyChanged;
     }
 
-    private void InitializeComponent()
+    private async void FrequencyNavigation_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        AvaloniaXamlLoader.Load(this);
+        if (e.Property.Name == nameof(IsVisible) && IsVisible)
+        {
+            await Task.Delay(100);
+            SearchTextBox.Focus();
+        }
     }
 
     private void Search_OnKeyDown(object? sender, KeyEventArgs e)

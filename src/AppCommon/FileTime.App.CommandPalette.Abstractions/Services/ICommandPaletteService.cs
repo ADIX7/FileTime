@@ -7,6 +7,7 @@ public interface ICommandPaletteService
 {
     IObservable<bool> ShowWindow { get; }
     void OpenCommandPalette();
+    void CloseCommandPalette();
     IReadOnlyList<ICommandPaletteEntry> GetCommands();
     ICommandPaletteViewModel? CurrentModal { get; }
 }

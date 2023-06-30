@@ -28,6 +28,16 @@ public partial class CommandPaletteService : ICommandPaletteService
         CurrentModal = _modalService.OpenModal<ICommandPaletteViewModel>();
     }
 
+    public void CloseCommandPalette()
+    {
+        _showWindow.OnNext(false);
+        if (_currentModal is not null)
+        {
+            _modalService.CloseModal(_currentModal);
+            CurrentModal = null;
+        }
+    }
+
     public IReadOnlyList<ICommandPaletteEntry> GetCommands() =>
         _identifiableUserCommandService
             .GetCommandIdentifiers()
