@@ -26,7 +26,6 @@ public static class Startup
         serviceCollection.TryAddSingleton<IIdentifiableUserCommandService, IdentifiableUserCommandService>();
         serviceCollection.TryAddSingleton<IItemPreviewService, ItemPreviewService>();
         serviceCollection.TryAddSingleton<ITimelineViewModel, TimelineViewModel>();
-        serviceCollection.TryAddSingleton<ICommandPaletteViewModel, CommandPaletteViewModel>();
 
         return serviceCollection
             .AddCommandHandlers()
