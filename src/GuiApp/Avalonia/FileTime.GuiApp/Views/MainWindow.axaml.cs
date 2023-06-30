@@ -18,6 +18,8 @@ public partial class MainWindow : Window
     private readonly ILogger<MainWindow>? _logger;
     private readonly IModalService _modalService;
     private IReadOnlyCollection<IModalViewModel>? _openModals;
+    private ReadInputsViewModel? _inputViewModel;
+    private IDisposable? _inputViewModelSubscription;
 
     public MainWindowViewModel? ViewModel
     {
@@ -41,6 +43,15 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
+        DataContextChanged += (sender, args) =>
+        {
+            if (DataContext is not MainWindowViewModel mainWindowViewModel) return;
+
+            _inputViewModelSubscription?.Dispose();
+            _inputViewModelSubscription = mainWindowViewModel.DialogService.ReadInput.Subscribe(
+                inputViewModel => _inputViewModel = inputViewModel
+            );
+        };
     }
 
     private void OnWindowOpened(object sender, EventArgs e)
@@ -130,5 +141,19 @@ public partial class MainWindow : Window
     {
         var vm = ViewModel;
         Task.Run(() => vm?.OnExit()).Wait();
+    }
+
+    private void InputList_OnKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            _inputViewModel?.Cancel();
+            _inputViewModel = null;
+        }
+        else if (e.Key == Key.Enter)
+        {
+            _inputViewModel?.Process();
+            _inputViewModel = null;
+        }
     }
 }

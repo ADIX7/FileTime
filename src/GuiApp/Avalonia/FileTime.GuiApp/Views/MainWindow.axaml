@@ -576,7 +576,10 @@
                     VerticalAlignment="Center">
                     <Grid RowDefinitions="Auto,Auto">
 
-                        <ItemsControl ItemsSource="{Binding DialogService.ReadInput^.Inputs}" x:Name="InputList">
+                        <ItemsControl
+                            ItemsSource="{Binding DialogService.ReadInput^.Inputs}"
+                            KeyUp="InputList_OnKeyUp"
+                            x:Name="InputList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid
