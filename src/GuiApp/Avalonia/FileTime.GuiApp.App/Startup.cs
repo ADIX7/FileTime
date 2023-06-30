@@ -59,7 +59,8 @@ public static class Startup
         serviceCollection.TryAddSingleton<IIconProvider, MaterialIconProvider>();
         serviceCollection.TryAddSingleton<IModalService, ModalService>();
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
-        serviceCollection.TryAddSingleton<ISystemClipboardService, SystemClipboardService>();
+        serviceCollection.TryAddSingleton<SystemClipboardService>();
+        serviceCollection.TryAddSingleton<ISystemClipboardService>(sp => sp.GetRequiredService<SystemClipboardService>());
         serviceCollection.TryAddSingleton<ToastMessageSink>();
         serviceCollection.TryAddSingleton<IUserCommunicationService>(s => s.GetRequiredService<IDialogService>());
 

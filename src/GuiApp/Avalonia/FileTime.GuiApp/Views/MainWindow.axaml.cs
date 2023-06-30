@@ -36,6 +36,7 @@ public partial class MainWindow : Window
         _logger?.LogInformation($"Starting {nameof(MainWindow)} initialization...");
         _modalService = DI.ServiceProvider.GetRequiredService<IModalService>();
         _modalService.OpenModals.ToCollection().Subscribe(m => _openModals = m);
+        DI.ServiceProvider.GetRequiredService<Services.SystemClipboardService>().TopLevel = GetTopLevel(this);
         InitializeComponent();
     }
 

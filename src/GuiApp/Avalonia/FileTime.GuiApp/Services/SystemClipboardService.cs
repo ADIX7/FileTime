@@ -1,14 +1,14 @@
-using Avalonia;
-using Avalonia.Input.Platform;
+using Avalonia.Controls;
 using FileTime.App.Core.Services;
 
 namespace FileTime.GuiApp.Services;
 
 public class SystemClipboardService : ISystemClipboardService
 {
+    internal TopLevel? TopLevel { get; set; }
     public async Task CopyToClipboardAsync(string text)
     {
-        var clipboard = AvaloniaLocator.Current.GetService<IClipboard>();
+        var clipboard = TopLevel?.Clipboard;
 
         if (clipboard is null) { return; }
 
@@ -16,7 +16,7 @@ public class SystemClipboardService : ISystemClipboardService
     }
     public async Task GetFiles()
     {
-        var clipboard = AvaloniaLocator.Current.GetService<IClipboard>();
+        var clipboard = TopLevel?.Clipboard;
 
         if (clipboard is null) { return; }
 
