@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\FileTime.App.FuzzyPanel.Abstraction\FileTime.App.FuzzyPanel.Abstraction.csproj" />
   </ItemGroup>
 
   <ItemGroup>

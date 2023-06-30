@@ -3,82 +3,53 @@ using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FrequencyNavigation.Services;
+using FileTime.App.FuzzyPanel;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
-using MvvmGen;
 
 namespace FileTime.App.FrequencyNavigation.ViewModels;
 
-[ViewModel]
-[Inject(typeof(IFrequencyNavigationService), "_frequencyNavigationService")]
-[Inject(typeof(IUserCommandHandlerService), "_userCommandHandlerService")]
-[Inject(typeof(ITimelessContentProvider), "_timelessContentProvider")]
-public partial class FrequencyNavigationViewModel : IFrequencyNavigationViewModel
+public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFrequencyNavigationViewModel
 {
-    private string _searchText;
+    private readonly IFrequencyNavigationService _frequencyNavigationService;
+    private readonly IUserCommandHandlerService _userCommandHandlerService;
+    private readonly ITimelessContentProvider _timelessContentProvider;
 
-    [Property] private IObservable<bool> _showWindow;
-    [Property] private List<string> _filteredMatches;
-    [Property] private string? _selectedItem;
-
-    public string SearchText
+    public FrequencyNavigationViewModel(
+        IFrequencyNavigationService frequencyNavigationService,
+        IUserCommandHandlerService userCommandHandlerService,
+        ITimelessContentProvider timelessContentProvider)
     {
-        get => _searchText;
-        set
-        {
-            if (_searchText == value) return;
+        _frequencyNavigationService = frequencyNavigationService;
+        _userCommandHandlerService = userCommandHandlerService;
+        _timelessContentProvider = timelessContentProvider;
 
-            _searchText = value;
-            OnPropertyChanged();
-
-            UpdateFilteredMatches();
-        }
+        ShowWindow = _frequencyNavigationService.ShowWindow;
     }
 
     public void Close()
         => _frequencyNavigationService.CloseNavigationWindow();
 
-    public async void HandleKeyDown(KeyEventArgs keyEventArgs)
+    public override async Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs)
     {
-        if (keyEventArgs.Key == Key.Down)
-        {
-            var nextItem = FilteredMatches.SkipWhile(i => i != SelectedItem).Skip(1).FirstOrDefault();
+        var handled = await base.HandleKeyDown(keyEventArgs);
 
-            if (nextItem is not null)
-            {
-                SelectedItem = nextItem;
-            }
-        }
-        else if (keyEventArgs.Key == Key.Up)
-        {
-            var previousItem = FilteredMatches.TakeWhile(i => i != SelectedItem).LastOrDefault();
+        if (handled) return true;
 
-            if (previousItem is not null)
-            {
-                SelectedItem = previousItem;
-            }
-        }
-        else if (keyEventArgs.Key == Key.Enter)
+        if (keyEventArgs.Key == Key.Enter)
         {
             var targetContainer = await _timelessContentProvider.GetItemByFullNameAsync(new FullName(SelectedItem), PointInTime.Present);
             var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, targetContainer));
             await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
             Close();
+            return true;
         }
+
+        return false;
     }
 
-    partial void OnInitialize()
-        => ShowWindow = _frequencyNavigationService.ShowWindow;
-
-    private void UpdateFilteredMatches()
-    {
-        FilteredMatches = new List<string>(_frequencyNavigationService.GetMatchingContainers(_searchText));
-        if (SelectedItem != null && FilteredMatches.Contains(SelectedItem)) return;
-
-        SelectedItem = FilteredMatches.Count > 0
-            ? FilteredMatches[0]
-            : null;
-    }
+    public override void UpdateFilteredMatches() =>
+        FilteredMatches = new List<string>(_frequencyNavigationService.GetMatchingContainers(SearchText));
 
     string IModalViewModel.Name => "FrequencyNavigation";
 }
