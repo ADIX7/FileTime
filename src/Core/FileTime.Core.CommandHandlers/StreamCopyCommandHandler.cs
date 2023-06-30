@@ -66,7 +66,7 @@ public class StreamCopyCommandHandler : ICommandHandler
         using var writer = await _contentAccessorFactory.GetContentWriterFactory(target.Provider).CreateContentWriterAsync(target);
 
         byte[] dataRead;
-        var currentProgress = 0L;
+        long currentProgress = 0;
 
         do
         {

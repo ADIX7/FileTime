@@ -1,3 +1,5 @@
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -10,13 +12,14 @@ public class CopyCommand : CommandBase, ITransportationCommand
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
 
     private readonly List<OperationProgress> _operationProgresses = new();
+    private readonly BehaviorSubject<OperationProgress?> _currentOperationProgress = new(null);
 
     public IList<FullName> Sources { get; } = new List<FullName>();
 
     public FullName? Target { get; set; }
 
     public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
-    public OperationProgress? CurrentOperationProgress { get; private set; }
+    public IObservable<OperationProgress?> CurrentOperationProgress { get; }
 
     public CopyCommand(
         ITimelessContentProvider timelessContentProvider,
@@ -25,6 +28,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
     {
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
+        CurrentOperationProgress = _currentOperationProgress.AsObservable();
     }
 
     public override Task<CanCommandRun> CanRun(PointInTime currentTime)
@@ -93,6 +97,17 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
         _operationProgresses.Clear();
         _operationProgresses.AddRange(calculateOperation.OperationStatuses);
+
+        _operationProgresses
+            .Select(op => op.Progress.Select(p => (Progress: p, TotalProgress: op.TotalCount)))
+            .CombineLatest()
+            .Select(data =>
+            {
+                var total = data.Sum(d => d.TotalProgress);
+                if (total == 0) return 0;
+                return (int) (data.Sum(d => d.Progress) * 100 / total);
+            })
+            .Subscribe(SetTotalProgress);
     }
 
     private async Task TraverseTree(
@@ -128,16 +143,15 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 var newElementPath = target.GetChild(newElementName, AbsolutePathType.Element);
 
                 var currentProgress = _operationProgresses.Find(o => o.Key == element.FullName!.Path);
-                CurrentOperationProgress = currentProgress;
+                _currentOperationProgress.OnNext(currentProgress);
 
                 await copyOperation.CopyAsync(new AbsolutePath(_timelessContentProvider, element), newElementPath, new CopyCommandContext(UpdateProgress, currentProgress));
             }
         }
     }
 
-    private Task UpdateProgress()
-    {
-        //TODO
-        return Task.CompletedTask;
-    }
+    private Task UpdateProgress() =>
+        //Not used, progress is reactive in this command
+        //Note: Maybe this should be removed altogether, and every command should use reactive progress
+        Task.CompletedTask;
 }
