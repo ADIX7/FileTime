@@ -567,7 +567,8 @@
                 Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 HorizontalAlignment="Stretch"
                 IsVisible="{Binding DialogService.ReadInput^, Converter={x:Static ObjectConverters.IsNotNull}}"
-                VerticalAlignment="Stretch">
+                VerticalAlignment="Stretch"
+                x:Name="ReadInputContainer">
                 <Border
                     Background="{DynamicResource ContainerBackgroundBrush}"
                     HorizontalAlignment="Center"
@@ -590,12 +591,14 @@
                                         <Grid Grid.Column="1">
                                             <TextBox
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Text}}"
+                                                Tag="InputItem"
                                                 Text="{Binding Value, Mode=TwoWay}"
                                                 VerticalAlignment="Top"
                                                 x:DataType="interactions:TextInputElement" />
                                             <TextBox
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Password}}"
                                                 PasswordChar="{Binding PasswordChar}"
+                                                Tag="InputItem"
                                                 Text="{Binding Value, Mode=TwoWay}"
                                                 VerticalAlignment="Top"
                                                 x:DataType="interactions:PasswordInputElement" />
@@ -604,6 +607,7 @@
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
                                                 ItemsSource="{Binding Options}"
                                                 SelectedItem="{Binding Value}"
+                                                Tag="InputItem"
                                                 x:DataType="interactions:IOptionsInputElement" />
                                         </Grid>
                                     </Grid>

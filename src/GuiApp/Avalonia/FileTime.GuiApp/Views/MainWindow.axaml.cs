@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using DynamicData;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
@@ -38,6 +39,8 @@ public partial class MainWindow : Window
         _modalService.OpenModals.ToCollection().Subscribe(m => _openModals = m);
         DI.ServiceProvider.GetRequiredService<Services.SystemClipboardService>().TopLevel = GetTopLevel(this);
         InitializeComponent();
+
+        ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
     }
 
     private void OnWindowOpened(object sender, EventArgs e)
@@ -107,6 +110,19 @@ public partial class MainWindow : Window
 
             await ViewModel.OpenContainerByFullName(path);
             e.Handled = true;
+        }
+    }
+
+    private async void ReadInputContainerOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property.Name == nameof(ReadInputContainer.IsVisible) && ReadInputContainer.IsVisible)
+        {
+            await Task.Delay(100);
+            var inputElement = InputList
+                .GetVisualDescendants()
+                .OfType<Control>()
+                .FirstOrDefault(i => i.Tag as string == "InputItem" && i.IsVisible);
+            inputElement?.Focus();
         }
     }
 
