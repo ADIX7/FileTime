@@ -6,6 +6,7 @@ namespace FileTime.App.Core.ViewModels.Timeline;
 public class CommandTimeStateViewModel : ICommandTimeStateViewModel
 {
     public IObservable<int> TotalProgress { get; }
+    public IObservable<int> CurrentProgress { get; }
 
     public IObservable<string> DisplayLabel { get; }
 
@@ -15,6 +16,7 @@ public class CommandTimeStateViewModel : ICommandTimeStateViewModel
     {
         DisplayLabel = commandTimeState.Command.DisplayLabel;
         TotalProgress = commandTimeState.Command.TotalProgress;
+        CurrentProgress = commandTimeState.Command.CurrentProgress;
         //TODO
         IsSelected = new BehaviorSubject<bool>(false);
     }

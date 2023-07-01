@@ -19,7 +19,6 @@ public class CopyCommand : CommandBase, ITransportationCommand
     public FullName Target { get; }
 
     public TransportMode TransportMode { get; }
-    public IObservable<OperationProgress?> CurrentOperationProgress { get; }
 
     public CopyCommand(
         ITimelessContentProvider timelessContentProvider,
@@ -31,7 +30,14 @@ public class CopyCommand : CommandBase, ITransportationCommand
     {
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
-        CurrentOperationProgress = _currentOperationProgress.AsObservable();
+        _currentOperationProgress
+            .Select(p =>
+            {
+                if (p is null) return Observable.Never<int>();
+                return p.Progress.Select(currentProgress => (int)(currentProgress * 100 / p.TotalCount));
+            })
+            .Switch()
+            .Subscribe(SetCurrentProgress);
 
         if (sources is null) throw new ArgumentException(nameof(Sources) + " can not be null");
         if (targetFullName is null) throw new ArgumentException(nameof(Target) + " can not be null");
@@ -111,7 +117,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
         if (Sources.Count == 1)
         {
-            SetDisplayLabel($"Copy - {Sources.First().GetName()}");
+            SetDisplayLabel($"Copy - {Sources[0].GetName()}");
         }
         else
         {
