@@ -4,7 +4,7 @@ namespace FileTime.Core.Command;
 
 public interface ITransportationCommand : ICommand
 {
-    TransportMode? TransportMode { get; set; }
-    IList<FullName> Sources { get; }
-    FullName? Target { get; set; }
+    TransportMode TransportMode { get; }
+    IReadOnlyList<FullName> Sources { get; }
+    FullName Target { get; }
 }

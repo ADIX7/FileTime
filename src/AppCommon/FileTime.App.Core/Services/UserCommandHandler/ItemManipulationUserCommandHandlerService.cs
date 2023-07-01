@@ -84,7 +84,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private Task Copy()
     {
         _clipboardService.Clear();
-        _clipboardService.SetCommand<FileTime.Core.Command.Copy.CopyCommand>();
+        _clipboardService.SetCommand<FileTime.Core.Command.Copy.CopyCommandFactory>();
 
         if ((_markedItems?.Collection?.Count ?? 0) > 0)
         {
@@ -120,23 +120,15 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
     private async Task Paste(TransportMode mode)
     {
-        if (_clipboardService.CommandType is null)
+        if (_clipboardService.CommandFactoryType is null)
         {
             _userCommunicationService.ShowToastMessage("Clipboard is empty.");
             return;
         }
 
-        var command = (ITransportationCommand) _serviceProvider.GetRequiredService(_clipboardService.CommandType);
-        command.TransportMode = mode;
-
-        command.Sources.Clear();
-
-        foreach (var item in _clipboardService.Content)
-        {
-            command.Sources.Add(item);
-        }
-
-        command.Target = _currentLocation?.FullName;
+        //TODO: check _currentLocation?.FullName
+        var commandFactory = (ITransportationCommandFactory) _serviceProvider.GetRequiredService(_clipboardService.CommandFactoryType);
+        var command = commandFactory.GenerateCommand(_clipboardService.Content, mode, _currentLocation?.FullName);
 
         _clipboardService.Clear();
 

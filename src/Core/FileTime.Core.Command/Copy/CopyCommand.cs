@@ -14,21 +14,32 @@ public class CopyCommand : CommandBase, ITransportationCommand
     private readonly List<OperationProgress> _operationProgresses = new();
     private readonly BehaviorSubject<OperationProgress?> _currentOperationProgress = new(null);
 
-    public IList<FullName> Sources { get; } = new List<FullName>();
+    public IReadOnlyList<FullName> Sources { get; }
 
-    public FullName? Target { get; set; }
+    public FullName Target { get; }
 
-    public TransportMode? TransportMode { get; set; } = Command.TransportMode.Merge;
+    public TransportMode TransportMode { get; }
     public IObservable<OperationProgress?> CurrentOperationProgress { get; }
 
     public CopyCommand(
         ITimelessContentProvider timelessContentProvider,
-        ICommandSchedulerNotifier commandSchedulerNotifier)
-        : base("Copy")
+        ICommandSchedulerNotifier commandSchedulerNotifier,
+        IReadOnlyCollection<FullName>? sources,
+        TransportMode? mode,
+        FullName? targetFullName)
+        : base("Copy - Calculating...")
     {
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
         CurrentOperationProgress = _currentOperationProgress.AsObservable();
+
+        if (sources is null) throw new ArgumentException(nameof(Sources) + " can not be null");
+        if (targetFullName is null) throw new ArgumentException(nameof(Target) + " can not be null");
+        if (mode is null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
+
+        Sources = new List<FullName>(sources).AsReadOnly();
+        TransportMode = mode.Value;
+        Target = targetFullName;
     }
 
     public override Task<CanCommandRun> CanRun(PointInTime currentTime)
@@ -39,10 +50,6 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
     public override async Task<PointInTime> SimulateCommand(PointInTime currentTime)
     {
-        if (Sources == null) throw new ArgumentException(nameof(Sources) + " can not be null");
-        if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");
-        if (TransportMode == null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
-
         var simulateOperation = new SimulateStrategy(_timelessContentProvider);
         var resolvedTarget = await _timelessContentProvider.GetItemByFullNameAsync(Target, currentTime);
 
@@ -50,7 +57,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
             currentTime,
             Sources,
             new AbsolutePath(_timelessContentProvider, resolvedTarget),
-            TransportMode.Value,
+            TransportMode,
             simulateOperation);
 
         return currentTime.WithDifferences(simulateOperation.NewDiffs);
@@ -58,10 +65,6 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
     public async Task ExecuteAsync(CopyFunc copy)
     {
-        if (Sources == null) throw new ArgumentException(nameof(Sources) + " can not be null");
-        if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");
-        if (TransportMode == null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
-
         var currentTime = PointInTime.Present;
 
         await CalculateProgressAsync(currentTime);
@@ -74,17 +77,13 @@ public class CopyCommand : CommandBase, ITransportationCommand
             currentTime,
             Sources,
             new AbsolutePath(_timelessContentProvider, resolvedTarget),
-            TransportMode.Value,
+            TransportMode,
             copyOperation);
         //await TimeRunner.RefreshContainer.InvokeAsync(this, Target);
     }
 
     private async Task CalculateProgressAsync(PointInTime currentTime)
     {
-        if (Sources == null) throw new ArgumentException(nameof(Sources) + " can not be null");
-        if (Target == null) throw new ArgumentException(nameof(Target) + " can not be null");
-        if (TransportMode == null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
-
         var calculateOperation = new CalculateStrategy();
         var resolvedTarget = await _timelessContentProvider.GetItemByFullNameAsync(Target, currentTime);
 
@@ -92,7 +91,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
             currentTime,
             Sources,
             new AbsolutePath(_timelessContentProvider, resolvedTarget),
-            TransportMode.Value,
+            TransportMode,
             calculateOperation);
 
         _operationProgresses.Clear();
@@ -108,6 +107,24 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 return (int) (data.Sum(d => d.Progress) * 100 / total);
             })
             .Subscribe(SetTotalProgress);
+
+
+        if (Sources.Count == 1)
+        {
+            SetDisplayLabel($"Copy - {Sources.First().GetName()}");
+        }
+        else
+        {
+            _operationProgresses
+                .Select(o => o.IsDone)
+                .CombineLatest()
+                .Subscribe(statuses =>
+                {
+                    var done = statuses.Count(s => s) + 1;
+
+                    SetDisplayLabel($"Copy - {done} / {statuses.Count}");
+                });
+        }
     }
 
     private async Task TraverseTree(

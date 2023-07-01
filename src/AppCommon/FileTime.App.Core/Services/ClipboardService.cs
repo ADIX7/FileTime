@@ -7,7 +7,7 @@ public class ClipboardService : IClipboardService
 {
     private List<FullName> _content;
     public IReadOnlyList<FullName> Content { get; private set; }
-    public Type? CommandType { get; private set; }
+    public Type? CommandFactoryType { get; private set; }
 
     public ClipboardService()
     {
@@ -40,11 +40,11 @@ public class ClipboardService : IClipboardService
     {
         _content = new List<FullName>();
         Content = _content.AsReadOnly();
-        CommandType = null;
+        CommandFactoryType = null;
     }
 
-    public void SetCommand<T>() where T : ITransportationCommand
+    public void SetCommand<T>() where T : ITransportationCommandFactory
     {
-        CommandType = typeof(T);
+        CommandFactoryType = typeof(T);
     }
 }

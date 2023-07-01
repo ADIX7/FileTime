@@ -49,6 +49,7 @@ public static class DependencyInjection
     private static IServiceCollection RegisterCommands(this IServiceCollection serviceCollection)
     {
         return serviceCollection
+            .AddCommands()
             .AddTransient<CreateContainerCommand>()
             .AddTransient<CreateElementCommand>()
             .AddTransient<CopyCommand>()
