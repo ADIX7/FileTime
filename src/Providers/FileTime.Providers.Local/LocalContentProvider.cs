@@ -71,11 +71,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         {
             if ((path?.Length ?? 0) == 0)
             {
-                return Task.FromResult((IItem) this);
+                return Task.FromResult((IItem)this);
             }
             else if (Directory.Exists(path))
             {
-                return Task.FromResult((IItem) DirectoryToContainer(
+                return Task.FromResult((IItem)DirectoryToContainer(
                     new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
                     pointInTime,
                     !itemInitializationSettings.SkipChildInitialization)
@@ -83,7 +83,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             }
             else if (File.Exists(path))
             {
-                return Task.FromResult((IItem) FileToElement(new FileInfo(path), pointInTime));
+                return Task.FromResult((IItem)FileToElement(new FileInfo(path), pointInTime));
             }
 
             var type = forceResolvePathType switch
@@ -115,10 +115,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         return forceResolvePathType switch
         {
             AbsolutePathType.Container => Task.FromResult(
-                (IItem) CreateEmptyContainer(
+                (IItem)CreateEmptyContainer(
                     nativePath,
                     pointInTime,
-                    new List<Exception>() {innerException}
+                    new List<Exception>() { innerException }
                 )
             ),
             AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
@@ -229,28 +229,6 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         Task.Run(() => LoadChildren(container, directoryInfo, children, pointInTime, exceptions));
 
         return container;
-
-        IObservable<IChangeSet<AbsolutePath, string>>? InitChildren()
-        {
-            if (!initializeChildren) return null;
-
-            try
-            {
-                var items = GetItemsByContainer(directoryInfo, pointInTime);
-                var result = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
-
-                if (items.Count == 0) return (IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect().StartWithEmpty();
-
-                result.AddOrUpdate(items);
-                return (IObservable<IChangeSet<AbsolutePath, string>>?) result.Connect();
-            }
-            catch (Exception e)
-            {
-                exceptions.Add(e);
-            }
-
-            return null;
-        }
     }
 
     private void LoadChildren(Container container,
@@ -259,16 +237,16 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         PointInTime pointInTime,
         SourceList<Exception> exceptions)
     {
-        var lockobj = new object();
+        var lockObj = new object();
         var loadingIndicatorCancellation = new CancellationTokenSource();
 
         Task.Run(DelayedLoadingIndicator);
         LoadChildren();
 
-        lock (lockobj)
+        lock (lockObj)
         {
             loadingIndicatorCancellation.Cancel();
-            container.IsLoading.OnNext(false);
+            container.StopLoading();
         }
 
         void LoadChildren()
@@ -306,10 +284,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             {
             }
 
-            lock (lockobj)
+            lock (lockObj)
             {
                 if (token.IsCancellationRequested) return;
-                container.IsLoading.OnNext(true);
+                container.StartLoading();
             }
         }
     }
@@ -397,7 +375,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var finalSize = size switch
         {
             > int.MaxValue => int.MaxValue,
-            _ => (int) size
+            _ => (int)size
         };
         var buffer = new byte[finalSize];
         var realSize = await reader.ReadAsync(buffer.AsMemory(0, finalSize), cancellationToken);

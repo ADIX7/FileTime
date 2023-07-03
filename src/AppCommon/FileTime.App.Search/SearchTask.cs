@@ -62,12 +62,12 @@ public class SearchTask : ISearchTask
         {
             try
             {
-                _container.IsLoading.OnNext(true);
+                _container.StartLoading();
                 await TraverseTree(_baseContainer);
             }
             finally
             {
-                _container.IsLoading.OnNext(false);
+                _container.StopLoading();
 
                 await _searchingLock.WaitAsync();
                 _isSearching = false;

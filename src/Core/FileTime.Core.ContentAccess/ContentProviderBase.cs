@@ -44,9 +44,11 @@ public abstract class ContentProviderBase : IContentProvider
     public string? Attributes => null;
 
     protected BehaviorSubject<bool> IsLoading { get; } = new(false);
-    public bool AllowRecursiveDeletion => false;
-
     IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
+    public bool? IsLoaded => true;
+    public Task WaitForLoaded(CancellationToken token = default) => Task.CompletedTask;
+
+    public bool AllowRecursiveDeletion => false;
 
     public AbsolutePathType Type => AbsolutePathType.Container;
     public PointInTime PointInTime { get; } = PointInTime.Eternal;

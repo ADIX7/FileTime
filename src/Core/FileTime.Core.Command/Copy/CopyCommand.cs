@@ -110,7 +110,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
             {
                 var total = data.Sum(d => d.TotalProgress);
                 if (total == 0) return 0;
-                return (int) (data.Sum(d => d.Progress) * 100 / total);
+                return (int)(data.Sum(d => d.Progress) * 100 / total);
             })
             .Subscribe(SetTotalProgress);
 
@@ -140,10 +140,9 @@ public class CopyCommand : CommandBase, ITransportationCommand
         TransportMode transportMode,
         ICopyStrategy copyOperation)
     {
-        var resolvedTarget = ((IContainer) await target.ResolveAsync()) ?? throw new Exception();
-
         foreach (var source in sources)
         {
+            var resolvedTarget = (IContainer)await target.ResolveAsync() ?? throw new Exception();
             var item = await _timelessContentProvider.GetItemByFullNameAsync(source, currentTime);
 
             if (item is IContainer container)

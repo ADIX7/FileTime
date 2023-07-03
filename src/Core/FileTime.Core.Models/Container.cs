@@ -27,19 +27,42 @@ public record Container(
     ReadOnlyExtensionCollection Extensions,
     IObservable<IChangeSet<AbsolutePath, string>> Items) : IContainer
 {
+
     private readonly Lazy<ReadOnlyObservableCollection<AbsolutePath>> _itemsCollectionLazy =
-        new (() =>
+        new(() =>
         {
             Items.Bind(out var items).Subscribe();
             return items;
         });
     private readonly CancellationTokenSource _loadingCancellationTokenSource = new();
+    private readonly BehaviorSubject<bool> _isLoading = new(false);
+
     public CancellationToken LoadingCancellationToken => _loadingCancellationTokenSource.Token;
-    public BehaviorSubject<bool> IsLoading { get; } = new(false);
-    IObservable<bool> IContainer.IsLoading => IsLoading.AsObservable();
+    public IObservable<bool> IsLoading => _isLoading.AsObservable();
+    public bool? IsLoaded { get; private set; }
     public AbsolutePathType Type => AbsolutePathType.Container;
 
     public ReadOnlyObservableCollection<AbsolutePath> ItemsCollection => _itemsCollectionLazy.Value;
 
-    public void CancelLoading() => _loadingCancellationTokenSource.Cancel();
+    public async Task WaitForLoaded(CancellationToken token = default)
+    {
+        while (IsLoaded != true) await Task.Delay(1, token);
+    }
+
+    public void StartLoading()
+    {
+        _isLoading.OnNext(true);
+        IsLoaded = false;
+    }
+    public void StopLoading()
+    {
+        _isLoading.OnNext(false);
+        IsLoaded = true;
+    }
+    public void CancelLoading()
+    {
+        _loadingCancellationTokenSource.Cancel();
+        _isLoading.OnNext(false);
+        IsLoaded = true;
+    }
 }

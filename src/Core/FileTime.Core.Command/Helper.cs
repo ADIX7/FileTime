@@ -6,6 +6,7 @@ public static class Helper
 {
     public static async Task<string?> GetNewNameAsync(IContainer resolvedTarget, string name, TransportMode transportMode)
     {
+        await resolvedTarget.WaitForLoaded();
         var items = resolvedTarget.ItemsCollection.ToList();
         var newName = name;
         var targetNameExists = items.Any(i => i.Path.GetName() == newName);
