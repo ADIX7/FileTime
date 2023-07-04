@@ -3,7 +3,7 @@ namespace FileTime.App.Core.UserCommand;
 public class GoToProviderCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "go_to_provider";
-    public static GoToProviderCommand Instance { get; } = new GoToProviderCommand();
+    public static GoToProviderCommand Instance { get; } = new();
 
     private GoToProviderCommand()
     {

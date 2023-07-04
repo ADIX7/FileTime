@@ -3,7 +3,7 @@ namespace FileTime.App.Core.UserCommand;
 public sealed class CloseTabCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "close_tab";
-    public static CloseTabCommand Instance { get; } = new CloseTabCommand();
+    public static CloseTabCommand Instance { get; } = new();
 
     private CloseTabCommand()
     {

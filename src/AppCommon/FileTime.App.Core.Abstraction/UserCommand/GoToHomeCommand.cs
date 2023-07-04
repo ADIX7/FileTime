@@ -3,7 +3,7 @@ namespace FileTime.App.Core.UserCommand;
 public class GoToHomeCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "go_to_home";
-    public static GoToHomeCommand Instance { get; } = new GoToHomeCommand();
+    public static GoToHomeCommand Instance { get; } = new();
 
     private GoToHomeCommand()
     {
