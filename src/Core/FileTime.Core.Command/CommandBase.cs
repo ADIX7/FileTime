@@ -33,4 +33,16 @@ public abstract class CommandBase : ICommand
     protected void SetTotalProgress(int totalProgress) => _totalProgress.OnNext(totalProgress);
 
     protected void SetCurrentProgress(int currentProgress) => _currentProgress.OnNext(currentProgress);
+
+    protected IDisposable TrackProgress(IEnumerable<OperationProgress> operationProgresses) =>
+        operationProgresses
+            .Select(op => op.Progress.Select(p => (Progress: p, TotalProgress: op.TotalCount)))
+            .CombineLatest()
+            .Select(data =>
+            {
+                var total = data.Sum(d => d.TotalProgress);
+                if (total == 0) return 0;
+                return (int)(data.Sum(d => d.Progress) * 100 / total);
+            })
+            .Subscribe(SetTotalProgress);
 }

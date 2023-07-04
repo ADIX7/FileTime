@@ -66,4 +66,18 @@ public class ContentAccessorFactory : IContentAccessorFactory
 
         return (IItemDeleter)_serviceProvider.GetRequiredService(genericType);
     }
+
+    public IItemMover<TContentProvider> GetItemMover<TContentProvider>() where TContentProvider : IContentProvider 
+    {
+        var genericType = typeof(IItemMover<>).MakeGenericType(typeof(TContentProvider));
+
+        return (IItemMover<TContentProvider>)_serviceProvider.GetRequiredService(genericType);
+    }
+
+    public IItemMover GetItemMover(IContentProvider provider) 
+    {
+        var genericType = typeof(IItemMover<>).MakeGenericType(provider.GetType());
+
+        return (IItemMover)_serviceProvider.GetRequiredService(genericType);
+    }
 }

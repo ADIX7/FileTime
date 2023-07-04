@@ -43,6 +43,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(PasteFilesFromClipboardCommand.Merge);
         AddUserCommand(PauseCommandSchedulerCommand.Instance);
         AddUserCommand(RefreshCommand.Instance);
+        AddUserCommand(RenameCommand.Instance);
         AddUserCommand(StartCommandSchedulerCommand.Instance);
         AddUserCommand(IdentifiableSearchCommand.SearchByNameContains);
         AddUserCommand(SwitchToTabCommand.SwitchToLastTab);

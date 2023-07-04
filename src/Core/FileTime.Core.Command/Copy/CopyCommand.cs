@@ -103,16 +103,8 @@ public class CopyCommand : CommandBase, ITransportationCommand
         _operationProgresses.Clear();
         _operationProgresses.AddRange(calculateOperation.OperationStatuses);
 
-        _operationProgresses
-            .Select(op => op.Progress.Select(p => (Progress: p, TotalProgress: op.TotalCount)))
-            .CombineLatest()
-            .Select(data =>
-            {
-                var total = data.Sum(d => d.TotalProgress);
-                if (total == 0) return 0;
-                return (int)(data.Sum(d => d.Progress) * 100 / total);
-            })
-            .Subscribe(SetTotalProgress);
+        //TODO: Handle IDisposable
+        TrackProgress(_operationProgresses);
 
 
         if (Sources.Count == 1)
@@ -127,6 +119,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 .Subscribe(statuses =>
                 {
                     var done = statuses.Count(s => s) + 1;
+                    if(done > statuses.Count) done = statuses.Count;
 
                     SetDisplayLabel($"Copy - {done} / {statuses.Count}");
                 });

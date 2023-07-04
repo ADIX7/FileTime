@@ -5,6 +5,7 @@ using FileTime.App.Core.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.CreateElement;
+using FileTime.Core.Command.Move;
 using FileTime.Core.Extensions;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
@@ -60,6 +61,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         {
             new TypeUserCommandHandler<CopyCommand>(Copy),
             new TypeUserCommandHandler<DeleteCommand>(Delete),
+            new TypeUserCommandHandler<RenameCommand>(Rename),
             new TypeUserCommandHandler<MarkCommand>(MarkItem),
             new TypeUserCommandHandler<PasteCommand>(Paste),
             new TypeUserCommandHandler<CreateContainer>(CreateContainer),
@@ -169,6 +171,29 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             .GetInitableResolver(_currentLocation.FullName, newContainerName)
             .GetRequiredService<CreateElementCommand>();
         await AddCommand(command);
+    }
+
+    private async Task Rename(RenameCommand command)
+    {
+        //TODO: group rename
+        List<ItemToMove> itemsToMove = new();
+        if (_currentSelectedItem?.BaseItem?.FullName is null) return;
+
+        var item = await _timelessContentProvider.GetItemByFullNameAsync(_currentSelectedItem.BaseItem.FullName, PointInTime.Present);
+
+        if (item is null) return;
+
+        var renameInput = new TextInputElement("New name", item.Name);
+
+        await _userCommunicationService.ReadInputs(renameInput);
+
+        //TODO: should check these...
+        var newPath = item.FullName!.GetParent()!.GetChild(renameInput.Value!);
+        itemsToMove.Add(new ItemToMove(item.FullName, newPath));
+
+        var moveCommandFactory = _serviceProvider.GetRequiredService<MoveCommandFactory>();
+        var moveCommand = moveCommandFactory.GenerateCommand(itemsToMove);
+        await AddCommand(moveCommand);
     }
 
     private async Task Delete(DeleteCommand command)

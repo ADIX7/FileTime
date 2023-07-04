@@ -10,4 +10,17 @@ public interface IItemDeleter
 public interface IItemDeleter<in TContentProvider> : IItemDeleter where TContentProvider : IContentProvider
 {
     Task DeleteAsync(TContentProvider contentProvider, FullName fullName);
+
+    async Task IItemDeleter.DeleteAsync(IContentProvider contentProvider, FullName fullName)
+    {
+        if (contentProvider is not TContentProvider provider)
+        {
+            throw new ArgumentException(
+                $"Content provider ({contentProvider.GetType()}) is not the required type ({typeof(TContentProvider)}) ",
+                nameof(contentProvider)
+            );
+        }
+
+        await DeleteAsync(provider, fullName);
+    }
 }

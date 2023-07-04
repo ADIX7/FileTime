@@ -10,4 +10,6 @@ public interface IContentAccessorFactory
     IContentWriterFactory GetContentWriterFactory(IContentProvider provider);
     IItemDeleter GetItemDeleter(IContentProvider provider);
     IItemDeleter<TContentProvider> GetItemDeleter<TContentProvider>() where TContentProvider : IContentProvider;
+    IItemMover GetItemMover(IContentProvider provider);
+    IItemMover<TContentProvider> GetItemMover<TContentProvider>() where TContentProvider : IContentProvider;
 }
