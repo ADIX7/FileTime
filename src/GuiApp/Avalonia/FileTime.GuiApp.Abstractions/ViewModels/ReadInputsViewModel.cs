@@ -1,28 +1,33 @@
+using System.Collections.ObjectModel;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
-using MvvmGen;
+using PropertyChanged.SourceGenerator;
 
 namespace FileTime.GuiApp.ViewModels;
 
-[ViewModel]
-[Inject(typeof(Action<ReadInputsViewModel>), "_cancel")]
-[Inject(typeof(Action<ReadInputsViewModel>), "_process")]
-public partial class ReadInputsViewModel : IModalViewModel
+public class ReadInputsViewModel : IModalViewModel
 {
     public string Name => "ReadInputs";
-    public List<IInputElement> Inputs { get; set; }
-    public Action SuccessHandler { get; set; }
-    public Action? CancelHandler { get; set; }
+    public required List<IInputElement> Inputs { get; init; }
+    public required Action<ReadInputsViewModel> SuccessHandler { get; init; }
+    public required Action<ReadInputsViewModel>? CancelHandler { get; init; }
+    public ObservableCollection<IPreviewElement> Previews { get; } = new();
 
-    [Command]
-    public void Process()
+    public ReadInputsViewModel()
     {
-        _process.Invoke(this);
     }
 
-    [Command]
-    public void Cancel()
+    public ReadInputsViewModel(
+        List<IInputElement> inputs, 
+        Action<ReadInputsViewModel> successHandler, 
+        Action<ReadInputsViewModel>? cancelHandler = null)
     {
-        _cancel.Invoke(this);
+        Inputs = inputs;
+        SuccessHandler = successHandler;
+        CancelHandler = cancelHandler;
     }
+
+    public void Process() => SuccessHandler.Invoke(this);
+
+    public void Cancel() => CancelHandler?.Invoke(this);
 }

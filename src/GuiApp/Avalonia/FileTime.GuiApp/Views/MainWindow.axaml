@@ -19,6 +19,7 @@
     x:DataType="vm:IMainWindowViewModelBase"
     xmlns="https://github.com/avaloniaui"
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
+    xmlns:appInteractions="using:FileTime.App.Core.Interactions"
     xmlns:config="using:FileTime.GuiApp.Configuration"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -578,7 +579,7 @@
                     HorizontalAlignment="Center"
                     Padding="20"
                     VerticalAlignment="Center">
-                    <Grid RowDefinitions="Auto,Auto">
+                    <Grid RowDefinitions="Auto,Auto,Auto">
 
                         <ItemsControl
                             ItemsSource="{Binding DialogService.ReadInput^.Inputs}"
@@ -621,18 +622,92 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding DialogService.ReadInput^.Previews}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid IsVisible="{Binding PreviewType, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appInteractions:PreviewType.DoubleTextList}}">
+                                            <ItemsControl ItemsSource="{Binding Items}" x:DataType="appInteractions:DoubleTextListPreview">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid ColumnDefinitions="*,*">
+                                                            <ItemsControl ItemsSource="{Binding Text1^}">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <StackPanel Orientation="Horizontal" />
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <TextBlock Text="{Binding Text}" TextDecorations="{Binding IsSpecial, Converter={StaticResource TextDecorationConverter}}" />
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding Text2^}">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <StackPanel Orientation="Horizontal" />
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <TextBlock Text="{Binding Text}" TextDecorations="{Binding IsSpecial, Converter={StaticResource TextDecorationConverter}}" />
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <!--DataGrid ItemsSource="{Binding Items}" x:DataType="appInteractions:DoubleTextListPreview">
+                                                <DataGrid.Columns>
+                                                    <DataGridTemplateColumn>
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <ItemsControl
+                                                                    HorizontalAlignment="Stretch"
+                                                                    ItemsSource="{Binding Text1^}"
+                                                                    Margin="5,0,0,0"
+                                                                    VerticalAlignment="Center">
+                                                                    <ItemsControl.ItemsPanel>
+                                                                        <ItemsPanelTemplate>
+                                                                            <StackPanel Orientation="Horizontal" />
+                                                                        </ItemsPanelTemplate>
+                                                                    </ItemsControl.ItemsPanel>
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate x:DataType="x:String">
+                                                                            <Grid>
+                                                                                <TextBlock Text="{Binding}" />
+                                                                            </Grid>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                </DataGrid.Columns>
+                                            </DataGrid-->
+                                        </Grid>
+
+
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
                         <StackPanel
                             DataContext="{Binding DialogService.ReadInput^}"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Margin="0,10,0,0"
                             Orientation="Horizontal">
                             <Button
-                                Command="{Binding ProcessCommand}"
+                                Command="{Binding Process}"
                                 Content="Ok"
                                 HorizontalContentAlignment="Center"
                                 Width="80" />
                             <Button
-                                Command="{Binding CancelCommand}"
+                                Command="{Binding Cancel}"
                                 Content="Cancel"
                                 HorizontalContentAlignment="Center"
                                 Margin="10,0,0,0"

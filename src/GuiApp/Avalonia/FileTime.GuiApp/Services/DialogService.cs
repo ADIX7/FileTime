@@ -37,16 +37,76 @@ public class DialogService : IDialogService
                 .Select(m => m.LastOrDefault());
     }
 
-    public void ReadInputs(IEnumerable<IInputElement> inputs, Action inputHandler, Action? cancelHandler = null)
+    private void ReadInputs(
+        IEnumerable<IInputElement> inputs,
+        Action inputHandler,
+        Action? cancelHandler = null,
+        IEnumerable<IPreviewElement>? previews = null)
     {
-        var modalViewModel = new ReadInputsViewModel(HandleReadInputsSuccess, HandleReadInputsCancel)
+        var modalViewModel = new ReadInputsViewModel
         {
             Inputs = inputs.ToList(),
-            SuccessHandler = inputHandler,
-            CancelHandler = cancelHandler
+            SuccessHandler = HandleReadInputsSuccess,
+            CancelHandler = HandleReadInputsCancel
         };
 
+        if (previews is not null)
+        {
+            modalViewModel.Previews.AddRange(previews);
+        }
+
         _modalService.OpenModal(modalViewModel);
+
+        void HandleReadInputsSuccess(ReadInputsViewModel readInputsViewModel)
+        {
+            _modalService.CloseModal(readInputsViewModel);
+            inputHandler();
+        }
+
+        void HandleReadInputsCancel(ReadInputsViewModel readInputsViewModel)
+        {
+            _modalService.CloseModal(readInputsViewModel);
+            cancelHandler?.Invoke();
+        }
+    }
+
+    public Task<bool> ReadInputs(IEnumerable<IInputElement> fields, IEnumerable<IPreviewElement>? previews = null)
+    {
+        var taskCompletionSource = new TaskCompletionSource<bool>();
+        ReadInputs(
+            fields,
+            () => taskCompletionSource.SetResult(true),
+            () => taskCompletionSource.SetResult(false),
+            previews
+        );
+
+        return taskCompletionSource.Task;
+    }
+
+
+    public Task<bool> ReadInputs(params IInputElement[] fields)
+    {
+        var taskCompletionSource = new TaskCompletionSource<bool>();
+        ReadInputs(
+            fields,
+            () => taskCompletionSource.SetResult(true),
+            () => taskCompletionSource.SetResult(false)
+        );
+
+        return taskCompletionSource.Task;
+    }
+
+    public Task<bool> ReadInputs(IInputElement field, IEnumerable<IPreviewElement>? previews = null)
+    {
+        var taskCompletionSource = new TaskCompletionSource<bool>();
+        ReadInputs(
+            new[] {field},
+            () => taskCompletionSource.SetResult(true),
+            () => taskCompletionSource.SetResult(false),
+            previews
+        );
+
+        return taskCompletionSource.Task;
     }
 
     public void ShowToastMessage(string text)
@@ -67,26 +127,6 @@ public class DialogService : IDialogService
             _modalService.CloseModal(vm);
             taskCompletionSource.SetResult(result);
         }));
-
-        return taskCompletionSource.Task;
-    }
-
-    private void HandleReadInputsSuccess(ReadInputsViewModel readInputsViewModel)
-    {
-        _modalService.CloseModal(readInputsViewModel);
-        readInputsViewModel.SuccessHandler.Invoke();
-    }
-
-    private void HandleReadInputsCancel(ReadInputsViewModel readInputsViewModel)
-    {
-        _modalService.CloseModal(readInputsViewModel);
-        readInputsViewModel.CancelHandler?.Invoke();
-    }
-
-    public Task<bool> ReadInputs(params IInputElement[] fields)
-    {
-        var taskCompletionSource = new TaskCompletionSource<bool>();
-        ReadInputs(fields, () => taskCompletionSource.SetResult(true), () => taskCompletionSource.SetResult(false));
 
         return taskCompletionSource.Task;
     }

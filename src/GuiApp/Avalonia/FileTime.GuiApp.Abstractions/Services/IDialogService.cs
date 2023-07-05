@@ -7,5 +7,4 @@ public interface IDialogService : IUserCommunicationService
 {
     IObservable<ReadInputsViewModel?> ReadInput { get; }
     IObservable<MessageBoxViewModel?> LastMessageBox { get; }
-    void ReadInputs(IEnumerable<IInputElement> inputs, Action inputHandler, Action? cancelHandler = null);
 }

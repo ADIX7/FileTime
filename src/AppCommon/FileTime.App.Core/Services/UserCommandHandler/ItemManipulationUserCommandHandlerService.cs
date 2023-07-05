@@ -1,4 +1,9 @@
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Text.RegularExpressions;
+using DynamicData;
+using FileTime.App.Core.Interactions;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
@@ -175,25 +180,143 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
     private async Task Rename(RenameCommand command)
     {
-        //TODO: group rename
-        List<ItemToMove> itemsToMove = new();
-        if (_currentSelectedItem?.BaseItem?.FullName is null) return;
+        if ((_markedItems?.Collection?.Count ?? 0) > 0)
+        {
+            BehaviorSubject<string> templateRegexValue = new(string.Empty);
+            BehaviorSubject<string> newNameSchemaValue = new(string.Empty);
 
-        var item = await _timelessContentProvider.GetItemByFullNameAsync(_currentSelectedItem.BaseItem.FullName, PointInTime.Present);
+            var itemPreviews = _markedItems!.Collection!
+                .Select(item =>
+                    {
+                        var originalName = item.GetName();
 
-        if (item is null) return;
+                        var decoratedOriginalName = templateRegexValue.Select(templateRegex =>
+                            {
+                                try
+                                {
+                                    if (string.IsNullOrWhiteSpace(templateRegex))
+                                        return new List<ItemNamePart> {new(originalName)};
 
-        var renameInput = new TextInputElement("New name", item.Name);
+                                    var regex = new Regex(templateRegex);
+                                    var match = regex.Match(originalName);
+                                    if (!match.Success) return new List<ItemNamePart> {new(originalName)};
 
-        await _userCommunicationService.ReadInputs(renameInput);
+                                    var matchGroups = match.Groups;
 
-        //TODO: should check these...
-        var newPath = item.FullName!.GetParent()!.GetChild(renameInput.Value!);
-        itemsToMove.Add(new ItemToMove(item.FullName, newPath));
+                                    var indices = Enumerable.Empty<int>()
+                                        .Prepend(0)
+                                        .Concat(
+                                            ((IList<Group>) match.Groups).Skip(1).SelectMany(g => new[] {g.Index, g.Index + g.Length})
+                                        )
+                                        .Append(originalName.Length)
+                                        .ToList();
 
-        var moveCommandFactory = _serviceProvider.GetRequiredService<MoveCommandFactory>();
-        var moveCommand = moveCommandFactory.GenerateCommand(itemsToMove);
-        await AddCommand(moveCommand);
+                                    var itemNameParts = new List<ItemNamePart>();
+                                    for (var i = 0; i < indices.Count - 1; i++)
+                                    {
+                                        var text = originalName.Substring(indices[i], indices[i + 1] - indices[i]);
+                                        itemNameParts.Add(new ItemNamePart(text, i % 2 == 1));
+                                    }
+
+                                    return itemNameParts;
+                                }
+                                catch
+                                {
+                                    return new List<ItemNamePart> {new(originalName)};
+                                }
+                            }
+                        );
+
+                        var text2 = Observable.CombineLatest(
+                            templateRegexValue,
+                            newNameSchemaValue,
+                            (templateRegex, newNameSchema) =>
+                            {
+                                try
+                                {
+                                    if (string.IsNullOrWhiteSpace(templateRegex)
+                                        || string.IsNullOrWhiteSpace(newNameSchema)) return new List<ItemNamePart> {new(originalName)};
+
+                                    var regex = new Regex(templateRegex);
+                                    var match = regex.Match(originalName);
+                                    if (!match.Success) return new List<ItemNamePart> {new(originalName)};
+
+                                    var matchGroups = match.Groups;
+
+                                    var newNameParts = Enumerable.Range(1, matchGroups.Count).Aggregate(
+                                        (IEnumerable<string>) new List<string> {newNameSchema},
+                                        (acc, i) =>
+                                            acc.SelectMany(item2 =>
+                                                item2
+                                                    .Split($"/{i}/")
+                                                    .SelectMany(e => new[] {e, $"/{i}/"})
+                                                    .SkipLast(1)
+                                            )
+                                    );
+
+
+                                    var itemNameParts = newNameParts.Select(namePart =>
+                                        namePart.StartsWith("/")
+                                        && namePart.EndsWith("/")
+                                        && namePart.Length > 2
+                                        && int.TryParse(namePart.AsSpan(1, namePart.Length - 2), out var index)
+                                        && index > 0
+                                        && index <= matchGroups.Count
+                                            ? new ItemNamePart(matchGroups[index].Value, true)
+                                            : new ItemNamePart(namePart, false)
+                                    );
+
+                                    return itemNameParts.ToList();
+                                }
+                                catch
+                                {
+                                    return new List<ItemNamePart> {new(originalName)};
+                                }
+                            }
+                        );
+
+                        var preview = new DoubleTextPreview
+                        {
+                            Text1 = decoratedOriginalName,
+                            Text2 = text2
+                        };
+                        return preview;
+                    }
+                );
+
+            DoubleTextListPreview doubleTextListPreview = new();
+            doubleTextListPreview.Items.AddRange(itemPreviews);
+
+            var templateRegex = new TextInputElement("Template regex", string.Empty,
+                s => templateRegexValue.OnNext(s!));
+            var newNameSchema = new TextInputElement("New name schema", string.Empty,
+                s => newNameSchemaValue.OnNext(s!));
+            await _userCommunicationService.ReadInputs(
+                new[] {templateRegex, newNameSchema},
+                new[] {doubleTextListPreview}
+            );
+        }
+        else
+        {
+            List<ItemToMove> itemsToMove = new();
+            if (_currentSelectedItem?.BaseItem?.FullName is null) return;
+
+            var item = await _timelessContentProvider.GetItemByFullNameAsync(_currentSelectedItem.BaseItem.FullName, PointInTime.Present);
+
+            if (item is null) return;
+
+            var renameInput = new TextInputElement("New name", item.Name);
+
+            await _userCommunicationService.ReadInputs(renameInput);
+
+            //TODO: should check these...
+            var newPath = item.FullName!.GetParent()!.GetChild(renameInput.Value!);
+            itemsToMove.Add(new ItemToMove(item.FullName, newPath));
+
+            var moveCommandFactory = _serviceProvider.GetRequiredService<MoveCommandFactory>();
+            var moveCommand = moveCommandFactory.GenerateCommand(itemsToMove);
+            await AddCommand(moveCommand);
+        }
     }
 
     private async Task Delete(DeleteCommand command)
