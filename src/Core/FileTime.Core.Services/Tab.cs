@@ -55,8 +55,10 @@ public class Tab : ITab
                             .Select(items => items.TransformAsync(MapItem)),
                         _itemFilters.Connect().StartWithEmpty().ToCollection(),
                         (items, filters) =>
+                            //Note: Dont user Sort before where, as DynamicData cant handle
+                            //sort in (so that's if they are before) filters
                             items
-                                ?.Where(i => filters.All(f => f.Filter(i)))
+                                .Where(i => filters.All(f => f.Filter(i)))
                                 .Sort(SortItems())
                     ),
                     CurrentLocation
