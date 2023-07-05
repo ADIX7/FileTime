@@ -101,7 +101,7 @@ public class Tab : ITab
         //TODO: Order
         => SortExpressionComparer<IItem>
             .Ascending(i => i.Type)
-            .ThenByAscending(i => i.DisplayName?.ToLower() ?? "");
+            .ThenByAscending(i => i.DisplayName.ToLower());
 
     private async Task<IItem> MapItem(AbsolutePath item) => await item.ResolveAsync(true);
 

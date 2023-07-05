@@ -373,12 +373,15 @@
                                         </Image.RenderTransform>
                                     </Image>
                                 </Grid>
+                                <!--  Note: On Windows CurrentItemsCollection is not sorted (for some reason)  -->
+                                <!--  Although CurrentItemsCollectionObservable is slower, but it is sorted  -->
+                                <!--  This should be fixed (works on linux tho...)  -->
                                 <ListBox
                                     AutoScrollToSelectedItem="True"
                                     Classes="ContentListView"
                                     Grid.Row="1"
                                     IsTabStop="True"
-                                    ItemsSource="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection}"
+                                    ItemsSource="{Binding AppState.SelectedTab^.CurrentItemsCollectionObservable^}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem^}"
