@@ -180,12 +180,15 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
     private async Task Rename(RenameCommand command)
     {
+        List<ItemToMove> itemsToMove = new();
         if ((_markedItems?.Collection?.Count ?? 0) > 0)
         {
             BehaviorSubject<string> templateRegexValue = new(string.Empty);
             BehaviorSubject<string> newNameSchemaValue = new(string.Empty);
 
-            var itemPreviews = _markedItems!.Collection!
+            var itemsToRename = new List<FullName>(_markedItems!.Collection!);
+
+            var itemPreviews = itemsToRename
                 .Select(item =>
                     {
                         var originalName = item.GetName();
@@ -238,33 +241,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
                                         || string.IsNullOrWhiteSpace(newNameSchema)) return new List<ItemNamePart> {new(originalName)};
 
                                     var regex = new Regex(templateRegex);
-                                    var match = regex.Match(originalName);
-                                    if (!match.Success) return new List<ItemNamePart> {new(originalName)};
-
-                                    var matchGroups = match.Groups;
-
-                                    var newNameParts = Enumerable.Range(1, matchGroups.Count).Aggregate(
-                                        (IEnumerable<string>) new List<string> {newNameSchema},
-                                        (acc, i) =>
-                                            acc.SelectMany(item2 =>
-                                                item2
-                                                    .Split($"/{i}/")
-                                                    .SelectMany(e => new[] {e, $"/{i}/"})
-                                                    .SkipLast(1)
-                                            )
-                                    );
-
-
-                                    var itemNameParts = newNameParts.Select(namePart =>
-                                        namePart.StartsWith("/")
-                                        && namePart.EndsWith("/")
-                                        && namePart.Length > 2
-                                        && int.TryParse(namePart.AsSpan(1, namePart.Length - 2), out var index)
-                                        && index > 0
-                                        && index <= matchGroups.Count
-                                            ? new ItemNamePart(matchGroups[index].Value, true)
-                                            : new ItemNamePart(namePart, false)
-                                    );
+                                    var itemNameParts = GetItemNameParts(regex, originalName, newNameSchema);
 
                                     return itemNameParts.ToList();
                                 }
@@ -291,14 +268,47 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
                 s => templateRegexValue.OnNext(s!));
             var newNameSchema = new TextInputElement("New name schema", string.Empty,
                 s => newNameSchemaValue.OnNext(s!));
-            await _userCommunicationService.ReadInputs(
+
+            var success = await _userCommunicationService.ReadInputs(
                 new[] {templateRegex, newNameSchema},
                 new[] {doubleTextListPreview}
             );
+
+            if (success)
+            {
+                if (templateRegex.Value is null)
+                {
+                    //TODO messagebox
+                }
+                else if (newNameSchema.Value is null)
+                {
+                    //TODO messagebox
+                }
+                else
+                {
+                    var regex = new Regex(templateRegex.Value);
+                    var itemsToMoveWithPath = itemsToRename
+                        .Select(item =>
+                            (
+                                OriginalFullName: item,
+                                NewName:
+                                item.GetParent()!.GetChild(
+                                    string.Join(
+                                        "",
+                                        GetItemNameParts(regex, item.GetName(), newNameSchema.Value)
+                                            .Select(i => i.Text)
+                                    )
+                                )
+                            )
+                        )
+                        .Select(i => new ItemToMove(i.OriginalFullName, i.NewName));
+
+                    itemsToMove.AddRange(itemsToMoveWithPath);
+                }
+            }
         }
         else
         {
-            List<ItemToMove> itemsToMove = new();
             if (_currentSelectedItem?.BaseItem?.FullName is null) return;
 
             var item = await _timelessContentProvider.GetItemByFullNameAsync(_currentSelectedItem.BaseItem.FullName, PointInTime.Present);
@@ -307,15 +317,54 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
             var renameInput = new TextInputElement("New name", item.Name);
 
-            await _userCommunicationService.ReadInputs(renameInput);
+            if (await _userCommunicationService.ReadInputs(renameInput))
+            {
+                //TODO: should check these null forgivings...
+                var newPath = item.FullName!.GetParent()!.GetChild(renameInput.Value!);
+                itemsToMove.Add(new ItemToMove(item.FullName, newPath));
+            }
+        }
 
-            //TODO: should check these...
-            var newPath = item.FullName!.GetParent()!.GetChild(renameInput.Value!);
-            itemsToMove.Add(new ItemToMove(item.FullName, newPath));
-
+        if (itemsToMove.Count > 0)
+        {
+            //TODO: name collision, probably on the input window at the new template name
+            //TODO: check if the name changed
             var moveCommandFactory = _serviceProvider.GetRequiredService<MoveCommandFactory>();
             var moveCommand = moveCommandFactory.GenerateCommand(itemsToMove);
             await AddCommand(moveCommand);
+        }
+
+        static IEnumerable<ItemNamePart> GetItemNameParts(Regex templateRegex, string originalName, string newNameSchema)
+        {
+            var match = templateRegex.Match(originalName);
+            if (!match.Success) return new List<ItemNamePart> {new(originalName)};
+
+            var matchGroups = match.Groups;
+
+            var newNameParts = Enumerable.Range(1, matchGroups.Count).Aggregate(
+                (IEnumerable<string>) new List<string> {newNameSchema},
+                (acc, i) =>
+                    acc.SelectMany(item2 =>
+                        item2
+                            .Split($"/{i}/")
+                            .SelectMany(e => new[] {e, $"/{i}/"})
+                            .SkipLast(1)
+                    )
+            );
+
+
+            var itemNameParts = newNameParts.Select(namePart =>
+                namePart.StartsWith("/")
+                && namePart.EndsWith("/")
+                && namePart.Length > 2
+                && int.TryParse(namePart.AsSpan(1, namePart.Length - 2), out var index)
+                && index > 0
+                && index <= matchGroups.Count
+                    ? new ItemNamePart(matchGroups[index].Value, true)
+                    : new ItemNamePart(namePart, false)
+            );
+
+            return itemNameParts;
         }
     }
 
