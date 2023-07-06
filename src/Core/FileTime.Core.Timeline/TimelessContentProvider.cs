@@ -56,4 +56,16 @@ public class TimelessContentProvider : ITimelessContentProvider
 
         return null;
     }
+
+    public NativePath? GetNativePathByFullName(FullName fullName)
+    {
+        foreach (var contentProvider in _contentProviderRegistry.ContentProviders)
+        {
+            if(!contentProvider.CanHandlePath(fullName)) continue;
+
+            return contentProvider.GetNativePath(fullName);
+        }
+
+        return null;
+    }
 }

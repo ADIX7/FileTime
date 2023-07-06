@@ -1,5 +1,5 @@
 using System.Net;
-using System.Text.Encodings.Web;
+using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
@@ -10,14 +10,12 @@ namespace FileTime.GuiApp.Services;
 public class SystemClipboardService : ISystemClipboardService
 {
     private const string ClipboardContentFiles = "Files";
-    
+
     private readonly ITimelessContentProvider _timelessContentProvider;
-    public IUiAccessor UiAccessor { get; internal set; }
+    public IUiAccessor UiAccessor { get; internal set; } = null!;
 
     public SystemClipboardService(ITimelessContentProvider timelessContentProvider)
-    {
-        _timelessContentProvider = timelessContentProvider;
-    }
+        => _timelessContentProvider = timelessContentProvider;
 
     public async Task CopyToClipboardAsync(string text)
     {
@@ -31,7 +29,7 @@ public class SystemClipboardService : ISystemClipboardService
         await clipboard.SetTextAsync(text);
     }
 
-    public async Task<IEnumerable<FullName>> GetFiles()
+    public async Task<IEnumerable<FullName>> GetFilesAsync()
     {
         var clipboard = UiAccessor.GetTopLevel()?.Clipboard;
 
@@ -48,11 +46,50 @@ public class SystemClipboardService : ISystemClipboardService
         if (obj is IEnumerable<IStorageItem> storageItems)
         {
             return storageItems
-                    .Select(i => _timelessContentProvider.GetFullNameByNativePath(new NativePath(WebUtility.UrlDecode(i.Path.AbsolutePath))))
-                    .Where(i => i != null)
-                    .OfType<FullName>();
+                .Select(i => _timelessContentProvider.GetFullNameByNativePath(new NativePath(WebUtility.UrlDecode(i.Path.AbsolutePath))))
+                .Where(i => i != null)
+                .OfType<FullName>();
+        }
+
+        return Enumerable.Empty<FullName>();
+    }
+
+    public async Task SetFilesAsync(IEnumerable<FullName> files)
+    {
+        var clipboard = UiAccessor.GetTopLevel()?.Clipboard;
+
+        if (clipboard is null)
+        {
+            return;
+        }
+
+        var topLevel = UiAccessor.GetTopLevel();
+
+        if (topLevel is null)
+        {
+            //TODO: 
+            return;
+        }
+
+        var fileNativePaths = files
+            .Select(i => _timelessContentProvider.GetNativePathByFullName(i))
+            .Where(i => i != null)
+            .OfType<NativePath>();
+
+        var targetFiles = new List<IStorageFile>();
+        foreach (var fileNativePath in fileNativePaths)
+        {
+            var file = await UiAccessor.InvokeOnUIThread(async () => await topLevel.StorageProvider.TryGetFileFromPathAsync(fileNativePath.Path));
+            //TODO: Handle null
+            if (file != null)
+            {
+                targetFiles.Add(file);
+            }
         }
         
-        return Enumerable.Empty<FullName>();
+        DataObject dataObject = new();
+        dataObject.Set(ClipboardContentFiles, targetFiles);
+
+        await clipboard.SetDataObjectAsync(dataObject);
     }
 }

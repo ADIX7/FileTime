@@ -18,6 +18,7 @@ using FileTime.Core.Timeline;
 using InitableService;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using CreateElementCommand = FileTime.App.Core.UserCommand.CreateElementCommand;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
@@ -70,9 +71,28 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             new TypeUserCommandHandler<MarkCommand>(MarkItemAsync),
             new TypeUserCommandHandler<PasteCommand>(PasteAsync),
             new TypeUserCommandHandler<CreateContainer>(CreateContainerAsync),
-            new TypeUserCommandHandler<CreateElement>(CreateElementAsync),
+            new TypeUserCommandHandler<CreateElementCommand>(CreateElementAsync),
             new TypeUserCommandHandler<PasteFilesFromClipboardCommand>(PasteFilesFromClipboardAsync),
+            new TypeUserCommandHandler<CopyFilesToClipboardCommand>(CopyFilesToClipboardAsync),
         });
+    }
+
+    private async Task CopyFilesToClipboardAsync()
+    {
+        var list = new List<FullName>();
+        if ((_markedItems?.Collection?.Count ?? 0) > 0)
+        {
+            list.AddRange(_markedItems!.Collection!);
+        }
+        else if(_currentSelectedItem?.BaseItem?.FullName is { } selectedItemName)
+        {
+            list.Add(selectedItemName);
+        }
+
+        if (list.Count > 0)
+        {
+            await _systemClipboardService.SetFilesAsync(list);
+        }
     }
 
     private async Task PasteFilesFromClipboardAsync(PasteFilesFromClipboardCommand command) =>
@@ -88,7 +108,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     {
         if (_currentLocation?.FullName is not { }) return;
 
-        var files = (await _systemClipboardService.GetFiles()).ToList();
+        var files = (await _systemClipboardService.GetFilesAsync()).ToList();
         var copyCommandFactory = _serviceProvider.GetRequiredService<FileTime.Core.Command.Copy.CopyCommandFactory>();
         var copyCommand = copyCommandFactory.GenerateCommand(files, mode, _currentLocation.FullName);
 
@@ -187,7 +207,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
         var command = _serviceProvider
             .GetInitableResolver(_currentLocation.FullName, newContainerName)
-            .GetRequiredService<CreateElementCommand>();
+            .GetRequiredService<FileTime.Core.Command.CreateElement.CreateElementCommand>();
         await AddCommandAsync(command);
     }
 
