@@ -22,10 +22,11 @@ public class SearchContentProvider : ContentProviderBase, ISearchContentProvider
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default
     ) =>
-        Task.FromResult((IItem)_searchManager.SearchTasks
+        Task.FromResult((IItem) _searchManager.SearchTasks
             .First(searchTask => searchTask.SearchContainer.NativePath == nativePath).SearchContainer);
 
     public override NativePath GetNativePath(FullName fullName) => new(fullName.Path);
+    public override FullName GetFullName(NativePath nativePath) => new(nativePath.Path);
 
     public override Task<byte[]?> GetContentAsync(
         IElement element,

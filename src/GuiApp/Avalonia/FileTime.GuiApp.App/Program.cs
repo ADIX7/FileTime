@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using Serilog;
@@ -23,7 +26,7 @@ public static class Program
         InitRelease();
 #endif
         InitLogging();
-        
+
         Log.Logger.Information("Early app starting...");
     }
 
@@ -71,7 +74,7 @@ public static class Program
         var logFolder = Path.Combine(AppDataRoot, "logs", "bootstrap");
 
         if (!Directory.Exists(logFolder)) Directory.CreateDirectory(logFolder);
-        
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
             .Enrich.FromLogContext()
@@ -89,6 +92,9 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+        AppDomain.CurrentDomain.UnhandledException -= OnAppDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException -= OnTaskSchedulerUnobservedTaskException;
         try
         {
             BuildAvaloniaApp()
@@ -110,4 +116,22 @@ public static class Program
             .UsePlatformDetect()
             .UseReactiveUI()
             .LogToTrace();
+
+    private static void OnTaskSchedulerUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e) 
+        => HandleUnhandledException(sender, e.Exception);
+
+    private static void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs e) 
+        => HandleUnhandledException(sender, e.ExceptionObject as Exception);
+
+    private static void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e) 
+        => HandleUnhandledException(sender, e.Exception);
+
+    private static void HandleUnhandledException(object? sender, Exception? ex, [CallerMemberName] string caller = "")
+        => Log.Fatal(
+            ex,
+            "An unhandled exception come from '{Caller}' exception handler from an object of type '{Type}' and value '{Value}': {Exception}",
+            caller,
+            sender?.GetType().ToString() ?? "null",
+            sender?.ToString() ?? "null",
+            ex);
 }

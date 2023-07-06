@@ -1,35 +1,58 @@
-using Avalonia.Controls;
+using System.Net;
+using System.Text.Encodings.Web;
+using Avalonia.Platform.Storage;
 using FileTime.App.Core.Services;
+using FileTime.Core.Models;
+using FileTime.Core.Timeline;
 
 namespace FileTime.GuiApp.Services;
 
 public class SystemClipboardService : ISystemClipboardService
 {
-    internal TopLevel? TopLevel { get; set; }
+    private const string ClipboardContentFiles = "Files";
+    
+    private readonly ITimelessContentProvider _timelessContentProvider;
+    public IUiAccessor UiAccessor { get; internal set; }
+
+    public SystemClipboardService(ITimelessContentProvider timelessContentProvider)
+    {
+        _timelessContentProvider = timelessContentProvider;
+    }
+
     public async Task CopyToClipboardAsync(string text)
     {
-        var clipboard = TopLevel?.Clipboard;
+        var clipboard = UiAccessor.GetTopLevel()?.Clipboard;
 
-        if (clipboard is null) { return; }
+        if (clipboard is null)
+        {
+            return;
+        }
 
         await clipboard.SetTextAsync(text);
     }
-    public async Task GetFiles()
+
+    public async Task<IEnumerable<FullName>> GetFiles()
     {
-        var clipboard = TopLevel?.Clipboard;
+        var clipboard = UiAccessor.GetTopLevel()?.Clipboard;
 
-        if (clipboard is null) { return; }
+        if (clipboard is null)
+        {
+            return Enumerable.Empty<FullName>();
+        }
 
-        await clipboard.ClearAsync();
+        var formats = await UiAccessor.InvokeOnUIThread(async () => await clipboard.GetFormatsAsync());
 
-        var formats = await clipboard.GetFormatsAsync();
+        if (!formats.Contains(ClipboardContentFiles)) return Enumerable.Empty<FullName>();
+        var obj = await clipboard.GetDataAsync(ClipboardContentFiles);
+
+        if (obj is IEnumerable<IStorageItem> storageItems)
+        {
+            return storageItems
+                    .Select(i => _timelessContentProvider.GetFullNameByNativePath(new NativePath(WebUtility.UrlDecode(i.Path.AbsolutePath))))
+                    .Where(i => i != null)
+                    .OfType<FullName>();
+        }
         
-        if (!formats.Contains("asd")) return;
-        var obj = (await clipboard.GetDataAsync("PNG"));
-        /*var ms = new MemoryStream();
-        Serializer.Serialize(ms, obj);
-        byte[] data = ms.ToArray().Skip(4).ToArray();
-        ms = new MemoryStream(data);*/
-        ;
+        return Enumerable.Empty<FullName>();
     }
 }

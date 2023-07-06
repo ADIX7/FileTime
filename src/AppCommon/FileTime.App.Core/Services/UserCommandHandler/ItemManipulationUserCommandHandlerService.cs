@@ -64,23 +64,38 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
         AddCommandHandlers(new IUserCommandHandler[]
         {
-            new TypeUserCommandHandler<CopyCommand>(Copy),
-            new TypeUserCommandHandler<DeleteCommand>(Delete),
-            new TypeUserCommandHandler<RenameCommand>(Rename),
-            new TypeUserCommandHandler<MarkCommand>(MarkItem),
-            new TypeUserCommandHandler<PasteCommand>(Paste),
-            new TypeUserCommandHandler<CreateContainer>(CreateContainer),
-            new TypeUserCommandHandler<CreateElement>(CreateElement),
-            new TypeUserCommandHandler<PasteFilesFromClipboardCommand>(PasteFilesFromClipboard),
+            new TypeUserCommandHandler<CopyCommand>(CopyAsync),
+            new TypeUserCommandHandler<DeleteCommand>(DeleteAsync),
+            new TypeUserCommandHandler<RenameCommand>(RenameAsync),
+            new TypeUserCommandHandler<MarkCommand>(MarkItemAsync),
+            new TypeUserCommandHandler<PasteCommand>(PasteAsync),
+            new TypeUserCommandHandler<CreateContainer>(CreateContainerAsync),
+            new TypeUserCommandHandler<CreateElement>(CreateElementAsync),
+            new TypeUserCommandHandler<PasteFilesFromClipboardCommand>(PasteFilesFromClipboardAsync),
         });
     }
 
-    private async Task PasteFilesFromClipboard(PasteFilesFromClipboardCommand arg)
+    private async Task PasteFilesFromClipboardAsync(PasteFilesFromClipboardCommand command) =>
+        await (command.PasteMode switch
+        {
+            PasteMode.Merge => PasteFilesFromClipboardAsync(TransportMode.Merge),
+            PasteMode.Overwrite => PasteFilesFromClipboardAsync(TransportMode.Overwrite),
+            PasteMode.Skip => PasteFilesFromClipboardAsync(TransportMode.Skip),
+            _ => throw new ArgumentException($"Unknown {nameof(PasteMode)} value: {command.PasteMode}")
+        });
+
+    private async Task PasteFilesFromClipboardAsync(TransportMode mode)
     {
-        await _systemClipboardService.GetFiles();
+        if (_currentLocation?.FullName is not { }) return;
+
+        var files = (await _systemClipboardService.GetFiles()).ToList();
+        var copyCommandFactory = _serviceProvider.GetRequiredService<FileTime.Core.Command.Copy.CopyCommandFactory>();
+        var copyCommand = copyCommandFactory.GenerateCommand(files, mode, _currentLocation.FullName);
+
+        await AddCommandAsync(copyCommand);
     }
 
-    private async Task MarkItem()
+    private async Task MarkItemAsync()
     {
         if (_selectedTab == null || _currentSelectedItem?.BaseItem?.FullName == null) return;
 
@@ -88,7 +103,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         await _userCommandHandlerService.HandleCommandAsync(MoveCursorDownCommand.Instance);
     }
 
-    private Task Copy()
+    private Task CopyAsync()
     {
         _clipboardService.Clear();
         _clipboardService.SetCommand<FileTime.Core.Command.Copy.CopyCommandFactory>();
@@ -114,18 +129,16 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         return Task.CompletedTask;
     }
 
-    private async Task Paste(PasteCommand command)
-    {
+    private async Task PasteAsync(PasteCommand command) =>
         await (command.PasteMode switch
         {
-            PasteMode.Merge => Paste(TransportMode.Merge),
-            PasteMode.Overwrite => Paste(TransportMode.Overwrite),
-            PasteMode.Skip => Paste(TransportMode.Skip),
+            PasteMode.Merge => PasteAsync(TransportMode.Merge),
+            PasteMode.Overwrite => PasteAsync(TransportMode.Overwrite),
+            PasteMode.Skip => PasteAsync(TransportMode.Skip),
             _ => throw new ArgumentException($"Unknown {nameof(PasteMode)} value: {command.PasteMode}")
         });
-    }
 
-    private async Task Paste(TransportMode mode)
+    private async Task PasteAsync(TransportMode mode)
     {
         if (_clipboardService.CommandFactoryType is null)
         {
@@ -141,10 +154,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
         if (command is IRequireInputCommand requireInput) await requireInput.ReadInputs();
 
-        await AddCommand(command);
+        await AddCommandAsync(command);
     }
 
-    private async Task CreateContainer()
+    private async Task CreateContainerAsync()
     {
         var containerNameInput = new TextInputElement("Container name");
 
@@ -158,10 +171,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         var command = _serviceProvider
             .GetInitableResolver(_currentLocation.FullName, newContainerName)
             .GetRequiredService<CreateContainerCommand>();
-        await AddCommand(command);
+        await AddCommandAsync(command);
     }
 
-    private async Task CreateElement()
+    private async Task CreateElementAsync()
     {
         var containerNameInput = new TextInputElement("Element name");
 
@@ -175,10 +188,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         var command = _serviceProvider
             .GetInitableResolver(_currentLocation.FullName, newContainerName)
             .GetRequiredService<CreateElementCommand>();
-        await AddCommand(command);
+        await AddCommandAsync(command);
     }
 
-    private async Task Rename(RenameCommand command)
+    private async Task RenameAsync(RenameCommand command)
     {
         List<ItemToMove> itemsToMove = new();
         if ((_markedItems?.Collection?.Count ?? 0) > 0)
@@ -331,7 +344,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             //TODO: check if the name changed
             var moveCommandFactory = _serviceProvider.GetRequiredService<MoveCommandFactory>();
             var moveCommand = moveCommandFactory.GenerateCommand(itemsToMove);
-            await AddCommand(moveCommand);
+            await AddCommandAsync(moveCommand);
         }
 
         static IEnumerable<ItemNamePart> GetItemNameParts(Regex templateRegex, string originalName, string newNameSchema)
@@ -368,7 +381,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         }
     }
 
-    private async Task Delete(DeleteCommand command)
+    private async Task DeleteAsync(DeleteCommand command)
     {
         IList<FullName>? itemsToDelete = null;
         var shouldDelete = false;
@@ -419,12 +432,12 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         var deleteCommand = _serviceProvider.GetRequiredService<FileTime.Core.Command.Delete.DeleteCommand>();
         deleteCommand.HardDelete = command.IsHardDelete;
         deleteCommand.ItemsToDelete.AddRange(itemsToDelete!);
-        await AddCommand(deleteCommand);
+        await AddCommandAsync(deleteCommand);
 
         _selectedTab?.ClearMarkedItems();
     }
 
-    private async Task AddCommand(ICommand command)
+    private async Task AddCommandAsync(ICommand command)
     {
         await _commandScheduler.AddCommand(command);
     }

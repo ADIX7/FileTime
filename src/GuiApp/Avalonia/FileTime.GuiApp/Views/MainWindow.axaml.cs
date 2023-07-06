@@ -1,19 +1,21 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using DynamicData;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Models;
+using FileTime.GuiApp.Services;
 using FileTime.GuiApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.GuiApp.Views;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IUiAccessor
 {
     private readonly ILogger<MainWindow>? _logger;
     private readonly IModalService _modalService;
@@ -39,7 +41,7 @@ public partial class MainWindow : Window
         _logger?.LogInformation($"Starting {nameof(MainWindow)} initialization...");
         _modalService = DI.ServiceProvider.GetRequiredService<IModalService>();
         _modalService.OpenModals.ToCollection().Subscribe(m => _openModals = m);
-        DI.ServiceProvider.GetRequiredService<Services.SystemClipboardService>().TopLevel = GetTopLevel(this);
+        DI.ServiceProvider.GetRequiredService<Services.SystemClipboardService>().UiAccessor = this;
         InitializeComponent();
 
         ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
@@ -156,4 +158,10 @@ public partial class MainWindow : Window
             _inputViewModel = null;
         }
     }
+
+    public TopLevel? GetTopLevel() => GetTopLevel(this);
+
+    public async Task InvokeOnUIThread(Func<Task> func) => await Dispatcher.UIThread.InvokeAsync(func);
+
+    public async Task<T> InvokeOnUIThread<T>(Func<Task<T>> func) => await Dispatcher.UIThread.InvokeAsync(func);
 }

@@ -23,6 +23,7 @@ public interface IContentProvider : IContainer, IOnContainerEnter
         ItemInitializationSettings itemInitializationSettings = default);
 
     NativePath GetNativePath(FullName fullName);
+    FullName GetFullName(NativePath nativePath);
 
     Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default);
     bool CanHandlePath(NativePath path);

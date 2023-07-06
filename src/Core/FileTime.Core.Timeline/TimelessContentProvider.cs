@@ -44,4 +44,16 @@ public class TimelessContentProvider : ITimelessContentProvider
 
         return null;
     }
+
+    public FullName? GetFullNameByNativePath(NativePath nativePath)
+    {
+        foreach (var contentProvider in _contentProviderRegistry.ContentProviders)
+        {
+            if(!contentProvider.CanHandlePath(nativePath)) continue;
+
+            return contentProvider.GetFullName(nativePath);
+        }
+
+        return null;
+    }
 }

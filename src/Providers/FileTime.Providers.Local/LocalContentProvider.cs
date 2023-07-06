@@ -338,7 +338,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     private FullName GetFullName(DirectoryInfo directoryInfo) => GetFullName(directoryInfo.FullName);
 
     private FullName GetFullName(FileInfo fileInfo) => GetFullName(fileInfo.FullName);
-    private FullName GetFullName(NativePath nativePath) => GetFullName(nativePath.Path);
+    public override FullName GetFullName(NativePath nativePath) => GetFullName(nativePath.Path);
 
     private FullName GetFullName(string nativePath) =>
         FullName.CreateSafe((Name + Constants.SeparatorChar +

@@ -1,7 +1,9 @@
+using FileTime.Core.Models;
+
 namespace FileTime.App.Core.Services;
 
 public interface ISystemClipboardService
 {
     Task CopyToClipboardAsync(string text);
-    Task GetFiles();
+    Task<IEnumerable<FullName>> GetFiles();
 }

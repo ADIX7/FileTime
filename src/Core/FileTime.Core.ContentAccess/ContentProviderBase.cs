@@ -88,6 +88,7 @@ public abstract class ContentProviderBase : IContentProvider
         ItemInitializationSettings itemInitializationSettings = default);
 
     public abstract NativePath GetNativePath(FullName fullName);
+    public abstract FullName GetFullName(NativePath nativePath);
 
     public abstract Task<byte[]?> GetContentAsync(IElement element,
         int? maxLength = null,

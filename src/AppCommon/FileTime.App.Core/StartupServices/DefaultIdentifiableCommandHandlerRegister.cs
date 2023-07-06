@@ -41,6 +41,8 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(PasteCommand.Overwrite);
         AddUserCommand(PasteCommand.Skip);
         AddUserCommand(PasteFilesFromClipboardCommand.Merge);
+        AddUserCommand(PasteFilesFromClipboardCommand.Overwrite);
+        AddUserCommand(PasteFilesFromClipboardCommand.Skip);
         AddUserCommand(PauseCommandSchedulerCommand.Instance);
         AddUserCommand(RefreshCommand.Instance);
         AddUserCommand(RenameCommand.Instance);
