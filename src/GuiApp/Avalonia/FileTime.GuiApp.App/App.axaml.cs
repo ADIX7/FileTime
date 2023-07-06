@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FileTime.GuiApp.App;
 
-public partial class App : Application
+public class App : Application
 {
     static App()
     {
@@ -28,16 +28,12 @@ public partial class App : Application
             .RegisterLogging()
             .RegisterServices()
             .AddViewModels()
-            .BuildServiceProvider()
-            .InitSerilog();
+            .BuildServiceProvider();
 
         var logger = DI.ServiceProvider.GetRequiredService<ILogger<App>>();
         logger.LogInformation("App initialization completed");
     }
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
     {

@@ -84,9 +84,27 @@ public static class Startup
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)
     {
-        return serviceCollection.AddLogging(loggingBuilder =>
+        serviceCollection.AddSerilog(
+            (serviceProvider, loggerConfiguration) =>
+            {
+                loggerConfiguration
+                    .MinimumLevel.Verbose()
+                    .ReadFrom.Configuration(serviceProvider.GetRequiredService<IConfiguration>())
+                    .Enrich.FromLogContext()
+                    .WriteTo.File(
+                        Path.Combine(Program.AppDataRoot, "logs", "appLog.log"),
+                        fileSizeLimitBytes: 10 * 1024 * 1024,
+                        rollOnFileSizeLimit: true,
+                        rollingInterval: RollingInterval.Day)
+                    .WriteTo.Sink(serviceProvider.GetRequiredService<ToastMessageSink>());
+            }
+        );
+        
+        serviceCollection.AddLogging(loggingBuilder =>
             loggingBuilder.AddSerilog(dispose: true)
         );
+
+        return serviceCollection;
     }
 
     internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
@@ -95,28 +113,5 @@ public static class Startup
             .Configure<ProgramsConfiguration>(configuration.GetSection(SectionNames.ProgramsSectionName))
             .Configure<KeyBindingConfiguration>(configuration.GetSection(SectionNames.KeybindingSectionName))
             .AddSingleton<IConfiguration>(configuration);
-    }
-
-    internal static IServiceProvider InitSerilog(this IServiceProvider serviceProvider)
-    {
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(serviceProvider.GetService<IConfiguration>())
-            .Enrich.FromLogContext()
-            .WriteTo.File(
-                Path.Combine(Program.AppDataRoot, "logs", "appLog.log"),
-                fileSizeLimitBytes: 10 * 1024 * 1024,
-                rollOnFileSizeLimit: true,
-                rollingInterval: RollingInterval.Day)
-            .WriteTo.MessageBoxSink(serviceProvider)
-            .CreateLogger();
-
-        return serviceProvider;
-    }
-
-    private static LoggerConfiguration MessageBoxSink(
-        this LoggerSinkConfiguration loggerConfiguration,
-        IServiceProvider serviceProvider)
-    {
-        return loggerConfiguration.Sink(serviceProvider.GetRequiredService<ToastMessageSink>());
     }
 }
