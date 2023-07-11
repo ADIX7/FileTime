@@ -67,6 +67,9 @@ public class MoveCommand : CommandBase, IExecutableCommand
             var sourceItem = await _timelessContentProvider.GetItemByFullNameAsync(itemToMove.Source, PointInTime.Present);
 
             var itemMover = GetOrAddItemMover(sourceItem.Provider);
+            // Note: this is currently used for rename, so Target will be always the source container too
+            // If this will be used for move between different containers, ContentProvider should be checked
+            // And it should fall back to a copy+delete if the content providers are different
             await itemMover.RenameAsync(sourceItem.Provider, itemToMove.Source, itemToMove.Target);
 
             if (itemToMove.Source.GetParent() is { } parent)

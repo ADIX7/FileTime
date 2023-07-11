@@ -7,13 +7,20 @@ namespace FileTime.Core.Command.CreateElement;
 
 public class CreateElementCommand : CreateItemBase
 {
-    public CreateElementCommand(ITimelessContentProvider timelessContentProvider, IContentAccessorFactory contentAccessorFactory)
+    private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
+
+    public CreateElementCommand(
+        ITimelessContentProvider timelessContentProvider, 
+        IContentAccessorFactory contentAccessorFactory,
+        ICommandSchedulerNotifier commandSchedulerNotifier)
         : base(timelessContentProvider, contentAccessorFactory)
     {
+        _commandSchedulerNotifier = commandSchedulerNotifier;
     }
 
     protected override async Task CreateItem(IItemCreator itemCreator, IItem resolvedParent)
     {
         await itemCreator.CreateElementAsync(resolvedParent.Provider, Parent!.GetChild(NewItemName!));
+        await _commandSchedulerNotifier.RefreshContainer(Parent);
     }
 }

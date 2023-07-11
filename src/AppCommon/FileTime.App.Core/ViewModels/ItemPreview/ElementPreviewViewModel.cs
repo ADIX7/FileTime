@@ -10,11 +10,11 @@ namespace FileTime.App.Core.ViewModels.ItemPreview;
 public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInitable<IElement>
 {
     private const int MaxTextPreviewSize = 1024 * 1024;
-    
+
     public ItemPreviewMode Mode { get; private set; }
 
     [Property] private string? _textContent;
-    
+
     public async Task InitAsync(IElement element)
     {
         try
@@ -23,9 +23,9 @@ public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInit
 
             TextContent = content is null
                 ? "Could not read any data from file " + element.Name
-                : Encoding.UTF8.GetString(content);
+                : GetNormalizedText(Encoding.UTF8.GetString(content));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             TextContent = $"Error while getting content of {element.FullName}. " + ex.ToString();
         }
@@ -35,5 +35,15 @@ public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInit
             0 => ItemPreviewMode.Empty,
             _ => ItemPreviewMode.Text
         };
+
+        string GetNormalizedText(string text)
+        {
+            foreach (var c in text)
+            {
+                if (c < 32 && c != 9 && c != 10 && c != 13) return $"Binary data, contains '{(int) c}'";
+            }
+
+            return text;
+        }
     }
 }

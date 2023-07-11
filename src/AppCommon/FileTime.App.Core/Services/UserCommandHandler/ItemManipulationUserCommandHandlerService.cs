@@ -434,6 +434,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
                 shouldDelete = true;
             }
         }
+        else
+        {
+            shouldDelete = true;
+        }
 
         if (itemsToDelete.Count == 0) return;
 

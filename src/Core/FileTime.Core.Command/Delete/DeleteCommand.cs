@@ -8,16 +8,19 @@ public class DeleteCommand : CommandBase, IExecutableCommand
 {
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
     public bool HardDelete { get; set; }
     public List<FullName> ItemsToDelete { get; } = new();
 
     public DeleteCommand(
         IContentAccessorFactory contentAccessorFactory,
-        ITimelessContentProvider timelessContentProvider)
+        ITimelessContentProvider timelessContentProvider,
+        ICommandSchedulerNotifier commandSchedulerNotifier)
         : base("Delete")
     {
         _contentAccessorFactory = contentAccessorFactory;
         _timelessContentProvider = timelessContentProvider;
+        _commandSchedulerNotifier = commandSchedulerNotifier;
     }
 
     public override Task<CanCommandRun> CanRun(PointInTime currentTime)
@@ -74,6 +77,11 @@ public class DeleteCommand : CommandBase, IExecutableCommand
                     itemDeleters,
                     deleteStrategy
                 );
+
+                if (container.FullName is not null)
+                {
+                    await _commandSchedulerNotifier.RefreshContainer(container.FullName);
+                }
             }
 
             await itemDeleter.DeleteAsync(itemToDelete.Provider, itemToDelete.FullName!);
