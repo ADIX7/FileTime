@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     Background="Transparent"
     Closed="OnWindowClosed"
     ExtendClientAreaToDecorationsHint="True"
@@ -23,6 +23,8 @@
     xmlns:config="using:FileTime.GuiApp.Configuration"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+    xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
     xmlns:interactions="using:FileTime.Core.Interactions"
     xmlns:local="using:FileTime.GuiApp.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -258,46 +260,84 @@
                     Grid.Row="1"
                     RowDefinitions="Auto,40,*,Auto">
 
-                    <Grid>
-                        <ItemsControl ItemsSource="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        Background="{DynamicResource ContainerBackgroundColor}"
-                                        CornerRadius="10"
-                                        Margin="0,0,10,0"
-                                        MaxHeight="200"
-                                        Padding="5">
-                                        <ScrollViewer>
-                                            <ItemsControl ItemsSource="{Binding Commands.Collection}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border BorderThickness="1" Classes.SelectedTimelineCommand="{Binding IsSelected}">
-                                                            <StackPanel>
-                                                                <TextBlock Text="{Binding DisplayLabel^}" />
-                                                                <ProgressBar
-                                                                    Margin="0,5,0,0"
-                                                                    Maximum="100"
-                                                                    Value="{Binding CurrentProgress^}" />
-                                                                <ProgressBar
-                                                                    Margin="0,5,0,0"
-                                                                    Maximum="100"
-                                                                    Value="{Binding TotalProgress^}" />
-                                                            </StackPanel>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                    <Grid x:Name="CommandGroupsContainer">
+                        <Grid.Transitions>
+                            <Transitions>
+                                <DoubleTransition Duration="0:0:.2" Property="Height" />
+                            </Transitions>
+                        </Grid.Transitions>
+                        <i:Interaction.Behaviors>
+                            <ia:DataTriggerBehavior
+                                Binding="{Binding #CommandGroups.ItemCount}"
+                                ComparisonCondition="GreaterThan"
+                                Value="0">
+                                <ia:ChangePropertyAction
+                                    PropertyName="Height"
+                                    TargetObject="CommandGroupsContainer"
+                                    Value="180" />
+                            </ia:DataTriggerBehavior>
+                            <ia:DataTriggerBehavior
+                                Binding="{Binding #CommandGroups.ItemCount}"
+                                ComparisonCondition="LessThanOrEqual"
+                                Value="0">
+                                <ia:ChangePropertyAction
+                                    PropertyName="Height"
+                                    TargetObject="CommandGroupsContainer"
+                                    Value="0" />
+                            </ia:DataTriggerBehavior>
+                        </i:Interaction.Behaviors>
+                        <Grid ColumnDefinitions="Auto,10">
+                            <ItemsControl
+                                ItemsSource="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}"
+                                VerticalAlignment="Top"
+                                x:Name="CommandGroups">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Background="{DynamicResource ContainerBackgroundColor}"
+                                            CornerRadius="10"
+                                            Height="50"
+                                            Margin="0,0,10,0"
+                                            Padding="5">
+                                            <ScrollViewer>
+                                                <ItemsControl ItemsSource="{Binding Commands.Collection}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border BorderThickness="1" Classes.SelectedTimelineCommand="{Binding IsSelected}">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding DisplayLabel^}" />
+                                                                    <ProgressBar
+                                                                        Margin="0,5,0,0"
+                                                                        Maximum="100"
+                                                                        Value="{Binding CurrentProgress^}" />
+                                                                    <ProgressBar
+                                                                        Margin="0,5,0,0"
+                                                                        Maximum="100"
+                                                                        Value="{Binding TotalProgress^}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Rectangle
+                                Fill="{DynamicResource ContentSeparatorBrush}"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Margin="0,10,0,10"
+                                VerticalAlignment="Stretch"
+                                Width="1" />
+                        </Grid>
                     </Grid>
 
                     <ItemsControl Grid.Row="1" ItemsSource="{Binding AppState.Tabs}">

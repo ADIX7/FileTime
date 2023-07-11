@@ -115,18 +115,28 @@ public class CommandScheduler : ICommandScheduler
 
     private async void ExecutorOnCommandFinished(object? sender, ICommand command)
     {
-        var firstCommandBlock = _commandsToRun
-            .Items
-            .FirstOrDefault();
-        var state = firstCommandBlock
-            ?.CommandsCollection
-            .Collection
-            ?.FirstOrDefault(c => c.Command == command);
+        await RunWithLockAsync(async () =>
+        {
+            var firstCommandBlock = _commandsToRun
+                .Items
+                .FirstOrDefault();
+            var state = firstCommandBlock
+                ?.CommandsCollection
+                .Collection
+                ?.FirstOrDefault(c => c.Command == command);
 
-        if (state is null) return;
+            if (state is null) return;
 
-        state.ExecutionState = ExecutionState.Finished;
-        if (firstCommandBlock is not null) await firstCommandBlock.RemoveCommand(command);
+            state.ExecutionState = ExecutionState.Finished;
+            if (firstCommandBlock is not null)
+            {
+                await firstCommandBlock.RemoveCommand(command);
+                if (firstCommandBlock.CommandCount == 0)
+                {
+                    _commandsToRun.Remove(firstCommandBlock);
+                }
+            }
+        });
     }
 
     private async Task RefreshCommands()

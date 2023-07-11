@@ -16,6 +16,7 @@ public class ParallelCommands : IDisposable
     public IObservable<IChangeSet<CommandTimeState>> Commands { get; }
 
     public BindedCollection<CommandTimeState> CommandsCollection { get; }
+    public int CommandCount => _commands.Count;
 
     public PointInTime? Result { get; private set; }
 
