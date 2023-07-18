@@ -5,8 +5,8 @@
     FontFamily="{Binding MainFont^, Mode=OneWay}"
     Icon="/Assets/filetime.ico"
     KeyDown="OnKeyDown"
-    MinHeight="600"
-    MinWidth="800"
+    MinHeight="800"
+    MinWidth="1000"
     Opened="OnWindowOpened"
     RequestedThemeVariant="Dark"
     Title="FileTime"
@@ -44,7 +44,7 @@
     </Window.Styles>
 
     <Grid Background="{DynamicResource AppBackgroundBrush}">
-        <Grid IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}, FallbackValue=False}" x:DataType="vm:MainWindowViewModel">
+        <Grid IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}, FallbackValue=False}" x:DataType="vm:IMainWindowViewModel">
 
             <Grid ColumnDefinitions="250,*" RowDefinitions="Auto,*">
 

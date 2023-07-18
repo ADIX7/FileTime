@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core\FileTime.App.Core.csproj" />
+    <ProjectReference Include="..\FileTime.GuiApp.Abstractions\FileTime.GuiApp.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -15,7 +15,7 @@ namespace FileTime.GuiApp.App;
 
 public class App : Application
 {
-    static App()
+    private static void InitializeApp()
     {
         var configuration = Startup.CreateConfiguration();
         DI.ServiceProvider = DependencyInjection
@@ -33,13 +33,14 @@ public class App : Application
         var logger = DI.ServiceProvider.GetRequiredService<ILogger<App>>();
         logger.LogInformation("App initialization completed");
     }
+    
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            desktop.MainWindow = new MainWindow(InitializeApp)
             {
                 DataContext = new MainWindowLoadingViewModel(),
             };

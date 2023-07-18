@@ -17,8 +17,9 @@ namespace FileTime.GuiApp.Views;
 
 public partial class MainWindow : Window, IUiAccessor
 {
-    private readonly ILogger<MainWindow>? _logger;
-    private readonly IModalService _modalService;
+    private readonly Action? _initializer;
+    private ILogger<MainWindow>? _logger;
+    private IModalService? _modalService;
     private IReadOnlyCollection<IModalViewModel>? _openModals;
     private ReadInputsViewModel? _inputViewModel;
     private IDisposable? _inputViewModelSubscription;
@@ -37,29 +38,40 @@ public partial class MainWindow : Window, IUiAccessor
 
     public MainWindow()
     {
-        _logger = DI.ServiceProvider.GetService<ILogger<MainWindow>>();
-        _logger?.LogInformation($"Starting {nameof(MainWindow)} initialization...");
-        _modalService = DI.ServiceProvider.GetRequiredService<IModalService>();
-        _modalService.OpenModals.ToCollection().Subscribe(m => _openModals = m);
-        DI.ServiceProvider.GetRequiredService<Services.SystemClipboardService>().UiAccessor = this;
         InitializeComponent();
-
-        ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
-        DataContextChanged += (sender, args) =>
+        if (Design.IsDesignMode)
         {
-            if (DataContext is not MainWindowViewModel mainWindowViewModel) return;
+            DataContext = new MainWindowDesignViewModel();
+        }
+    }
 
-            _inputViewModelSubscription?.Dispose();
-            _inputViewModelSubscription = mainWindowViewModel.DialogService.ReadInput.Subscribe(
-                inputViewModel => _inputViewModel = inputViewModel
-            );
-        };
+    public MainWindow(Action initializer) : this()
+    {
+        _initializer = initializer;
     }
 
     private void OnWindowOpened(object sender, EventArgs e)
     {
-        if (DataContext is not MainWindowViewModel)
+        if (DataContext is not MainWindowViewModel && !Design.IsDesignMode)
         {
+            _initializer?.Invoke();
+
+            _logger = DI.ServiceProvider.GetService<ILogger<MainWindow>>();
+            _modalService = DI.ServiceProvider.GetRequiredService<IModalService>();
+            _modalService.OpenModals.ToCollection().Subscribe(m => _openModals = m);
+            DI.ServiceProvider.GetRequiredService<Services.SystemClipboardService>().UiAccessor = this;
+
+            ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
+            DataContextChanged += (_, _) =>
+            {
+                if (DataContext is not MainWindowViewModel mainWindowViewModel) return;
+
+                _inputViewModelSubscription?.Dispose();
+                _inputViewModelSubscription = mainWindowViewModel.DialogService.ReadInput.Subscribe(
+                    inputViewModel => _inputViewModel = inputViewModel
+                );
+            };
+            
             _logger?.LogInformation(
                 $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
             ViewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();

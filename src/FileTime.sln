@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.FuzzyPanel", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.FuzzyPanel.Abstraction", "AppCommon\FileTime.App.FuzzyPanel.Abstraction\FileTime.App.FuzzyPanel.Abstraction.csproj", "{7690E4EA-DA2A-45B4-AD83-80EE07A05169}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.GuiApp.DesignPreview", "GuiApp\Avalonia\FileTime.GuiApp.DesignPreview\FileTime.GuiApp.DesignPreview.csproj", "{D0EC224E-F043-4657-BD6A-1ADE52DFF8B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -205,6 +207,10 @@ Global
 		{7690E4EA-DA2A-45B4-AD83-80EE07A05169}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7690E4EA-DA2A-45B4-AD83-80EE07A05169}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7690E4EA-DA2A-45B4-AD83-80EE07A05169}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0EC224E-F043-4657-BD6A-1ADE52DFF8B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0EC224E-F043-4657-BD6A-1ADE52DFF8B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0EC224E-F043-4657-BD6A-1ADE52DFF8B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0EC224E-F043-4657-BD6A-1ADE52DFF8B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -241,6 +247,7 @@ Global
 		{5B3D2008-371F-485C-92C0-127F6CD64F64} = {A5291117-3001-498B-AC8B-E14F71F72570}
 		{7FDCE43D-D084-4539-B797-8A72D4DD610D} = {A5291117-3001-498B-AC8B-E14F71F72570}
 		{7690E4EA-DA2A-45B4-AD83-80EE07A05169} = {A5291117-3001-498B-AC8B-E14F71F72570}
+		{D0EC224E-F043-4657-BD6A-1ADE52DFF8B5} = {01F231DE-4A65-435F-B4BB-77EE5221890C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

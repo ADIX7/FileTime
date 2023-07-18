@@ -28,7 +28,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IFontService), "_fontService")]
 [Inject(typeof(IFrequencyNavigationService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(ICommandPaletteService), PropertyAccessModifier = AccessModifier.Public)]
-public partial class MainWindowViewModel : IMainWindowViewModelBase
+public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
     public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
