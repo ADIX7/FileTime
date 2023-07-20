@@ -10,7 +10,7 @@ namespace FileTime.GuiApp.ViewModels;
 public class MainWindowDesignViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
-    public IObservable<string?> MainFont { get; } = new BehaviorSubject<string?>("");
+    public IObservable<string?> MainFont { get; } = new BehaviorSubject<string?>(null);
     public string Title => "FileTime Design Preview";
     public IGuiAppState AppState { get; }
     public IItemPreviewService ItemPreviewService { get; }

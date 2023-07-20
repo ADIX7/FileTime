@@ -18,18 +18,6 @@ public static class Program
     public static string AppDataRoot { get; private set; }
     public static string EnvironmentName { get; private set; }
 
-    static Program()
-    {
-#if DEBUG
-        InitDevelopment();
-#else
-        InitRelease();
-#endif
-        InitLogging();
-
-        Log.Logger.Information("Early app starting...");
-    }
-
     private static void InitDevelopment()
     {
         EnvironmentName = "Development";
@@ -92,6 +80,15 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+#if DEBUG
+        InitDevelopment();
+#else
+        InitRelease();
+#endif
+        InitLogging();
+
+        Log.Logger.Information("Early app starting...");
+
         AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
         AppDomain.CurrentDomain.UnhandledException -= OnAppDomainUnhandledException;
         TaskScheduler.UnobservedTaskException -= OnTaskSchedulerUnobservedTaskException;
@@ -117,13 +114,13 @@ public static class Program
             .UseReactiveUI()
             .LogToTrace();
 
-    private static void OnTaskSchedulerUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e) 
+    private static void OnTaskSchedulerUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         => HandleUnhandledException(sender, e.Exception);
 
-    private static void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs e) 
+    private static void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         => HandleUnhandledException(sender, e.ExceptionObject as Exception);
 
-    private static void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e) 
+    private static void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
         => HandleUnhandledException(sender, e.Exception);
 
     private static void HandleUnhandledException(object? sender, Exception? ex, [CallerMemberName] string caller = "")
@@ -135,7 +132,7 @@ public static class Program
             sender?.GetType().ToString() ?? "null",
             sender?.ToString() ?? "null",
             ex);
-        
+
         Log.CloseAndFlush();
     }
 }
