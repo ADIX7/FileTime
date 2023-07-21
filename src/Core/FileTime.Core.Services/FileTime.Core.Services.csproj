@@ -11,12 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ObservableComputations" Version="2.3.0" />
     <PackageReference Include="System.Interactive.Async" Version="6.0.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="System.Reactive" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\Library\Defer\Defer.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools\FileTime.Tools.csproj" />
     <ProjectReference Include="..\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
     <ProjectReference Include="..\FileTime.Core.Models\FileTime.Core.Models.csproj" />

@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
+using DeclarativeProperty;
 using DynamicData;
 using FileTime.App.Core.Interactions;
 using FileTime.App.Core.Models;
@@ -25,7 +26,7 @@ namespace FileTime.App.Core.Services.UserCommandHandler;
 public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServiceBase
 {
     private ITabViewModel? _selectedTab;
-    private IItemViewModel? _currentSelectedItem;
+    private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IClipboardService _clipboardService;
     private readonly IUserCommunicationService _userCommunicationService;
@@ -35,7 +36,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly IServiceProvider _serviceProvider;
     private readonly ISystemClipboardService _systemClipboardService;
     private readonly BindedCollection<FullName>? _markedItems;
-    private IContainer? _currentLocation;
+    private IDeclarativeProperty<IContainer?>? _currentLocation;
 
     public ItemManipulationUserCommandHandlerService(
         IAppState appState,
@@ -84,7 +85,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         {
             list.AddRange(_markedItems!.Collection!);
         }
-        else if(_currentSelectedItem?.BaseItem?.FullName is { } selectedItemName)
+        else if(_currentSelectedItem?.Value?.BaseItem?.FullName is { } selectedItemName)
         {
             list.Add(selectedItemName);
         }
@@ -106,20 +107,20 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
     private async Task PasteFilesFromClipboardAsync(TransportMode mode)
     {
-        if (_currentLocation?.FullName is not { }) return;
+        if (_currentLocation?.Value?.FullName is not { }) return;
 
         var files = (await _systemClipboardService.GetFilesAsync()).ToList();
         var copyCommandFactory = _serviceProvider.GetRequiredService<FileTime.Core.Command.Copy.CopyCommandFactory>();
-        var copyCommand = copyCommandFactory.GenerateCommand(files, mode, _currentLocation.FullName);
+        var copyCommand = copyCommandFactory.GenerateCommand(files, mode, _currentLocation.Value.FullName);
 
         await AddCommandAsync(copyCommand);
     }
 
     private async Task MarkItemAsync()
     {
-        if (_selectedTab == null || _currentSelectedItem?.BaseItem?.FullName == null) return;
+        if (_selectedTab == null || _currentSelectedItem?.Value?.BaseItem?.FullName == null) return;
 
-        _selectedTab.ToggleMarkedItem(_currentSelectedItem.BaseItem.FullName);
+        _selectedTab.ToggleMarkedItem(_currentSelectedItem.Value.BaseItem.FullName);
         await _userCommandHandlerService.HandleCommandAsync(MoveCursorDownCommand.Instance);
     }
 
@@ -137,9 +138,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
             _selectedTab?.ClearMarkedItems();
         }
-        else if (_currentSelectedItem?.BaseItem != null)
+        else if (_currentSelectedItem?.Value?.BaseItem != null)
         {
-            var item = _currentSelectedItem.BaseItem;
+            var item = _currentSelectedItem.Value.BaseItem;
             _clipboardService.AddContent(
                 item.FullName
                 ?? throw new ArgumentException($"{nameof(item.FullName)} can not be null.", nameof(item))
@@ -168,7 +169,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
         //TODO: check _currentLocation?.FullName
         var commandFactory = (ITransportationCommandFactory) _serviceProvider.GetRequiredService(_clipboardService.CommandFactoryType);
-        var command = commandFactory.GenerateCommand(_clipboardService.Content, mode, _currentLocation?.FullName);
+        var command = commandFactory.GenerateCommand(_clipboardService.Content, mode, _currentLocation?.Value?.FullName);
 
         _clipboardService.Clear();
 
@@ -186,10 +187,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;
 
-        if (_currentLocation?.FullName is null || newContainerName is null) return;
+        if (_currentLocation?.Value?.FullName is null || newContainerName is null) return;
 
         var command = _serviceProvider
-            .GetInitableResolver(_currentLocation.FullName, newContainerName)
+            .GetInitableResolver(_currentLocation.Value.FullName, newContainerName)
             .GetRequiredService<CreateContainerCommand>();
         await AddCommandAsync(command);
     }
@@ -203,10 +204,10 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         //TODO: message on empty result
         var newContainerName = containerNameInput.Value;
 
-        if (_currentLocation?.FullName is null || newContainerName is null) return;
+        if (_currentLocation?.Value?.FullName is null || newContainerName is null) return;
 
         var command = _serviceProvider
-            .GetInitableResolver(_currentLocation.FullName, newContainerName)
+            .GetInitableResolver(_currentLocation.Value.FullName, newContainerName)
             .GetRequiredService<FileTime.Core.Command.CreateElement.CreateElementCommand>();
         await AddCommandAsync(command);
     }
@@ -342,9 +343,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         }
         else
         {
-            if (_currentSelectedItem?.BaseItem?.FullName is null) return;
+            if (_currentSelectedItem?.Value?.BaseItem?.FullName is null) return;
 
-            var item = await _timelessContentProvider.GetItemByFullNameAsync(_currentSelectedItem.BaseItem.FullName, PointInTime.Present);
+            var item = await _timelessContentProvider.GetItemByFullNameAsync(_currentSelectedItem.Value.BaseItem.FullName, PointInTime.Present);
 
             if (item is null) return;
 
@@ -410,11 +411,11 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         {
             itemsToDelete = new List<FullName>(_markedItems!.Collection!);
         }
-        else if (_currentSelectedItem?.BaseItem?.FullName is not null)
+        else if (_currentSelectedItem?.Value?.BaseItem?.FullName is not null)
         {
             itemsToDelete = new List<FullName>()
             {
-                _currentSelectedItem.BaseItem.FullName
+                _currentSelectedItem.Value.BaseItem.FullName
             };
         }
 
@@ -425,7 +426,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
             var resolvedOnlyItem = await _timelessContentProvider.GetItemByFullNameAsync(itemsToDelete[0], PointInTime.Present);
 
             if (resolvedOnlyItem is IContainer {AllowRecursiveDeletion: true} onlyContainer
-                && onlyContainer.ItemsCollection.Any())
+                && onlyContainer.Items.Count > 0)
             {
                 questionText = $"The container '{onlyContainer.DisplayName}' is not empty. Proceed with delete?";
             }
@@ -461,8 +462,6 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         _selectedTab?.ClearMarkedItems();
     }
 
-    private async Task AddCommandAsync(ICommand command)
-    {
-        await _commandScheduler.AddCommand(command);
-    }
+    private async Task AddCommandAsync(ICommand command) 
+        => await _commandScheduler.AddCommand(command);
 }

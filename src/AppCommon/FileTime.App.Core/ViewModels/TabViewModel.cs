@@ -1,4 +1,7 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Reactive.Linq;
+using DeclarativeProperty;
 using DynamicData;
 using DynamicData.Binding;
 using FileTime.App.Core.Extensions;
@@ -10,6 +13,9 @@ using FileTime.Core.Models.Extensions;
 using FileTime.Core.Services;
 using InitableService;
 using MvvmGen;
+using ObservableComputations;
+using IContainer = FileTime.Core.Models.IContainer;
+using static System.DeferTools;
 
 namespace FileTime.App.Core.ViewModels;
 
@@ -23,36 +29,23 @@ public partial class TabViewModel : ITabViewModel
     private readonly SourceList<FullName> _markedItems = new();
     private readonly List<IDisposable> _disposables = new();
     private bool _disposed;
+    private OcConsumer? _currentItemsConsumer;
+    private OcConsumer? _selectedsChildrenConsumer;
+    private OcConsumer? _parentsChildrenConsumer;
 
     public ITab? Tab { get; private set; }
     public int TabNumber { get; private set; }
 
     public IObservable<bool> IsSelected { get; }
 
-    public IObservable<IContainer?> CurrentLocation { get; private set; } = null!;
-    public IObservable<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
-    public IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> CurrentItems { get; private set; } = null!;
+    public IDeclarativeProperty<IContainer?> CurrentLocation { get; private set; }
+    public IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; private set; }
+    public IDeclarativeProperty<IContainerViewModel?> CurrentSelectedItemAsContainer { get; private set; }
+    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> CurrentItems { get; private set; }
     public IObservable<IChangeSet<FullName>> MarkedItems { get; }
-    public IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> SelectedsChildren { get; private set; } = null!;
-    public IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> ParentsChildren { get; private set; } = null!;
+    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> SelectedsChildren { get; private set; }
+    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> ParentsChildren { get; private set; }
 
-    public IObservable<IReadOnlyCollection<IItemViewModel>?> CurrentItemsCollectionObservable { get; private set; } =
-        null!;
-
-    public IObservable<IReadOnlyCollection<IItemViewModel>?> ParentsChildrenCollectionObservable { get; private set; } =
-        null!;
-
-    public IObservable<IReadOnlyCollection<IItemViewModel>?>
-        SelectedsChildrenCollectionObservable
-    { get; private set; } = null!;
-
-    [Property] private BindedCollection<IItemViewModel, string>? _currentItemsCollection;
-
-    [Property] private BindedCollection<IItemViewModel, string>? _parentsChildrenCollection;
-
-    [Property] private BindedCollection<IItemViewModel, string>? _selectedsChildrenCollection;
-
-    public IContainer? CachedCurrentLocation { get; private set; }
 
     public TabViewModel(
         IServiceProvider serviceProvider,
@@ -76,13 +69,19 @@ public partial class TabViewModel : ITabViewModel
 
         tab.AddToDisposables(_disposables);
 
-        CurrentLocation = tab.CurrentLocation.AsObservable();
-        CurrentLocation.Subscribe(l => CachedCurrentLocation = l).AddToDisposables(_disposables);
+        CurrentLocation = tab.CurrentLocation;
 
         CurrentItems = tab.CurrentItems
-            .Select(items => items?.Transform(i => MapItemToViewModel(i, ItemViewModelType.Main)))
-            .Publish(null)
-            .RefCount();
+            .Map((items, _) =>
+                Task.FromResult<ObservableCollection<IItemViewModel>?>(
+                    items?.Selecting<IItem, IItemViewModel>(
+                        i => MapItemToViewModel(i, ItemViewModelType.Main)
+                    )
+                )
+            );
+        using var _ = Defer(
+            () => CurrentItems.Subscribe(c => UpdateConsumer(c, ref _currentItemsConsumer))
+        );
 
         /*CurrentSelectedItem =
             Observable.CombineLatest(
@@ -100,30 +99,65 @@ public partial class TabViewModel : ITabViewModel
                 .Publish(null)
                 .RefCount();*/
 
-        CurrentSelectedItem =
+        CurrentSelectedItem = DeclarativePropertyHelpers.CombineLatest(
+            tab.CurrentSelectedItem,
+            CurrentItems.Watch<ObservableCollection<IItemViewModel>, IItemViewModel>(),
+            (currentSelectedItem, currentItems) =>
+                Task.FromResult(currentItems?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItem?.Path.Path))
+        );
+
+        CurrentSelectedItemAsContainer = CurrentSelectedItem.Map(i => i as IContainerViewModel);
+        //CurrentSelectedItem = tab.CurrentSelectedItem.Map((item, _) => Task.FromResult(CurrentItems.Value?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == item?.Path.Path)));
+
+        /*CurrentSelectedItem =
             Observable.CombineLatest(
                     CurrentItems,
                     tab.CurrentSelectedItem,
                     (currentItems, currentSelectedItemPath) =>
                         CurrentItemsCollection?.Collection?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItemPath?.Path.Path)
-            )
+                )
                 .Publish(null)
-                .RefCount();
+                .RefCount();*/
 
-        SelectedsChildren = InitSelectedsChildren();
-        ParentsChildren = InitParentsChildren();
+        SelectedsChildren = CurrentSelectedItem
+            .Debounce(TimeSpan.FromMilliseconds(200), resetTimer: true)
+            .DistinctUntilChanged()
+            .Map(item =>
+            {
+                if (item is not IContainerViewModel {Container: { } container})
+                    return (ObservableCollection<IItemViewModel>?) null;
 
-        CurrentItemsCollectionObservable = InitCollection(CurrentItems);
-        SelectedsChildrenCollectionObservable = InitCollection(SelectedsChildren);
-        ParentsChildrenCollectionObservable = InitCollection(ParentsChildren);
+                var items = container
+                    .Items
+                    .Selecting(i => MapItem(i))
+                    .Ordering(i => i.Type)
+                    .ThenOrdering(i => i.Name)
+                    .Selecting(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild));
 
-        CurrentItemsCollection = new(CurrentItems);
-        ParentsChildrenCollection = new(ParentsChildren);
-        SelectedsChildrenCollection = new(SelectedsChildren);
+                return items;
+            });
+        using var __ = Defer(() =>
+            SelectedsChildren.Subscribe(c => UpdateConsumer(c, ref _selectedsChildrenConsumer))
+        );
 
-        tab.CurrentLocation.Subscribe((_) => _markedItems.Clear()).AddToDisposables(_disposables);
+        ParentsChildren = CurrentLocation.Map(async (item, _) =>
+        {
+            if (item is null || item.Parent is null) return (ObservableCollection<IItemViewModel>?) null;
+            var parent = (IContainer) await item.Parent.ResolveAsync(itemInitializationSettings: new ItemInitializationSettings(true));
 
-        IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> InitSelectedsChildren()
+            var items = parent.Items
+                .Selecting<AbsolutePath, IItem>(i => MapItem(i))
+                .Selecting(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild));
+
+            return items;
+        });
+        using var ___ = Defer(() =>
+            ParentsChildren.Subscribe(c => UpdateConsumer(c, ref _parentsChildrenConsumer))
+        );
+
+        tab.CurrentLocation.Subscribe(_ => _markedItems.Clear()).AddToDisposables(_disposables);
+
+        /*IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> InitSelectedsChildren()
         {
             var currentSelectedItemThrottled =
                 CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
@@ -135,16 +169,16 @@ public partial class TabViewModel : ITabViewModel
                         .Select(c => c.Container!.Items)
                         .Select(i =>
                             i
-                                ?.TransformAsync(MapItem)
+                                ?.TransformAsync(MapItemAsync)
                                 .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))
                                 .Sort(SortItems())
                         ),
                     currentSelectedItemThrottled
                         .Where(c => c is null or not IContainerViewModel)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?) null)
                 )
                 /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-                .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
+                .SubscribeOn(_rxSchedulerService.GetUIScheduler())#1#
                 .Publish(null)
                 .RefCount();
         }
@@ -160,35 +194,34 @@ public partial class TabViewModel : ITabViewModel
             return Observable.Merge(
                     parentThrottled
                         .Where(p => p is not null)
-                        .Select(p => Observable.FromAsync(async () => (IContainer)await p!.ResolveAsync()))
+                        .Select(p => Observable.FromAsync(async () => (IContainer) await p!.ResolveAsync()))
                         .Switch()
                         .Select(p => p.Items)
                         .Select(items =>
                             items
-                                ?.TransformAsync(MapItem)
+                                ?.TransformAsync(MapItemAsync)
                                 .Transform(i => MapItemToViewModel(i, ItemViewModelType.Parent))
                                 .Sort(SortItems())
                         ),
                     parentThrottled
                         .Where(p => p is null)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?)null)
+                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?) null)
                 )
                 /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-                .SubscribeOn(_rxSchedulerService.GetUIScheduler())*/
+                .SubscribeOn(_rxSchedulerService.GetUIScheduler())#1#
                 .Publish(null)
                 .RefCount();
-        }
+        }*/
+    }
 
-        IObservable<IReadOnlyCollection<IItemViewModel>?> InitCollection(
-            IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> source)
-        {
-            return source
-                .Select(c =>
-                    c != null ? c.ToCollection() : Observable.Return((IReadOnlyCollection<IItemViewModel>?)null))
-                .Switch()
-                .Publish(null)
-                .RefCount();
-        }
+
+    static void UpdateConsumer<T>(ObservableCollection<T>? collection, ref OcConsumer? consumer)
+    {
+        if (collection is not IComputing computing) return;
+
+        consumer?.Dispose();
+        consumer = new OcConsumer();
+        computing.For(consumer);
     }
 
     private static SortExpressionComparer<IItemViewModel> SortItems()
@@ -197,7 +230,14 @@ public partial class TabViewModel : ITabViewModel
             .Ascending(i => i.BaseItem?.Type ?? AbsolutePathType.Unknown)
             .ThenByAscending(i => i.DisplayNameText?.ToLower() ?? "");
 
-    private static async Task<IItem> MapItem(AbsolutePath item)
+    private static IItem MapItem(AbsolutePath item)
+    {
+        var t = Task.Run(async () => await MapItemAsync(item));
+        t.Wait();
+        return t.Result;
+    }
+
+    private static async Task<IItem> MapItemAsync(AbsolutePath item)
         => await item.ResolveAsync(forceResolve: true,
             itemInitializationSettings: new ItemInitializationSettings(true));
 

@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using DeclarativeProperty;
 using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
@@ -25,9 +27,9 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IFrequencyNavigationService _frequencyNavigationService;
     private readonly ICommandPaletteService _commandPaletteService;
     private ITabViewModel? _selectedTab;
-    private IContainer? _currentLocation;
-    private IItemViewModel? _currentSelectedItem;
-    private IEnumerable<IItemViewModel> _currentItems = Enumerable.Empty<IItemViewModel>();
+    private IDeclarativeProperty<IContainer?>? _currentLocation;
+    private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
+    private IDeclarativeProperty<ObservableCollection<IItemViewModel>?>? _currentItems;
     private ViewMode _viewMode;
 
     public NavigationUserCommandHandlerService(
@@ -121,7 +123,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task GoToRoot()
     {
-        var root = _currentLocation;
+        var root = _currentLocation?.Value;
         if (root is null) return;
 
         while (true)
@@ -138,21 +140,25 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task GoToProvider()
     {
-        if (_currentLocation is null) return;
+        if (_currentLocation?.Value is null) return;
 
         await _userCommandHandlerService.HandleCommandAsync(
-            new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, _currentLocation.Provider)));
+            new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, _currentLocation.Value.Provider)));
     }
 
     private async Task Refresh()
     {
-        if (_currentLocation?.FullName is null) return;
+        if (_currentLocation?.Value?.FullName is null) return;
         var refreshedItem =
-            await _timelessContentProvider.GetItemByFullNameAsync(_currentLocation.FullName, PointInTime.Present);
+            await _timelessContentProvider.GetItemByFullNameAsync(_currentLocation.Value.FullName, PointInTime.Present);
 
         if (refreshedItem is not IContainer refreshedContainer) return;
 
-        _selectedTab?.Tab?.ForceSetCurrentLocation(refreshedContainer);
+
+        if (_selectedTab?.Tab is { } tab)
+        {
+            await tab.ForceSetCurrentLocation(refreshedContainer);
+        }
     }
 
     private async Task OpenContainer(OpenContainerCommand command)
@@ -160,89 +166,98 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         var resolvedPath = await command.Path.ResolveAsync();
         if (resolvedPath is not IContainer resolvedContainer) return;
 
-        _selectedTab?.Tab?.SetCurrentLocation(resolvedContainer);
+        if (_selectedTab?.Tab is { } tab)
+        {
+            await tab.SetCurrentLocation(resolvedContainer);
+        }
     }
 
-    private Task OpenSelected()
+    private async Task OpenSelected()
     {
-        if (_currentSelectedItem is not IContainerViewModel containerViewModel || containerViewModel.Container is null)
-            return Task.CompletedTask;
+        if (_currentSelectedItem?.Value is not IContainerViewModel containerViewModel || containerViewModel.Container is null)
+            return;
 
         _appState.RapidTravelText = "";
-        _selectedTab?.Tab?.SetCurrentLocation(containerViewModel.Container);
-        return Task.CompletedTask;
+        if (_selectedTab?.Tab is { } tab)
+        {
+            await tab.SetCurrentLocation(containerViewModel.Container);
+        }
     }
 
     private async Task GoUp()
     {
-        if (_currentLocation?.Parent is not AbsolutePath parentPath ||
+        if (_currentLocation?.Value?.Parent is not AbsolutePath parentPath ||
             await parentPath.ResolveAsyncSafe() is not IContainer newContainer)
         {
             return;
         }
 
         _appState.RapidTravelText = "";
-        _selectedTab?.Tab?.SetCurrentLocation(newContainer);
-    }
-
-    private Task MoveCursorDown()
-    {
-        SelectNewSelectedItem(items =>
-            items.SkipWhile(i => !i.EqualsTo(_currentSelectedItem)).Skip(1).FirstOrDefault());
-        return Task.CompletedTask;
-    }
-
-    private Task MoveCursorUp()
-    {
-        SelectNewSelectedItem(items => items.TakeWhile(i => !i.EqualsTo(_currentSelectedItem)).LastOrDefault());
-        return Task.CompletedTask;
-    }
-
-    private Task MoveCursorDownPage()
-    {
-        SelectNewSelectedItem(items =>
+        if (_selectedTab?.Tab is { } tab)
         {
-            var relevantItems = items.SkipWhile(i => !i.EqualsTo(_currentSelectedItem)).ToList();
+            await tab.SetCurrentLocation(newContainer);
+        }
+    }
+
+    private async Task MoveCursorDown()
+        => await SelectNewSelectedItem(items =>
+        {
+            if (_currentSelectedItem?.Value == null) return items.FirstOrDefault();
+            return items.SkipWhile(i => !i.EqualsTo(_currentSelectedItem?.Value)).Skip(1).FirstOrDefault();
+        });
+
+    private async Task MoveCursorUp()
+        => await SelectNewSelectedItem(items =>
+        {
+            if (_currentSelectedItem?.Value == null) return items.LastOrDefault();
+            return items.TakeWhile(i => !i.EqualsTo(_currentSelectedItem?.Value)).LastOrDefault();
+        });
+
+    private async Task MoveCursorDownPage()
+        => await SelectNewSelectedItem(items =>
+        {
+            var relevantItems = _currentSelectedItem?.Value is null
+                ? items.ToList()
+                : items.SkipWhile(i => !i.EqualsTo(_currentSelectedItem.Value)).ToList();
+
             var fallBackItems = relevantItems.Take(PageSize + 1).Reverse();
             var preferredItems = relevantItems.Skip(PageSize + 1);
 
             return preferredItems.Concat(fallBackItems).FirstOrDefault();
         });
-        return Task.CompletedTask;
-    }
 
-    private Task MoveCursorUpPage()
-    {
-        SelectNewSelectedItem(items =>
+    private async Task MoveCursorUpPage()
+        => await SelectNewSelectedItem(items =>
         {
-            var relevantItems = items.TakeWhile(i => !i.EqualsTo(_currentSelectedItem)).Reverse().ToList();
+            var relevantItems = _currentSelectedItem?.Value is null
+                ? items.Reverse().ToList()
+                : items.TakeWhile(i => !i.EqualsTo(_currentSelectedItem?.Value)).Reverse().ToList();
+            
             var fallBackItems = relevantItems.Take(PageSize).Reverse();
             var preferredItems = relevantItems.Skip(PageSize);
+            
             return preferredItems.Concat(fallBackItems).FirstOrDefault();
         });
-        return Task.CompletedTask;
-    }
 
-    private Task MoveCursorToFirst()
+    private async Task MoveCursorToFirst()
+        => await SelectNewSelectedItem(items => items.FirstOrDefault());
+
+    private async Task MoveCursorToLast()
+        => await SelectNewSelectedItem(items => items.LastOrDefault());
+
+    private Task SelectNewSelectedItem(Func<IEnumerable<IItemViewModel>, IItemViewModel?> getNewSelected)
     {
-        SelectNewSelectedItem(items => items.FirstOrDefault());
+        if (_selectedTab is null || _currentItems?.Value is null) return Task.CompletedTask;
+
+        var newSelectedItem = getNewSelected(_currentItems.Value);
+        if (newSelectedItem == null) return Task.CompletedTask;
+
+        if (_selectedTab.Tab is { } tab)
+        {
+            tab.SetSelectedItem(newSelectedItem.ToAbsolutePath(_timelessContentProvider));
+        }
+
         return Task.CompletedTask;
-    }
-
-    private Task MoveCursorToLast()
-    {
-        SelectNewSelectedItem(items => items.LastOrDefault());
-        return Task.CompletedTask;
-    }
-
-    private void SelectNewSelectedItem(Func<IEnumerable<IItemViewModel>, IItemViewModel?> getNewSelected)
-    {
-        if (_selectedTab is null || _currentLocation is null) return;
-
-        var newSelectedItem = getNewSelected(_currentItems);
-        if (newSelectedItem == null) return;
-
-        _selectedTab.Tab?.SetSelectedItem(newSelectedItem.ToAbsolutePath(_timelessContentProvider));
     }
 
     private Task EnterRapidTravel()
@@ -257,7 +272,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         return Task.CompletedTask;
     }
 
-    private Task SwitchToTab(SwitchToTabCommand command)
+    private async Task SwitchToTab(SwitchToTabCommand command)
     {
         var number = command.TabNumber;
         var tabViewModel = _appState.Tabs.FirstOrDefault(t => t.TabNumber == number);
@@ -269,8 +284,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         }
         else if (tabViewModel == null)
         {
-            var tab = _serviceProvider.GetInitableResolver<IContainer>(_currentLocation ?? _localContentProvider)
-                .GetRequiredService<ITab>();
+            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(_currentLocation?.Value ?? _localContentProvider)
+                .GetRequiredServiceAsync<ITab>();
             var newTabViewModel = _serviceProvider.GetInitableResolver(tab, number).GetRequiredService<ITabViewModel>();
 
             _appState.AddTab(newTabViewModel);
@@ -279,12 +294,10 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
         if (_viewMode == ViewMode.RapidTravel)
         {
-            _userCommandHandlerService.HandleCommandAsync(ExitRapidTravelCommand.Instance);
+            await _userCommandHandlerService.HandleCommandAsync(ExitRapidTravelCommand.Instance);
         }
 
         _appState.SetSelectedTab(tabViewModel!);
-
-        return Task.CompletedTask;
     }
 
     private Task CloseTab()

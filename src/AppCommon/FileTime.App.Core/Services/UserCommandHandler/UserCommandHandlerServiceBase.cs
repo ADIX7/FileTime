@@ -1,4 +1,6 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using DeclarativeProperty;
 using DynamicData;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
@@ -44,14 +46,14 @@ public abstract class UserCommandHandlerServiceBase : IUserCommandHandler
 
     protected IDisposable SaveSelectedTab(Action<ITabViewModel?> handler) => RunWithAppState(appState => appState.SelectedTab.Subscribe(handler));
 
-    protected IDisposable SaveCurrentSelectedItem(Action<IItemViewModel?> handler)
-        => RunWithAppState(appState => appState.SelectedTab.Select(t => t == null ? Observable.Return<IItemViewModel?>(null) : t.CurrentSelectedItem).Switch().Subscribe(handler));
+    protected IDisposable SaveCurrentSelectedItem(Action<IDeclarativeProperty<IItemViewModel?>?> handler)
+        => RunWithAppState(appState => appState.SelectedTab.Select(t => t?.CurrentSelectedItem).Subscribe(handler));
 
-    protected IDisposable SaveCurrentLocation(Action<IContainer?> handler)
-        => RunWithAppState(appState => appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation).Switch().Subscribe(handler));
+    protected IDisposable SaveCurrentLocation(Action<IDeclarativeProperty<IContainer?>?> handler)
+        => RunWithAppState(appState => appState.SelectedTab.Select(t => t?.CurrentLocation).Subscribe(handler));
 
-    protected IDisposable SaveCurrentItems(Action<IEnumerable<IItemViewModel>> handler)
-        => RunWithAppState(appState => appState.SelectedTab.Select(t => t?.CurrentItemsCollectionObservable ?? Observable.Return((IEnumerable<IItemViewModel>?) Enumerable.Empty<IItemViewModel>())).Switch().Subscribe(i => handler(i ?? Enumerable.Empty<IItemViewModel>())));
+    protected IDisposable SaveCurrentItems(Action<IDeclarativeProperty<ObservableCollection<IItemViewModel>?>?> handler)
+        => RunWithAppState(appState => appState.SelectedTab.Select(t => t?.CurrentItems).Subscribe(handler));
 
     protected IDisposable SaveMarkedItems(Action<IChangeSet<FullName>> handler)
         => RunWithAppState(appState => appState.SelectedTab.Select(t => t == null ? Observable.Empty<IChangeSet<FullName>>() : t.MarkedItems).Switch().Subscribe(handler));

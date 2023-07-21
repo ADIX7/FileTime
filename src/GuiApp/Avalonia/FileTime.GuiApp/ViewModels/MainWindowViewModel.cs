@@ -28,6 +28,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IFontService), "_fontService")]
 [Inject(typeof(IFrequencyNavigationService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(ICommandPaletteService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IRefreshSmoothnessCalculator), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;

@@ -13,4 +13,5 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     IDialogService DialogService { get; }
     IFrequencyNavigationService FrequencyNavigationService { get; }
     ICommandPaletteService CommandPaletteService { get; }
+    public IRefreshSmoothnessCalculator RefreshSmoothnessCalculator { get; }
 }

@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Library\DeclarativeProperty\DeclarativeProperty.csproj" />
     <ProjectReference Include="..\..\Library\InitableService\InitableService.csproj" />
   </ItemGroup>
 

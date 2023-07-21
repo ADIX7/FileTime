@@ -41,7 +41,7 @@ public abstract class CreateItemBase : CommandBase, IExecutableCommand, IInitabl
             var parent = await ResolveParentAsync();
             if (parent is not IContainer parentContainer) return CanCommandRun.False;
 
-            var items = parentContainer.ItemsCollection;
+            var items = parentContainer.Items;
             var existingItem = items.FirstOrDefault(i => i.Path.GetName() == NewItemName);
 
             return existingItem switch

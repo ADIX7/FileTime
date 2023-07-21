@@ -81,7 +81,7 @@ public class TabPersistenceService : ITabPersistenceService
     {
         if (!File.Exists(_settingsPath))
         {
-            CreateEmptyTab();
+            await CreateEmptyTab();
             return;
         }
 
@@ -99,12 +99,12 @@ public class TabPersistenceService : ITabPersistenceService
             _logger.LogError(e, "Unknown exception while restoring app state");
         }
 
-        CreateEmptyTab();
+        await CreateEmptyTab();
 
-        void CreateEmptyTab()
+        async Task CreateEmptyTab()
         {
-            var tab = _serviceProvider.GetInitableResolver<IContainer>(_localContentProvider)
-                .GetRequiredService<ITab>();
+            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(_localContentProvider)
+                .GetRequiredServiceAsync<ITab>();
             var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
 
             _appState.AddTab(tabViewModel);
@@ -159,8 +159,8 @@ public class TabPersistenceService : ITabPersistenceService
 
                     if (container == null) continue;
 
-                    var tabToLoad = _serviceProvider.GetInitableResolver(container)
-                        .GetRequiredService<ITab>();
+                    var tabToLoad = await _serviceProvider.GetAsyncInitableResolver(container)
+                        .GetRequiredServiceAsync<ITab>();
                     var tabViewModel = _serviceProvider.GetInitableResolver(tabToLoad, tab.Number)
                         .GetRequiredService<ITabViewModel>();
 
@@ -205,7 +205,7 @@ public class TabPersistenceService : ITabPersistenceService
         var tabStates = new List<TabState>();
         foreach (var tab in _appState.Tabs)
         {
-            var currentLocation = tab.CachedCurrentLocation;
+            var currentLocation = tab.CurrentLocation.Value;
             if (currentLocation is null) continue;
             tabStates.Add(new TabState(currentLocation.FullName!, tab.TabNumber));
         }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using DeclarativeProperty;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Search;
@@ -19,8 +20,8 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IContentAccessorFactory _contentAccessorFactory;
-    private IContainer? _currentLocation;
-    private IItemViewModel? _currentSelectedItem;
+    private IDeclarativeProperty<IContainer?>? _currentLocation;
+    private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
 
     public ToolUserCommandHandlerService(
         IAppState appState,
@@ -53,7 +54,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task CopyBase64()
     {
-        var item = _currentSelectedItem?.BaseItem;
+        var item = _currentSelectedItem?.Value?.BaseItem;
         if (item?.Type != AbsolutePathType.Element || item is not IElement element) return;
 
         var contentReader = await _contentAccessorFactory.GetContentReaderFactory(element.Provider).CreateContentReaderAsync(element);
@@ -72,7 +73,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task Search(SearchCommand searchCommand)
     {
-        if (_currentLocation is null) return;
+        if (_currentLocation?.Value is null) return;
 
         var searchQuery = searchCommand.SearchText;
         if (string.IsNullOrEmpty(searchQuery))
@@ -102,21 +103,21 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        var searchTask = await _searchManager.StartSearchAsync(searchMatcher, _currentLocation);
+        var searchTask = await _searchManager.StartSearchAsync(searchMatcher, _currentLocation.Value);
         var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, searchTask.SearchContainer));
         await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
     }
 
     private async Task CopyNativePath()
     {
-        if (_currentSelectedItem?.BaseItem?.NativePath is null) return;
-        await _systemClipboardService.CopyToClipboardAsync(_currentSelectedItem.BaseItem.NativePath.Path);
+        if (_currentSelectedItem?.Value?.BaseItem?.NativePath is null) return;
+        await _systemClipboardService.CopyToClipboardAsync(_currentSelectedItem.Value.BaseItem.NativePath.Path);
     }
 
     private Task OpenInDefaultFileExplorer()
     {
-        if (_currentLocation?.NativePath is null) return Task.CompletedTask;
-        Process.Start("explorer.exe", "\"" + _currentLocation.NativePath.Path + "\"");
+        if (_currentLocation?.Value?.NativePath is null) return Task.CompletedTask;
+        Process.Start("explorer.exe", "\"" + _currentLocation.Value.NativePath.Path + "\"");
         return Task.CompletedTask;
     }
 }

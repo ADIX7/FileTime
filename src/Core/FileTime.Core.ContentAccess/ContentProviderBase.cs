@@ -11,13 +11,8 @@ namespace FileTime.Core.ContentAccess;
 public abstract class ContentProviderBase : IContentProvider
 {
     private readonly ReadOnlyExtensionCollection _extensions;
-    private readonly IObservable<IChangeSet<AbsolutePath, string>> _items;
-
-    protected SourceCache<AbsolutePath, string> Items { get; } = new(p => p.Path.Path);
-    public ReadOnlyObservableCollection<AbsolutePath> ItemsCollection { get; }
+    public ObservableCollection<AbsolutePath> Items { get; }
     protected ExtensionCollection Extensions { get; }
-
-    IObservable<IChangeSet<AbsolutePath, string>> IContainer.Items => _items;
 
     public string Name { get; }
 
@@ -53,8 +48,7 @@ public abstract class ContentProviderBase : IContentProvider
     public AbsolutePathType Type => AbsolutePathType.Container;
     public PointInTime PointInTime { get; } = PointInTime.Eternal;
 
-    protected SourceList<Exception> Exceptions { get; } = new();
-    IObservable<IChangeSet<Exception>> IItem.Exceptions => Exceptions.Connect();
+    public ObservableCollection<Exception> Exceptions { get; } = new();
 
     ReadOnlyExtensionCollection IItem.Extensions => _extensions;
 
@@ -64,9 +58,8 @@ public abstract class ContentProviderBase : IContentProvider
         FullName = FullName.CreateSafe(name);
         Extensions = new ExtensionCollection();
         _extensions = Extensions.AsReadOnly();
-        _items = Items.Connect().StartWithEmpty();
-        _items.Bind(out var items).Subscribe();
-        ItemsCollection = items;
+        //TODO: 
+        Items = new ObservableCollection<AbsolutePath>();
     }
 
     public virtual Task OnEnter() => Task.CompletedTask;

@@ -1,4 +1,5 @@
-﻿using DynamicData;
+﻿using System.Collections.ObjectModel;
+using DynamicData;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -11,7 +12,7 @@ public class ItemPreview
 
     static ItemPreview()
     {
-        var exceptions = new SourceList<Exception>();
+        var exceptions = new ObservableCollection<Exception>();
         CurrentContainer = new Container(
             "HomePreview",
             "HomePreview",
@@ -32,9 +33,9 @@ public class ItemPreview
             null!,
             false,
             PointInTime.Present,
-            exceptions.Connect(),
+            exceptions,
             new ExtensionCollection().AsReadOnly(),
-            new SourceCache<AbsolutePath, string>(a => a.Path.Path).Connect()
+            new ObservableCollection<AbsolutePath>()
         );
     }
 
@@ -58,7 +59,7 @@ public class ItemPreview
             "attr",
             null!,
             PointInTime.Present, 
-            new SourceList<Exception>().Connect(),
+            new ObservableCollection<Exception>(),
             new ExtensionCollection().AsReadOnly()
         );
 }

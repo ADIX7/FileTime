@@ -1,20 +1,22 @@
+using System.Collections.ObjectModel;
+using DeclarativeProperty;
 using DynamicData;
 using FileTime.Core.Models;
 using InitableService;
 
 namespace FileTime.Core.Services;
 
-public interface ITab : IInitable<IContainer>, IDisposable
+public interface ITab : IAsyncInitable<IContainer>, IDisposable
 {
-    IObservable<IContainer?> CurrentLocation { get; }
-    IObservable<AbsolutePath?> CurrentSelectedItem { get; }
-    IObservable<IObservable<IChangeSet<IItem, string>>?> CurrentItems { get; }
+    public IDeclarativeProperty<IContainer?> CurrentLocation { get; }
+    public IDeclarativeProperty<ObservableCollection<IItem>?> CurrentItems { get; }
+    public IDeclarativeProperty<AbsolutePath?> CurrentSelectedItem { get; }
     FullName? LastDeepestSelectedPath { get; }
 
-    void SetCurrentLocation(IContainer newLocation);
+    Task SetCurrentLocation(IContainer newLocation);
     void AddItemFilter(ItemFilter filter);
     void RemoveItemFilter(ItemFilter filter);
     void RemoveItemFilter(string name);
-    void SetSelectedItem(AbsolutePath newSelectedItem);
-    void ForceSetCurrentLocation(IContainer newLocation);
+    Task SetSelectedItem(AbsolutePath newSelectedItem);
+    Task ForceSetCurrentLocation(IContainer newLocation);
 }

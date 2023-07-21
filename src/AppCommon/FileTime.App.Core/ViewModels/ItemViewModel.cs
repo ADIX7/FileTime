@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Reactive.Linq;
+using DeclarativeProperty;
 using DynamicData;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
@@ -18,32 +19,23 @@ public abstract partial class ItemViewModel : IItemViewModel
 {
     private ITabViewModel? _parentTab;
 
-    [Property]
-    private IItem? _baseItem;
+    [Property] private IItem? _baseItem;
 
-    [Property]
-    private IObservable<IReadOnlyList<ItemNamePart>>? _displayName;
+    [Property] private IObservable<IReadOnlyList<ItemNamePart>>? _displayName;
 
-    [Property]
-    private string? _displayNameText;
+    [Property] private string? _displayNameText;
 
-    [Property]
-    private IObservable<bool>? _isSelected;
+    [Property] private IDeclarativeProperty<bool> _isSelected;
 
-    [Property]
-    private IObservable<bool>? _isMarked;
+    [Property] private IObservable<bool>? _isMarked;
 
-    [Property]
-    private IObservable<ItemViewMode> _viewMode;
+    [Property] private IObservable<ItemViewMode> _viewMode;
 
-    [Property]
-    private DateTime? _createdAt;
+    [Property] private DateTime? _createdAt;
 
-    [Property]
-    private string? _attributes;
+    [Property] private string? _attributes;
 
-    [Property]
-    private IObservable<bool> _isAlternative;
+    [Property] private IDeclarativeProperty<bool> _isAlternative;
 
     public void Init(IItem item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
     {
@@ -51,9 +43,9 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         var sourceCollection = itemViewModelType switch
         {
-            ItemViewModelType.Main => parentTab.CurrentItemsCollectionObservable,
-            ItemViewModelType.Parent => parentTab.ParentsChildrenCollectionObservable,
-            ItemViewModelType.SelectedChild => parentTab.SelectedsChildrenCollectionObservable,
+            ItemViewModelType.Main => parentTab.CurrentItems,
+            ItemViewModelType.Parent => parentTab.ParentsChildren,
+            ItemViewModelType.SelectedChild => parentTab.SelectedsChildren,
             _ => throw new InvalidEnumArgumentException()
         };
 
@@ -66,10 +58,10 @@ public abstract partial class ItemViewModel : IItemViewModel
             : Observable.Return(false);
 
         IsSelected = itemViewModelType is ItemViewModelType.Main
-            ? parentTab.CurrentSelectedItem.Select(EqualsTo)
-            : Observable.Return(IsInDeepestPath());
+            ? parentTab.CurrentSelectedItem.Map(EqualsTo)
+            : new DeclarativeProperty<bool>(IsInDeepestPath());
 
-        IsAlternative = sourceCollection.Select(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
+        IsAlternative = sourceCollection.Map(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
 
         ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode).Throttle(TimeSpan.FromMilliseconds(10));
         Attributes = item.Attributes;

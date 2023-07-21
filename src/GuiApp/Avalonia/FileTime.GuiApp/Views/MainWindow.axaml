@@ -49,9 +49,14 @@
 
             <Grid ColumnDefinitions="250,*" RowDefinitions="Auto,*">
 
-                <Grid PointerPressed="HeaderPointerPressed">
+                <!--<Grid PointerPressed="HeaderPointerPressed">
                     <Rectangle Fill="#01000000" />
                     <TextBlock Margin="15,10" Text="{Binding Title}" />
+                </Grid>-->
+
+                <Grid PointerPressed="HeaderPointerPressed">
+                    <Rectangle Fill="#01000000" />
+                    <TextBlock Margin="15,10" Text="{Binding RefreshSmoothnessCalculator.RefreshDelay}" />
                 </Grid>
 
                 <Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
@@ -59,7 +64,7 @@
 
                     <StackPanel Margin="20,10" Orientation="Horizontal">
                         <local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
-                        <TextBlock Foreground="{StaticResource AccentBrush}" Text="{Binding AppState.SelectedTab^.CurrentSelectedItem^.DisplayNameText}" />
+                        <TextBlock Foreground="{StaticResource AccentBrush}" Text="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value.DisplayNameText}" />
                     </StackPanel>
                 </Grid>
 
@@ -74,7 +79,7 @@
 
                             <TextBlock Margin="0,0,0,10" Text="Drives" />
 
-                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.RootDriveInfos.Collection}">
+                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.RootDriveInfos}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:RootDriveInfo">
                                         <Grid
@@ -356,7 +361,7 @@
 
                                         <TextBlock
                                             Margin="5,0,0,0"
-                                            Text="{Binding CurrentLocation^.Name, FallbackValue=Loading...}"
+                                            Text="{Binding CurrentLocation.Value.Name, FallbackValue=Loading...}"
                                             VerticalAlignment="Center" />
                                     </StackPanel>
 
@@ -376,10 +381,9 @@
                                 AutoScrollToSelectedItem="True"
                                 Classes="ContentListView"
                                 IsTabStop="True"
-                                ItemsSource="{Binding AppState.SelectedTab^.ParentsChildrenCollection.Collection}"
+                                ItemsSource="{Binding AppState.SelectedTab^.ParentsChildren.Value}"
                                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                                ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                x:CompileBindings="False">
+                                ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="corevm:IItemViewModel">
                                         <local:ItemView
@@ -399,33 +403,22 @@
                                 Width="1" />
 
                             <Grid Grid.Column="2" RowDefinitions="Auto,*">
-                                <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation^.IsLoading^, FallbackValue=False}">
+                                <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation.Value.IsLoading^, FallbackValue=False}">
                                     <Image
                                         Classes="LoadingAnimation"
                                         Height="40"
                                         Source="{SvgImage /Assets/loading.svg}"
-                                        Width="40">
-                                        <!--  https://github.com/AvaloniaUI/Avalonia/issues/8791  -->
-                                        <!--  Has to explicitly set RotateTransform or animation does not work  -->
-                                        <Image.RenderTransform>
-                                            <TransformGroup>
-                                                <RotateTransform />
-                                            </TransformGroup>
-                                        </Image.RenderTransform>
-                                    </Image>
+                                        Width="40" />
                                 </Grid>
-                                <!--  Note: On Windows CurrentItemsCollection is not sorted (for some reason)  -->
-                                <!--  Although CurrentItemsCollectionObservable is slower, but it is sorted  -->
-                                <!--  This should be fixed (works on linux tho...)  -->
                                 <ListBox
                                     AutoScrollToSelectedItem="True"
                                     Classes="ContentListView"
                                     Grid.Row="1"
                                     IsTabStop="True"
-                                    ItemsSource="{Binding AppState.SelectedTab^.CurrentItemsCollectionObservable^}"
+                                    ItemsSource="{Binding AppState.SelectedTab^.CurrentItems.Value}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                    SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem^}"
+                                    SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value}"
                                     x:Name="CurrentItems">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="corevm:IItemViewModel">
@@ -439,9 +432,8 @@
                                     Foreground="{DynamicResource ErrorBrush}"
                                     Grid.Row="1"
                                     HorizontalAlignment="Center"
-                                    IsVisible="{Binding AppState.SelectedTab^.CurrentItemsCollection.Collection.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                    IsVisible="{Binding AppState.SelectedTab^.CurrentItems.Value.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
                                     Margin="10"
-                                    x:CompileBindings="False"
                                     x:Name="CurrentEmpty">
                                     Empty
                                 </TextBlock>
@@ -457,34 +449,56 @@
 
                             <Grid Grid.Column="4">
                                 <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^, Converter={x:Static ObjectConverters.IsNull}}">
-                                    <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
-                                        <ListBox
-                                            AutoScrollToSelectedItem="True"
-                                            Classes="ContentListView"
-                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
-                                            ItemsSource="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection}"
-                                            x:CompileBindings="False"
-                                            x:Name="ChildItems">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate x:DataType="corevm:IItemViewModel">
-                                                    <local:ItemView />
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
+                                    <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                                        <Grid RowDefinitions="Auto, Auto, *">
+
+                                            <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentSelectedItemAsContainer.Value.Container.IsLoading^, FallbackValue=False}">
+                                                <Image
+                                                    Classes="LoadingAnimation"
+                                                    Height="40"
+                                                    Source="{SvgImage /Assets/loading.svg}"
+                                                    Width="40" />
+                                            </Grid>
+
+
+                                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab^.CurrentLocation.Value.Exceptions}">
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock
+                                                            Classes="ErrorText"
+                                                            Margin="5,0,5,10"
+                                                            Text="{Binding Converter={StaticResource ExceptionToStringConverter}}" />
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+
+                                            <ListBox
+                                                AutoScrollToSelectedItem="True"
+                                                Classes="ContentListView"
+                                                Grid.Row="2"
+                                                IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
+                                                ItemsSource="{Binding AppState.SelectedTab^.SelectedsChildren.Value}"
+                                                x:Name="ChildItems">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="corevm:IItemViewModel">
+                                                        <local:ItemView />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </Grid>
 
                                         <TextBlock
                                             FontWeight="Bold"
                                             Foreground="{DynamicResource ErrorBrush}"
                                             HorizontalAlignment="Center"
-                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection.Collection.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
                                             Margin="10"
-                                            x:CompileBindings="False"
                                             x:Name="ChildEmpty">
                                             Empty
                                         </TextBlock>
                                     </Grid>
 
-                                    <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildrenCollection, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}" RowDefinitions="Auto, Auto">
+                                    <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}" RowDefinitions="Auto, Auto">
                                         <TextBlock
                                             Foreground="{DynamicResource ErrorBrush}"
                                             HorizontalAlignment="Center"
@@ -492,10 +506,13 @@
                                             Text="There were some errors while opening container."
                                             TextWrapping="Wrap" />
 
-                                        <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab^.CurrentSelectedItem^.BaseItem.Exceptions^}">
+                                        <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value.BaseItem.Exceptions}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Margin="5,0,5,10" Text="{Binding Converter={StaticResource ExceptionToStringConverter}}" />
+                                                    <TextBlock
+                                                        Classes="ErrorText"
+                                                        Margin="5,0,5,10"
+                                                        Text="{Binding Converter={StaticResource ExceptionToStringConverter}}" />
                                                 </DataTemplate>
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>

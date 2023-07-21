@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using DynamicData;
 using FileTime.Core.ContentAccess;
@@ -36,17 +37,19 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             ? new DirectoryInfo("/").GetDirectories()
             : Environment.GetLogicalDrives().Select(d => new DirectoryInfo(d));
 
-        Items.Edit(actions =>
+        Items.Clear();
+        Items.AddRange(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
+
+        /*Items.Edit(actions =>
         {
             actions.Clear();
             actions.AddOrUpdate(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
-        });
+        });*/
     }
 
     public override bool CanHandlePath(NativePath path)
     {
         var rootDrive = Items
-            .Items
             .FirstOrDefault(r =>
                 path.Path.StartsWith(
                     GetNativePath(r.Path).Path,
@@ -71,11 +74,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         {
             if ((path?.Length ?? 0) == 0)
             {
-                return Task.FromResult((IItem)this);
+                return Task.FromResult((IItem) this);
             }
             else if (Directory.Exists(path))
             {
-                return Task.FromResult((IItem)DirectoryToContainer(
+                return Task.FromResult((IItem) DirectoryToContainer(
                     new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
                     pointInTime,
                     !itemInitializationSettings.SkipChildInitialization)
@@ -83,7 +86,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             }
             else if (File.Exists(path))
             {
-                return Task.FromResult((IItem)FileToElement(new FileInfo(path), pointInTime));
+                return Task.FromResult((IItem) FileToElement(new FileInfo(path), pointInTime));
             }
 
             var type = forceResolvePathType switch
@@ -115,10 +118,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         return forceResolvePathType switch
         {
             AbsolutePathType.Container => Task.FromResult(
-                (IItem)CreateEmptyContainer(
+                (IItem) CreateEmptyContainer(
                     nativePath,
                     pointInTime,
-                    new List<Exception>() { innerException }
+                    new List<Exception>() {innerException}
                 )
             ),
             AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
@@ -132,7 +135,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         PointInTime pointInTime,
         IEnumerable<Exception>? initialExceptions = null)
     {
-        var exceptions = new SourceList<Exception>();
+        var exceptions = new ObservableCollection<Exception>();
         if (initialExceptions is not null)
         {
             exceptions.AddRange(initialExceptions);
@@ -166,9 +169,9 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             this,
             true,
             pointInTime,
-            exceptions.Connect(),
+            exceptions,
             new ExtensionCollection().AsReadOnly(),
-            new SourceCache<AbsolutePath, string>(a => a.Path.Path).Connect()
+            new ObservableCollection<AbsolutePath>()
         );
     }
 
@@ -202,9 +205,9 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                     pointInTime,
                     parentFullName,
                     AbsolutePathType.Container);
-        var exceptions = new SourceList<Exception>();
+        var exceptions = new ObservableCollection<Exception>();
 
-        var children = new SourceCache<AbsolutePath, string>(i => i.Path.Path);
+        var children = new ObservableCollection<AbsolutePath>();
 
         var container = new Container(
             directoryInfo.Name,
@@ -221,27 +224,30 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             this,
             true,
             pointInTime,
-            exceptions.Connect(),
+            exceptions,
             new ExtensionCollection().AsReadOnly(),
-            children.Connect().StartWithEmpty()
+            children
         );
 
-        Task.Run(() => LoadChildren(container, directoryInfo, children, pointInTime, exceptions));
+        if (initializeChildren)
+        {
+            Task.Run(async () => await LoadChildren(container, directoryInfo, children, pointInTime, exceptions));
+        }
 
         return container;
     }
 
-    private void LoadChildren(Container container,
+    private async Task LoadChildren(Container container,
         DirectoryInfo directoryInfo,
-        SourceCache<AbsolutePath, string> children,
+        ObservableCollection<AbsolutePath> children,
         PointInTime pointInTime,
-        SourceList<Exception> exceptions)
+        ObservableCollection<Exception> exceptions)
     {
         var lockObj = new object();
         var loadingIndicatorCancellation = new CancellationTokenSource();
 
-        Task.Run(DelayedLoadingIndicator);
-        LoadChildren();
+        Task.Run(async () => await DelayedLoadingIndicator());
+        await LoadChildrenInternal();
 
         lock (lockObj)
         {
@@ -249,28 +255,44 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             container.StopLoading();
         }
 
-        void LoadChildren()
+        Task LoadChildrenInternal()
         {
             try
             {
                 foreach (var directory in directoryInfo.EnumerateDirectories())
                 {
-                    if (container.LoadingCancellationToken.IsCancellationRequested) break;
-                    var absolutePath = DirectoryToAbsolutePath(directory, pointInTime);
-                    children.AddOrUpdate(absolutePath);
+                    try
+                    {
+                        if (container.LoadingCancellationToken.IsCancellationRequested) break;
+                        var absolutePath = DirectoryToAbsolutePath(directory, pointInTime);
+                        children.Add(absolutePath);
+                    }
+                    catch (Exception e)
+                    {
+                        exceptions.Add(e);
+                    }
                 }
 
                 foreach (var file in directoryInfo.EnumerateFiles())
                 {
-                    if (container.LoadingCancellationToken.IsCancellationRequested) break;
-                    var absolutePath = FileToAbsolutePath(file, pointInTime);
-                    children.AddOrUpdate(absolutePath);
+                    try
+                    {
+                        if (container.LoadingCancellationToken.IsCancellationRequested) break;
+                        var absolutePath = FileToAbsolutePath(file, pointInTime);
+                        children.Add(absolutePath);
+                    }
+                    catch (Exception e)
+                    {
+                        exceptions.Add(e);
+                    }
                 }
             }
             catch (Exception e)
             {
                 exceptions.Add(e);
             }
+
+            return Task.CompletedTask;
         }
 
         async Task DelayedLoadingIndicator()
@@ -278,7 +300,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             var token = loadingIndicatorCancellation.Token;
             try
             {
-                await Task.Delay(500, token);
+                await Task.Delay(2000, token);
             }
             catch
             {
@@ -330,7 +352,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             GetFileAttributes(fileInfo),
             this,
             pointInTime,
-            new SourceList<Exception>().Connect(),
+            new ObservableCollection<Exception>(),
             extensions.AsReadOnly()
         );
     }
@@ -375,7 +397,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var finalSize = size switch
         {
             > int.MaxValue => int.MaxValue,
-            _ => (int)size
+            _ => (int) size
         };
         var buffer = new byte[finalSize];
         var realSize = await reader.ReadAsync(buffer.AsMemory(0, finalSize), cancellationToken);

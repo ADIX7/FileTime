@@ -1,47 +1,37 @@
 using System.Runtime.InteropServices;
-using DynamicData;
-using DynamicData.Binding;
 using FileTime.App.Core.Services;
-using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.GuiApp.ViewModels;
 using FileTime.Providers.Local;
+using ObservableComputations;
 
 namespace FileTime.GuiApp.Services;
 
-public class RootDriveInfoService : IStartupHandler
+public class RootDriveInfoService : IStartupHandler, IDisposable
 {
+    private readonly ILocalContentProvider _localContentProvider;
     private readonly List<DriveInfo> _rootDrives = new();
+    private readonly OcConsumer _rootDriveInfosConsumer = new();
 
     public RootDriveInfoService(
         IGuiAppState guiAppState,
         ILocalContentProvider localContentProvider)
     {
+        _localContentProvider = localContentProvider;
         InitRootDrives();
 
-        var rootDriveInfos = localContentProvider.Items.Transform(
-            i =>
-            {
-                var rootDrive = _rootDrives.FirstOrDefault(d =>
-                {
-                    var containerPath = localContentProvider.GetNativePath(i.Path).Path;
-                    var drivePath = d.Name.TrimEnd(Path.DirectorySeparatorChar);
-                    return containerPath == drivePath
-                           || (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && containerPath == "/" &&
-                               d.Name == "/");
-                });
-
-                return (Path: i, Drive: rootDrive);
-            }
+        var rootDriveInfos = localContentProvider.Items.Selecting<AbsolutePath, (AbsolutePath Path, DriveInfo? Drive)>(
+            i => MatchRootDrive(i)
         )
-        .Filter(t => t.Drive is not null)
-        .TransformAsync(async t => (Item: await t.Path.ResolveAsyncSafe(), Drive: t.Drive!))
-        .Filter(t => t.Item is IContainer)
-        .Transform(t => (Container: (IContainer) t.Item!, t.Drive))
-        .Transform(t => new RootDriveInfo(t.Drive, t.Container))
-        .Sort(SortExpressionComparer<RootDriveInfo>.Ascending(d => d.Name));
+        .Filtering(t => IsNotNull(t.Drive))
+        .Selecting(t => Resolve(t))
+        .Filtering(t => t.Item is IContainer)
+        .Selecting(t => new RootDriveInfo(t.Drive, (IContainer)t.Item!))
+        .Ordering(d => d.Name);
 
-        guiAppState.RootDriveInfos = rootDriveInfos.ToBindedCollection();
+        rootDriveInfos.For(_rootDriveInfosConsumer);
+
+        guiAppState.RootDriveInfos = rootDriveInfos;
 
         void InitRootDrives()
         {
@@ -60,5 +50,29 @@ public class RootDriveInfoService : IStartupHandler
         }
     }
 
+    private static bool IsNotNull(object? obj) => obj is not null;
+    
+    private static (IItem? Item, DriveInfo Drive) Resolve((AbsolutePath Path, DriveInfo? Drive) tuple)
+    {
+        var t = Task.Run(async () => await tuple.Path.ResolveAsyncSafe());
+        t.Wait();
+        return (Item: t.Result, Drive: tuple.Drive!);
+    }
+
+    private (AbsolutePath Path, DriveInfo? Drive) MatchRootDrive(AbsolutePath sourceItem)
+    {
+        var rootDrive = _rootDrives.FirstOrDefault(d =>
+        {
+            var containerPath = _localContentProvider.GetNativePath(sourceItem.Path).Path;
+            var drivePath = d.Name.TrimEnd(Path.DirectorySeparatorChar);
+            return containerPath == drivePath
+                   || (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && containerPath == "/" &&
+                       d.Name == "/");
+        });
+
+        return (Path: sourceItem, Drive: rootDrive);
+    }
+
     public Task InitAsync() => Task.CompletedTask;
+    public void Dispose() => _rootDriveInfosConsumer.Dispose();
 }

@@ -26,6 +26,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IIdentifiableUserCommandService, IdentifiableUserCommandService>();
         serviceCollection.TryAddSingleton<IItemPreviewService, ItemPreviewService>();
         serviceCollection.TryAddSingleton<ITimelineViewModel, TimelineViewModel>();
+        serviceCollection.TryAddSingleton<IRefreshSmoothnessCalculator, RefreshSmoothnessCalculator>();
 
         return serviceCollection
             .AddCommandHandlers()

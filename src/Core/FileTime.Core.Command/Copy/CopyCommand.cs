@@ -140,12 +140,12 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
             if (item is IContainer container)
             {
-                if (resolvedTarget.ItemsCollection.All(i => i.Path.GetName() != item.Name))
+                if (resolvedTarget.Items.All(i => i.Path.GetName() != item.Name))
                 {
                     await copyOperation.CreateContainerAsync(resolvedTarget, container.Name, container.PointInTime);
                 }
 
-                var children = container.ItemsCollection;
+                var children = container.Items;
 
                 await TraverseTree(currentTime, children.Select(c => c.Path).ToList(), target.GetChild(item.Name, AbsolutePathType.Container), transportMode, copyOperation);
                 await copyOperation.ContainerCopyDoneAsync(new AbsolutePath(_timelessContentProvider, container));

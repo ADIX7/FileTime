@@ -7,7 +7,7 @@ using FileTime.GuiApp.Services;
 
 namespace FileTime.GuiApp.ViewModels;
 
-public class MainWindowDesignViewModel : IMainWindowViewModel
+public class MainWindowDesignViewModel //: IMainWindowViewModel
 {
     public bool Loading => false;
     public IObservable<string?> MainFont { get; } = new BehaviorSubject<string?>(null);
@@ -20,6 +20,6 @@ public class MainWindowDesignViewModel : IMainWindowViewModel
 
     public MainWindowDesignViewModel()
     {
-        AppState = new GuiAppStatePreview();
+        //AppState = new GuiAppStatePreview();
     }
 }

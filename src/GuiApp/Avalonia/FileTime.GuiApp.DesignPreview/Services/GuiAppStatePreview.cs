@@ -10,7 +10,7 @@ using FileTime.GuiApp.ViewModels;
 
 namespace FileTime.GuiApp.DesignPreview.Services;
 
-public class GuiAppStatePreview : IGuiAppState
+/*public class GuiAppStatePreview : IGuiAppState
 {
     public GuiAppStatePreview()
     {
@@ -19,7 +19,7 @@ public class GuiAppStatePreview : IGuiAppState
         CurrentSelectedTab = tab;
         
         var tabs = new ObservableCollection<ITabViewModel>(new [] {tab});
-        Tabs = new ReadOnlyObservableCollection<ITabViewModel>(tabs);
+        Tabs = new ObservableCollection<ITabViewModel>(tabs);
 
         SearchText = new BehaviorSubject<string?>(null);
         ViewMode = new BehaviorSubject<ViewMode>(FileTime.App.Core.Models.Enums.ViewMode.Default);
@@ -30,7 +30,7 @@ public class GuiAppStatePreview : IGuiAppState
         PopupTexts = new ObservableCollection<string>();
     }
 
-    public ReadOnlyObservableCollection<ITabViewModel> Tabs { get; }
+    public ObservableCollection<ITabViewModel> Tabs { get; }
     public IObservable<ITabViewModel> SelectedTab { get; }
     public IObservable<string?> SearchText { get; }
     public IObservable<ViewMode> ViewMode { get; }
@@ -56,4 +56,4 @@ public class GuiAppStatePreview : IGuiAppState
     public ObservableCollection<string> PopupTexts { get; }
     public IObservable<GuiPanel> ActivePanel { get; }
     public void SetActivePanel(GuiPanel newPanel) => throw new NotImplementedException();
-}
+}*/

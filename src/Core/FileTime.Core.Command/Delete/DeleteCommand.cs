@@ -73,7 +73,7 @@ public class DeleteCommand : CommandBase, IExecutableCommand
             {
                 await TraverseTree(
                     currentTime,
-                    container.ItemsCollection.Select(i => i.Path),
+                    container.Items.Select(i => i.Path),
                     itemDeleters,
                     deleteStrategy
                 );

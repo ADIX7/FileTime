@@ -27,7 +27,7 @@ public partial class GuiAppState : AppStateBase, IGuiAppState, IDisposable
 
     [Property] private List<CommandBindingConfiguration> _possibleCommands = new();
 
-    [Property] private BindedCollection<RootDriveInfo, string> _rootDriveInfos = new();
+    [Property] private ObservableCollection<RootDriveInfo> _rootDriveInfos = new();
 
     [Property] private IReadOnlyList<PlaceInfo> _places = new List<PlaceInfo>();
 

@@ -23,17 +23,10 @@ public record Container(
     IContentProvider Provider,
     bool AllowRecursiveDeletion,
     PointInTime PointInTime,
-    IObservable<IChangeSet<Exception>> Exceptions,
+    ObservableCollection<Exception> Exceptions,
     ReadOnlyExtensionCollection Extensions,
-    IObservable<IChangeSet<AbsolutePath, string>> Items) : IContainer
+    ObservableCollection<AbsolutePath> Items) : IContainer
 {
-
-    private readonly Lazy<ReadOnlyObservableCollection<AbsolutePath>> _itemsCollectionLazy =
-        new(() =>
-        {
-            Items.Bind(out var items).Subscribe();
-            return items;
-        });
     private readonly CancellationTokenSource _loadingCancellationTokenSource = new();
     private readonly BehaviorSubject<bool> _isLoading = new(false);
 
@@ -41,8 +34,6 @@ public record Container(
     public IObservable<bool> IsLoading => _isLoading.AsObservable();
     public bool? IsLoaded { get; private set; }
     public AbsolutePathType Type => AbsolutePathType.Container;
-
-    public ReadOnlyObservableCollection<AbsolutePath> ItemsCollection => _itemsCollectionLazy.Value;
 
     public async Task WaitForLoaded(CancellationToken token = default)
     {

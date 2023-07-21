@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using DynamicData;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
@@ -19,7 +20,7 @@ public record Element(
     string? Attributes,
     IContentProvider Provider,
     PointInTime PointInTime,
-    IObservable<IChangeSet<Exception>> Exceptions,
+    ObservableCollection<Exception> Exceptions,
     ReadOnlyExtensionCollection Extensions) : IElement
 {
     public AbsolutePathType Type => AbsolutePathType.Element;

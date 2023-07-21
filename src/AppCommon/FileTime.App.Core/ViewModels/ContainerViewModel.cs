@@ -10,12 +10,11 @@ public partial class ContainerViewModel : ItemViewModel, IContainerViewModel
 {
     public IContainer? Container => BaseItem as IContainer;
 
-    public ContainerViewModel(IItemNameConverterService itemNameConverterService, IAppState appState) : base(itemNameConverterService, appState)
+    public ContainerViewModel(IItemNameConverterService itemNameConverterService, IAppState appState) 
+        : base(itemNameConverterService, appState)
     {
     }
 
-    public void Init(IContainer item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
-    {
-        Init((IItem)item, parentTab, itemViewModelType);
-    }
+    public void Init(IContainer item, ITabViewModel parentTab, ItemViewModelType itemViewModelType) 
+        => Init((IItem)item, parentTab, itemViewModelType);
 }

@@ -9,7 +9,7 @@ using FileTime.Core.Services;
 
 namespace FileTime.GuiApp.DesignPreview.Services;
 
-public class TabViewModelPreview : ITabViewModel
+/*public class TabViewModelPreview : ITabViewModel
 {
     private static readonly ItemNameConverterService _itemNameConverterService = new();
 
@@ -115,4 +115,4 @@ public class TabViewModelPreview : ITabViewModel
     public void Dispose()
     {
     }
-}
+}*/

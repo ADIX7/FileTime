@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using DynamicData;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
@@ -11,8 +12,8 @@ public class SearchTask : ISearchTask
     private readonly IContainer _baseContainer;
     private readonly ISearchMatcher _matcher;
     private readonly Container _container;
-    private readonly SourceList<Exception> _exceptions = new();
-    private readonly SourceCache<AbsolutePath, string> _items = new(p => p.Path.Path);
+    private readonly ObservableCollection<Exception> _exceptions = new();
+    private readonly ObservableCollection<AbsolutePath> _items = new();
     private readonly SemaphoreSlim _searchingLock = new(1, 1);
     private bool _isSearching;
     private static int _searchId = 1;
@@ -43,9 +44,9 @@ public class SearchTask : ISearchTask
             contentProvider,
             false,
             PointInTime.Present,
-            _exceptions.Connect(),
+            _exceptions,
             new ReadOnlyExtensionCollection(new ExtensionCollection()),
-            _items.Connect().StartWithEmpty()
+            _items
         );
     }
 
@@ -78,7 +79,7 @@ public class SearchTask : ISearchTask
 
     private async Task TraverseTree(IContainer container)
     {
-        var items = container.ItemsCollection.ToList();
+        var items = container.Items.ToList();
 
         var childContainers = new List<IContainer>();
 
@@ -87,7 +88,7 @@ public class SearchTask : ISearchTask
             var item = await itemPath.ResolveAsync();
             if (await _matcher.IsItemMatchAsync(item))
             {
-                _items.AddOrUpdate(itemPath);
+                _items.Add(itemPath);
             }
 
             if (item is IContainer childContainer)

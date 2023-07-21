@@ -1,3 +1,4 @@
+using DeclarativeProperty;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.Core.Models;
@@ -10,9 +11,9 @@ public interface IItemViewModel : IInitable<IItem, ITabViewModel, ItemViewModelT
     IItem? BaseItem { get; set; }
     IObservable<IReadOnlyList<ItemNamePart>>? DisplayName { get; set; }
     string? DisplayNameText { get; set; }
-    IObservable<bool>? IsSelected { get; set; }
+    IDeclarativeProperty<bool> IsSelected { get; set; }
     IObservable<bool>? IsMarked { get; set; }
-    IObservable<bool> IsAlternative { get; }
+    IDeclarativeProperty<bool> IsAlternative { get; }
     IObservable<ItemViewMode> ViewMode { get; set; }
     DateTime? CreatedAt { get; set; }
     string? Attributes { get; set; }

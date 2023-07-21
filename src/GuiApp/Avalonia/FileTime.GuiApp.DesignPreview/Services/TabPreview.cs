@@ -6,7 +6,7 @@ using FileTime.Core.Services;
 
 namespace FileTime.GuiApp.DesignPreview.Services;
 
-public class TabPreview : ITab
+/*public class TabPreview : ITab
 {
     public TabPreview()
     {
@@ -46,4 +46,4 @@ public class TabPreview : ITab
     public void Dispose()
     {
     }
-}
+}*/
