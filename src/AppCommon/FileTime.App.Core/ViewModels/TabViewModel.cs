@@ -11,6 +11,7 @@ using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
 using FileTime.Core.Services;
+using FileTime.Core.Timeline;
 using InitableService;
 using MvvmGen;
 using ObservableComputations;
@@ -26,6 +27,7 @@ public partial class TabViewModel : ITabViewModel
     private readonly IItemNameConverterService _itemNameConverterService;
     private readonly IAppState _appState;
     private readonly IRxSchedulerService _rxSchedulerService;
+    private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly SourceList<FullName> _markedItems = new();
     private readonly List<IDisposable> _disposables = new();
     private bool _disposed;
@@ -51,7 +53,8 @@ public partial class TabViewModel : ITabViewModel
         IServiceProvider serviceProvider,
         IItemNameConverterService itemNameConverterService,
         IAppState appState,
-        IRxSchedulerService rxSchedulerService)
+        IRxSchedulerService rxSchedulerService,
+        ITimelessContentProvider timelessContentProvider)
     {
         _serviceProvider = serviceProvider;
         _itemNameConverterService = itemNameConverterService;
@@ -60,6 +63,7 @@ public partial class TabViewModel : ITabViewModel
         MarkedItems = _markedItems.Connect().StartWithEmpty();
         IsSelected = _appState.SelectedTab.Select(s => s == this);
         _rxSchedulerService = rxSchedulerService;
+        _timelessContentProvider = timelessContentProvider;
     }
 
     public void Init(ITab tab, int tabNumber)
@@ -103,7 +107,14 @@ public partial class TabViewModel : ITabViewModel
             tab.CurrentSelectedItem,
             CurrentItems.Watch<ObservableCollection<IItemViewModel>, IItemViewModel>(),
             (currentSelectedItem, currentItems) =>
-                Task.FromResult(currentItems?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItem?.Path.Path))
+                Task.FromResult(currentItems?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItem?.Path.Path)),
+            item =>
+            {
+                if (item?.BaseItem is not { } baseItem)
+                    return;
+
+                tab.SetSelectedItem(new AbsolutePath(_timelessContentProvider, baseItem));
+            }
         );
 
         CurrentSelectedItemAsContainer = CurrentSelectedItem.Map(i => i as IContainerViewModel);

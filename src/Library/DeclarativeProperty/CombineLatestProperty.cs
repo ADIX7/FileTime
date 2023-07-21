@@ -6,16 +6,20 @@ public sealed class CombineLatestProperty<T1, T2, TResult> : DeclarativeProperty
     private T1? _value1;
     private T2? _value2;
 
-    public CombineLatestProperty(IDeclarativeProperty<T1> prop1, IDeclarativeProperty<T2> prop2, Func<T1?, T2?, Task<TResult>> func)
+    public CombineLatestProperty(
+        IDeclarativeProperty<T1> prop1,
+        IDeclarativeProperty<T2> prop2,
+        Func<T1?, T2?, Task<TResult>> func,
+        Action<TResult?>? setValueHook = null) : base(setValueHook)
     {
         ArgumentNullException.ThrowIfNull(prop1);
         ArgumentNullException.ThrowIfNull(prop2);
-        
+
         _func = func;
 
         _value1 = prop1.Value is null ? default : prop1.Value;
         _value2 = prop2.Value is null ? default : prop2.Value;
-        
+
         prop1.Subscribe(async (value1, token) =>
         {
             _value1 = value1;
