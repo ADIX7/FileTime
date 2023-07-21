@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using DeclarativeProperty;
 using DynamicData;
@@ -10,7 +8,6 @@ using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using ObservableComputations;
-using static System.DeferTools;
 
 namespace FileTime.Core.Services;
 
@@ -57,19 +54,6 @@ public class Tab : ITab
             return Task.CompletedTask;
         });
 
-        /*CurrentLocation = _currentLocation
-            .DistinctUntilChanged()
-            .Merge(_currentLocationForced)
-            .Do(_ =>
-            {
-                if (_currentSelectedItemCached is not null)
-                {
-                    LastDeepestSelectedPath = FullName.CreateSafe(PathHelper.GetLongerPath(LastDeepestSelectedPath?.Path, _currentSelectedItemCached.Path.Path));
-                }
-            })
-            .Publish(null)
-            .RefCount();*/
-
         CurrentItems = CurrentLocation.Map((container, _) =>
             {
                 var items = container is null
@@ -77,49 +61,9 @@ public class Tab : ITab
                     : container.Items.Selecting<AbsolutePath, IItem>(i => MapItem(i));
                 return Task.FromResult(items);
             }
-        ) /*.Watch<ObservableCollection<IItem>, IItem>()*/;
-        /*using var _ = Defer(() =>
-            CurrentItems.Subscribe(c => UpdateConsumer(c, ref _currentItemsConsumer))
-        );*/
+        );
 
-        /*CurrentItems.RegisterTrigger(
-            (sender, items) =>
-            {
-                if (items is null)
-                    return null;
-
-                items.CollectionChanged += Handler;
-
-                return Disposable.Create(() => items.CollectionChanged -= Handler);
-
-                void Handler(object? o, NotifyCollectionChangedEventArgs e)
-                {
-                    var t = Task.Run(async () => await sender.ReFireAsync());
-                    t.Wait();
-                }
-            });*/
-
-        /*CurrentItems =
-            Observable.Merge(
-                    Observable.CombineLatest(
-                        CurrentLocation
-                            .Where(c => c is not null)
-                            .Select(c => c!.ItemsCollection)
-                            .Select(items => items.TransformAsync(MapItem)),
-                        _itemFilters.Connect().StartWithEmpty().ToCollection(),
-                        (items, filters) =>
-                            //Note: Dont user Sort before where, as DynamicData cant handle
-                            //sort in (so that's if they are before) filters
-                            items
-                                .Where(i => filters.All(f => f.Filter(i)))
-                                .Sort(SortItems())
-                    ),
-                    CurrentLocation
-                        .Where(c => c is null)
-                        .Select(_ => (IObservable<IChangeSet<IItem, string>>?) null)
-                )
-                .Publish(null)
-                .RefCount();*/
+        
         CurrentSelectedItem = DeclarativePropertyHelpers.CombineLatest(
             CurrentItems.Watch<ObservableCollection<IItem>, IItem>(),
             _currentRequestItem.DistinctUntilChanged(),
@@ -136,29 +80,6 @@ public class Tab : ITab
             _refreshSmoothnessCalculator.RegisterChange();
             _refreshSmoothnessCalculator.RecalculateSmoothness();
         });
-
-
-        /*CurrentSelectedItem =
-            Observable.CombineLatest(
-                    CurrentItems
-                        .Select(c =>
-                            c == null
-                                ? Observable.Return<IReadOnlyCollection<IItem>?>(null)
-                                : c.ToCollection()
-                        )
-                        .Switch(),
-                    _currentSelectedItem,
-                    (items, selected) =>
-                    {
-                        if (selected != null && (items?.Any(i => i.FullName == selected.Path) ?? true)) return selected;
-                        if (items == null || items.Count == 0) return null;
-
-                        return GetSelectedItemByItems(items);
-                    }
-                )
-                .DistinctUntilChanged()
-                .Publish(null)
-                .RefCount();*/
 
         CurrentSelectedItem.Subscribe(async (s, _) =>
         {

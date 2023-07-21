@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Reactive.Linq;
 using DeclarativeProperty;
 using DynamicData;
@@ -87,22 +86,6 @@ public partial class TabViewModel : ITabViewModel
             () => CurrentItems.Subscribe(c => UpdateConsumer(c, ref _currentItemsConsumer))
         );
 
-        /*CurrentSelectedItem =
-            Observable.CombineLatest(
-                    CurrentItems,
-                    tab.CurrentSelectedItem,
-                    (currentItems, currentSelectedItemPath) =>
-                        currentItems == null
-                            ? Observable.Return((IItemViewModel?)null)
-                            : currentItems
-                                .ToCollection()
-                                .Select(items =>
-                                    items.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItemPath?.Path.Path))
-                )
-                .Switch()
-                .Publish(null)
-                .RefCount();*/
-
         CurrentSelectedItem = DeclarativePropertyHelpers.CombineLatest(
             tab.CurrentSelectedItem,
             CurrentItems.Watch<ObservableCollection<IItemViewModel>, IItemViewModel>(),
@@ -118,17 +101,6 @@ public partial class TabViewModel : ITabViewModel
         );
 
         CurrentSelectedItemAsContainer = CurrentSelectedItem.Map(i => i as IContainerViewModel);
-        //CurrentSelectedItem = tab.CurrentSelectedItem.Map((item, _) => Task.FromResult(CurrentItems.Value?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == item?.Path.Path)));
-
-        /*CurrentSelectedItem =
-            Observable.CombineLatest(
-                    CurrentItems,
-                    tab.CurrentSelectedItem,
-                    (currentItems, currentSelectedItemPath) =>
-                        CurrentItemsCollection?.Collection?.FirstOrDefault(i => i.BaseItem?.FullName?.Path == currentSelectedItemPath?.Path.Path)
-                )
-                .Publish(null)
-                .RefCount();*/
 
         SelectedsChildren = CurrentSelectedItem
             .Debounce(TimeSpan.FromMilliseconds(200), resetTimer: true)
@@ -167,62 +139,6 @@ public partial class TabViewModel : ITabViewModel
         );
 
         tab.CurrentLocation.Subscribe(_ => _markedItems.Clear()).AddToDisposables(_disposables);
-
-        /*IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> InitSelectedsChildren()
-        {
-            var currentSelectedItemThrottled =
-                CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250)).Publish(null).RefCount();
-            return Observable.Merge(
-                    currentSelectedItemThrottled
-                        .WhereNotNull()
-                        .OfType<IContainerViewModel>()
-                        .Where(c => c?.Container is not null)
-                        .Select(c => c.Container!.Items)
-                        .Select(i =>
-                            i
-                                ?.TransformAsync(MapItemAsync)
-                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild))
-                                .Sort(SortItems())
-                        ),
-                    currentSelectedItemThrottled
-                        .Where(c => c is null or not IContainerViewModel)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?) null)
-                )
-                /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-                .SubscribeOn(_rxSchedulerService.GetUIScheduler())#1#
-                .Publish(null)
-                .RefCount();
-        }
-
-        IObservable<IObservable<IChangeSet<IItemViewModel, string>>?> InitParentsChildren()
-        {
-            var parentThrottled = CurrentLocation
-                .Select(l => l?.Parent)
-                .DistinctUntilChanged()
-                .Publish(null)
-                .RefCount();
-
-            return Observable.Merge(
-                    parentThrottled
-                        .Where(p => p is not null)
-                        .Select(p => Observable.FromAsync(async () => (IContainer) await p!.ResolveAsync()))
-                        .Switch()
-                        .Select(p => p.Items)
-                        .Select(items =>
-                            items
-                                ?.TransformAsync(MapItemAsync)
-                                .Transform(i => MapItemToViewModel(i, ItemViewModelType.Parent))
-                                .Sort(SortItems())
-                        ),
-                    parentThrottled
-                        .Where(p => p is null)
-                        .Select(_ => (IObservable<IChangeSet<IItemViewModel, string>>?) null)
-                )
-                /*.ObserveOn(_rxSchedulerService.GetWorkerScheduler())
-                .SubscribeOn(_rxSchedulerService.GetUIScheduler())#1#
-                .Publish(null)
-                .RefCount();
-        }*/
     }
 
 
@@ -309,10 +225,8 @@ public partial class TabViewModel : ITabViewModel
         }
     }
 
-    public void ClearMarkedItems()
-    {
-        _markedItems.Clear();
-    }
+    public void ClearMarkedItems() 
+        => _markedItems.Clear();
 
     ~TabViewModel() => Dispose(false);
 

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using DeclarativeProperty;
 using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Extensions;
@@ -78,9 +79,29 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<OpenCommandPaletteCommand>(OpenCommandPalette),
             new TypeUserCommandHandler<OpenContainerCommand>(OpenContainer),
             new TypeUserCommandHandler<OpenSelectedCommand>(OpenSelected),
+            new TypeUserCommandHandler<RunOrOpenCommand>(RunOrOpen),
             new TypeUserCommandHandler<RefreshCommand>(Refresh),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
+    }
+
+    private async Task RunOrOpen()
+    {
+        if (_currentSelectedItem?.Value is IContainerViewModel)
+        {
+            await OpenSelected();
+        }
+        else if (_currentSelectedItem?.Value is IElementViewModel 
+                     {Element: {NativePath: not null, Provider: ILocalContentProvider} localFile}
+                 )
+        {
+            Process.Start(new ProcessStartInfo(localFile.NativePath!.Path) {UseShellExecute = true});
+
+            if (_viewMode == ViewMode.RapidTravel)
+            {
+                await ExitRapidTravel();
+            }
+        }
     }
 
     private Task OpenCommandPalette()
@@ -232,10 +253,10 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             var relevantItems = _currentSelectedItem?.Value is null
                 ? items.Reverse().ToList()
                 : items.TakeWhile(i => !i.EqualsTo(_currentSelectedItem?.Value)).Reverse().ToList();
-            
+
             var fallBackItems = relevantItems.Take(PageSize).Reverse();
             var preferredItems = relevantItems.Skip(PageSize);
-            
+
             return preferredItems.Concat(fallBackItems).FirstOrDefault();
         });
 
