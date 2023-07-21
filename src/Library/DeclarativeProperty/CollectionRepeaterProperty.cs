@@ -31,7 +31,7 @@ public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropert
         }
         if (collection is {} newCollection)
         {
-            //newCollection.CollectionChanged -= HandleCollectionChanged;
+            newCollection.CollectionChanged -= HandleCollectionChanged;
             newCollection.CollectionChanged += HandleCollectionChanged;
         }
 

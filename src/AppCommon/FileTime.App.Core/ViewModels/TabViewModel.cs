@@ -154,10 +154,10 @@ public partial class TabViewModel : ITabViewModel
         ParentsChildren = CurrentLocation.Map(async (item, _) =>
         {
             if (item is null || item.Parent is null) return (ObservableCollection<IItemViewModel>?) null;
-            var parent = (IContainer) await item.Parent.ResolveAsync(itemInitializationSettings: new ItemInitializationSettings(true));
+            var parent = (IContainer) await item.Parent.ResolveAsync();
 
             var items = parent.Items
-                .Selecting<AbsolutePath, IItem>(i => MapItem(i))
+                .Selecting(i => MapItem(i))
                 .Selecting(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild));
 
             return items;
