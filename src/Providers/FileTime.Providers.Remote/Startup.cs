@@ -11,6 +11,7 @@ public static class Startup
         serviceCollection.TryAddTransient<IRemoteItemCreator, RemoteItemCreator>();
         serviceCollection.TryAddTransient<IRemoteItemDeleter, RemoteItemDeleter>();
         serviceCollection.TryAddTransient<IRemoteItemMover, RemoteItemMover>();
+        serviceCollection.TryAddTransient<IRemoteContentWriter, RemoteContentWriter>();
         return serviceCollection;
     }
 }

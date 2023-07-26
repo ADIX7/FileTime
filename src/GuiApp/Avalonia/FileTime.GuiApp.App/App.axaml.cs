@@ -21,7 +21,7 @@ public class App : Application
         var configuration = Startup.CreateConfiguration();
         DI.ServiceProvider = DependencyInjection
             .RegisterDefaultServices(configuration: configuration)
-            .AddRemoteServices()
+            .AddServerCoreServices()
             .AddFrequencyNavigation()
             .AddCommandPalette()
             .AddSearch()

@@ -1,11 +1,13 @@
 ﻿using System.Net;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using FileTime.Server.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,14 +17,23 @@ namespace FileTime.Server.Web;
 
 public class Program
 {
-    public static async Task Start(string[] args, IContainer rootContainer, CancellationToken applicationExit)
+    public static async Task Start(ConnectionHandlerParameters parameters)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(parameters.Args);
 
         var configuration = builder.Configuration;
 
+        //Note: Use app wide configuration instead of the default ASP.NET Core configuration 
+#pragma warning disable ASP0013
+        builder.Host.ConfigureAppConfiguration((_, configurationBuilder) =>
+        {
+            configurationBuilder.Sources.Clear();
+            configurationBuilder.AddConfiguration(parameters.ConfigurationRoot);
+        });
+#pragma warning restore ASP0013
+
         builder.Host.UseServiceProviderFactory(
-            new AutofacChildLifetimeScopeServiceProviderFactory(rootContainer.BeginLifetimeScope("WebScope"))
+            new AutofacChildLifetimeScopeServiceProviderFactory(parameters.RootContainer.BeginLifetimeScope("WebScope"))
         );
 
         builder.Host.UseSerilog();
@@ -32,6 +43,7 @@ public class Program
             serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, port));
         });
 
+        builder.Services.AddHttpLogging(options => options.LoggingFields = HttpLoggingFields.All);
         builder.Services.AddSignalR();
         builder.Services.AddHealthChecks();
         builder.Services.AddHostedService<PortWriterService>();
@@ -43,11 +55,12 @@ public class Program
 
         if (!app.Environment.IsDevelopment())
         {
+            app.UseHttpLogging();
         }
 
         app.MapHub<ConnectionHub>("/RemoteHub");
         app.UseHealthChecks("/health");
 
-        await app.RunAsync(applicationExit);
+        await app.RunAsync(parameters.ApplicationExit);
     }
 }

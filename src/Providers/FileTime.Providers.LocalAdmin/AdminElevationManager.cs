@@ -89,8 +89,6 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
                 process.Start();
                 _adminProcess = process;
 
-                IsAdminInstanceRunning = true;
-
                 //TODO: timeout
                 while (!File.Exists(portFileName) || new FileInfo(portFileName).Length == 0)
                     await Task.Delay(10);
@@ -108,6 +106,8 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
                     );
                 }
             }
+
+            IsAdminInstanceRunning = true;
 
             var connectionInfo = new ConnectionInfo
             {

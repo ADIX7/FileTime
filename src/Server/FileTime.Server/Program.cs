@@ -11,21 +11,33 @@ using Serilog;
 
 
 var applicationCancellation = new CancellationTokenSource();
+var configurationRoot = CreateConfiguration();
+
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+#if DEBUG
+    .MinimumLevel.Verbose()
+    .ReadFrom.Configuration(configurationRoot)
+#else
+    .MinimumLevel.Information()
+#endif
     .WriteTo.Console()
     .CreateLogger();
 
-var bootstrapConfiguration = CreateConfiguration();
+var rootContainer = CreateRootDiContainer(configurationRoot);
 
-var rootContainer = CreateRootDiContainer(bootstrapConfiguration);
+var handlerParameters = new ConnectionHandlerParameters(
+    args,
+    rootContainer,
+    configurationRoot,
+    applicationCancellation.Token
+);
 
 var webThread = CreateStartup(FileTime.Server.Web.Program.Start);
 webThread.Start();
 
-Thread CreateStartup(Func<string[], IContainer, CancellationToken, Task> startup)
+Thread CreateStartup(Func<ConnectionHandlerParameters, Task> startup)
 {
-    var thread = new Thread(() => { HandleStartup(() => startup(args, rootContainer, applicationCancellation.Token).Wait()); });
+    var thread = new Thread(() => { HandleStartup(() => startup(handlerParameters).Wait()); });
     return thread;
 }
 
@@ -45,6 +57,11 @@ void HandleStartup(Action action)
 IConfigurationRoot CreateConfiguration()
 {
     var configurationBuilder = new ConfigurationBuilder();
+    configurationBuilder.AddCommandLine(args);
+#if DEBUG
+    configurationBuilder.AddJsonFile("appsettings.Development.json", optional: true);
+    configurationBuilder.AddJsonFile("appsettings.Local.json", optional: true);
+#endif
     return configurationBuilder.Build();
 }
 
@@ -54,9 +71,10 @@ IContainer CreateRootDiContainer(IConfigurationRoot configuration)
         .RegisterDefaultServices(configuration)
         .AddLocalProviderServices()
         .AddServerServices()
+        .AddServerCoreServices()
         .AddLogging(loggingBuilder => loggingBuilder.AddSerilog());
 
-    serviceCollection.TryAddSingleton<IApplicationStopper>(
+    serviceCollection.AddSingleton<IApplicationStopper>(
         new ApplicationStopper(() => applicationCancellation.Cancel())
     );
 
