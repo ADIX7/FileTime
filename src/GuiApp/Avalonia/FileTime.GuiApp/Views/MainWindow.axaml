@@ -49,14 +49,9 @@
 
             <Grid ColumnDefinitions="250,*" RowDefinitions="Auto,*">
 
-                <!--<Grid PointerPressed="HeaderPointerPressed">
-                    <Rectangle Fill="#01000000" />
-                    <TextBlock Margin="15,10" Text="{Binding Title}" />
-                </Grid>-->
-
                 <Grid PointerPressed="HeaderPointerPressed">
                     <Rectangle Fill="#01000000" />
-                    <TextBlock Margin="15,10" Text="{Binding RefreshSmoothnessCalculator.RefreshDelay}" />
+                    <TextBlock Margin="15,10" Text="{Binding Title}" />
                 </Grid>
 
                 <Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
