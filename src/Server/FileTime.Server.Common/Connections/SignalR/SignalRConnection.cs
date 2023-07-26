@@ -39,4 +39,10 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
         var client = CreateClient();
         await client.CreateElementAsync(contentProviderId, fullName.Path);
     }
+
+    public async Task DeleteItemAsync(string contentProviderId, FullName fullName)
+    {
+        var client = CreateClient();
+        await client.DeleteItemAsync(contentProviderId, fullName.Path);
+    }
 }

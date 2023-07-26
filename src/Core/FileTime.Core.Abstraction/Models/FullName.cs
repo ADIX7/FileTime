@@ -22,6 +22,8 @@ public record FullName(string Path)
     public string GetName()
         => Path.Split(Constants.SeparatorChar).Last();
 
-    public FullName GetChild(string childName)
-        => new FullName(Path + Constants.SeparatorChar + childName);
+    public FullName GetChild(string childName) 
+        => new(Path + Constants.SeparatorChar + childName);
+
+    public override string ToString() => Path;
 }

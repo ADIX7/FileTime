@@ -5,6 +5,7 @@ using FileTime.Providers.Local;
 using FileTime.Server.App;
 using FileTime.Server.Common;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 
@@ -52,7 +53,8 @@ IContainer CreateRootDiContainer(IConfigurationRoot configuration)
     var serviceCollection = DependencyInjection
         .RegisterDefaultServices(configuration)
         .AddLocalProviderServices()
-        .AddServerServices();
+        .AddServerServices()
+        .AddLogging(loggingBuilder => loggingBuilder.AddSerilog());
 
     serviceCollection.TryAddSingleton<IApplicationStopper>(
         new ApplicationStopper(() => applicationCancellation.Cancel())

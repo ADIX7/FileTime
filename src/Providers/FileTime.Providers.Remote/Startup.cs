@@ -10,6 +10,7 @@ public static class Startup
     {
         serviceCollection.TryAddSingleton<IRemoteContentProvider, RemoteContentProvider>();
         serviceCollection.TryAddTransient<IRemoteItemCreator, RemoteItemCreator>();
+        serviceCollection.TryAddTransient<IRemoteItemDeleter, RemoteItemDeleter>();
         return serviceCollection;
 
     }

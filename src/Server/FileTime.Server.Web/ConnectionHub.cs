@@ -42,4 +42,11 @@ public class ConnectionHub : Hub<ISignalRClient>, ISignalRHub
         var itemCreator = _contentAccessorFactory.GetItemCreator(contentProvider);
         await itemCreator.CreateElementAsync(contentProvider, new FullName(fullName));
     }
+
+    public async Task DeleteItemAsync(string contentProviderId, string fullName)
+    {
+        var contentProvider = _contentProviderRegistry.ContentProviders.First(p => p.Name == contentProviderId);
+        var itemDeleter = _contentAccessorFactory.GetItemDeleter(contentProvider);
+        await itemDeleter.DeleteAsync(contentProvider, new FullName(fullName));
+    }
 }

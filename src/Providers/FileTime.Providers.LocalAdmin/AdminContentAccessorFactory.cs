@@ -33,4 +33,18 @@ public class AdminContentAccessorFactory : IAdminContentAccessorFactory
             .GetRequiredService<IRemoteItemCreator>();
         return adminItemCreator;
     }
+
+    public async Task<IRemoteItemDeleter> CreateAdminItemDeleterAsync()
+    {
+        await _adminElevationManager.CreateAdminInstanceIfNecessaryAsync();
+        var connection = await _adminElevationManager.CreateConnectionAsync();
+        
+        Debug.Assert(connection != null);
+        
+        var adminItemDeleter = _serviceProvider.GetInitableResolver(
+                connection, 
+                _adminElevationManager.ProviderName)
+            .GetRequiredService<IRemoteItemDeleter>();
+        return adminItemDeleter;
+    }
 }

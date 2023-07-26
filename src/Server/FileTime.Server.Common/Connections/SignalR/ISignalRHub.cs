@@ -5,4 +5,5 @@ public interface ISignalRHub
     Task Exit();
     Task CreateContainerAsync(string contentProviderId, string fullName);
     Task CreateElementAsync(string contentProviderId, string fullName);
+    Task DeleteItemAsync(string contentProviderId, string fullName);
 }
