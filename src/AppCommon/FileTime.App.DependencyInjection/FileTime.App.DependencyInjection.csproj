@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\FileTime.Core.CommandHandlers\FileTime.Core.CommandHandlers.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Timeline\FileTime.Core.Timeline.csproj" />
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.LocalAdmin\FileTime.Providers.LocalAdmin.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
     <ProjectReference Include="..\FileTime.App.Core\FileTime.App.Core.csproj" />
   </ItemGroup>

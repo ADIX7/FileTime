@@ -15,7 +15,6 @@ public class Tab : ITab
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ITabEvents _tabEvents;
-    private readonly IRefreshSmoothnessCalculator _refreshSmoothnessCalculator;
     private readonly DeclarativeProperty<IContainer?> _currentLocation = new(null);
     private readonly BehaviorSubject<IContainer?> _currentLocationForced = new(null);
     private readonly DeclarativeProperty<AbsolutePath?> _currentRequestItem = new(null);
@@ -38,7 +37,6 @@ public class Tab : ITab
     {
         _timelessContentProvider = timelessContentProvider;
         _tabEvents = tabEvents;
-        _refreshSmoothnessCalculator = refreshSmoothnessCalculator;
         _currentPointInTime = null!;
 
         _timelessContentProvider.CurrentPointInTime.Subscribe(p => _currentPointInTime = p);
@@ -54,7 +52,8 @@ public class Tab : ITab
             return Task.CompletedTask;
         });
 
-        CurrentItems = CurrentLocation.Map((container, _) =>
+        CurrentItems = CurrentLocation
+            .Map((container, _) =>
             {
                 var items = container is null
                     ? (ObservableCollection<IItem>?) null
@@ -63,7 +62,7 @@ public class Tab : ITab
             }
         );
 
-        
+
         CurrentSelectedItem = DeclarativePropertyHelpers.CombineLatest(
             CurrentItems.Watch<ObservableCollection<IItem>, IItem>(),
             _currentRequestItem.DistinctUntilChanged(),
@@ -77,8 +76,8 @@ public class Tab : ITab
 
         CurrentSelectedItem.Subscribe((v) =>
         {
-            _refreshSmoothnessCalculator.RegisterChange();
-            _refreshSmoothnessCalculator.RecalculateSmoothness();
+            refreshSmoothnessCalculator.RegisterChange();
+            refreshSmoothnessCalculator.RecalculateSmoothness();
         });
 
         CurrentSelectedItem.Subscribe(async (s, _) =>

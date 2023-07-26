@@ -7,7 +7,7 @@ public class ThrottleProperty<T> : TimingPropertyBase<T>
 
     public ThrottleProperty(
         IDeclarativeProperty<T> from,
-        TimeSpan interval,
+        Func<TimeSpan> interval,
         Action<T?>? setValueHook = null) : base(from, interval, setValueHook)
     {
     }
@@ -15,7 +15,8 @@ public class ThrottleProperty<T> : TimingPropertyBase<T>
     protected override Task SetValue(T? next, CancellationToken cancellationToken = default)
     {
         _debounceCts?.Cancel();
-        if (DateTime.Now - _lastFired > Interval)
+        var interval = Interval();
+        if (DateTime.Now - _lastFired > interval)
         {
             _lastFired = DateTime.Now;
             // Note: Recursive chains can happen. Awaiting this can cause a deadlock.
@@ -28,7 +29,7 @@ public class ThrottleProperty<T> : TimingPropertyBase<T>
             {
                 try
                 {
-                    await Task.Delay(Interval, _debounceCts.Token);
+                    await Task.Delay(interval, _debounceCts.Token);
                     await FireIfNeededAsync(
                         next,
                         () => { _lastFired = DateTime.Now; },

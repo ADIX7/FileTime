@@ -9,6 +9,7 @@ using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using FileTime.GuiApp.Services;
 using FileTime.Providers.Local;
+using FileTime.Providers.LocalAdmin;
 using Microsoft.Extensions.Logging;
 using MvvmGen;
 
@@ -29,6 +30,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IFrequencyNavigationService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(ICommandPaletteService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IRefreshSmoothnessCalculator), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IAdminElevationManager), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;

@@ -14,7 +14,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly bool _isCaseInsensitive;
 
-    public LocalContentProvider(ITimelessContentProvider timelessContentProvider) : base("local")
+    public LocalContentProvider(ITimelessContentProvider timelessContentProvider) : base(LocalContentProviderConstants.ContentProviderId)
     {
         _timelessContentProvider = timelessContentProvider;
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

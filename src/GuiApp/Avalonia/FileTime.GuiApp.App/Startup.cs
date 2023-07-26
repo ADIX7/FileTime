@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using FileTime.App.Core.Services;
@@ -14,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
-using Serilog.Configuration;
 
 namespace FileTime.GuiApp.App;
 
@@ -25,7 +23,8 @@ public static class Startup
         var configurationBuilder = new ConfigurationBuilder()
             .AddInMemoryCollection(MainConfiguration.Configuration)
             .AddJsonFile("appsettings.json", optional: true)
-            .AddJsonFile($"appsettings.{Program.EnvironmentName}.json", true);
+            .AddJsonFile($"appsettings.{Program.EnvironmentName}.json", true)
+            .AddJsonFile("appsettings.Local.json", optional: true);
 
         var configurationDirectory = new DirectoryInfo(Path.Combine(Program.AppDataRoot, "config"));
         if (configurationDirectory.Exists)

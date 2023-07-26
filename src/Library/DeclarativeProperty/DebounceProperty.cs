@@ -10,7 +10,7 @@ public sealed class DebounceProperty<T> : TimingPropertyBase<T>
 
     public DebounceProperty(
         IDeclarativeProperty<T> from,
-        TimeSpan interval,
+        Func<TimeSpan> interval,
         Action<T?>? setValueHook = null) : base(from, interval, setValueHook)
     {
     }
@@ -33,7 +33,7 @@ public sealed class DebounceProperty<T> : TimingPropertyBase<T>
         {
             try
             {
-                while (DateTime.Now - _startTime < Interval)
+                while (DateTime.Now - _startTime < Interval())
                 {
                     await Task.Delay(WaitInterval, newToken);
                 }

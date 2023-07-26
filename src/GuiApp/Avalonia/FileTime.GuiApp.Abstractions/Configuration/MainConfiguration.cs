@@ -1,5 +1,6 @@
 using Avalonia.Input;
 using FileTime.App.Core.UserCommand;
+using FileTime.Providers.LocalAdmin;
 
 namespace FileTime.GuiApp.Configuration;
 
@@ -7,17 +8,21 @@ public static class MainConfiguration
 {
     private static readonly Lazy<List<CommandBindingConfiguration>> _defaultKeybindings = new(InitDefaultKeyBindings);
 
-    public static Dictionary<string, string> Configuration { get; }
+    public static Dictionary<string, string?> Configuration { get; }
 
     static MainConfiguration()
     {
-        Configuration = new();
+        Configuration = new()
+        {
+            {AdminElevationConfiguration.SectionName + ":" + nameof(AdminElevationConfiguration.ServerExecutablePath), "FileTime.Server.exe"},
+        };
+
         PopulateDefaultEditorPrograms(Configuration);
         PopulateDefaultKeyBindings(Configuration, _defaultKeybindings.Value,
             SectionNames.KeybindingSectionName + ":" + nameof(KeyBindingConfiguration.DefaultKeyBindings));
     }
 
-    private static void PopulateDefaultKeyBindings(Dictionary<string, string> configuration,
+    private static void PopulateDefaultKeyBindings(Dictionary<string, string?> configuration,
         List<CommandBindingConfiguration> commandBindingConfigs, string basePath)
     {
         for (var i = 0; i < commandBindingConfigs.Count; i++)
@@ -113,7 +118,7 @@ public static class MainConfiguration
             //new CommandBindingConfiguration(ConfigCommand.ToggleAdvancedIcons, new[] { Key.Z, Key.I }),
         };
 
-    private static void PopulateDefaultEditorPrograms(Dictionary<string, string> configuration)
+    private static void PopulateDefaultEditorPrograms(Dictionary<string, string?> configuration)
     {
         var editorPrograms = new List<ProgramConfiguration>()
         {

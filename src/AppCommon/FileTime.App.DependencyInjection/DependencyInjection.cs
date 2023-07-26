@@ -12,6 +12,9 @@ using FileTime.Core.ContentAccess;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
+using FileTime.Providers.LocalAdmin;
+using FileTime.Providers.Remote;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -19,7 +22,7 @@ namespace FileTime.App.DependencyInjection;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection RegisterDefaultServices(IServiceCollection? serviceCollection = null)
+    public static IServiceCollection RegisterDefaultServices(IConfigurationRoot configuration, IServiceCollection? serviceCollection = null)
     {
         serviceCollection ??= new ServiceCollection();
 
@@ -31,7 +34,7 @@ public static class DependencyInjection
         //TODO: check local/remote context 
         serviceCollection.TryAddSingleton<ILocalCommandExecutor, LocalCommandExecutor>();
         serviceCollection.TryAddSingleton<ICommandSchedulerNotifier, LocalCommandSchedulerNotifier>();
-        
+
         serviceCollection.TryAddSingleton<IApplicationSettings, ApplicationSettings>();
         serviceCollection.TryAddSingleton<ITabPersistenceService, TabPersistenceService>();
         serviceCollection.TryAddTransient<ITab, Tab>();
@@ -41,18 +44,18 @@ public static class DependencyInjection
 
         return serviceCollection
             .AddCoreAppServices()
-            .AddLocalServices()
+            .AddLocalProviderServices()
+            .AddLocalAdminProviderServices(configuration)
+            .AddRemoteProviderServices()
             .RegisterCommands()
             .AddDefaultCommandHandlers();
     }
 
     private static IServiceCollection RegisterCommands(this IServiceCollection serviceCollection)
-    {
-        return serviceCollection
+        => serviceCollection
             .AddCommands()
             .AddTransient<CreateContainerCommand>()
             .AddTransient<CreateElementCommand>()
             .AddTransient<CopyCommand>()
             .AddTransient<DeleteCommand>();
-    }
 }

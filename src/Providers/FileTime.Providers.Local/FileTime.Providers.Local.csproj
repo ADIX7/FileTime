@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Services\FileTime.Core.Services.csproj" />
     <ProjectReference Include="..\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.Providers.LocalAdmin.Abstractions\FileTime.Providers.LocalAdmin.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

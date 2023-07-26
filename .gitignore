@@ -413,3 +413,5 @@ FodyWeavers.xsd
 appdata
 
 **/.idea
+
+appsettings.Local.json

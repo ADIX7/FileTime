@@ -3,11 +3,11 @@
 public abstract class TimingPropertyBase<T> : DeclarativePropertyBase<T>
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-    protected TimeSpan Interval { get; }
+    protected Func<TimeSpan> Interval { get; }
 
     protected TimingPropertyBase(
         IDeclarativeProperty<T> from,
-        TimeSpan interval,
+        Func<TimeSpan> interval,
         Action<T?>? setValueHook = null) : base(from.Value, setValueHook)
     {
         Interval = interval;
@@ -65,7 +65,7 @@ public abstract class TimingPropertyBase<T> : DeclarativePropertyBase<T>
         CancellationToken timingCancellationToken = default,
         CancellationToken cancellationToken = default)
     {
-        await Task.Delay(Interval, timingCancellationToken);
+        await Task.Delay(Interval(), timingCancellationToken);
         var shouldFire = WithLock(() =>
         {
             if (timingCancellationToken.IsCancellationRequested)

@@ -6,7 +6,7 @@ public class LocalContentWriter : IContentWriter
 {
     private readonly FileStream _writerStream;
     private readonly BinaryWriter _binaryWriter;
-    private bool disposed;
+    private bool _disposed;
     public int PreferredBufferSize => 1024 * 1024;
 
     public LocalContentWriter(FileStream writerStream)
@@ -47,7 +47,7 @@ public class LocalContentWriter : IContentWriter
 
     private void Dispose(bool disposing)
     {
-        if (!disposed)
+        if (!_disposed)
         {
             if (disposing)
             {
@@ -55,6 +55,6 @@ public class LocalContentWriter : IContentWriter
                 _binaryWriter.Dispose();
             }
         }
-        disposed = true;
+        _disposed = true;
     }
 }

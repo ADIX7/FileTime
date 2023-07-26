@@ -23,10 +23,9 @@ namespace FileTime.App.Core.ViewModels;
 public partial class TabViewModel : ITabViewModel
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IItemNameConverterService _itemNameConverterService;
     private readonly IAppState _appState;
-    private readonly IRxSchedulerService _rxSchedulerService;
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly IRefreshSmoothnessCalculator _refreshSmoothnessCalculator;
     private readonly SourceList<FullName> _markedItems = new();
     private readonly List<IDisposable> _disposables = new();
     private bool _disposed;
@@ -50,19 +49,17 @@ public partial class TabViewModel : ITabViewModel
 
     public TabViewModel(
         IServiceProvider serviceProvider,
-        IItemNameConverterService itemNameConverterService,
         IAppState appState,
-        IRxSchedulerService rxSchedulerService,
-        ITimelessContentProvider timelessContentProvider)
+        ITimelessContentProvider timelessContentProvider,
+        IRefreshSmoothnessCalculator refreshSmoothnessCalculator)
     {
         _serviceProvider = serviceProvider;
-        _itemNameConverterService = itemNameConverterService;
         _appState = appState;
 
         MarkedItems = _markedItems.Connect().StartWithEmpty();
         IsSelected = _appState.SelectedTab.Select(s => s == this);
-        _rxSchedulerService = rxSchedulerService;
         _timelessContentProvider = timelessContentProvider;
+        _refreshSmoothnessCalculator = refreshSmoothnessCalculator;
     }
 
     public void Init(ITab tab, int tabNumber)
@@ -103,7 +100,7 @@ public partial class TabViewModel : ITabViewModel
         CurrentSelectedItemAsContainer = CurrentSelectedItem.Map(i => i as IContainerViewModel);
 
         SelectedsChildren = CurrentSelectedItem
-            .Debounce(TimeSpan.FromMilliseconds(200), resetTimer: true)
+            .Debounce(() => _refreshSmoothnessCalculator.RefreshDelay, resetTimer: true)
             .DistinctUntilChanged()
             .Map(item =>
             {

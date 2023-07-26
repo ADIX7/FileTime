@@ -2,6 +2,7 @@
 using FileTime.App.Core.Services;
 using FileTime.App.FrequencyNavigation.Services;
 using FileTime.GuiApp.Services;
+using FileTime.Providers.LocalAdmin;
 
 namespace FileTime.GuiApp.ViewModels;
 
@@ -13,5 +14,6 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     IDialogService DialogService { get; }
     IFrequencyNavigationService FrequencyNavigationService { get; }
     ICommandPaletteService CommandPaletteService { get; }
-    public IRefreshSmoothnessCalculator RefreshSmoothnessCalculator { get; }
+    IRefreshSmoothnessCalculator RefreshSmoothnessCalculator { get; }
+    IAdminElevationManager AdminElevationManager { get; }
 }

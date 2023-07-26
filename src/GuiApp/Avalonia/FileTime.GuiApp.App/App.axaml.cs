@@ -8,6 +8,7 @@ using FileTime.App.Search;
 using FileTime.GuiApp.Font;
 using FileTime.GuiApp.ViewModels;
 using FileTime.GuiApp.Views;
+using FileTime.Server.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +20,8 @@ public class App : Application
     {
         var configuration = Startup.CreateConfiguration();
         DI.ServiceProvider = DependencyInjection
-            .RegisterDefaultServices()
+            .RegisterDefaultServices(configuration: configuration)
+            .AddRemoteServices()
             .AddFrequencyNavigation()
             .AddCommandPalette()
             .AddSearch()

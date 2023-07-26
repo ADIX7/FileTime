@@ -62,10 +62,24 @@
                 <Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
                     <Rectangle Fill="#01000000" />
 
-                    <StackPanel Margin="20,10" Orientation="Horizontal">
-                        <local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
-                        <TextBlock Foreground="{StaticResource AccentBrush}" Text="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value.DisplayNameText}" />
-                    </StackPanel>
+                    <Grid ColumnDefinitions="*, Auto">
+                        <StackPanel Margin="20,10" Orientation="Horizontal">
+                            <local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
+                            <TextBlock Foreground="{StaticResource AccentBrush}" Text="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value.DisplayNameText}" />
+                        </StackPanel>
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="20,10,160,10"
+                            Orientation="Vertical">
+                            <Image
+                                Height="20"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding AdminElevationManager.IsAdminInstanceRunning}"
+                                Source="{SvgImage /Assets/material/security.svg}"
+                                VerticalAlignment="Center"
+                                Width="20" />
+                        </StackPanel>
+                    </Grid>
                 </Grid>
 
                 <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
