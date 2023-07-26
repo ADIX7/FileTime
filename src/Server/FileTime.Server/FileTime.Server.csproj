@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AppCommon\FileTime.App.DependencyInjection\FileTime.App.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
+    <ProjectReference Include="..\FileTime.Server.App\FileTime.Server.App.csproj" />
+    <ProjectReference Include="..\FileTime.Server.Web\FileTime.Server.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+  </ItemGroup>
+
+</Project>
