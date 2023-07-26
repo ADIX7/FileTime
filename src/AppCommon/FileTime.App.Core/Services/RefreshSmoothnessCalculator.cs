@@ -6,7 +6,9 @@ namespace FileTime.App.Core.Services;
 public sealed class RefreshSmoothnessCalculator : IRefreshSmoothnessCalculator, INotifyPropertyChanged
 {
     private const int MaxSampleTimeInSeconds = 10;
-    private const int MaxDelayBetweenRefreshes = 400;
+    private const int SampleWindowInMilliseconds = 1000;
+    private const int MaxDelayBetweenRefreshes = 600;
+    private const int MinDelayBetweenRefreshes = 10;
     private readonly TimeSpan _maxDelay = TimeSpan.FromSeconds(MaxSampleTimeInSeconds);
     private readonly TimeSpan _defaultRefreshDelay = TimeSpan.FromMilliseconds(200);
     private readonly Queue<DateTime> _changeTimes = new();
@@ -65,46 +67,37 @@ public sealed class RefreshSmoothnessCalculator : IRefreshSmoothnessCalculator, 
             CleanList(now);
 
             var queue = new Queue<DateTime>(_changeTimes);
-            var values = new List<(double score, double weight)>(queue.Count - 1);
-
-            var previousChangeTime = queue.Dequeue();
-            var biggestDelay = now - previousChangeTime;
+            var segments = (int)Math.Ceiling((double)MaxSampleTimeInSeconds * 1000 / SampleWindowInMilliseconds);
+            Span<int> segmentElementCounts = stackalloc int[segments];
             while (queue.Count > 0)
             {
-                var changeTime = queue.Dequeue();
-
-                var (score, weight) = CalculateScoreAndWeight(changeTime, previousChangeTime, biggestDelay);
-
-                values.Add((score, weight));
-
-                previousChangeTime = changeTime;
+                var item = queue.Dequeue();
+                var segment = segments - 1 - (int)((now - item).TotalMilliseconds / SampleWindowInMilliseconds);
+                segmentElementCounts[segment]++;
             }
 
-            var combinedScore = values.Sum(i => i.weight * i.score) / values.Sum(i => i.weight);
+            var weightSum = 0d;
+            var score = 0d;
 
-            var normalizedCombinedScore = (combinedScore * 1.2 - 0.1);
-
-            if (normalizedCombinedScore < 0) normalizedCombinedScore = 0;
-            else if (normalizedCombinedScore > 1) normalizedCombinedScore = 1;
-
-            var finalDelay = normalizedCombinedScore * MaxDelayBetweenRefreshes;
-
-            RefreshDelay = TimeSpan.FromMilliseconds(finalDelay);
-
-            (double score, double weight) CalculateScoreAndWeight(DateTime changeTime, DateTime previousChangeTime, TimeSpan biggestDelay)
+            //Note: This might not be the best algorithm to calculate the delay, but works okay. 
+            //Note: I had an algorithm in mind that uses the delta between neighbour times and and delta between a time and now, but I couldn't implement it.
+            //Note: If you are good at math and have a better algorithm, please feel free to implement it/create an issue with it.
+            for (var i = 0; i < segments; i++)
             {
-                var delayToPrevious = changeTime - previousChangeTime;
-                var delayToNow = now - changeTime;
-
-                var toNowRatio = (delayToNow.TotalMilliseconds / biggestDelay.TotalMilliseconds);
-                var score = 1 - (delayToPrevious.TotalMilliseconds / biggestDelay.TotalMilliseconds);
-                var weight = 1 - toNowRatio;
-
-                if (score < 0) score = 0;
-                else if (score > 1) score = 1;
-
-                return (score, weight);
+                var weight = Math.Pow(i, 2);
+                weightSum += weight;
+                var pressCount = segmentElementCounts[i];
+                //Note: we want the minimum delay even if the user pressed only once in a segment
+                if (pressCount > 0) pressCount--;
+                score += pressCount * weight;
             }
+
+            const double fraction = (double)(MaxDelayBetweenRefreshes - MinDelayBetweenRefreshes) / 4;
+
+            var weightedAvg = weightSum == 0 ? _defaultRefreshDelay.TotalMilliseconds : Math.Round(score / weightSum);
+            var finalDelay = (weightedAvg * fraction) + MinDelayBetweenRefreshes;
+            finalDelay = finalDelay > MaxDelayBetweenRefreshes ? MaxDelayBetweenRefreshes : finalDelay;
+            RefreshDelay = TimeSpan.FromMilliseconds(finalDelay);
         }
     }
 
