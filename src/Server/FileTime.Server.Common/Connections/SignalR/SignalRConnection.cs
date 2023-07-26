@@ -8,6 +8,8 @@ namespace FileTime.Server.Common.Connections.SignalR;
 public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
 {
     private static readonly Dictionary<string, SignalRConnection> Connections = new();
+    private static readonly object ConnectionsLock = new(); 
+    
     private string _baseUrl = null!;
     private HubConnection _connection = null!;
     private ISignalRHub _client = null!;
@@ -25,16 +27,23 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
     
     public static async Task<SignalRConnection> GetOrCreateForAsync(string baseUrl)
     {
-        if (Connections.TryGetValue(baseUrl, out var connection))
+        SignalRConnection? connection;
+        lock (ConnectionsLock)
         {
-            if (connection._connection.State != HubConnectionState.Disconnected)
+            if (Connections.TryGetValue(baseUrl, out connection))
             {
-                return connection;
+                if (connection._connection.State != HubConnectionState.Disconnected)
+                {
+                    return connection;
+                }
+
+                Connections.Remove(baseUrl);
             }
-            Connections.Remove(baseUrl);
+
+            connection = new SignalRConnection();
+            Connections.Add(baseUrl, connection);
         }
-        connection = new SignalRConnection();
-        Connections.Add(baseUrl, connection);
+
         await connection.InitAsync(baseUrl);
         return connection;
     }
