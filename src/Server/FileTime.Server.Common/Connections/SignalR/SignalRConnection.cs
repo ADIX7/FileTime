@@ -7,10 +7,10 @@ namespace FileTime.Server.Common.Connections.SignalR;
 
 public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
 {
+    private static readonly Dictionary<string, SignalRConnection> Connections = new();
     private string _baseUrl = null!;
     private HubConnection _connection = null!;
-
-    private ISignalRHub CreateClient() => _connection.CreateHubProxy<ISignalRHub>();
+    private ISignalRHub _client = null!;
 
     public async Task InitAsync(string baseUrl)
     {
@@ -20,29 +20,37 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
             .WithUrl(_baseUrl)
             .Build();
         await _connection.StartAsync();
+        _client = _connection.CreateHubProxy<ISignalRHub>();
+    }
+    
+    public static async Task<SignalRConnection> GetOrCreateForAsync(string baseUrl)
+    {
+        if (Connections.TryGetValue(baseUrl, out var connection))
+        {
+            if (connection._connection.State != HubConnectionState.Disconnected)
+            {
+                return connection;
+            }
+            Connections.Remove(baseUrl);
+        }
+        connection = new SignalRConnection();
+        Connections.Add(baseUrl, connection);
+        await connection.InitAsync(baseUrl);
+        return connection;
     }
 
     public async Task Exit()
-    {
-        var client = CreateClient();
-        await client.Exit();
-    }
+        => await _client.Exit();
 
     public async Task CreateContainerAsync(string contentProviderId, FullName fullName)
-    {
-        var client = CreateClient();
-        await client.CreateContainerAsync(contentProviderId, fullName.Path);
-    }
+        => await _client.CreateContainerAsync(contentProviderId, fullName.Path);
 
     public async Task CreateElementAsync(string contentProviderId, FullName fullName)
-    {
-        var client = CreateClient();
-        await client.CreateElementAsync(contentProviderId, fullName.Path);
-    }
+        => await _client.CreateElementAsync(contentProviderId, fullName.Path);
 
     public async Task DeleteItemAsync(string contentProviderId, FullName fullName)
-    {
-        var client = CreateClient();
-        await client.DeleteItemAsync(contentProviderId, fullName.Path);
-    }
+        => await _client.DeleteItemAsync(contentProviderId, fullName.Path);
+
+    public async Task MoveItemAsync(string contentProviderId, FullName fullName, FullName newPath)
+        => await _client.MoveItemAsync(contentProviderId, fullName.Path, newPath.Path);
 }

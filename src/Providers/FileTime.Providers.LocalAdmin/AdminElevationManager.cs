@@ -135,10 +135,7 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
             //TODO: use other connections too (if there will be any)
             ArgumentNullException.ThrowIfNull(_connectionInfo.SignalRBaseUrl);
 
-            var connection = await _serviceProvider
-                .GetAsyncInitableResolver(_connectionInfo.SignalRBaseUrl)
-                .GetRequiredServiceAsync<SignalRConnection>();
-
+            var connection = await SignalRConnection.GetOrCreateForAsync(_connectionInfo.SignalRBaseUrl);
             return connection;
         }
         catch (Exception ex)
@@ -168,13 +165,14 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
         return true;
     }
 
-    public async Task ExitAsync()
+    public async Task ExitAsync(CancellationToken token = default)
     {
         if (!StartProcess)
         {
             _logger.LogTrace("Not stopping admin process as it was not started by this instance");
             return;
         }
+
         if (!IsAdminInstanceRunning)
         {
             _logger.LogTrace("Not stopping admin process as it is not running");
@@ -188,10 +186,21 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
             await connection.Exit();
             _logger.LogInformation("Admin process stopped successfully");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            _logger.LogError(ex, "Error stopping admin process, trying to kill it");
-            _adminProcess?.Kill();
+            _logger.LogError(ex, "Error stopping admin process");
+            if (_adminProcess is null) return;
+
+            for (var i = 0; i < 150 && !_adminProcess.HasExited; i++)
+            {
+                await Task.Delay(10);
+            }
+
+            /*if (!_adminProcess.HasExited)
+            {
+                _logger.LogInformation("Admin process dit not stopped, killing it");
+                _adminProcess.Kill();
+            }*/
         }
     }
 }

@@ -8,4 +8,5 @@ public interface IRemoteConnection
     Task CreateContainerAsync(string contentProviderId, FullName fullName);
     Task CreateElementAsync(string contentProviderId, FullName fullName);
     Task DeleteItemAsync(string contentProviderId, FullName fullName);
+    Task MoveItemAsync(string contentProviderId, FullName fullName, FullName newPath);
 }

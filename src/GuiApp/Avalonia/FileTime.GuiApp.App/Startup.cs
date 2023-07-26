@@ -77,7 +77,7 @@ public static class Startup
         }
 
         return serviceCollection
-            .AddSingleton<IStartupHandler, RootDriveInfoService>()
+            .AddSingleton<IExitHandler, RootDriveInfoService>()
             .AddSingleton<IStartupHandler>(sp => sp.GetRequiredService<IPlacesService>());
     }
 

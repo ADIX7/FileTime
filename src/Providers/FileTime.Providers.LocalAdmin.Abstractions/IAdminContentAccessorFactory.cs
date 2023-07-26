@@ -7,4 +7,5 @@ public interface IAdminContentAccessorFactory
     bool IsAdminModeSupported { get; }
     Task<IRemoteItemCreator> CreateAdminItemCreatorAsync();
     Task<IRemoteItemDeleter> CreateAdminItemDeleterAsync();
+    Task<IRemoteItemMover> CreateAdminItemMoverAsync();
 }

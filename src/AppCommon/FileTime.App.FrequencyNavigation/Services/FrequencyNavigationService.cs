@@ -190,11 +190,11 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         }
     }
 
-    public async Task ExitAsync() => await SaveStateAsync();
+    public async Task ExitAsync(CancellationToken token = default) => await SaveStateAsync(token);
 
-    private async Task SaveStateAsync()
+    private async Task SaveStateAsync(CancellationToken token = default)
     {
-        await _saveLock.WaitAsync();
+        await _saveLock.WaitAsync(token);
         try
         {
             _lastSave = DateTime.Now;

@@ -6,7 +6,7 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.App.Core.Services;
 
-public class ContainerRefreshHandler : IStartupHandler, IDisposable
+public class ContainerRefreshHandler : IExitHandler
 {
     private readonly List<IDisposable> _refreshSubscriptions = new();
     private List<FullName> _folders = new();
@@ -38,13 +38,13 @@ public class ContainerRefreshHandler : IStartupHandler, IDisposable
         );
     }
 
-    public void Dispose()
+    public Task ExitAsync(CancellationToken token = default)
     {
         foreach (var refreshSubscription in _refreshSubscriptions)
         {
             refreshSubscription.Dispose();
         }
-    }
 
-    public Task InitAsync() => Task.CompletedTask;
+        return Task.CompletedTask;
+    }
 }

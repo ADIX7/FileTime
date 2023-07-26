@@ -2,5 +2,5 @@ namespace FileTime.App.Core.Services;
 
 public interface IExitHandler
 {
-    Task ExitAsync();
+    Task ExitAsync(CancellationToken token = default);
 }

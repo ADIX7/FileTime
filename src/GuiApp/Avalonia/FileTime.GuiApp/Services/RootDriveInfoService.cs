@@ -7,7 +7,7 @@ using ObservableComputations;
 
 namespace FileTime.GuiApp.Services;
 
-public class RootDriveInfoService : IStartupHandler, IDisposable
+public class RootDriveInfoService : IExitHandler
 {
     private readonly ILocalContentProvider _localContentProvider;
     private readonly List<DriveInfo> _rootDrives = new();
@@ -21,13 +21,13 @@ public class RootDriveInfoService : IStartupHandler, IDisposable
         InitRootDrives();
 
         var rootDriveInfos = localContentProvider.Items.Selecting<AbsolutePath, (AbsolutePath Path, DriveInfo? Drive)>(
-            i => MatchRootDrive(i)
-        )
-        .Filtering(t => IsNotNull(t.Drive))
-        .Selecting(t => Resolve(t))
-        .Filtering(t => t.Item is IContainer)
-        .Selecting(t => new RootDriveInfo(t.Drive, (IContainer)t.Item!))
-        .Ordering(d => d.Name);
+                i => MatchRootDrive(i)
+            )
+            .Filtering(t => IsNotNull(t.Drive))
+            .Selecting(t => Resolve(t))
+            .Filtering(t => t.Item is IContainer)
+            .Selecting(t => new RootDriveInfo(t.Drive, (IContainer) t.Item!))
+            .Ordering(d => d.Name);
 
         rootDriveInfos.For(_rootDriveInfosConsumer);
 
@@ -51,7 +51,7 @@ public class RootDriveInfoService : IStartupHandler, IDisposable
     }
 
     private static bool IsNotNull(object? obj) => obj is not null;
-    
+
     private static (IItem? Item, DriveInfo Drive) Resolve((AbsolutePath Path, DriveInfo? Drive) tuple)
     {
         var t = Task.Run(async () => await tuple.Path.ResolveAsyncSafe());
@@ -73,6 +73,9 @@ public class RootDriveInfoService : IStartupHandler, IDisposable
         return (Path: sourceItem, Drive: rootDrive);
     }
 
-    public Task InitAsync() => Task.CompletedTask;
-    public void Dispose() => _rootDriveInfosConsumer.Dispose();
+    public Task ExitAsync(CancellationToken token = default)
+    {
+        _rootDriveInfosConsumer.Dispose();
+        return Task.CompletedTask;
+    }
 }

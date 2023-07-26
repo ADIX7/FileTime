@@ -44,12 +44,12 @@ public class LocalItemDeleter : IItemDeleter<ILocalContentProvider>
                 throw new FileNotFoundException(nativePath);
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogDebug(e, "Failed to delete item with path {Path}", nativePath);
+            _logger.LogDebug(ex, "Failed to delete item with path {Path}", nativePath);
 
             if (!_adminContentAccessorFactory.IsAdminModeSupported
-                || e is not UnauthorizedAccessException and not IOException)
+                || ex is not UnauthorizedAccessException and not IOException)
             {
                 _logger.LogTrace(
                     "Admin mode is disabled or exception is not an access denied one, not trying to create {Path} as admin", 

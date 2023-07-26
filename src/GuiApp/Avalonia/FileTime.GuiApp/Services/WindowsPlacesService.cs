@@ -51,7 +51,7 @@ public class WindowsPlacesService : IPlacesService
     }
 
     public Dictionary<string, SpecialPathType> GetSpecialPaths() 
-        => new Dictionary<string, SpecialPathType>
+        => new()
         {
             {KnownFolders.Desktop.Path, SpecialPathType.Desktop},
             {KnownFolders.Documents.Path, SpecialPathType.Documents},

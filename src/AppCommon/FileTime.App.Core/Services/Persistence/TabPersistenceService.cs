@@ -70,14 +70,14 @@ public class TabPersistenceService : ITabPersistenceService
         };
     }
 
-    public Task ExitAsync()
+    public Task ExitAsync(CancellationToken token = default)
     {
-        SaveStates();
+        SaveStates(token);
 
         return Task.CompletedTask;
     }
 
-    private async Task LoadStatesAsync()
+    private async Task LoadStatesAsync(CancellationToken token = default)
     {
         if (!File.Exists(_settingsPath))
         {
@@ -88,7 +88,7 @@ public class TabPersistenceService : ITabPersistenceService
         try
         {
             await using var stateReader = File.OpenRead(_settingsPath);
-            var state = await JsonSerializer.DeserializeAsync<PersistenceRoot>(stateReader);
+            var state = await JsonSerializer.DeserializeAsync<PersistenceRoot>(stateReader, cancellationToken: token);
             if (state != null)
             {
                 if (await RestoreTabs(state.TabStates)) return;
@@ -187,7 +187,7 @@ public class TabPersistenceService : ITabPersistenceService
         return true;
     }
 
-    public void SaveStates()
+    public void SaveStates(CancellationToken token = default)
     {
         var state = new PersistenceRoot
         {
@@ -210,15 +210,13 @@ public class TabPersistenceService : ITabPersistenceService
             tabStates.Add(new TabState(currentLocation.FullName!, tab.TabNumber));
         }
 
-        return new TabStates()
+        return new TabStates
         {
             Tabs = tabStates,
             ActiveTabNumber = _appState.CurrentSelectedTab?.TabNumber
         };
     }
 
-    public async Task InitAsync()
-    {
-        await LoadStatesAsync();
-    }
+    public async Task InitAsync() 
+        => await LoadStatesAsync();
 }

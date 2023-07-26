@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using FileTime.Providers.Remote;
+using FileTime.Server.Common;
 using InitableService;
 
 namespace FileTime.Providers.LocalAdmin;
@@ -21,30 +22,26 @@ public class AdminContentAccessorFactory : IAdminContentAccessorFactory
     public bool IsAdminModeSupported => _adminElevationManager.IsAdminModeSupported;
 
     public async Task<IRemoteItemCreator> CreateAdminItemCreatorAsync()
-    {
-        await _adminElevationManager.CreateAdminInstanceIfNecessaryAsync();
-        var connection = await _adminElevationManager.CreateConnectionAsync();
-        
-        Debug.Assert(connection != null);
-        
-        var adminItemCreator = _serviceProvider.GetInitableResolver(
-                connection, 
-                _adminElevationManager.ProviderName)
-            .GetRequiredService<IRemoteItemCreator>();
-        return adminItemCreator;
-    }
+        => await CreateHelperAsync<IRemoteItemCreator>();
 
     public async Task<IRemoteItemDeleter> CreateAdminItemDeleterAsync()
+        => await CreateHelperAsync<IRemoteItemDeleter>();
+
+    public async Task<IRemoteItemMover> CreateAdminItemMoverAsync() 
+        => await CreateHelperAsync<IRemoteItemMover>();
+
+    private async Task<T> CreateHelperAsync<T>()
+        where T : class, IInitable<IRemoteConnection, string>
     {
         await _adminElevationManager.CreateAdminInstanceIfNecessaryAsync();
         var connection = await _adminElevationManager.CreateConnectionAsync();
         
         Debug.Assert(connection != null);
         
-        var adminItemDeleter = _serviceProvider.GetInitableResolver(
+        var helper = _serviceProvider.GetInitableResolver(
                 connection, 
                 _adminElevationManager.ProviderName)
-            .GetRequiredService<IRemoteItemDeleter>();
-        return adminItemDeleter;
+            .GetRequiredService<T>();
+        return helper;
     }
 }

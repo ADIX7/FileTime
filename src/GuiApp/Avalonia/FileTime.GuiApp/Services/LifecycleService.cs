@@ -1,4 +1,5 @@
 using FileTime.App.Core.Services;
+using FileTime.Core.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.GuiApp.Services;
@@ -36,27 +37,30 @@ public class LifecycleService
 
     public async Task ExitAsync()
     {
-        foreach (var exitHandler in _exitHandlers)
+        var exitCancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var exitHandlerTasks = _exitHandlers.Select(e =>
         {
             try
             {
-                await exitHandler.ExitAsync();
+                return e.ExitAsync(exitCancellation.Token);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while running exit handler {Handler}", exitHandler?.GetType().FullName);
+                _logger.LogError(ex, "Error while running exit handler {Handler}", e.GetType().FullName);
             }
+
+            return Task.CompletedTask;
+        });
+
+        try
+        {
+            await Task.WhenAll(exitHandlerTasks).TimeoutAfter(10000);
+        }
+        catch
+        {
+            
         }
 
-        foreach (var disposable in
-                 _startupHandlers
-                     .OfType<IDisposable>()
-                     .Concat(
-                         _exitHandlers.OfType<IDisposable>()
-                     )
-                )
-        {
-            disposable.Dispose();
-        }
+        exitCancellation.Cancel();
     }
 }

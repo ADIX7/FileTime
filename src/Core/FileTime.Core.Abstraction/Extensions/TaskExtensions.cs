@@ -2,15 +2,20 @@ namespace FileTime.Core.Extensions;
 
 public static class TaskExtensions
 {
-    public static async Task<T?> AwaitWithTimeout<T>(this Task<T> task, int timeout, T? defaultValue = default)
+    public static async Task TimeoutAfter(this Task task, int timeoutInMilliseconds)
     {
-        if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
+        if (await Task.WhenAny(task, Task.Delay(timeoutInMilliseconds)) != task) 
+            throw new TimeoutException();
+    }
+    public static async Task<T?> TimeoutAfter<T>(this Task<T> task, int timeoutInMilliseconds, T? defaultValue = default)
+    {
+        if (await Task.WhenAny(task, Task.Delay(timeoutInMilliseconds)) == task)
         {
-            return task.Result;
+            return await task;
         }
         else
         {
-            return defaultValue;
+            throw new TimeoutException();
         }
     }
 }
