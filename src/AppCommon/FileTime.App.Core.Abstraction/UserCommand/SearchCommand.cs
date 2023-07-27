@@ -25,7 +25,7 @@ public class IdentifiableSearchCommand : SearchCommand, IIdentifiableUserCommand
     public static readonly IdentifiableSearchCommand SearchByNameContains =
         new(null, SearchType.NameContains, SearchByNameContainsCommandName);
 
-    public IdentifiableSearchCommand(
+    private IdentifiableSearchCommand(
         string? searchText,
         SearchType searchType,
         string commandId)

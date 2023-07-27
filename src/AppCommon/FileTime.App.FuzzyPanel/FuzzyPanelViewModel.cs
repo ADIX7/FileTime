@@ -46,6 +46,7 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
 
             if (nextItem is not null)
             {
+                keyEventArgs.Handled = true;
                 SelectedItem = nextItem;
             }
 
@@ -57,6 +58,7 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
 
             if (previousItem is not null)
             {
+                keyEventArgs.Handled = true;
                 SelectedItem = previousItem;
             }
 

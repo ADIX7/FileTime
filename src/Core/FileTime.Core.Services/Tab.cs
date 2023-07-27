@@ -18,10 +18,10 @@ public class Tab : ITab
     private readonly DeclarativeProperty<IContainer?> _currentLocation = new(null);
     private readonly BehaviorSubject<IContainer?> _currentLocationForced = new(null);
     private readonly DeclarativeProperty<AbsolutePath?> _currentRequestItem = new(null);
-    private readonly SourceList<ItemFilter> _itemFilters = new();
+    private readonly ObservableCollection<ItemFilter> _itemFilters = new();
+    private readonly DeclarativeProperty<ObservableCollection<ItemFilter>?> _itemFiltersProperty;
     private AbsolutePath? _currentSelectedItemCached;
     private PointInTime _currentPointInTime;
-    private OcConsumer? _currentItemsConsumer;
     private CancellationTokenSource? _setCurrentLocationCancellationTokenSource;
     private CancellationTokenSource? _setCurrentItemCancellationTokenSource;
 
@@ -38,6 +38,7 @@ public class Tab : ITab
         _timelessContentProvider = timelessContentProvider;
         _tabEvents = tabEvents;
         _currentPointInTime = null!;
+        _itemFiltersProperty = new(_itemFilters);
 
         _timelessContentProvider.CurrentPointInTime.Subscribe(p => _currentPointInTime = p);
 
@@ -52,12 +53,25 @@ public class Tab : ITab
             return Task.CompletedTask;
         });
 
-        CurrentItems = CurrentLocation
-            .Map((container, _) =>
+        CurrentItems = DeclarativePropertyHelpers.CombineLatest(
+            CurrentLocation,
+            _itemFiltersProperty.Watch<ObservableCollection<ItemFilter>, ItemFilter>(),
+            (container, filters) =>
             {
-                var items = container is null
-                    ? (ObservableCollection<IItem>?) null
-                    : container.Items.Selecting<AbsolutePath, IItem>(i => MapItem(i));
+                ObservableCollection<IItem>? items = null;
+
+                if (container is not null)
+                {
+                    items = container
+                        .Items
+                        .Selecting<AbsolutePath, IItem>(i => MapItem(i));
+
+                    if (filters is not null)
+                    {
+                        items = items.Filtering(i => filters.All(f => f.Filter(i)));
+                    }
+                }
+
                 return Task.FromResult(items);
             }
         );
@@ -179,7 +193,7 @@ public class Tab : ITab
 
     public void RemoveItemFilter(string name)
     {
-        var itemsToRemove = _itemFilters.Items.Where(t => t.Name == name).ToList();
+        var itemsToRemove = _itemFilters.Where(t => t.Name == name).ToList();
         _itemFilters.RemoveMany(itemsToRemove);
     }
 
@@ -194,8 +208,5 @@ public class Tab : ITab
     }
 
     public void Dispose()
-    {
-        _currentLocation.Dispose();
-        _itemFilters.Dispose();
-    }
+        => _currentLocation.Dispose();
 }

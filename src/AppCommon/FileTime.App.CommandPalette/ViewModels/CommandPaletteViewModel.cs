@@ -56,6 +56,7 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
 
         if (keyEventArgs.Key == Key.Escape)
         {
+            keyEventArgs.Handled = true;
             Close();
             return true;
         }
@@ -67,6 +68,9 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
             var command = _identifiableUserCommandService.GetCommand(SelectedItem.Identifier);
             if (command is null) return false;
 
+            keyEventArgs.Handled = true;
+            Close();
+
             try
             {
                 await _userCommandHandlerService.HandleCommandAsync(command);
@@ -76,7 +80,6 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
                 _logger.LogError(e, "Unknown error while running command. {Command} {Error}", command.GetType().Name, e);
             }
 
-            Close();
             return true;
         }
 

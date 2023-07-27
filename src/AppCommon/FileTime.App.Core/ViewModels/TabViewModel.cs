@@ -1,9 +1,12 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq.Expressions;
 using System.Reactive.Linq;
 using DeclarativeProperty;
 using DynamicData;
 using DynamicData.Binding;
 using FileTime.App.Core.Extensions;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Enums;
@@ -45,6 +48,7 @@ public partial class TabViewModel : ITabViewModel
     public IObservable<IChangeSet<FullName>> MarkedItems { get; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> SelectedsChildren { get; private set; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> ParentsChildren { get; private set; }
+    public DeclarativeProperty<ItemOrdering?> Ordering { get; } = new(ItemOrdering.Name);
 
 
     public TabViewModel(
@@ -71,14 +75,56 @@ public partial class TabViewModel : ITabViewModel
 
         CurrentLocation = tab.CurrentLocation;
 
-        CurrentItems = tab.CurrentItems
-            .Map((items, _) =>
-                Task.FromResult<ObservableCollection<IItemViewModel>?>(
-                    items?.Selecting<IItem, IItemViewModel>(
-                        i => MapItemToViewModel(i, ItemViewModelType.Main)
+        CurrentItems =
+            tab.CurrentItems
+                .Map((items, _) =>
+                    Task.FromResult<ObservableCollection<IItemViewModel>?>(
+                        items?.Selecting<IItem, IItemViewModel>(
+                            i => MapItemToViewModel(i, ItemViewModelType.Main)
+                        )
                     )
-                )
-            );
+                ).CombineLatest(
+                    Ordering,
+                    (items, ordering) =>
+                    {
+                        if (items is null) return Task.FromResult<ObservableCollection<IItemViewModel>?>(null);
+                        /*Expression<Func<IItemViewModel, object?>> orderExpression = ordering switch
+                        {
+                            ItemOrdering.Name or ItemOrdering.NameDesc => i => i.DisplayNameText,
+                            ItemOrdering.LastModifyDate or ItemOrdering.LastModifyDateDesc => i => i.CreatedAt,
+                            _ => throw new NotImplementedException()
+                        };
+                        Expression<Func<ListSortDirection>> direction = ordering switch
+                        {
+                            ItemOrdering.Name or ItemOrdering.LastModifyDate => () => ListSortDirection.Ascending,
+                            ItemOrdering.NameDesc or ItemOrdering.LastModifyDateDesc => () => ListSortDirection.Descending,
+                            _ => throw new NotImplementedException()
+                        };
+                        return Task.FromResult((ObservableCollection<IItemViewModel>?) items.Ordering(orderExpression, direction));*/
+
+                        ObservableCollection<IItemViewModel>? orderedItems = ordering switch
+                        {
+                            ItemOrdering.Name =>
+                                items
+                                    .Ordering(i => i.BaseItem.Type)
+                                    .ThenOrdering(i => i.DisplayNameText),
+                            ItemOrdering.NameDesc =>
+                                items
+                                    .Ordering(i => i.BaseItem.Type)
+                                    .ThenOrdering(i => i.DisplayNameText, ListSortDirection.Descending),
+                            ItemOrdering.LastModifyDate =>
+                                items
+                                    .Ordering(i => i.CreatedAt),
+                            ItemOrdering.LastModifyDateDesc =>
+                                items
+                                    .Ordering(i => i.CreatedAt, ListSortDirection.Descending),
+                            _ => throw new NotImplementedException()
+                        };
+
+                        return Task.FromResult(orderedItems);
+                    }
+                );
+
         using var _ = Defer(
             () => CurrentItems.Subscribe(c => UpdateConsumer(c, ref _currentItemsConsumer))
         );
@@ -127,6 +173,8 @@ public partial class TabViewModel : ITabViewModel
 
             var items = parent.Items
                 .Selecting(i => MapItem(i))
+                .Ordering(i => i.Type)
+                .ThenOrdering(i => i.Name)
                 .Selecting(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild));
 
             return items;
@@ -222,7 +270,7 @@ public partial class TabViewModel : ITabViewModel
         }
     }
 
-    public void ClearMarkedItems() 
+    public void ClearMarkedItems()
         => _markedItems.Clear();
 
     ~TabViewModel() => Dispose(false);

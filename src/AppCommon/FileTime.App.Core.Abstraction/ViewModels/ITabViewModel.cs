@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using DeclarativeProperty;
 using DynamicData;
+using FileTime.App.Core.Models;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using InitableService;
@@ -20,6 +21,7 @@ public interface ITabViewModel : IInitable<ITab, int>, IDisposable
     IObservable<IChangeSet<FullName>> MarkedItems { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> SelectedsChildren { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> ParentsChildren { get; }
+    DeclarativeProperty<ItemOrdering?> Ordering { get; }
 
     void ClearMarkedItems();
     void RemoveMarkedItem(FullName fullName);

@@ -69,4 +69,12 @@ public static class DeclarativePropertyExtensions
         this IDeclarativeProperty<TCollection?> collection)
         where TCollection : IList<TItem>, INotifyCollectionChanged
         => new CollectionRepeaterProperty<TCollection?, TItem>(collection);
+    
+    
+    public static IDeclarativeProperty<TResult?> CombineLatest<T1, T2, TResult>(
+        this IDeclarativeProperty<T1> prop1,
+        IDeclarativeProperty<T2> prop2,
+        Func<T1, T2, Task<TResult>> func,
+        Action<TResult?>? setValueHook = null)
+        => new CombineLatestProperty<T1,T2,TResult?>(prop1, prop2, func, setValueHook);
 }

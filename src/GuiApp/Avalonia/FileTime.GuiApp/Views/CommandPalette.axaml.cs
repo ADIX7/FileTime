@@ -30,16 +30,12 @@ public partial class CommandPalette : UserControl
 
         if (e.Key == Key.Escape)
         {
+            e.Handled = true;
             viewModel.Close();
         }
         else
         {
             viewModel.HandleKeyDown(e);
         }
-    }
-
-    public void Test()
-    {
-        ;
     }
 }

@@ -22,6 +22,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
+    private ITabViewModel? _currentSelectedTab;
 
     public ToolUserCommandHandlerService(
         IAppState appState,
@@ -42,6 +43,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         _contentAccessorFactory = contentAccessorFactory;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
+        SaveSelectedTab(t => _currentSelectedTab = t);
 
         AddCommandHandlers(new IUserCommandHandler[]
         {
@@ -49,7 +51,15 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<CopyNativePathCommand>(CopyNativePath),
             new TypeUserCommandHandler<CopyBase64Command>(CopyBase64),
             new TypeUserCommandHandler<SearchCommand>(Search),
+            new TypeUserCommandHandler<SortItemsCommand>(SortItems),
         });
+    }
+
+    private async Task SortItems(SortItemsCommand sortItemsCommand)
+    {
+        if (_currentSelectedTab is null) return;
+
+        await _currentSelectedTab.Ordering.SetValue(sortItemsCommand.Ordering);
     }
 
     private async Task CopyBase64()
