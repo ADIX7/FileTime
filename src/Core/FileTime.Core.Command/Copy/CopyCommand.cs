@@ -1,8 +1,11 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using ByteSizeLib;
+using DeclarativeProperty;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.Core.Command.Copy;
 
@@ -10,9 +13,14 @@ public class CopyCommand : CommandBase, ITransportationCommand
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
+    private readonly ILogger<CopyCommand> _logger;
 
     private readonly List<OperationProgress> _operationProgresses = new();
     private readonly BehaviorSubject<OperationProgress?> _currentOperationProgress = new(null);
+
+    private long _recentTotalSum;
+    private readonly DeclarativeProperty<long> _recentTotalProcessed = new();
+    private readonly DeclarativeProperty<DateTime> _recentStartTime = new();
 
     public IReadOnlyList<FullName> Sources { get; }
 
@@ -20,9 +28,10 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
     public TransportMode TransportMode { get; }
 
-    public CopyCommand(
+    internal CopyCommand(
         ITimelessContentProvider timelessContentProvider,
         ICommandSchedulerNotifier commandSchedulerNotifier,
+        ILogger<CopyCommand> logger,
         IReadOnlyCollection<FullName>? sources,
         TransportMode? mode,
         FullName? targetFullName)
@@ -30,11 +39,12 @@ public class CopyCommand : CommandBase, ITransportationCommand
     {
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
+        _logger = logger;
         _currentOperationProgress
             .Select(p =>
             {
                 if (p is null) return Observable.Never<int>();
-                return p.Progress.Select(currentProgress => (int)(currentProgress * 100 / p.TotalCount));
+                return p.Progress.Select(currentProgress => (int) (currentProgress * 100 / p.TotalCount));
             })
             .Switch()
             .Subscribe(SetCurrentProgress);
@@ -46,6 +56,21 @@ public class CopyCommand : CommandBase, ITransportationCommand
         Sources = new List<FullName>(sources).AsReadOnly();
         TransportMode = mode.Value;
         Target = targetFullName;
+
+        var recentSpeed = DeclarativePropertyHelpers.CombineLatest(
+            _recentTotalProcessed,
+            _recentStartTime,
+            (total, start) =>
+            {
+                var elapsed = DateTime.Now - start;
+
+                var size = new ByteSize(total / elapsed.TotalSeconds);
+                return Task.FromResult(size + "/s");
+            });
+
+        recentSpeed
+            .Debounce(TimeSpan.FromMilliseconds(500))
+            .Subscribe(SetDisplayDetailLabel);
     }
 
     public override Task<CanCommandRun> CanRun(PointInTime currentTime)
@@ -79,13 +104,16 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
         var resolvedTarget = await _timelessContentProvider.GetItemByFullNameAsync(Target, currentTime);
 
+        _recentTotalSum = 0;
+        await _recentTotalProcessed.SetValue(0);
+        await _recentStartTime.SetValue(DateTime.Now);
+
         await TraverseTree(
             currentTime,
             Sources,
             new AbsolutePath(_timelessContentProvider, resolvedTarget),
             TransportMode,
             copyOperation);
-        //await TimeRunner.RefreshContainer.InvokeAsync(this, Target);
     }
 
     private async Task CalculateProgressAsync(PointInTime currentTime)
@@ -119,7 +147,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 .Subscribe(statuses =>
                 {
                     var done = statuses.Count(s => s) + 1;
-                    if(done > statuses.Count) done = statuses.Count;
+                    if (done > statuses.Count) done = statuses.Count;
 
                     SetDisplayLabel($"Copy - {done} / {statuses.Count}");
                 });
@@ -135,7 +163,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
     {
         foreach (var source in sources)
         {
-            var resolvedTarget = (IContainer)await target.ResolveAsync() ?? throw new Exception();
+            var resolvedTarget = (IContainer) await target.ResolveAsync() ?? throw new Exception();
             var item = await _timelessContentProvider.GetItemByFullNameAsync(source, currentTime);
 
             if (item is IContainer container)
@@ -165,8 +193,25 @@ public class CopyCommand : CommandBase, ITransportationCommand
         }
     }
 
-    private Task UpdateProgress() =>
+    private readonly object _updateProgressLock = new();
+    private Task UpdateProgress()
+    {
+        lock (_updateProgressLock)
+        {
+            var now = DateTime.Now;
+            var delta = now - _recentStartTime.Value;
+            if (delta.TotalSeconds > 5)
+            {
+                _recentTotalSum += _recentTotalProcessed.Value;
+                _recentStartTime.SetValueSafe(now);
+            }
+
+            var totalProcessedBytes = _operationProgresses.Select(o => o.Progress.Value).Sum();
+            _recentTotalProcessed.SetValueSafe(totalProcessedBytes - _recentTotalSum);
+        }
+
         //Not used, progress is reactive in this command
         //Note: Maybe this should be removed altogether, and every command should use reactive progress
-        Task.CompletedTask;
+        return Task.CompletedTask;
+    }
 }

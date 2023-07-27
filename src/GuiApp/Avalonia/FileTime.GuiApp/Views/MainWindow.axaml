@@ -316,25 +316,43 @@
                                         <Border
                                             Background="{DynamicResource ContainerBackgroundColor}"
                                             CornerRadius="10"
-                                            Height="50"
+                                            Height="70"
                                             Margin="0,0,10,0"
-                                            Padding="5">
+                                            Padding="5"
+                                            Width="300">
                                             <ScrollViewer>
                                                 <ItemsControl ItemsSource="{Binding Commands.Collection}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Border BorderThickness="1" Classes.SelectedTimelineCommand="{Binding IsSelected}">
-                                                                <StackPanel>
-                                                                    <TextBlock Text="{Binding DisplayLabel^}" />
-                                                                    <ProgressBar
-                                                                        Margin="0,5,0,0"
-                                                                        Maximum="100"
-                                                                        Value="{Binding CurrentProgress^}" />
-                                                                    <ProgressBar
-                                                                        Margin="0,5,0,0"
-                                                                        Maximum="100"
-                                                                        Value="{Binding TotalProgress^}" />
-                                                                </StackPanel>
+                                                                <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
+                                                                    <TextBlock Grid.ColumnSpan="2" Text="{Binding DisplayLabel^}" />
+
+                                                                    <StackPanel
+                                                                        Grid.Column="0"
+                                                                        Grid.Row="1"
+                                                                        Margin="0,5,5,5">
+                                                                        <TextBlock Text="{Binding DisplayDetailLabel^}" TextAlignment="Right" />
+
+                                                                        <ProgressBar
+                                                                            Margin="0,5,0,0"
+                                                                            Maximum="100"
+                                                                            MinWidth="50"
+                                                                            Value="{Binding CurrentProgress^}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel
+                                                                        Grid.Column="1"
+                                                                        Grid.Row="1"
+                                                                        Margin="5,5,0,5">
+                                                                        <TextBlock Text="{Binding TotalProgress^, StringFormat={}{0}%}" TextAlignment="Right" />
+
+                                                                        <ProgressBar
+                                                                            Margin="0,5,0,0"
+                                                                            Maximum="100"
+                                                                            MinWidth="50"
+                                                                            Value="{Binding TotalProgress^}" />
+                                                                    </StackPanel>
+                                                                </Grid>
                                                             </Border>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>

@@ -5,6 +5,7 @@ namespace FileTime.Core.Command;
 public interface ICommand
 {
     IObservable<string> DisplayLabel { get; }
+    IObservable<string> DisplayDetailLabel { get; }
     IObservable<int> TotalProgress { get; }
     IObservable<int> CurrentProgress { get; }
 

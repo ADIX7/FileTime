@@ -12,5 +12,5 @@ public class CopyCommandContext
 
     public OperationProgress? CurrentProgress { get; }
 
-    public async Task UpdateProgress() => await _updateProgress.Invoke();
+    public async Task UpdateProgressAsync() => await _updateProgress.Invoke();
 }

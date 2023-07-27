@@ -76,8 +76,12 @@ public class StreamCopyCommandHandler : ICommandHandler
                 await writer.WriteBytesAsync(dataRead);
                 await writer.FlushAsync();
                 currentProgress += dataRead.LongLength;
-                copyCommandContext.CurrentProgress?.SetProgress(currentProgress);
-                await copyCommandContext.UpdateProgress();
+                if (copyCommandContext.CurrentProgress is not null)
+                {
+                    copyCommandContext.CurrentProgress.SetProgressSafe(currentProgress);
+                }
+
+                await copyCommandContext.UpdateProgressAsync();
             }
         } while (dataRead.Length > 0);
     }

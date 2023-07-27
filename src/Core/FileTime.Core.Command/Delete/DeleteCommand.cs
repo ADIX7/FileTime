@@ -46,6 +46,12 @@ public class DeleteCommand : CommandBase, IExecutableCommand
             new Dictionary<string, IItemDeleter>(),
             new DeleteStrategy()
         );
+
+        var parents = ItemsToDelete.Select(i => i.GetParent()).OfType<FullName>().Distinct();
+        foreach (var parent in parents)
+        {
+            await _commandSchedulerNotifier.RefreshContainer(parent);
+        }
     }
 
     private async Task TraverseTree(

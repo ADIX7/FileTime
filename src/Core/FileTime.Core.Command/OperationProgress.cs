@@ -1,24 +1,26 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using DeclarativeProperty;
 
 namespace FileTime.Core.Command;
 
 public class OperationProgress
 {
-    private readonly BehaviorSubject<long> _currentProgress = new(0);
+    private readonly DeclarativeProperty<long> _currentProgress = new(0);
     public string Key { get; }
-    public IObservable<long> Progress { get; }
+    public IDeclarativeProperty<long> Progress { get; }
     public long TotalCount { get; }
-    public IObservable<bool> IsDone { get; }
+    public IDeclarativeProperty<bool> IsDone { get; }
 
     public OperationProgress(string key, long totalCount)
     {
         Key = key;
         TotalCount = totalCount;
 
-        Progress = _currentProgress.AsObservable();
-        IsDone = Progress.Select(p => p >= TotalCount);
+        Progress = _currentProgress;
+        IsDone = Progress.Map(p => p >= TotalCount);
     }
 
-    public void SetProgress(long progress) => _currentProgress.OnNext(progress);
+    public async Task SetProgressAsync(long progress) => await _currentProgress.SetValue(progress);
+
+    public void SetProgressSafe(long progress) =>
+        _currentProgress.SetValueSafe(progress);
 }

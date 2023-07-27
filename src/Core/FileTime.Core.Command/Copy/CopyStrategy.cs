@@ -18,7 +18,7 @@ public class CopyStrategy : ICopyStrategy
     {
         foreach (var item in _copyStrategyParam.OperationProgresses.FindAll(o => o.Key.StartsWith(containerPath.Path.Path)))
         {
-            item.SetProgress(item.TotalCount);
+            await item.SetProgressAsync(item.TotalCount);
         }
 
         await _copyStrategyParam.RefreshContainerAsync(containerPath.Path);
@@ -27,7 +27,11 @@ public class CopyStrategy : ICopyStrategy
     public async Task CopyAsync(AbsolutePath from, AbsolutePath to, CopyCommandContext context)
     {
         await _copy(from, to, context);
-        context.CurrentProgress?.SetProgress(context.CurrentProgress.TotalCount);
+        if (context.CurrentProgress is not null)
+        {
+            await context.CurrentProgress.SetProgressAsync(context.CurrentProgress.TotalCount);
+        }
+
         if (to.Path.GetParent() is { } parent)
             await _copyStrategyParam.RefreshContainerAsync(parent);
     }

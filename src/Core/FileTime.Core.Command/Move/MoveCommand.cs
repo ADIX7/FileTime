@@ -75,7 +75,7 @@ public class MoveCommand : CommandBase, IExecutableCommand
             if (itemToMove.Source.GetParent() is { } parent)
                 await _commandSchedulerNotifier.RefreshContainer(parent);
             
-            currentOperationProgress.SetProgress(1);
+            await currentOperationProgress.SetProgressAsync(1);
         }
 
         IItemMover GetOrAddItemMover(IContentProvider provider)
