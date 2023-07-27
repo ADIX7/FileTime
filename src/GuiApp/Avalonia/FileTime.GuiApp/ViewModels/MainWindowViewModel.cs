@@ -31,6 +31,7 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(ICommandPaletteService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IRefreshSmoothnessCalculator), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IAdminElevationManager), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IClipboardService), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;

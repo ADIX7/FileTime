@@ -70,7 +70,24 @@
                                 Height="20"
                                 HorizontalAlignment="Left"
                                 IsVisible="{Binding AdminElevationManager.IsAdminInstanceRunning}"
+                                Margin="10,0,0,0"
                                 Source="{SvgImage /Assets/material/security.svg}"
+                                VerticalAlignment="Center"
+                                Width="20" />
+                            <Image
+                                Height="20"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding ClipboardService.Content.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=1}"
+                                Margin="10,0,0,0"
+                                Source="{SvgImage /Assets/material/clipboard-outline.svg}"
+                                VerticalAlignment="Center"
+                                Width="20" />
+                            <Image
+                                Height="20"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding ClipboardService.Content.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=1}"
+                                Margin="10,0,0,0"
+                                Source="{SvgImage /Assets/material/clipboard-multiple-outline.svg}"
                                 VerticalAlignment="Center"
                                 Width="20" />
                         </StackPanel>
@@ -458,7 +475,7 @@
                                     Foreground="{DynamicResource ErrorBrush}"
                                     Grid.Row="1"
                                     HorizontalAlignment="Center"
-                                    IsVisible="{Binding AppState.SelectedTab^.CurrentItems.Value.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                    IsVisible="{Binding AppState.SelectedTab^.CurrentItems.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
                                     Margin="10"
                                     x:Name="CurrentEmpty">
                                     Empty
@@ -517,7 +534,7 @@
                                             FontWeight="Bold"
                                             Foreground="{DynamicResource ErrorBrush}"
                                             HorizontalAlignment="Center"
-                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value.Count, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
                                             Margin="10"
                                             x:Name="ChildEmpty">
                                             Empty
@@ -547,13 +564,13 @@
                                 <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^, Converter={x:Static ObjectConverters.IsNotNull}}">
                                     <TextBlock
                                         HorizontalAlignment="Center"
-                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
+                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
                                         Text="Don't know how to preview this item." />
                                     <TextBlock
                                         HorizontalAlignment="Center"
-                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
+                                        IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
                                         Text="Empty" />
-                                    <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" RowDefinitions="*, Auto">
+                                    <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" RowDefinitions="*, Auto">
                                         <ScrollViewer>
                                             <TextBox
                                                 IsReadOnly="True"
@@ -607,7 +624,7 @@
                     </Grid>
 
                     <Grid Grid.Row="3">
-                        <Grid IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualityConverter}, ConverterParameter=RapidTravel}" RowDefinitions="1,Auto">
+                        <Grid IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualsConverter}, ConverterParameter=RapidTravel}" RowDefinitions="1,Auto">
 
                             <Rectangle
                                 Fill="{DynamicResource ContentSeparatorBrush}"
@@ -692,13 +709,13 @@
                                             VerticalAlignment="Top" />
                                         <Grid Grid.Column="1">
                                             <TextBox
-                                                IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Text}}"
+                                                IsVisible="{Binding Type, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:InputType.Text}}"
                                                 Tag="InputItem"
                                                 Text="{Binding Value, Mode=TwoWay}"
                                                 VerticalAlignment="Top"
                                                 x:DataType="interactions:TextInputElement" />
                                             <TextBox
-                                                IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Password}}"
+                                                IsVisible="{Binding Type, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:InputType.Password}}"
                                                 PasswordChar="{Binding PasswordChar}"
                                                 Tag="InputItem"
                                                 Text="{Binding Value, Mode=TwoWay}"
@@ -706,7 +723,7 @@
                                                 x:DataType="interactions:PasswordInputElement" />
                                             <ListBox
                                                 Classes="RadioButtonListBox"
-                                                IsVisible="{Binding Type, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
+                                                IsVisible="{Binding Type, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
                                                 ItemsSource="{Binding Options}"
                                                 SelectedItem="{Binding Value}"
                                                 Tag="InputItem"
@@ -721,7 +738,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>
-                                        <Grid IsVisible="{Binding PreviewType, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appInteractions:PreviewType.DoubleTextList}}">
+                                        <Grid IsVisible="{Binding PreviewType, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appInteractions:PreviewType.DoubleTextList}}">
                                             <ItemsControl ItemsSource="{Binding Items}" x:DataType="appInteractions:DoubleTextListPreview">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>

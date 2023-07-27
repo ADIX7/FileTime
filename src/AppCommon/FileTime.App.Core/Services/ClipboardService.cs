@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using FileTime.Core.Command;
 using FileTime.Core.Models;
 
@@ -5,14 +6,14 @@ namespace FileTime.App.Core.Services;
 
 public class ClipboardService : IClipboardService
 {
-    private List<FullName> _content;
-    public IReadOnlyList<FullName> Content { get; private set; }
+    private readonly ObservableCollection<FullName> _content;
+    public ReadOnlyObservableCollection<FullName> Content { get; }
     public Type? CommandFactoryType { get; private set; }
 
     public ClipboardService()
     {
-        _content = new List<FullName>();
-        Content = _content.AsReadOnly();
+        _content = new ObservableCollection<FullName>();
+        Content = new(_content);
     }
 
     public void AddContent(FullName absolutePath)
@@ -38,13 +39,10 @@ public class ClipboardService : IClipboardService
 
     public void Clear()
     {
-        _content = new List<FullName>();
-        Content = _content.AsReadOnly();
+        _content.Clear();
         CommandFactoryType = null;
     }
 
     public void SetCommand<T>() where T : ITransportationCommandFactory
-    {
-        CommandFactoryType = typeof(T);
-    }
+        => CommandFactoryType = typeof(T);
 }

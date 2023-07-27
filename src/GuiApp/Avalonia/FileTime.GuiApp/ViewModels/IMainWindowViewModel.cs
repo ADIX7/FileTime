@@ -16,4 +16,5 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     ICommandPaletteService CommandPaletteService { get; }
     IRefreshSmoothnessCalculator RefreshSmoothnessCalculator { get; }
     IAdminElevationManager AdminElevationManager { get; }
+    IClipboardService ClipboardService { get; }
 }
