@@ -91,11 +91,15 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         {
             await OpenSelected();
         }
-        else if (_currentSelectedItem?.Value is IElementViewModel 
-                     {Element: {NativePath: not null, Provider: ILocalContentProvider} localFile}
-                 )
+        else if (
+            _currentSelectedItem?.Value is IElementViewModel
+            {
+                Element: {NativePath: not null, Provider: ILocalContentProvider} localFile
+            }
+        )
         {
-            Process.Start(new ProcessStartInfo(localFile.NativePath!.Path) {UseShellExecute = true});
+            var processStartInfo = new ProcessStartInfo(localFile.NativePath!.Path) {UseShellExecute = true};
+            Process.Start(processStartInfo);
 
             if (_viewMode == ViewMode.RapidTravel)
             {
@@ -119,14 +123,37 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private async Task GoToPath()
     {
         var pathInput = new TextInputElement("Path");
-        await _userCommunicationService.ReadInputs(pathInput);
+        var acceptedForm = await _userCommunicationService.ReadInputs(pathInput);
 
-        //TODO: message on empty result and on null pathInput.Value
-        var resolvedPath = await _timelessContentProvider.GetItemByNativePathAsync(new NativePath(pathInput.Value));
+        if (!acceptedForm) return;
+
+        var path = pathInput.Value!;
+        IItem? resolvedPath = null;
+        try
+        {
+            resolvedPath = await _timelessContentProvider.GetItemByNativePathAsync(new NativePath(path));
+        }
+        catch
+        {
+        }
+
         if (resolvedPath is IContainer container)
         {
             await _userCommandHandlerService.HandleCommandAsync(
                 new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, container)));
+        }
+        else if (resolvedPath is IElement element)
+        {
+            await _userCommandHandlerService.HandleCommandAsync(
+                new OpenContainerCommand(element.Parent!));
+        }
+        else
+        {
+            await _userCommunicationService.ShowMessageBox(
+                $"Path does not exists: {path}",
+                okText: "Ok",
+                showCancel: false
+            );
         }
     }
 

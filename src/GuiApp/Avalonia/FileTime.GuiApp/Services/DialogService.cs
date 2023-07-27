@@ -119,14 +119,26 @@ public class DialogService : IDialogService
         });
     }
 
-    public Task<MessageBoxResult> ShowMessageBox(string text)
+    public Task<MessageBoxResult> ShowMessageBox(
+        string text,
+        bool showCancel = true,
+        string? okText = null,
+        string? cancelText = null)
     {
         var taskCompletionSource = new TaskCompletionSource<MessageBoxResult>();
-        _modalService.OpenModal(new MessageBoxViewModel(text, (vm, result) =>
-        {
-            _modalService.CloseModal(vm);
-            taskCompletionSource.SetResult(result);
-        }));
+        _modalService.OpenModal(
+            new MessageBoxViewModel(
+                text, 
+                (vm, result) =>
+                {
+                    _modalService.CloseModal(vm);
+                    taskCompletionSource.SetResult(result);
+                },
+                showCancel,
+                okText,
+                cancelText
+            )
+        );
 
         return taskCompletionSource.Task;
     }

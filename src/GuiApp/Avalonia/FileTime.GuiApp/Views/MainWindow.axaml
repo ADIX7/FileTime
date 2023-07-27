@@ -824,13 +824,14 @@
                             Orientation="Horizontal">
                             <Button
                                 Command="{Binding OkCommand}"
-                                Content="Yes"
+                                Content="{Binding OkText}"
                                 HorizontalContentAlignment="Center"
                                 Width="80" />
                             <Button
                                 Command="{Binding CancelCommand}"
-                                Content="No"
+                                Content="{Binding CancelText}"
                                 HorizontalContentAlignment="Center"
+                                IsVisible="{Binding ShowCancel}"
                                 Margin="10,0,0,0"
                                 Width="80" />
                         </StackPanel>
