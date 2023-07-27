@@ -301,76 +301,75 @@
                                     Value="0" />
                             </ia:DataTriggerBehavior>
                         </i:Interaction.Behaviors>
-                        <Grid ColumnDefinitions="Auto,10">
-                            <ItemsControl
-                                ItemsSource="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}"
-                                VerticalAlignment="Top"
-                                x:Name="CommandGroups">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border
-                                            Background="{DynamicResource ContainerBackgroundColor}"
-                                            CornerRadius="10"
-                                            Height="70"
-                                            Margin="0,0,10,0"
-                                            Padding="5"
-                                            Width="300">
-                                            <ScrollViewer>
-                                                <ItemsControl ItemsSource="{Binding Commands.Collection}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border BorderThickness="1" Classes.SelectedTimelineCommand="{Binding IsSelected}">
-                                                                <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
-                                                                    <TextBlock Grid.ColumnSpan="2" Text="{Binding DisplayLabel^}" />
+                        <ItemsControl
+                            ItemsSource="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}"
+                            VerticalAlignment="Stretch"
+                            x:Name="CommandGroups">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="300,10" VerticalAlignment="Stretch">
+                                        <ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding Commands.Collection}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            Background="{DynamicResource ContainerBackgroundColor}"
+                                                            BorderThickness="1"
+                                                            Classes.SelectedTimelineCommand="{Binding IsSelected}"
+                                                            CornerRadius="10"
+                                                            Margin="0,0,10,0"
+                                                            Padding="5"
+                                                            VerticalAlignment="Top">
+                                                            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
+                                                                <TextBlock Grid.ColumnSpan="2" Text="{Binding DisplayLabel^}" />
 
-                                                                    <StackPanel
-                                                                        Grid.Column="0"
-                                                                        Grid.Row="1"
-                                                                        Margin="0,5,5,5">
-                                                                        <TextBlock Text="{Binding DisplayDetailLabel^}" TextAlignment="Right" />
+                                                                <StackPanel
+                                                                    Grid.Column="0"
+                                                                    Grid.Row="1"
+                                                                    Margin="0,5,5,5">
+                                                                    <TextBlock Text="{Binding DisplayDetailLabel^}" TextAlignment="Right" />
 
-                                                                        <ProgressBar
-                                                                            Margin="0,5,0,0"
-                                                                            Maximum="100"
-                                                                            MinWidth="50"
-                                                                            Value="{Binding CurrentProgress^}" />
-                                                                    </StackPanel>
-                                                                    <StackPanel
-                                                                        Grid.Column="1"
-                                                                        Grid.Row="1"
-                                                                        Margin="5,5,0,5">
-                                                                        <TextBlock Text="{Binding TotalProgress^, StringFormat={}{0}%}" TextAlignment="Right" />
+                                                                    <ProgressBar
+                                                                        Margin="0,5,0,0"
+                                                                        Maximum="100"
+                                                                        MinWidth="50"
+                                                                        Value="{Binding CurrentProgress^}" />
+                                                                </StackPanel>
+                                                                <StackPanel
+                                                                    Grid.Column="1"
+                                                                    Grid.Row="1"
+                                                                    Margin="5,5,0,5">
+                                                                    <TextBlock Text="{Binding TotalProgress^, StringFormat={}{0}%}" TextAlignment="Right" />
 
-                                                                        <ProgressBar
-                                                                            Margin="0,5,0,0"
-                                                                            Maximum="100"
-                                                                            MinWidth="50"
-                                                                            Value="{Binding TotalProgress^}" />
-                                                                    </StackPanel>
-                                                                </Grid>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </ScrollViewer>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                                                    <ProgressBar
+                                                                        Margin="0,5,0,0"
+                                                                        Maximum="100"
+                                                                        MinWidth="50"
+                                                                        Value="{Binding TotalProgress^}" />
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
 
-                            <Rectangle
-                                Fill="{DynamicResource ContentSeparatorBrush}"
-                                Grid.Column="1"
-                                HorizontalAlignment="Center"
-                                Margin="0,10,0,10"
-                                VerticalAlignment="Stretch"
-                                Width="1" />
-                        </Grid>
+                                        <Rectangle
+                                            Fill="{DynamicResource ContentSeparatorBrush}"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Center"
+                                            Margin="0,10,0,10"
+                                            VerticalAlignment="Stretch"
+                                            Width="1" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
 
                     <ItemsControl Grid.Row="1" ItemsSource="{Binding AppState.Tabs}">
