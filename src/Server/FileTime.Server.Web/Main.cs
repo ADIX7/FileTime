@@ -1,12 +1,8 @@
 ﻿using System.Net;
-using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FileTime.Server.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +40,10 @@ public class Program
         });
 
         builder.Services.AddHttpLogging(options => options.LoggingFields = HttpLoggingFields.All);
-        builder.Services.AddSignalR();
+        builder.Services.AddSignalR(hubOptions =>
+        {
+            hubOptions.MaximumReceiveMessageSize = 20 * 1024 * 1024; // 10MB
+        });
         builder.Services.AddHealthChecks();
         builder.Services.AddHostedService<PortWriterService>();
 

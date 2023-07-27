@@ -29,7 +29,7 @@ public class RemoteContentWriter : IRemoteContentWriter
         _remoteConnection.CloseWriterAsync(_transactionId);
     }
 
-    public int PreferredBufferSize => 10 * 1024;
+    public int PreferredBufferSize => 10 * 1024 * 1024;
 
     public async Task WriteBytesAsync(byte[] data, int? index = null)
     {

@@ -56,6 +56,5 @@ public static class DependencyInjection
             .AddCommands()
             .AddTransient<CreateContainerCommand>()
             .AddTransient<CreateElementCommand>()
-            .AddTransient<CopyCommand>()
             .AddTransient<DeleteCommand>();
 }
