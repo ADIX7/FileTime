@@ -8,4 +8,9 @@ public class LinuxContextMenuProvider : IContextMenuProvider
     {
         return new List<object>();
     }
+
+    public List<object> GetContextMenuForFile(IElement element)
+    {
+        return new List<object>();
+    }
 }

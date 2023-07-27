@@ -9,11 +9,23 @@ namespace FileTime.App.Core.ViewModels.ItemPreview;
 [ViewModel]
 public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInitable<IElement>
 {
+    private record EncodingResult(char BinaryChar, string PartialResult);
+
     private const int MaxTextPreviewSize = 1024 * 1024;
+
+    private static readonly List<Encoding> _encodings = new()
+    {
+        Encoding.UTF8,
+        Encoding.Unicode,
+        Encoding.ASCII,
+        Encoding.UTF32,
+        Encoding.BigEndianUnicode
+    };
 
     public ItemPreviewMode Mode { get; private set; }
 
     [Property] private string? _textContent;
+    [Property] private string? _textEncoding;
 
     public async Task InitAsync(IElement element)
     {
@@ -21,9 +33,17 @@ public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInit
         {
             var content = await element.Provider.GetContentAsync(element, MaxTextPreviewSize);
 
-            TextContent = content is null
-                ? "Could not read any data from file " + element.Name
-                : GetNormalizedText(Encoding.UTF8.GetString(content));
+            if (content is null)
+            {
+                TextContent = "Could not read any data from file " + element.Name;
+            }
+            else
+            {
+                (TextContent, var encoding) = GetNormalizedText(content);
+                TextEncoding = encoding is null
+                    ? null
+                    : $"{encoding.EncodingName} ({encoding.WebName})";
+            }
         }
         catch (Exception ex)
         {
@@ -36,14 +56,58 @@ public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInit
             _ => ItemPreviewMode.Text
         };
 
-        string GetNormalizedText(string text)
+        (string, Encoding?) GetNormalizedText(byte[] data)
         {
-            foreach (var c in text)
+            var binaryCharacter = new Dictionary<string, EncodingResult>();
+            foreach (var encoding in _encodings)
             {
-                if (c < 32 && c != 9 && c != 10 && c != 13) return $"Binary data, contains '{(int) c}'";
+                var text = encoding.GetString(data);
+                var binary = false;
+                for (var i = 0; i < text.Length; i++)
+                {
+                    var c = text[i];
+                    if (c < 32 && c != 9 && c != 10 && c != 13)
+                    {
+                        binaryCharacter[encoding.EncodingName] =
+                            new EncodingResult(
+                                c,
+                                i == 0
+                                    ? string.Empty
+                                    : text.Substring(0, i - 1)
+                            );
+
+                        binary = true;
+                        break;
+                    }
+                }
+
+                if (binary) continue;
+
+                return (text, encoding);
             }
 
-            return text;
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("The following binary characters were found by encodings:");
+            foreach (var binaryByEncoding in binaryCharacter)
+            {
+                stringBuilder.AppendLine(binaryByEncoding.Key + ": " + (int) binaryByEncoding.Value.BinaryChar);
+            }
+
+            var encodingsWithPartialResult = binaryCharacter.Where(e => !string.IsNullOrWhiteSpace(e.Value.PartialResult)).ToList();
+            if (encodingsWithPartialResult.Count > 0)
+            {
+                stringBuilder.AppendLine("The following partial texts could be read by encodings:");
+                foreach (var binaryByEncoding in encodingsWithPartialResult)
+                {
+                    var text = binaryByEncoding.Value.PartialResult;
+
+                    stringBuilder.AppendLine(binaryByEncoding.Key);
+                    stringBuilder.AppendLine(text);
+                    stringBuilder.AppendLine();
+                }
+            }
+
+            return (stringBuilder.ToString(), null);
         }
     }
 }

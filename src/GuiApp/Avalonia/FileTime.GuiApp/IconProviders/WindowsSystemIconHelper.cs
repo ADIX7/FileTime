@@ -1,4 +1,5 @@
 using System.Drawing.Imaging;
+using System.Runtime.Versioning;
 using Avalonia.Media.Imaging;
 using FileTime.Core.Models;
 using FileTime.GuiApp.Helper;
@@ -24,19 +25,20 @@ public static class WindowsSystemIconHelper
             return null;
         }
 
+        [SupportedOSPlatform("windows")]
         public static ImagePath GetImagePathByIconPath(string path)
         {
-            var environemntVariables = Environment.GetEnvironmentVariables();
-            foreach (var keyo in environemntVariables.Keys)
+            var environmentVariables = Environment.GetEnvironmentVariables();
+            foreach (var keyObject in environmentVariables.Keys)
             {
-                if (keyo is string key && environemntVariables[key] is string value)
+                if (keyObject is string key && environmentVariables[key] is string value)
                 {
                     path = path.Replace($"%{key}%", value);
                 }
             }
 
             var parts = path.Split(',');
-            (var parsedResourceId, var path2) = parts.Length >= 2 && long.TryParse(parts[^1], out var id) 
+            var (parsedResourceId, path2) = parts.Length >= 2 && long.TryParse(parts[^1], out var id) 
                 ? (id, NormalizePath(string.Join(',', parts[..^1]))) 
                 : (0, NormalizePath(path));
 

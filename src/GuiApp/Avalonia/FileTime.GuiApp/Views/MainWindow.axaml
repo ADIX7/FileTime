@@ -553,12 +553,19 @@
                                         HorizontalAlignment="Center"
                                         IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
                                         Text="Empty" />
-                                    <ScrollViewer IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}">
-                                        <TextBox
-                                            IsReadOnly="True"
-                                            Text="{Binding ItemPreviewService.ItemPreview^.TextContent}"
+                                    <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^.Mode, Converter={StaticResource EqualityConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" RowDefinitions="*, Auto">
+                                        <ScrollViewer>
+                                            <TextBox
+                                                IsReadOnly="True"
+                                                Text="{Binding ItemPreviewService.ItemPreview^.TextContent}"
+                                                x:CompileBindings="False" />
+                                        </ScrollViewer>
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Margin="5"
+                                            Text="{Binding ItemPreviewService.ItemPreview^.TextEncoding, StringFormat=Encoding: {0}}"
                                             x:CompileBindings="False" />
-                                    </ScrollViewer>
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
