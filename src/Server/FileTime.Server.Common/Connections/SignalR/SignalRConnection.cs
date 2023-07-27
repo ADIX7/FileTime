@@ -69,7 +69,7 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
         => await _client.MoveItemAsync(contentProviderId, fullName.Path, newPath.Path);
 
     public async Task WriteBytesAsync(string transactionId, byte[] data, int? index)
-        => await _client.WriteBytesAsync(transactionId, Encoding.UTF8.GetString(data), index ?? -1);
+        => await _client.WriteBytesAsync(transactionId, Convert.ToBase64String(data), index ?? -1);
 
     public async Task FlushWriterAsync(string transactionId)
         => await _client.FlushWriterAsync(transactionId);

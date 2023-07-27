@@ -74,8 +74,8 @@ public class ConnectionHub : Hub<ISignalRClient>, ISignalRHub
         _contentAccessManager.AddContentWriter(transactionId, contentWriter);
     }
 
-    public async Task WriteBytesAsync(string transactionId, string data, int index) 
-        => await _contentAccessManager.GetContentWriter(transactionId).WriteBytesAsync(Encoding.UTF8.GetBytes(data), index == -1 ? null : index);
+    public async Task WriteBytesAsync(string transactionId, string data, int index)
+        => await _contentAccessManager.GetContentWriter(transactionId).WriteBytesAsync(Convert.FromBase64String(data), index == -1 ? null : index);
 
     public async Task FlushWriterAsync(string transactionId)
         => await _contentAccessManager.GetContentWriter(transactionId).FlushAsync();
