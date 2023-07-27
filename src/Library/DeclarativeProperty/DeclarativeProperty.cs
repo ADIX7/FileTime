@@ -18,9 +18,24 @@ public sealed class DeclarativeProperty<T> : DeclarativePropertyBase<T>
 
     public DeclarativeProperty(T initialValue, Action<T?>? setValueHook = null) : base(initialValue, setValueHook)
     {
-
     }
 
     public async Task SetValue(T newValue, CancellationToken cancellationToken = default)
         => await SetNewValueAsync(newValue, cancellationToken);
+
+    public void SetValueSafe(T newValue, CancellationToken cancellationToken = default)
+    {
+        SetNewValueSync(newValue, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return;
+        Task.Run(async () =>
+        {
+            try
+            {
+                await NotifySubscribersAsync(newValue, cancellationToken);
+            }
+            catch
+            {
+            }
+        });
+    }
 }

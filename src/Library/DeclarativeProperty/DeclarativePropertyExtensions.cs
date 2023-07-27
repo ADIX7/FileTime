@@ -12,6 +12,12 @@ public static class DeclarativePropertyExtensions
     public static IDeclarativeProperty<T> Debounce<T>(this IDeclarativeProperty<T> from, Func<TimeSpan> interval, bool resetTimer = false)
         => new DebounceProperty<T>(from, interval) {ResetTimer = resetTimer};
 
+    public static IDeclarativeProperty<T> Throttle<T>(this IDeclarativeProperty<T> from, TimeSpan interval)
+        => new ThrottleProperty<T>(from, () => interval);
+
+    public static IDeclarativeProperty<T> Throttle<T>(this IDeclarativeProperty<T> from, Func<TimeSpan> interval)
+        => new ThrottleProperty<T>(from, interval);
+
     public static IDeclarativeProperty<T> DistinctUntilChanged<T>(this IDeclarativeProperty<T> from)
         => new DistinctUntilChangedProperty<T>(from);
 

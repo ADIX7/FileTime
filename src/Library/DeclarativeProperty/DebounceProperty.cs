@@ -1,52 +1,68 @@
 ﻿namespace DeclarativeProperty;
 
-public sealed class DebounceProperty<T> : TimingPropertyBase<T>
+public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
 {
-    private CancellationTokenSource? _debounceCts;
-    private bool _isActive;
-    private DateTime _startTime;
+    private readonly object _lock = new();
+    private readonly Func<TimeSpan> _interval;
+    private DateTime _startTime = DateTime.MinValue;
+    private T? _nextValue;
+    private CancellationToken _nextCancellationToken;
+    private bool _isThrottleTaskRunning;
     public bool ResetTimer { get; init; }
-    public TimeSpan WaitInterval { get; init; } = TimeSpan.FromMilliseconds(1);
+    public TimeSpan WaitInterval { get; init; } = TimeSpan.FromMilliseconds(10);
 
     public DebounceProperty(
         IDeclarativeProperty<T> from,
         Func<TimeSpan> interval,
-        Action<T?>? setValueHook = null) : base(from, interval, setValueHook)
+        Action<T?>? setValueHook = null) : base(from.Value, setValueHook)
     {
+        _interval = interval;
+        AddDisposable(from.Subscribe(SetValue));
     }
 
-    protected override Task SetValue(T? next, CancellationToken cancellationToken = default)
+    private Task SetValue(T? next, CancellationToken cancellationToken = default)
     {
-        _debounceCts?.Cancel();
-        var newTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        _debounceCts = newTokenSource;
-
-        var newToken = newTokenSource.Token;
-        
-        if (!_isActive || ResetTimer)
+        lock (_lock)
         {
-            _isActive = true;
+            _nextValue = next;
+            _nextCancellationToken = cancellationToken;
+            
+            if (_isThrottleTaskRunning)
+            {
+                if (ResetTimer)
+                {
+                    _startTime = DateTime.Now;
+                }
+                return Task.CompletedTask;
+            }
+
             _startTime = DateTime.Now;
+            _isThrottleTaskRunning = true;
+            Task.Run(async () => await StartDebounceTask());
         }
 
-        Task.Run(async () =>
-        {
-            try
-            {
-                while (DateTime.Now - _startTime < Interval())
-                {
-                    await Task.Delay(WaitInterval, newToken);
-                }
-
-                WithLock(() => { _isActive = false; });
-
-                await FireAsync(next, cancellationToken);
-            }
-            catch (TaskCanceledException ex)
-            {
-            }
-        });
-
         return Task.CompletedTask;
+    }
+
+    private async Task StartDebounceTask()
+    {
+        while (DateTime.Now - _startTime < _interval())
+        {
+            await Task.Delay(WaitInterval);
+        }
+
+        T? next;
+        CancellationToken cancellationToken;
+        lock (_lock)
+        {
+            _isThrottleTaskRunning = false;
+            next = _nextValue;
+            cancellationToken = _nextCancellationToken;
+        }
+
+        await SetNewValueAsync(
+            next,
+            cancellationToken
+        );
     }
 }

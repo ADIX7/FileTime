@@ -52,7 +52,7 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
     {
         _subscribers.Add(onChange);
         onChange(_value, default);
-        
+
         return new Unsubscriber<T>(this, onChange);
     }
 
@@ -85,6 +85,13 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
 
     protected async Task SetNewValueAsync(T? newValue, CancellationToken cancellationToken = default)
     {
+        SetNewValueSync(newValue, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return;
+        await NotifySubscribersAsync(newValue, cancellationToken);
+    }
+
+    protected void SetNewValueSync(T? newValue, CancellationToken cancellationToken = default)
+    {
         if (!(Value?.Equals(newValue) ?? false))
         {
             lock (_triggerLock)
@@ -102,8 +109,6 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
                     }
 
                     _triggerDisposables.Clear();
-                    
-                    if(cancellationToken.IsCancellationRequested) return;
                 }
 
                 _value = newValue;
@@ -112,18 +117,16 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
                 {
                     foreach (var subscribeTrigger in _subscribeTriggers)
                     {
-                        if(cancellationToken.IsCancellationRequested) return;
-                        
                         var disposable = subscribeTrigger(this, _value);
                         if (disposable != null) _triggerDisposables.Add(disposable);
                     }
                 }
             }
 
+            if (cancellationToken.IsCancellationRequested) return;
+
             OnPropertyChanged(nameof(Value));
         }
-
-        await NotifySubscribersAsync(newValue, cancellationToken);
     }
 
     public async Task ReFireAsync()

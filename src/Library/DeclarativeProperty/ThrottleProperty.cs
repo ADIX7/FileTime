@@ -1,59 +1,35 @@
 ﻿namespace DeclarativeProperty;
 
-public class ThrottleProperty<T> : TimingPropertyBase<T>
+public class ThrottleProperty<T> : DeclarativePropertyBase<T>
 {
-    private CancellationTokenSource? _debounceCts;
-    private DateTime _lastFired;
+    private readonly object _lock = new();
+    private DateTime _lastFired = DateTime.MinValue;
+    private readonly Func<TimeSpan> _interval;
 
     public ThrottleProperty(
         IDeclarativeProperty<T> from,
         Func<TimeSpan> interval,
-        Action<T?>? setValueHook = null) : base(from, interval, setValueHook)
+        Action<T?>? setValueHook = null) : base(from.Value, setValueHook)
     {
+        _interval = interval;
+        AddDisposable(from.Subscribe(SetValue));
     }
 
-    protected override Task SetValue(T? next, CancellationToken cancellationToken = default)
+    private async Task SetValue(T? next, CancellationToken cancellationToken = default)
     {
-        _debounceCts?.Cancel();
-        var interval = Interval();
-        if (DateTime.Now - _lastFired > interval)
+        lock (_lock)
         {
-            _lastFired = DateTime.Now;
-            // Note: Recursive chains can happen. Awaiting this can cause a deadlock.
-            Task.Run(async () => await FireAsync(next, cancellationToken));
-        }
-        else
-        {
-            _debounceCts = new();
-            Task.Run(async () =>
+            if (DateTime.Now - _lastFired < _interval())
             {
-                try
-                {
-                    await Task.Delay(interval, _debounceCts.Token);
-                    await FireIfNeededAsync(
-                        next,
-                        () => { _lastFired = DateTime.Now; },
-                        _debounceCts.Token, cancellationToken
-                    );
-                    /*var shouldFire = WithLock(() =>
-                    {
-                        if (_debounceCts.Token.IsCancellationRequested)
-                            return false;
+                return;
+            }
 
-                        _lastFired = DateTime.Now;
-                        return true;
-                    });
-
-                    if (!shouldFire) return;
-
-                    await Fire(next, cancellationToken);*/
-                }
-                catch (TaskCanceledException ex)
-                {
-                }
-            });
+            _lastFired = DateTime.Now;
         }
-        
-        return Task.CompletedTask;
+
+        await SetNewValueAsync(
+            next,
+            cancellationToken
+        );
     }
 }
