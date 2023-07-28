@@ -10,7 +10,7 @@ public class CreateElementCommand : CreateItemBase
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
 
     public CreateElementCommand(
-        ITimelessContentProvider timelessContentProvider, 
+        ITimelessContentProvider timelessContentProvider,
         IContentAccessorFactory contentAccessorFactory,
         ICommandSchedulerNotifier commandSchedulerNotifier)
         : base(timelessContentProvider, contentAccessorFactory)
@@ -22,5 +22,9 @@ public class CreateElementCommand : CreateItemBase
     {
         await itemCreator.CreateElementAsync(resolvedParent.Provider, Parent!.GetChild(NewItemName!));
         await _commandSchedulerNotifier.RefreshContainer(Parent);
+    }
+
+    public override void Cancel()
+    {
     }
 }

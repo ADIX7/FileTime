@@ -41,6 +41,11 @@ public class MoveCommand : CommandBase, IExecutableCommand
         return Task.FromResult(currentTime);
     }
 
+    public override void Cancel()
+    {
+        //TODO: Implement
+    }
+
     public async Task Execute()
     {
         Calculate();

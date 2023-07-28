@@ -4,6 +4,6 @@ public interface IContentWriter : IDisposable
 {
     int PreferredBufferSize { get; }
 
-    Task WriteBytesAsync(byte[] data, int? index = null);
-    Task FlushAsync();
+    Task WriteBytesAsync(byte[] data, int? index = null, CancellationToken cancellationToken = default);
+    Task FlushAsync(CancellationToken cancellationToken = default);
 }

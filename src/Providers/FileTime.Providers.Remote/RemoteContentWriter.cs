@@ -31,16 +31,16 @@ public class RemoteContentWriter : IRemoteContentWriter
 
     public int PreferredBufferSize => 10 * 1024 * 1024;
 
-    public async Task WriteBytesAsync(byte[] data, int? index = null)
+    public async Task WriteBytesAsync(byte[] data, int? index = null, CancellationToken cancellationToken = default)
     {
         if (!_isRemoteWriterInitialized) await InitializeRemoteWriter(_nativePath);
-        await _remoteConnection.WriteBytesAsync(_transactionId, data, index);
+        await _remoteConnection.WriteBytesAsync(_transactionId, data, index, cancellationToken);
     }
 
-    public async Task FlushAsync()
+    public async Task FlushAsync(CancellationToken cancellationToken = default)
     {
         if (!_isRemoteWriterInitialized) return;
-        await _remoteConnection.FlushWriterAsync(_transactionId);
+        await _remoteConnection.FlushWriterAsync(_transactionId, cancellationToken);
     }
 
     private async Task InitializeRemoteWriter(NativePath nativePath)

@@ -68,10 +68,10 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
     public async Task MoveItemAsync(string contentProviderId, FullName fullName, FullName newPath)
         => await _client.MoveItemAsync(contentProviderId, fullName.Path, newPath.Path);
 
-    public async Task WriteBytesAsync(string transactionId, byte[] data, int? index)
+    public async Task WriteBytesAsync(string transactionId, byte[] data, int? index, CancellationToken cancellationToken = default)
         => await _client.WriteBytesAsync(transactionId, Convert.ToBase64String(data), index ?? -1);
 
-    public async Task FlushWriterAsync(string transactionId)
+    public async Task FlushWriterAsync(string transactionId, CancellationToken cancellationToken = default)
         => await _client.FlushWriterAsync(transactionId);
 
     public async Task InitializeRemoteWriter(string contentProviderId, string transactionId, NativePath nativePath)

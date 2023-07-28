@@ -14,6 +14,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
     private readonly ILogger<CopyCommand> _logger;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private readonly List<OperationProgress> _operationProgresses = new();
     private readonly BehaviorSubject<OperationProgress?> _currentOperationProgress = new(null);
@@ -94,6 +95,9 @@ public class CopyCommand : CommandBase, ITransportationCommand
         return currentTime.WithDifferences(simulateOperation.NewDiffs);
     }
 
+    public override void Cancel()
+        => _cancellationTokenSource.Cancel();
+
     public async Task ExecuteAsync(CopyFunc copy)
     {
         var currentTime = PointInTime.Present;
@@ -163,6 +167,8 @@ public class CopyCommand : CommandBase, ITransportationCommand
     {
         foreach (var source in sources)
         {
+            if (_cancellationTokenSource.IsCancellationRequested) return;
+
             var resolvedTarget = (IContainer) await target.ResolveAsync() ?? throw new Exception();
             var item = await _timelessContentProvider.GetItemByFullNameAsync(source, currentTime);
 
@@ -188,12 +194,13 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 var currentProgress = _operationProgresses.Find(o => o.Key == element.FullName!.Path);
                 _currentOperationProgress.OnNext(currentProgress);
 
-                await copyOperation.CopyAsync(new AbsolutePath(_timelessContentProvider, element), newElementPath, new CopyCommandContext(UpdateProgress, currentProgress));
+                await copyOperation.CopyAsync(new AbsolutePath(_timelessContentProvider, element), newElementPath, new CopyCommandContext(UpdateProgress, currentProgress, _cancellationTokenSource.Token));
             }
         }
     }
 
     private readonly object _updateProgressLock = new();
+
     private Task UpdateProgress()
     {
         lock (_updateProgressLock)

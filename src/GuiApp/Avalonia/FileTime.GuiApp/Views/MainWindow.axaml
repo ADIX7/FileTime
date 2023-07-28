@@ -343,7 +343,18 @@
                                                             Padding="5"
                                                             VerticalAlignment="Top">
                                                             <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
-                                                                <TextBlock Grid.ColumnSpan="2" Text="{Binding DisplayLabel^}" />
+                                                                <Grid ColumnDefinitions="*, Auto" Grid.ColumnSpan="2">
+                                                                    <TextBlock Text="{Binding DisplayLabel^}" />
+
+                                                                    <Button Command="{Binding Cancel}" Grid.Column="1">
+                                                                        <Image
+                                                                            Height="20"
+                                                                            HorizontalAlignment="Left"
+                                                                            Source="{SvgImage /Assets/material/close-octagon.svg}"
+                                                                            VerticalAlignment="Center"
+                                                                            Width="20" />
+                                                                    </Button>
+                                                                </Grid>
 
                                                                 <StackPanel
                                                                     Grid.Column="0"

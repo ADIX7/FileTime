@@ -23,4 +23,8 @@ public class CreateContainerCommand : CreateItemBase
         await itemCreator.CreateContainerAsync(resolvedParent.Provider, Parent!.GetChild(NewItemName!));
         await _commandSchedulerNotifier.RefreshContainer(Parent);
     }
+
+    public override void Cancel()
+    {
+    }
 }

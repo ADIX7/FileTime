@@ -50,6 +50,8 @@ public class StreamCopyCommandHandler : ICommandHandler
 
     public async Task CopyElement(AbsolutePath sourcePath, AbsolutePath targetPath, CopyCommandContext copyCommandContext)
     {
+        if (copyCommandContext.CancellationToken.IsCancellationRequested) return;
+
         var parent = (IContainer?) (await targetPath.GetParent()!.ResolveAsync())!;
         var elementName = targetPath.Path;
         var parentChildren = parent.Items.ToList();
@@ -70,11 +72,12 @@ public class StreamCopyCommandHandler : ICommandHandler
 
         do
         {
+            if (copyCommandContext.CancellationToken.IsCancellationRequested) return;
             dataRead = await reader.ReadBytesAsync(writer.PreferredBufferSize);
             if (dataRead.Length > 0)
             {
-                await writer.WriteBytesAsync(dataRead);
-                await writer.FlushAsync();
+                await writer.WriteBytesAsync(dataRead, cancellationToken: copyCommandContext.CancellationToken);
+                await writer.FlushAsync(copyCommandContext.CancellationToken);
                 currentProgress += dataRead.LongLength;
                 if (copyCommandContext.CurrentProgress is not null)
                 {

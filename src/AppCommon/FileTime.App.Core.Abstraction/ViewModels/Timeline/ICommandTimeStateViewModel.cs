@@ -7,4 +7,5 @@ public interface ICommandTimeStateViewModel
     IObservable<string> DisplayLabel { get; }
     IObservable<string> DisplayDetailLabel { get; }
     IObservable<bool> IsSelected { get; }
+    void Cancel();
 }

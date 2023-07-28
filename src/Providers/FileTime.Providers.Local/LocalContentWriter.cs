@@ -15,7 +15,7 @@ public class LocalContentWriter : IContentWriter
         _binaryWriter = new BinaryWriter(_writerStream);
     }
 
-    public Task WriteBytesAsync(byte[] data, int? index = null)
+    public Task WriteBytesAsync(byte[] data, int? index = null, CancellationToken cancellationToken = default)
     {
         if (index != null)
         {
@@ -28,7 +28,7 @@ public class LocalContentWriter : IContentWriter
         return Task.CompletedTask;
     }
 
-    public Task FlushAsync()
+    public Task FlushAsync(CancellationToken cancellationToken = default)
     {
         _binaryWriter.Flush();
         return Task.CompletedTask;

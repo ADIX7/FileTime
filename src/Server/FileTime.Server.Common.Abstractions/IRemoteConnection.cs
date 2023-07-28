@@ -10,7 +10,7 @@ public interface IRemoteConnection
     Task DeleteItemAsync(string contentProviderId, FullName fullName);
     Task MoveItemAsync(string contentProviderId, FullName fullName, FullName newPath);
     Task InitializeRemoteWriter(string contentProviderId, string transactionId, NativePath nativePath);
-    Task WriteBytesAsync(string transactionId, byte[] data, int? index);
-    Task FlushWriterAsync(string transactionId);
+    Task WriteBytesAsync(string transactionId, byte[] data, int? index, CancellationToken cancellationToken = default);
+    Task FlushWriterAsync(string transactionId, CancellationToken cancellationToken = default);
     Task CloseWriterAsync(string transactionId);
 }

@@ -31,6 +31,7 @@ public abstract class CommandBase : ICommand
 
     public abstract Task<CanCommandRun> CanRun(PointInTime currentTime);
     public abstract Task<PointInTime> SimulateCommand(PointInTime currentTime);
+    public abstract void Cancel();
 
     protected void SetDisplayLabel(string? displayLabel) => _displayLabel.OnNext(displayLabel ?? string.Empty);
     protected void SetDisplayDetailLabel(string? displayLabel) => _displayDetailLabel.OnNext(displayLabel ?? string.Empty);
