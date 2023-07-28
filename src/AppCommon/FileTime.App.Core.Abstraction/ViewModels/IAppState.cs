@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using DeclarativeProperty;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels.Timeline;
 
@@ -10,7 +11,7 @@ public interface IAppState
     IObservable<ITabViewModel?> SelectedTab { get; }
     IObservable<string?> SearchText { get; }
     IObservable<ViewMode> ViewMode { get; }
-    string RapidTravelText { get; set; }
+    DeclarativeProperty<string?> RapidTravelText { get; }
     ITabViewModel? CurrentSelectedTab { get; }
     ITimelineViewModel TimelineViewModel { get; }
 

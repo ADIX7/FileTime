@@ -88,19 +88,6 @@ public partial class TabViewModel : ITabViewModel
                     (items, ordering) =>
                     {
                         if (items is null) return Task.FromResult<ObservableCollection<IItemViewModel>?>(null);
-                        /*Expression<Func<IItemViewModel, object?>> orderExpression = ordering switch
-                        {
-                            ItemOrdering.Name or ItemOrdering.NameDesc => i => i.DisplayNameText,
-                            ItemOrdering.LastModifyDate or ItemOrdering.LastModifyDateDesc => i => i.CreatedAt,
-                            _ => throw new NotImplementedException()
-                        };
-                        Expression<Func<ListSortDirection>> direction = ordering switch
-                        {
-                            ItemOrdering.Name or ItemOrdering.LastModifyDate => () => ListSortDirection.Ascending,
-                            ItemOrdering.NameDesc or ItemOrdering.LastModifyDateDesc => () => ListSortDirection.Descending,
-                            _ => throw new NotImplementedException()
-                        };
-                        return Task.FromResult((ObservableCollection<IItemViewModel>?) items.Ordering(orderExpression, direction));*/
 
                         ObservableCollection<IItemViewModel>? orderedItems = ordering switch
                         {

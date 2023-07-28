@@ -21,8 +21,6 @@ public abstract partial class ItemViewModel : IItemViewModel
 
     [Property] private IItem? _baseItem;
 
-    [Property] private IObservable<IReadOnlyList<ItemNamePart>>? _displayName;
-
     [Property] private string? _displayNameText;
 
     [Property] private IDeclarativeProperty<bool> _isSelected;
@@ -37,6 +35,8 @@ public abstract partial class ItemViewModel : IItemViewModel
 
     [Property] private IDeclarativeProperty<bool> _isAlternative;
 
+    public IDeclarativeProperty<IReadOnlyList<ItemNamePart>>? DisplayName { get; private set; }
+
     public void Init(IItem item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
     {
         _parentTab = parentTab;
@@ -49,8 +49,14 @@ public abstract partial class ItemViewModel : IItemViewModel
             _ => throw new InvalidEnumArgumentException()
         };
 
+        var displayName = itemViewModelType switch
+        {
+            ItemViewModelType.Main => _appState.RapidTravelText.Map(s => (IReadOnlyList<ItemNamePart>) _itemNameConverterService.GetDisplayName(item.DisplayName, s)),
+            _ => new DeclarativeProperty<IReadOnlyList<ItemNamePart>>(new List<ItemNamePart> {new (item.DisplayName)}),
+        };
+
         BaseItem = item;
-        DisplayName = _appState.SearchText.Select(s => _itemNameConverterService.GetDisplayName(item.DisplayName, s));
+        DisplayName = displayName;
         DisplayNameText = item.DisplayName;
 
         IsMarked = itemViewModelType is ItemViewModelType.Main
@@ -78,6 +84,7 @@ public abstract partial class ItemViewModel : IItemViewModel
             (true, false, false) => ItemViewMode.Marked,
             _ => ItemViewMode.Default
         };
+
 
     public bool EqualsTo(IItemViewModel? itemViewModel)
     {

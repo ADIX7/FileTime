@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DeclarativeProperty;
 using DynamicData;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels.Timeline;
@@ -25,11 +26,11 @@ public abstract partial class AppStateBase : IAppState
 
     public IObservable<ITabViewModel?> SelectedTab { get; private set; }
     public ITabViewModel? CurrentSelectedTab { get; private set; }
-
-    [Property] private string _rapidTravelText = "";
+    public DeclarativeProperty<string?> RapidTravelText { get; private set; }
 
     partial void OnInitialize()
     {
+        RapidTravelText = new("");
         ViewMode = _viewMode.AsObservable();
 
         var tabsObservable = _tabs.Connect();

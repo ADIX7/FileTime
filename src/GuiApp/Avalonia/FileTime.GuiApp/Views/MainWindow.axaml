@@ -642,7 +642,7 @@
 
                                 <TextBlock Text="Filter " />
 
-                                <TextBlock Text="{Binding AppState.RapidTravelText}" />
+                                <TextBlock Text="{Binding AppState.RapidTravelText.Value}" />
                             </StackPanel>
                         </Grid>
 

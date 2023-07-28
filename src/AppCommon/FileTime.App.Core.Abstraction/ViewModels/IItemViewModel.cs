@@ -9,7 +9,7 @@ namespace FileTime.App.Core.ViewModels;
 public interface IItemViewModel : IInitable<IItem, ITabViewModel, ItemViewModelType>
 {
     IItem? BaseItem { get; set; }
-    IObservable<IReadOnlyList<ItemNamePart>>? DisplayName { get; set; }
+    IDeclarativeProperty<IReadOnlyList<ItemNamePart>>? DisplayName { get; }
     string? DisplayNameText { get; set; }
     IDeclarativeProperty<bool> IsSelected { get; set; }
     IObservable<bool>? IsMarked { get; set; }

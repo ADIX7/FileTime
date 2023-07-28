@@ -64,17 +64,21 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         }
         else if (key == Key.Back)
         {
-            if (_appState.RapidTravelText.Length > 0)
+            if (_appState.RapidTravelText.Value!.Length > 0)
             {
                 setHandled(true);
-                _appState.RapidTravelText = _appState.RapidTravelText.Substring(0, _appState.RapidTravelText.Length - 1);
+                await _appState.RapidTravelText.SetValue(
+                    _appState.RapidTravelText.Value![..^1]
+                );
                 updateRapidTravelFilter = true;
             }
         }
         else if (keyString.Length == 1)
         {
             setHandled(true);
-            _appState.RapidTravelText += keyString.ToLower();
+            await _appState.RapidTravelText.SetValue(
+                _appState.RapidTravelText.Value + keyString.ToLower()
+            );
             updateRapidTravelFilter = true;
         }
         else
@@ -93,7 +97,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
             if (_selectedTab?.Tab is not ITab tab) return;
 
             tab.RemoveItemFilter(RapidTravelFilterName);
-            tab.AddItemFilter(new ItemFilter(RapidTravelFilterName, i => i.Name.ToLower().Contains(_appState.RapidTravelText)));
+            tab.AddItemFilter(new ItemFilter(RapidTravelFilterName, i => i.Name.ToLower().Contains(_appState.RapidTravelText.Value!)));
             /*var currentLocation = await _appState.SelectedTab.CurrentLocation.Container.WithoutVirtualContainer(MainPageViewModel.RAPIDTRAVEL);
             var newLocation = new VirtualContainer(
                 currentLocation,

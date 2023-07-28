@@ -225,7 +225,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         if (_currentSelectedItem?.Value is not IContainerViewModel containerViewModel || containerViewModel.Container is null)
             return;
 
-        _appState.RapidTravelText = "";
+        await _appState.RapidTravelText.SetValue("");
         if (_selectedTab?.Tab is { } tab)
         {
             await tab.SetCurrentLocation(containerViewModel.Container);
@@ -240,7 +240,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             return;
         }
 
-        _appState.RapidTravelText = "";
+        await _appState.RapidTravelText.SetValue("");
         if (_selectedTab?.Tab is { } tab)
         {
             await tab.SetCurrentLocation(newContainer);
