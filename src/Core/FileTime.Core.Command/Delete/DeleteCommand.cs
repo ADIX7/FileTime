@@ -52,7 +52,10 @@ public class DeleteCommand : CommandBase, IExecutableCommand
             new DeleteStrategy()
         );
 
-        var parents = ItemsToDelete.Select(i => i.GetParent()).OfType<FullName>().Distinct();
+        var parents = ItemsToDelete
+            .Select(i => i.GetParent())
+            .OfType<FullName>()
+            .Distinct();
         foreach (var parent in parents)
         {
             await _commandSchedulerNotifier.RefreshContainer(parent);
@@ -68,17 +71,25 @@ public class DeleteCommand : CommandBase, IExecutableCommand
         foreach (var itemToDeleteName in itemsToDelete)
         {
             var itemToDelete = await _timelessContentProvider.GetItemByFullNameAsync(itemToDeleteName, currentTime);
-            IItemDeleter itemDeleter;
+            IItemDeleter? itemDeleter = null;
 
-            if (itemDeleters.ContainsKey(itemToDelete.Provider.Name))
+            if (itemDeleters.TryGetValue(itemToDelete.Provider.Name, out var deleter))
             {
-                itemDeleter = itemDeleters[itemToDelete.Provider.Name];
+                itemDeleter = deleter;
             }
             else
             {
-                itemDeleter = _contentAccessorFactory.GetItemDeleter(itemToDelete.Provider);
-                itemDeleters.Add(itemToDelete.Provider.Name, itemDeleter);
+                try
+                {
+                    itemDeleter = _contentAccessorFactory.GetItemDeleter(itemToDelete.Provider);
+                    itemDeleters.Add(itemToDelete.Provider.Name, itemDeleter);
+                }
+                catch
+                {
+                }
             }
+
+            if (itemDeleter is null) continue;
 
             if (itemToDelete is IContainer container)
             {
@@ -95,7 +106,7 @@ public class DeleteCommand : CommandBase, IExecutableCommand
                 }
             }
 
-            await itemDeleter.DeleteAsync(itemToDelete.Provider, itemToDelete.FullName!);
+            await deleteStrategy.DeleteItem(itemToDelete, itemDeleter);
         }
     }
 }

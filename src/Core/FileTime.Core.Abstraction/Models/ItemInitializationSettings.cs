@@ -1,11 +1,7 @@
 namespace FileTime.Core.Models;
 
-public readonly struct ItemInitializationSettings
+public sealed class ItemInitializationSettings
 {
-    public readonly bool SkipChildInitialization;
-
-    public ItemInitializationSettings(bool skipChildInitialization)
-    {
-        SkipChildInitialization = skipChildInitialization;
-    }
+    public bool SkipChildInitialization { get; init; }
+    public AbsolutePath? Parent { get; init; }
 }

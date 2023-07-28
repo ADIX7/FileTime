@@ -10,7 +10,8 @@ public static class Startup
     {
         services.TryAddSingleton<ISearchContentProvider, SearchContentProvider>();
         services.AddSingleton<IContentProvider>(sp => sp.GetRequiredService<ISearchContentProvider>());
-        services.TryAddSingleton<ISearchManager, SearchManager>();
+        services.TryAddSingleton<IItemDeleter<ISearchContentProvider>, SearchItemDeleter>();
+        services.TryAddSingleton<IItemDeleter<SearchContentProvider>>(sp => sp.GetRequiredService<IItemDeleter<ISearchContentProvider>>());
 
         return services;
     }

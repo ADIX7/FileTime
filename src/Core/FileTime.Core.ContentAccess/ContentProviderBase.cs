@@ -32,7 +32,7 @@ public abstract class ContentProviderBase : IContentProvider
 
     public IContentProvider Provider => this;
 
-    public AbsolutePath? Parent => null;
+    public AbsolutePath? Parent { get; }
 
     public DateTime? CreatedAt => null;
 
@@ -46,14 +46,15 @@ public abstract class ContentProviderBase : IContentProvider
     public bool AllowRecursiveDeletion => false;
 
     public AbsolutePathType Type => AbsolutePathType.Container;
-    public PointInTime PointInTime { get; } = PointInTime.Eternal;
+    public PointInTime PointInTime => PointInTime.Eternal;
 
     public ObservableCollection<Exception> Exceptions { get; } = new();
 
     ReadOnlyExtensionCollection IItem.Extensions => _extensions;
 
-    protected ContentProviderBase(string name)
+    protected ContentProviderBase(string name, ITimelessContentProvider timelessContentProvider)
     {
+        Parent = new AbsolutePath(timelessContentProvider, PointInTime.Eternal, new FullName(""), AbsolutePathType.Container);
         DisplayName = Name = name;
         FullName = FullName.CreateSafe(name);
         Extensions = new ExtensionCollection();

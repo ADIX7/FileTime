@@ -1,21 +1,64 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.Core.ContentAccess;
 
 public class ContentProviderRegistry : IContentProviderRegistry
 {
+    private readonly object _lock = new();
     private readonly IServiceProvider _serviceProvider;
-    private readonly Lazy<IList<IContentProvider>> _defaultContentProviders;
-    private readonly List<IContentProvider> _additionalContentProviders = new();
+    private readonly ObservableCollection<IContentProvider> _contentProviders = new();
+    private readonly ReadOnlyObservableCollection<IContentProvider> _contentProvidersReadOnly;
+    private bool _initialized;
 
     public ContentProviderRegistry(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _defaultContentProviders = new Lazy<IList<IContentProvider>>(() => serviceProvider.GetServices<IContentProvider>().ToList());
+        _contentProvidersReadOnly = new ReadOnlyObservableCollection<IContentProvider>(_contentProviders);
     }
 
-    public IEnumerable<IContentProvider> ContentProviders => _defaultContentProviders.Value.Concat(_additionalContentProviders);
+    public ReadOnlyObservableCollection<IContentProvider> ContentProviders
+    {
+        get
+        {
+            InitializeContentProviderListIfNeeded();
+            return _contentProvidersReadOnly;
+        }
+    }
 
-    public void AddContentProvider(IContentProvider contentProvider) => _additionalContentProviders.Add(contentProvider);
-    public void RemoveContentProvider(IContentProvider contentProvider) => _additionalContentProviders.Remove(contentProvider);
+    private void InitializeContentProviderListIfNeeded()
+    {
+        lock (_lock)
+        {
+            if (!_initialized)
+            {
+                foreach (var contentProvider in _serviceProvider.GetServices<IContentProvider>())
+                {
+                    _contentProviders.Add(contentProvider);
+                }
+
+                _initialized = true;
+            }
+        }
+    }
+
+    public void AddContentProvider(IContentProvider contentProvider)
+    {
+        InitializeContentProviderListIfNeeded();
+
+        lock (_lock)
+        {
+            _contentProviders.Add(contentProvider);
+        }
+    }
+
+    public void RemoveContentProvider(IContentProvider contentProvider)
+    {
+        InitializeContentProviderListIfNeeded();
+
+        lock (_lock)
+        {
+            _contentProviders.Remove(contentProvider);
+        }
+    }
 }

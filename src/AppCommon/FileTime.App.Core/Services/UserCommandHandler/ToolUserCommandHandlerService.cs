@@ -15,7 +15,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 {
     private readonly ISystemClipboardService _systemClipboardService;
     private readonly IUserCommunicationService _userCommunicationService;
-    private readonly ISearchManager _searchManager;
+    private readonly ISearchContentProvider _searchContentProvider;
     private readonly IItemNameConverterService _itemNameConverterService;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
@@ -28,7 +28,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         IAppState appState,
         ISystemClipboardService systemClipboardService,
         IUserCommunicationService userCommunicationService,
-        ISearchManager searchManager,
+        ISearchContentProvider searchContentProvider,
         IItemNameConverterService itemNameConverterService,
         ITimelessContentProvider timelessContentProvider,
         IUserCommandHandlerService userCommandHandlerService,
@@ -36,7 +36,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     {
         _systemClipboardService = systemClipboardService;
         _userCommunicationService = userCommunicationService;
-        _searchManager = searchManager;
+        _searchContentProvider = searchContentProvider;
         _itemNameConverterService = itemNameConverterService;
         _timelessContentProvider = timelessContentProvider;
         _userCommandHandlerService = userCommandHandlerService;
@@ -113,7 +113,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        var searchTask = await _searchManager.StartSearchAsync(searchMatcher, _currentLocation.Value);
+        var searchTask = await _searchContentProvider.StartSearchAsync(searchMatcher, _currentLocation.Value);
         var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, searchTask.SearchContainer));
         await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
     }

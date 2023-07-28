@@ -10,6 +10,7 @@ namespace FileTime.App.Search;
 public class SearchTask : ISearchTask
 {
     private readonly IContainer _baseContainer;
+    private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ISearchMatcher _matcher;
     private readonly Container _container;
     private readonly ObservableCollection<Exception> _exceptions = new();
@@ -22,19 +23,22 @@ public class SearchTask : ISearchTask
 
     public SearchTask(
         IContainer baseContainer,
-        IContentProvider contentProvider,
-        ISearchMatcher matcher
+        ISearchContentProvider contentProvider,
+        ITimelessContentProvider timelessContentProvider,
+        ISearchMatcher matcher,
+        AbsolutePath parent
     )
     {
         var randomId = $"{SearchContentProvider.ContentProviderName}/{_searchId++}_{baseContainer.Name}";
         _baseContainer = baseContainer;
+        _timelessContentProvider = timelessContentProvider;
         _matcher = matcher;
         _container = new Container(
             baseContainer.Name,
             baseContainer.DisplayName,
             new FullName(randomId),
             new NativePath(randomId),
-            null,
+            parent,
             false,
             true,
             null,
@@ -85,7 +89,11 @@ public class SearchTask : ISearchTask
 
         foreach (var itemPath in items)
         {
-            var item = await itemPath.ResolveAsync();
+            var item = await itemPath.ResolveAsync(
+                itemInitializationSettings: new ItemInitializationSettings
+                {
+                    Parent = new AbsolutePath(_timelessContentProvider, _container)
+                });
             if (await _matcher.IsItemMatchAsync(item))
             {
                 _items.Add(itemPath);

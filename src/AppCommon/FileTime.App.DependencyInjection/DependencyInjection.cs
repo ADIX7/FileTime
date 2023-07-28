@@ -31,6 +31,7 @@ public static class DependencyInjection
         serviceCollection.TryAddSingleton<ICommandRunner, CommandRunner>();
         serviceCollection.TryAddSingleton<IContentAccessorFactory, ContentAccessorFactory>();
         serviceCollection.TryAddSingleton<IContentProviderRegistry, ContentProviderRegistry>();
+        serviceCollection.TryAddSingleton<IRootContentProvider, RootContentProvider>();
         //TODO: check local/remote context 
         serviceCollection.TryAddSingleton<ILocalCommandExecutor, LocalCommandExecutor>();
         serviceCollection.TryAddSingleton<ICommandSchedulerNotifier, LocalCommandSchedulerNotifier>();

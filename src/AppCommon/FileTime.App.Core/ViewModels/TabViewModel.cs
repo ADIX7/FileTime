@@ -198,7 +198,7 @@ public partial class TabViewModel : ITabViewModel
 
     private static async Task<IItem> MapItemAsync(AbsolutePath item)
         => await item.ResolveAsync(forceResolve: true,
-            itemInitializationSettings: new ItemInitializationSettings(true));
+            itemInitializationSettings: new ItemInitializationSettings {SkipChildInitialization = true});
 
     private IItemViewModel MapItemToViewModel(IItem item, ItemViewModelType type)
     {

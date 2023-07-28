@@ -14,7 +14,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly bool _isCaseInsensitive;
 
-    public LocalContentProvider(ITimelessContentProvider timelessContentProvider) : base(LocalContentProviderConstants.ContentProviderId)
+    public LocalContentProvider(ITimelessContentProvider timelessContentProvider)
+        : base(LocalContentProviderConstants.ContentProviderId, timelessContentProvider)
     {
         _timelessContentProvider = timelessContentProvider;
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -66,13 +67,13 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         PointInTime pointInTime,
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
-        ItemInitializationSettings itemInitializationSettings = default)
+        ItemInitializationSettings? itemInitializationSettings = null)
     {
         var path = nativePath.Path;
         Exception? innerException;
         try
         {
-            if ((path?.Length ?? 0) == 0)
+            if (path.Length == 0)
             {
                 return Task.FromResult((IItem) this);
             }
@@ -81,7 +82,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                 return Task.FromResult((IItem) DirectoryToContainer(
                     new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
                     pointInTime,
-                    !itemInitializationSettings.SkipChildInitialization)
+                    itemInitializationSettings)
                 );
             }
             else if (File.Exists(path))
@@ -193,18 +194,21 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     }
 
     private Container DirectoryToContainer(DirectoryInfo directoryInfo, PointInTime pointInTime,
-        bool initializeChildren = true)
+        ItemInitializationSettings? initializationSettings = null)
     {
+        initializationSettings ??= new();
+
         var fullName = GetFullName(directoryInfo.FullName);
         var parentFullName = fullName.GetParent();
         var parent =
-            parentFullName is null
+            initializationSettings.Parent
+            ?? (parentFullName is null
                 ? null
                 : new AbsolutePath(
                     _timelessContentProvider,
                     pointInTime,
                     parentFullName,
-                    AbsolutePathType.Container);
+                    AbsolutePathType.Container));
         var exceptions = new ObservableCollection<Exception>();
 
         var children = new ObservableCollection<AbsolutePath>();
@@ -229,7 +233,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             children
         );
 
-        if (initializeChildren)
+        if (!initializationSettings.SkipChildInitialization)
         {
             Task.Run(async () => await LoadChildren(container, directoryInfo, children, pointInTime, exceptions));
         }

@@ -52,7 +52,7 @@ public abstract partial class ItemViewModel : IItemViewModel
         var displayName = itemViewModelType switch
         {
             ItemViewModelType.Main => _appState.RapidTravelText.Map(s => (IReadOnlyList<ItemNamePart>) _itemNameConverterService.GetDisplayName(item.DisplayName, s)),
-            _ => new DeclarativeProperty<IReadOnlyList<ItemNamePart>>(new List<ItemNamePart> {new (item.DisplayName)}),
+            _ => new DeclarativeProperty<IReadOnlyList<ItemNamePart>>(new List<ItemNamePart> {new(item.DisplayName)}),
         };
 
         BaseItem = item;
@@ -103,6 +103,6 @@ public abstract partial class ItemViewModel : IItemViewModel
         var deepestPath = _parentTab.Tab.LastDeepestSelectedPath;
         var commonPath = FullName.CreateSafe(PathHelper.GetCommonPath(ownFullName.Path, deepestPath.Path));
 
-        return commonPath.Path == ownFullName.Path;
+        return commonPath is not null && commonPath.Path == ownFullName.Path;
     }
 }

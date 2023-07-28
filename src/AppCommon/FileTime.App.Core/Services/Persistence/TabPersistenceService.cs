@@ -15,32 +15,17 @@ public class TabPersistenceService : ITabPersistenceService
     private readonly IAppState _appState;
     private readonly ILogger<TabPersistenceService> _logger;
 
-    private class PersistenceRoot
+    //TODO: make this a configuration maybe?
+    private readonly List<string> _contentProvidersNotToRestore = new()
     {
-        public TabStates? TabStates { get; set; }
-    }
+        "search"
+    };
 
-    private class TabStates
-    {
-        public List<TabState>? Tabs { get; set; }
-        public int? ActiveTabNumber { get; set; }
-    }
+    private record PersistenceRoot(TabStates? TabStates);
 
-    private class TabState
-    {
-        public string? Path { get; set; }
-        public int Number { get; set; }
+    private record TabStates(List<TabState>? Tabs, int? ActiveTabNumber);
 
-        public TabState()
-        {
-        }
-
-        public TabState(FullName path, int number)
-        {
-            Path = path.Path;
-            Number = number;
-        }
-    }
+    private record TabState(string? Path, int Number);
 
     private readonly string _settingsPath;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -149,7 +134,7 @@ public class TabPersistenceService : ITabPersistenceService
                         }
                         catch
                         {
-                            path = path.GetParent();
+                            path = path?.GetParent();
                             if (path == null)
                             {
                                 throw new Exception($"Could not find an initializable path along {tab.Path}");
@@ -158,6 +143,8 @@ public class TabPersistenceService : ITabPersistenceService
                     }
 
                     if (container == null) continue;
+
+                    if (_contentProvidersNotToRestore.Contains(container.Provider.Name)) continue;
 
                     var tabToLoad = await _serviceProvider.GetAsyncInitableResolver(container)
                         .GetRequiredServiceAsync<ITab>();
@@ -181,7 +168,15 @@ public class TabPersistenceService : ITabPersistenceService
 
         if (_appState.Tabs.Count == 0) return false;
 
-        var tabToActivate = _appState.Tabs.FirstOrDefault(t => t.TabNumber == tabStates.ActiveTabNumber);
+        var optimalTabs = _appState
+            .Tabs
+            .TakeWhile(t => t.TabNumber <= tabStates.ActiveTabNumber)
+            .Reverse();
+        var suboptimalTabs = _appState
+            .Tabs
+            .SkipWhile(t => t.TabNumber <= tabStates.ActiveTabNumber);
+
+        var tabToActivate = optimalTabs.Concat(suboptimalTabs).FirstOrDefault();
         if (tabToActivate is not null) _appState.SetSelectedTab(tabToActivate);
 
         return true;
@@ -189,10 +184,8 @@ public class TabPersistenceService : ITabPersistenceService
 
     public void SaveStates(CancellationToken token = default)
     {
-        var state = new PersistenceRoot
-        {
-            TabStates = SerializeTabStates()
-        };
+        var state = new PersistenceRoot(SerializeTabStates());
+        
         var settingsDirectory = new DirectoryInfo(string.Join(Path.DirectorySeparatorChar,
             _settingsPath.Split(Path.DirectorySeparatorChar)[0..^1]));
         if (!settingsDirectory.Exists) settingsDirectory.Create();
@@ -207,16 +200,15 @@ public class TabPersistenceService : ITabPersistenceService
         {
             var currentLocation = tab.CurrentLocation.Value;
             if (currentLocation is null) continue;
-            tabStates.Add(new TabState(currentLocation.FullName!, tab.TabNumber));
+            tabStates.Add(new TabState(currentLocation.FullName!.Path, tab.TabNumber));
         }
 
-        return new TabStates
-        {
-            Tabs = tabStates,
-            ActiveTabNumber = _appState.CurrentSelectedTab?.TabNumber
-        };
+        return new TabStates(
+            tabStates,
+            _appState.CurrentSelectedTab?.TabNumber
+        );
     }
 
-    public async Task InitAsync() 
+    public async Task InitAsync()
         => await LoadStatesAsync();
 }

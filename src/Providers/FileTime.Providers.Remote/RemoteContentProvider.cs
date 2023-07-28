@@ -7,7 +7,11 @@ namespace FileTime.Providers.Remote;
 
 public class RemoteContentProvider : ContentProviderBase, IRemoteContentProvider
 {
-    public RemoteContentProvider(string remoteName, string name = "remote") : base(name)
+    public RemoteContentProvider(
+        ITimelessContentProvider timelessContentProvider,
+        string remoteName,
+        string name = "remote")
+        : base(name, timelessContentProvider)
     {
     }
 

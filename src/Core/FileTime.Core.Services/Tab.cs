@@ -140,7 +140,7 @@ public class Tab : ITab
             {
                 var itemNameToSelect = LastDeepestSelectedPath.Path
                     .Split(Constants.SeparatorChar)
-                    .Skip(parentPath.Split(Constants.SeparatorChar).Length)
+                    .Skip(parentPath == "" ? 0 : parentPath.Split(Constants.SeparatorChar).Length)
                     .FirstOrDefault();
 
                 var itemToSelect = items.FirstOrDefault(i => i.FullName?.GetName() == itemNameToSelect);
