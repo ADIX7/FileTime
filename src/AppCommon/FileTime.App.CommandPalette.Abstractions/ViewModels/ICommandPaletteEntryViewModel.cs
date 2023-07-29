@@ -2,6 +2,7 @@
 
 public interface ICommandPaletteEntryViewModel
 {
-    string Identifier { get; set; }
-    string Title { get; set; }
+    string Identifier { get; }
+    string Title { get; }
+    string Shortcuts { get; }
 }

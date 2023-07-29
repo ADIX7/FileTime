@@ -25,8 +25,9 @@
             SelectedItem="{Binding SelectedItem}">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:ICommandPaletteEntryViewModel">
-                    <Grid Margin="5">
+                    <Grid Margin="5" ColumnDefinitions="*, Auto">
                         <TextBlock Text="{Binding Title}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Shortcuts}" Margin="0,0,10,0" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
