@@ -10,4 +10,6 @@ public sealed class CreateElementCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Create element";
 }

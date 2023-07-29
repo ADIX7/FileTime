@@ -27,8 +27,12 @@ public sealed class SwitchToTabCommand : IIdentifiableUserCommand
     {
         TabNumber = tabNumber;
         UserCommandID = commandName;
+        Title = tabNumber == -1
+        ? "Switch to last tab"
+        : $"Switch to tab {tabNumber}";
     }
 
     public string UserCommandID { get; }
     public int TabNumber { get; }
+    public string Title { get; }
 }

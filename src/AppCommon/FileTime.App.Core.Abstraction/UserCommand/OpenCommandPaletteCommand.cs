@@ -1,6 +1,6 @@
 ﻿namespace FileTime.App.Core.UserCommand;
 
-public class OpenCommandPaletteCommand : IIdentifiableUserCommand
+public sealed class OpenCommandPaletteCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "open_command_palette";
     public static OpenCommandPaletteCommand Instance { get; } = new ();
@@ -10,4 +10,6 @@ public class OpenCommandPaletteCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Open command palette";
 }

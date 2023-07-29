@@ -1,6 +1,6 @@
 ﻿namespace FileTime.App.Core.UserCommand;
 
-public class CopyFilesToClipboardCommand : IIdentifiableUserCommand
+public sealed class CopyFilesToClipboardCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "copy_to_clipboard";
 
@@ -11,4 +11,6 @@ public class CopyFilesToClipboardCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Copy to clipbaord";
 }

@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.UserCommand;
 
-public class CopyNativePathCommand : IIdentifiableUserCommand
+public sealed class CopyNativePathCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "copy_path";
     public static CopyNativePathCommand Instance { get; } = new();
@@ -10,4 +10,6 @@ public class CopyNativePathCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Copy path";
 }

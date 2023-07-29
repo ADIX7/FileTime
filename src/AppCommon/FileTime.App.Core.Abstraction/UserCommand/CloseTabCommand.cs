@@ -10,4 +10,6 @@ public sealed class CloseTabCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Close tab";
 }

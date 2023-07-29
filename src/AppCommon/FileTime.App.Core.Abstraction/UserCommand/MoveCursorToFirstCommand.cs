@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.UserCommand;
 
-public class MoveCursorToFirstCommand : IIdentifiableUserCommand
+public sealed class MoveCursorToFirstCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "move_cursor_to_first";
     public static MoveCursorToFirstCommand Instance { get; } = new();
@@ -10,4 +10,6 @@ public class MoveCursorToFirstCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Move to first";
 }

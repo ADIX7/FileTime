@@ -10,4 +10,6 @@ public sealed class CreateContainer : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Create container";
 }

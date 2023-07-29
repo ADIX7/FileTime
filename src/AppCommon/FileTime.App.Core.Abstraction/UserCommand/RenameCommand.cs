@@ -1,6 +1,6 @@
 ﻿namespace FileTime.App.Core.UserCommand;
 
-public class RenameCommand : IIdentifiableUserCommand
+public sealed class RenameCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "rename";
     public static RenameCommand Instance { get; } = new();
@@ -10,4 +10,6 @@ public class RenameCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Rename";
 }

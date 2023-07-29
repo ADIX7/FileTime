@@ -10,4 +10,6 @@ public sealed class MoveCursorUpCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Move up";
 }

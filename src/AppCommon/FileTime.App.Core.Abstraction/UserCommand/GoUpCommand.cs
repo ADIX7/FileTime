@@ -10,4 +10,6 @@ public sealed class GoUpCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Go up";
 }

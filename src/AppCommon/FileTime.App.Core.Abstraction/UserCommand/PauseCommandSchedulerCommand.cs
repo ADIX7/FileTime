@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.UserCommand;
 
-public class PauseCommandSchedulerCommand : IIdentifiableUserCommand
+public sealed class PauseCommandSchedulerCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "pause_command_scheduler";
     public static PauseCommandSchedulerCommand Instance { get; } = new();
@@ -10,4 +10,6 @@ public class PauseCommandSchedulerCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Pause command scheduler";
 }

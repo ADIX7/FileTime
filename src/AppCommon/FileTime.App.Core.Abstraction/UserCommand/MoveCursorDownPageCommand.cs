@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.UserCommand;
 
-public class MoveCursorDownPageCommand : IIdentifiableUserCommand
+public sealed class MoveCursorDownPageCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "move_cursor_down_page";
     public static MoveCursorDownPageCommand Instance { get; } = new();
@@ -10,4 +10,6 @@ public class MoveCursorDownPageCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Move down a page";
 }

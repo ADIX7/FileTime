@@ -10,4 +10,6 @@ public sealed class CopyCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Copy";
 }

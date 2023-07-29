@@ -10,4 +10,6 @@ public sealed class MarkCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Select item";
 }

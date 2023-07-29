@@ -1,6 +1,6 @@
 namespace FileTime.App.Core.UserCommand;
 
-public class MoveCursorToLastCommand : IIdentifiableUserCommand
+public sealed class MoveCursorToLastCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "move_cursor_to_last";
     public static MoveCursorToLastCommand Instance { get; } = new();
@@ -10,4 +10,6 @@ public class MoveCursorToLastCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Move to last";
 }

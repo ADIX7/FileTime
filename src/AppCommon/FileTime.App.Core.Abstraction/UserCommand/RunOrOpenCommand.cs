@@ -1,6 +1,6 @@
 ﻿namespace FileTime.App.Core.UserCommand;
 
-public class RunOrOpenCommand : IIdentifiableUserCommand
+public sealed class RunOrOpenCommand : IIdentifiableUserCommand
 {
     public const string CommandName = "run_or_open";
     public static RunOrOpenCommand Instance { get; } = new();
@@ -10,4 +10,6 @@ public class RunOrOpenCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Open or run";
 }

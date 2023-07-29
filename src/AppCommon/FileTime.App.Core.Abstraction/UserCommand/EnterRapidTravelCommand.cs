@@ -10,4 +10,6 @@ public sealed class EnterRapidTravelCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Enter rapid travel mode";
 }

@@ -10,4 +10,5 @@ public sealed class StartCommandSchedulerCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+    public string Title => "Start command scheduler";
 }

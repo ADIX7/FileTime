@@ -10,4 +10,6 @@ public sealed class RefreshCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Refresh";
 }

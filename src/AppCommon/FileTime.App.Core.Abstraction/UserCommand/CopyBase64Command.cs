@@ -1,6 +1,6 @@
 ﻿namespace FileTime.App.Core.UserCommand;
 
-public class CopyBase64Command : IIdentifiableUserCommand
+public sealed class CopyBase64Command : IIdentifiableUserCommand
 {
     public const string CommandName = "copy_base64";
     public static CopyBase64Command Instance { get; } = new();
@@ -10,4 +10,6 @@ public class CopyBase64Command : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
+
+    public string Title => "Copy content as base64 text";
 }
