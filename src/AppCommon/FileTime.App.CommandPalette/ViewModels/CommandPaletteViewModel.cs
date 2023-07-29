@@ -41,9 +41,8 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
                 || c.Identifier.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
             )
             .Select(c =>
-                (ICommandPaletteEntryViewModel) new CommandPaletteEntryViewModel(c.Identifier, c.Title))
-            .Take(30) // TODO remove magic number
-            .OrderBy(c => c.Title)
+                (ICommandPaletteEntryViewModel) new CommandPaletteEntryViewModel(c.Identifier, c.Title)
+            )
             .ToList();
 
     public override async Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs)

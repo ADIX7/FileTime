@@ -3,6 +3,8 @@
     d:DesignWidth="800"
     mc:Ignorable="d"
     x:Class="FileTime.GuiApp.Views.CommandPalette"
+    x:CompileBindings="True"
+    xmlns:vm="clr-namespace:FileTime.App.CommandPalette.ViewModels;assembly=FileTime.App.CommandPalette.Abstractions"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,7 +12,8 @@
     <UserControl.Styles>
         <StyleInclude Source="avares://FileTime.GuiApp/Resources/Styles.axaml" />
     </UserControl.Styles>
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*"
+          x:DataType="vm:ICommandPaletteViewModel">
         <TextBox
             KeyDown="Search_OnKeyDown"
             Text="{Binding SearchText, Mode=TwoWay}"
@@ -21,9 +24,9 @@
             ItemsSource="{Binding FilteredMatches}"
             SelectedItem="{Binding SelectedItem}">
             <ListBox.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="vm:ICommandPaletteEntryViewModel">
                     <Grid Margin="5">
-                        <TextBlock Text="{Binding Identifier}" />
+                        <TextBlock Text="{Binding Title}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

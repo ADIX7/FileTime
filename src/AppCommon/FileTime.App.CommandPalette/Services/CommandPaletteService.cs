@@ -40,8 +40,9 @@ public partial class CommandPaletteService : ICommandPaletteService
 
     public IReadOnlyList<ICommandPaletteEntry> GetCommands() =>
         _identifiableUserCommandService
-            .GetCommandIdentifiers()
-            .Select(c => new CommandPaletteEntry(c, c))
+            .IdentifiableUserCommands
+            .Select(c => new CommandPaletteEntry(c.Key, c.Value.Title))
+            .OrderBy(c => c.Title)
             .ToList()
             .AsReadOnly();
 }

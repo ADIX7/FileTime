@@ -4,9 +4,15 @@ namespace FileTime.App.Core.Services.UserCommandHandler;
 
 public class IdentifiableUserCommandService : IIdentifiableUserCommandService
 {
-    private readonly Dictionary<string, Func<IIdentifiableUserCommand>> _identifiableUserCommands = new();
+    private readonly Dictionary<string, IIdentifiableUserCommand> _identifiableUserCommands = new();
+    public IReadOnlyDictionary<string, IIdentifiableUserCommand> IdentifiableUserCommands { get; }
 
-    public void AddIdentifiableUserCommandFactory(string identifier, Func<IIdentifiableUserCommand> commandFactory)
+    public IdentifiableUserCommandService()
+    {
+        IdentifiableUserCommands = _identifiableUserCommands.AsReadOnly();
+    }
+
+    public void AddIdentifiableUserCommandFactory(string identifier, IIdentifiableUserCommand commandFactory)
         => _identifiableUserCommands.Add(identifier, commandFactory);
 
     public IIdentifiableUserCommand? GetCommand(string identifier)
@@ -15,7 +21,7 @@ public class IdentifiableUserCommandService : IIdentifiableUserCommandService
         if (!_identifiableUserCommands.ContainsKey(identifier))
             throw new IndexOutOfRangeException($"No command factory is registered for command {identifier}");
 
-        return _identifiableUserCommands[identifier].Invoke();
+        return _identifiableUserCommands[identifier];
     }
     
     public IReadOnlyCollection<string> GetCommandIdentifiers() => _identifiableUserCommands.Keys.ToList();
