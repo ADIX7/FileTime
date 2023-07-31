@@ -45,7 +45,11 @@ public class CopyCommand : CommandBase, ITransportationCommand
             .Select(p =>
             {
                 if (p is null) return Observable.Never<int>();
-                return p.Progress.Select(currentProgress => (int) (currentProgress * 100 / p.TotalCount));
+                return p.Progress.Select(currentProgress =>
+                    p.TotalCount == 0
+                        ? 0
+                        : (int) (currentProgress * 100 / p.TotalCount)
+                );
             })
             .Switch()
             .Subscribe(SetCurrentProgress);
