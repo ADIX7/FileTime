@@ -84,4 +84,5 @@ public class RootContentProvider : IRootContentProvider
     public bool CanHandlePath(NativePath path) => throw new NotImplementedException();
 
     public bool CanHandlePath(FullName path) => throw new NotImplementedException();
+    public IItem WithParent(AbsolutePath parent) => this; 
 }

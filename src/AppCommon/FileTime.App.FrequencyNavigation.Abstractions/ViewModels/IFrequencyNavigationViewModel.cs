@@ -1,3 +1,4 @@
+using Avalonia.Input;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FuzzyPanel;
 
@@ -7,4 +8,5 @@ public interface IFrequencyNavigationViewModel : IFuzzyPanelViewModel<string>, I
 {
     IObservable<bool> ShowWindow { get; }
     void Close();
+    Task<bool> HandleKeyUp(KeyEventArgs keyEventArgs);
 }

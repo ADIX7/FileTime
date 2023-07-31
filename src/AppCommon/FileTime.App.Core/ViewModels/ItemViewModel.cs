@@ -2,9 +2,9 @@ using System.ComponentModel;
 using System.Reactive.Linq;
 using DeclarativeProperty;
 using DynamicData;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
+using FileTime.Core.Behaviors;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using MoreLinq;
@@ -37,7 +37,10 @@ public abstract partial class ItemViewModel : IItemViewModel
 
     public IDeclarativeProperty<IReadOnlyList<ItemNamePart>>? DisplayName { get; private set; }
 
-    public void Init(IItem item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
+    public void Init(
+        IItem item, 
+        ITabViewModel parentTab, 
+        ItemViewModelType itemViewModelType)
     {
         _parentTab = parentTab;
 
@@ -51,7 +54,12 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         var displayName = itemViewModelType switch
         {
-            ItemViewModelType.Main => _appState.RapidTravelText.Map(s => (IReadOnlyList<ItemNamePart>) _itemNameConverterService.GetDisplayName(item.DisplayName, s)),
+            ItemViewModelType.Main => _appState.RapidTravelText.Map(async (s, _) =>
+                _appState.ViewMode.Value != Models.Enums.ViewMode.RapidTravel 
+                && _appState.CurrentSelectedTab?.CurrentLocation.Value?.Provider is IItemNameConverterProvider nameConverterProvider
+                    ? (IReadOnlyList<ItemNamePart>) await nameConverterProvider.GetItemNamePartsAsync(item)
+                    : _itemNameConverterService.GetDisplayName(item.DisplayName, s)
+            ),
             _ => new DeclarativeProperty<IReadOnlyList<ItemNamePart>>(new List<ItemNamePart> {new(item.DisplayName)}),
         };
 

@@ -26,6 +26,7 @@ public partial class CommandPalette : UserControl
 
     private void Search_OnKeyDown(object? sender, KeyEventArgs e)
     {
+        if (e.Handled) return;
         if (DataContext is not ICommandPaletteViewModel viewModel) return;
 
         if (e.Key == Key.Escape)
@@ -37,5 +38,12 @@ public partial class CommandPalette : UserControl
         {
             viewModel.HandleKeyDown(e);
         }
+    }
+
+    private void Search_OnKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled) return;
+        if (DataContext is not ICommandPaletteViewModel viewModel) return;
+        viewModel.HandleKeyUp(e);
     }
 }

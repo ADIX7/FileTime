@@ -1,4 +1,5 @@
 using FileTime.App.Core.Models;
+using FileTime.Core.Models;
 
 namespace FileTime.App.Core.Services;
 
@@ -13,7 +14,7 @@ public class ItemNameConverterService : IItemNameConverterService
         {
             var nameLeft = name;
 
-            while (nameLeft.ToLower().IndexOf(searchText, StringComparison.Ordinal) is int rapidTextStart && rapidTextStart != -1)
+            while (nameLeft.ToLower().IndexOf(searchText, StringComparison.Ordinal) is var rapidTextStart && rapidTextStart != -1)
             {
                 var before = rapidTextStart > 0 ? nameLeft.Substring(0, rapidTextStart) : null;
                 var rapidTravel = nameLeft.Substring(rapidTextStart, searchText.Length);

@@ -106,10 +106,10 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         //TODO proper error message
         if (string.IsNullOrWhiteSpace(searchQuery)) return;
 
-        var searchMatcher = searchCommand.SearchType switch
+        ISearchMatcher searchMatcher = searchCommand.SearchType switch
         {
             SearchType.NameContains => new NameContainsMatcher(_itemNameConverterService, searchQuery),
-            //SearchType.NameRegex => new NameRegexMatcher(searchQuery),
+            SearchType.NameRegex => new RegexMatcher(searchQuery),
             _ => throw new ArgumentOutOfRangeException()
         };
 

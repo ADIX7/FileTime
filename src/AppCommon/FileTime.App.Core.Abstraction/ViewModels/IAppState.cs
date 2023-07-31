@@ -10,7 +10,7 @@ public interface IAppState
     ReadOnlyObservableCollection<ITabViewModel> Tabs { get; }
     IObservable<ITabViewModel?> SelectedTab { get; }
     IObservable<string?> SearchText { get; }
-    IObservable<ViewMode> ViewMode { get; }
+    IDeclarativeProperty<ViewMode> ViewMode { get; }
     DeclarativeProperty<string?> RapidTravelText { get; }
     ITabViewModel? CurrentSelectedTab { get; }
     ITimelineViewModel TimelineViewModel { get; }
@@ -18,6 +18,6 @@ public interface IAppState
     void AddTab(ITabViewModel tabViewModel);
     void RemoveTab(ITabViewModel tabViewModel);
     void SetSearchText(string? searchText);
-    void SwitchViewMode(ViewMode newViewMode);
+    Task SwitchViewModeAsync(ViewMode newViewMode);
     void SetSelectedTab(ITabViewModel tabToSelect);
 }

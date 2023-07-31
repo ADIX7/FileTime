@@ -96,6 +96,7 @@ public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInit
             var encodingsWithPartialResult = binaryCharacter.Where(e => !string.IsNullOrWhiteSpace(e.Value.PartialResult)).ToList();
             if (encodingsWithPartialResult.Count > 0)
             {
+                stringBuilder.AppendLine();
                 stringBuilder.AppendLine("The following partial texts could be read by encodings:");
                 foreach (var binaryByEncoding in encodingsWithPartialResult)
                 {

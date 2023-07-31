@@ -17,6 +17,7 @@
     <Grid RowDefinitions="Auto,*">
         <TextBox
             KeyDown="Search_OnKeyDown"
+            KeyUp="Search_OnKeyUp"
             Text="{Binding SearchText, Mode=TwoWay}"
             x:Name="SearchTextBox" />
         <ListBox

@@ -15,8 +15,6 @@ public partial class ContainerSizeContainerViewModel : ItemViewModel, IContainer
     {
     }
 
-    public void Init(IContainer item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
-    {
-        Init((IItem)item, parentTab, itemViewModelType);
-    }
+    public void Init(IContainer item, ITabViewModel parentTab, ItemViewModelType itemViewModelType) 
+        => Init((IItem)item, parentTab, itemViewModelType);
 }

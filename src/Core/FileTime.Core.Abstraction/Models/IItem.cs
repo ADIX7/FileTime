@@ -26,4 +26,6 @@ public interface IItem
     ReadOnlyExtensionCollection Extensions { get; }
 
     T? GetExtension<T>() => (T?)Extensions.FirstOrDefault(i => i is T);
+    
+    IItem WithParent(AbsolutePath parent);
 }

@@ -45,15 +45,19 @@ public record Container(
         _isLoading.OnNext(true);
         IsLoaded = false;
     }
+
     public void StopLoading()
     {
         _isLoading.OnNext(false);
         IsLoaded = true;
     }
+
     public void CancelLoading()
     {
         _loadingCancellationTokenSource.Cancel();
         _isLoading.OnNext(false);
         IsLoaded = true;
     }
+
+    public IItem WithParent(AbsolutePath parent) => this with {Parent = parent};
 }

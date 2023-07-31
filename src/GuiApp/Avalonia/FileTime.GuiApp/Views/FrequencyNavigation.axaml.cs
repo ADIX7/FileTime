@@ -24,8 +24,10 @@ public partial class FrequencyNavigation : UserControl
 
     private void Search_OnKeyDown(object? sender, KeyEventArgs e)
     {
+        if (e.Handled) return;
+
         if (DataContext is not IFrequencyNavigationViewModel viewModel) return;
-        
+
         if (e.Key == Key.Escape)
         {
             viewModel.Close();
@@ -34,5 +36,12 @@ public partial class FrequencyNavigation : UserControl
         {
             viewModel.HandleKeyDown(e);
         }
+    }
+
+    private void Search_OnKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled) return;
+        if (DataContext is not IFrequencyNavigationViewModel viewModel) return;
+        viewModel.HandleKeyUp(e);
     }
 }

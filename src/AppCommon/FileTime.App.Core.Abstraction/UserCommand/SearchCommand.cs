@@ -21,9 +21,13 @@ public class SearchCommand : IUserCommand
 public sealed class IdentifiableSearchCommand : SearchCommand, IIdentifiableUserCommand
 {
     public const string SearchByNameContainsCommandName = "search_name_contains";
+    public const string SearchByRegexCommandName = "search_name_regex";
 
     public static readonly IdentifiableSearchCommand SearchByNameContains =
         new(null, SearchType.NameContains, SearchByNameContainsCommandName, "Search by name");
+
+    public static readonly IdentifiableSearchCommand SearchByRegex =
+        new(null, SearchType.NameRegex, SearchByRegexCommandName, "Search by name (Regex)");
 
     private IdentifiableSearchCommand(
         string? searchText,

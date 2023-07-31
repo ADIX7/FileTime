@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using DynamicData;
-using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -18,8 +16,11 @@ public class SearchTask : ISearchTask
     private readonly SemaphoreSlim _searchingLock = new(1, 1);
     private bool _isSearching;
     private static int _searchId = 1;
+    private readonly Dictionary<FullName, FullName> _realFullNames = new();
+    public IReadOnlyDictionary<FullName, FullName> RealFullNames { get; }
 
     public IContainer SearchContainer => _container;
+    public ISearchMatcher Matcher => _matcher;
 
     public SearchTask(
         IContainer baseContainer,
@@ -33,6 +34,12 @@ public class SearchTask : ISearchTask
         _baseContainer = baseContainer;
         _timelessContentProvider = timelessContentProvider;
         _matcher = matcher;
+        RealFullNames = _realFullNames.AsReadOnly();
+
+        var extensions = new ExtensionCollection
+        {
+            new SearchExtension(this)
+        };
         _container = new Container(
             baseContainer.Name,
             baseContainer.DisplayName,
@@ -49,7 +56,7 @@ public class SearchTask : ISearchTask
             false,
             PointInTime.Present,
             _exceptions,
-            new ReadOnlyExtensionCollection(new ExtensionCollection()),
+            new ReadOnlyExtensionCollection(extensions),
             _items
         );
     }
@@ -89,14 +96,17 @@ public class SearchTask : ISearchTask
 
         foreach (var itemPath in items)
         {
-            var item = await itemPath.ResolveAsync(
-                itemInitializationSettings: new ItemInitializationSettings
-                {
-                    Parent = new AbsolutePath(_timelessContentProvider, _container)
-                });
+            var item = await itemPath.ResolveAsync();
             if (await _matcher.IsItemMatchAsync(item))
             {
-                _items.Add(itemPath);
+                var childName = _container.FullName.GetChild(itemPath.Path.GetName());
+                _realFullNames.Add(childName, itemPath.Path);
+                _items.Add(new AbsolutePath(
+                    _timelessContentProvider, 
+                    PointInTime.Present, 
+                    childName, 
+                    AbsolutePathType.Container
+                ));
             }
 
             if (item is IContainer childContainer)

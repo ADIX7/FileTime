@@ -30,11 +30,9 @@ public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFreque
     public void Close()
         => _frequencyNavigationService.CloseNavigationWindow();
 
-    public override async Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs)
+    public async Task<bool> HandleKeyUp(KeyEventArgs keyEventArgs)
     {
-        var handled = await base.HandleKeyDown(keyEventArgs);
-        
-        if (handled) return true;
+        if (keyEventArgs.Handled) return false;
 
         if (keyEventArgs.Key == Key.Enter)
         {
@@ -42,6 +40,23 @@ public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFreque
             var targetContainer = await _timelessContentProvider.GetItemByFullNameAsync(new FullName(SelectedItem), PointInTime.Present);
             var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, targetContainer));
             await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
+            Close();
+            return true;
+        }
+
+        return false;
+    }
+
+    public override async Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs)
+    {
+        if (keyEventArgs.Handled) return false;
+        var handled = await base.HandleKeyDown(keyEventArgs);
+
+        if (handled) return true;
+
+        if (keyEventArgs.Key == Key.Escape)
+        {
+            keyEventArgs.Handled = true;
             Close();
             return true;
         }

@@ -90,4 +90,5 @@ public abstract class ContentProviderBase : IContentProvider
 
     public abstract bool CanHandlePath(NativePath path);
     public bool CanHandlePath(FullName path) => CanHandlePath(GetNativePath(path));
+    public IItem WithParent(AbsolutePath parent) => this; 
 }

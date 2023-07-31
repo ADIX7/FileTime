@@ -6,11 +6,17 @@ namespace FileTime.App.FuzzyPanel;
 
 public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<TItem> where TItem : class
 {
+    private readonly Func<TItem, TItem, bool> _itemEquality;
     private string _searchText = String.Empty;
 
     [Notify(set: Setter.Protected)] private IObservable<bool> _showWindow;
     [Notify(set: Setter.Protected)] private List<TItem> _filteredMatches;
     [Notify(set: Setter.Protected)] private TItem? _selectedItem;
+
+    protected FuzzyPanelViewModel(Func<TItem, TItem, bool>? itemEquality = null)
+    {
+        _itemEquality = itemEquality ?? ((a, b) => a == b);
+    }
 
     public string SearchText
     {
@@ -42,7 +48,9 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
     {
         if (keyEventArgs.Key == Key.Down)
         {
-            var nextItem = FilteredMatches.SkipWhile(i => i != SelectedItem).Skip(1).FirstOrDefault();
+            var nextItem = SelectedItem is null
+                ? FilteredMatches.FirstOrDefault()
+                : FilteredMatches.SkipWhile(i => !_itemEquality(i, SelectedItem)).Skip(1).FirstOrDefault();
 
             if (nextItem is not null)
             {
@@ -54,7 +62,9 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
         }
         else if (keyEventArgs.Key == Key.Up)
         {
-            var previousItem = FilteredMatches.TakeWhile(i => i != SelectedItem).LastOrDefault();
+            var previousItem = SelectedItem is null
+                ? FilteredMatches.LastOrDefault()
+                : FilteredMatches.TakeWhile(i => !_itemEquality(i, SelectedItem)).LastOrDefault();
 
             if (previousItem is not null)
             {

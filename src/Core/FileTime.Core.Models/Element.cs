@@ -24,4 +24,6 @@ public record Element(
     ReadOnlyExtensionCollection Extensions) : IElement
 {
     public AbsolutePathType Type => AbsolutePathType.Element;
+    
+    public IItem WithParent(AbsolutePath parent) => this with { Parent = parent }; 
 }

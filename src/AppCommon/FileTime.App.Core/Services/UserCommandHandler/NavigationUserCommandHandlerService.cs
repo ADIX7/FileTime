@@ -310,13 +310,13 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private Task EnterRapidTravel()
     {
-        _appState.SwitchViewMode(ViewMode.RapidTravel);
+        _appState.SwitchViewModeAsync(ViewMode.RapidTravel);
         return Task.CompletedTask;
     }
 
     private Task ExitRapidTravel()
     {
-        _appState.SwitchViewMode(ViewMode.Default);
+        _appState.SwitchViewModeAsync(ViewMode.Default);
         return Task.CompletedTask;
     }
 

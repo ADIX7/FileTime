@@ -25,6 +25,7 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
         IUserCommandHandlerService userCommandHandlerService,
         IKeyboardConfigurationService keyboardConfigurationService,
         ILogger<CommandPaletteViewModel> logger)
+        : base((a, b) => a.Identifier == b.Identifier)
     {
         _commandPaletteService = commandPaletteService;
         _identifiableUserCommandService = identifiableUserCommandService;
@@ -104,6 +105,13 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
             Close();
             return true;
         }
+
+        return false;
+    }
+
+    public async Task<bool> HandleKeyUp(KeyEventArgs keyEventArgs)
+    {
+        if (keyEventArgs.Handled) return false;
 
         if (keyEventArgs.Key == Key.Enter)
         {

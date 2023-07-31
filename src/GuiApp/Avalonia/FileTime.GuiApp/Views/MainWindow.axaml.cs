@@ -71,7 +71,7 @@ public partial class MainWindow : Window, IUiAccessor
                     inputViewModel => _inputViewModel = inputViewModel
                 );
             };
-            
+
             _logger?.LogInformation(
                 $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
             ViewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
@@ -111,7 +111,7 @@ public partial class MainWindow : Window, IUiAccessor
             && sender is StyledElement control)
         {
             FullName? path = null;
-            if (control.DataContext is IHaveFullPath {Path: { }} hasFullPath)
+            if (control.DataContext is IHaveFullPath { Path: { } } hasFullPath)
             {
                 path = hasFullPath.Path;
             }

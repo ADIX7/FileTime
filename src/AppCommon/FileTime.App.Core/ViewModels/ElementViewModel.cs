@@ -17,8 +17,6 @@ public partial class ElementViewModel : ItemViewModel, IElementViewModel
     {
     }
 
-    public void Init(IElement item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
-    {
-        Init((IItem)item, parentTab, itemViewModelType);
-    }
+    public void Init(IElement item, ITabViewModel parentTab, ItemViewModelType itemViewModelType) 
+        => Init((IItem)item, parentTab, itemViewModelType);
 }
