@@ -45,6 +45,8 @@ public class LocalContentReader : IContentReader
         Position = position;
     }
 
+    public Stream AsStream() => _binaryReader.BaseStream;
+
     ~LocalContentReader()
     {
         Dispose(false);

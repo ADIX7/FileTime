@@ -8,9 +8,8 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
-public abstract class UserCommandHandlerServiceBase : IUserCommandHandler
+public abstract class UserCommandHandlerServiceBase : AggregatedUserCommandHandler
 {
-    private readonly List<IUserCommandHandler> _userCommandHandlers = new();
     private readonly IAppState? _appState;
     private readonly ITimelessContentProvider? _timelessContentProvider;
 
@@ -21,28 +20,6 @@ public abstract class UserCommandHandlerServiceBase : IUserCommandHandler
         _appState = appState;
         _timelessContentProvider = timelessContentProvider;
     }
-
-    public bool CanHandleCommand(UserCommand.IUserCommand command) => _userCommandHandlers.Any(h => h.CanHandleCommand(command));
-
-    public async Task HandleCommandAsync(UserCommand.IUserCommand command)
-    {
-        var handler = _userCommandHandlers.Find(h => h.CanHandleCommand(command));
-
-        if (handler is null) return;
-        await handler.HandleCommandAsync(command);
-    }
-
-    protected void AddCommandHandler(IUserCommandHandler userCommandHandler) => _userCommandHandlers.Add(userCommandHandler);
-
-    protected void AddCommandHandlers(IEnumerable<IUserCommandHandler> commandHandlers)
-    {
-        foreach (var userCommandHandler in commandHandlers)
-        {
-            AddCommandHandler(userCommandHandler);
-        }
-    }
-
-    protected void RemoveCommandHandler(IUserCommandHandler userCommandHandler) => _userCommandHandlers.Remove(userCommandHandler);
 
     protected IDisposable SaveSelectedTab(Action<ITabViewModel?> handler) => RunWithAppState(appState => appState.SelectedTab.Subscribe(handler));
 

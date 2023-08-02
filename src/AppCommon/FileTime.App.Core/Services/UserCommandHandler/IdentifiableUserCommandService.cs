@@ -12,8 +12,8 @@ public class IdentifiableUserCommandService : IIdentifiableUserCommandService
         IdentifiableUserCommands = _identifiableUserCommands.AsReadOnly();
     }
 
-    public void AddIdentifiableUserCommandFactory(string identifier, IIdentifiableUserCommand commandFactory)
-        => _identifiableUserCommands.Add(identifier, commandFactory);
+    public void AddIdentifiableUserCommand(IIdentifiableUserCommand command)
+        => _identifiableUserCommands.Add(command.UserCommandID, command);
 
     public IIdentifiableUserCommand? GetCommand(string identifier)
     {

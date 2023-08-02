@@ -9,6 +9,7 @@ using FileTime.GuiApp.Font;
 using FileTime.GuiApp.ViewModels;
 using FileTime.GuiApp.Views;
 using FileTime.Server.Common;
+using FileTime.Tools.Compression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +26,7 @@ public class App : Application
             .AddFrequencyNavigation()
             .AddCommandPalette()
             .AddSearch()
+            .AddCompression()
             .AddConfiguration(configuration)
             .ConfigureFont(configuration)
             .RegisterLogging()

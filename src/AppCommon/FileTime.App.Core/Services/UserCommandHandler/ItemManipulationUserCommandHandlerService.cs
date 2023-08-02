@@ -62,7 +62,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
         _markedItems = appState.SelectedTab.Map(t => t?.MarkedItems).Switch();
 
-        AddCommandHandlers(new IUserCommandHandler[]
+        AddCommandHandler(new IUserCommandHandler[]
         {
             new TypeUserCommandHandler<CopyCommand>(CopyAsync),
             new TypeUserCommandHandler<DeleteCommand>(DeleteAsync),

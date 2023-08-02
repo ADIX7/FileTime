@@ -33,11 +33,15 @@ public class CopyCommand : CommandBase, ITransportationCommand
         ITimelessContentProvider timelessContentProvider,
         ICommandSchedulerNotifier commandSchedulerNotifier,
         ILogger<CopyCommand> logger,
-        IReadOnlyCollection<FullName>? sources,
-        TransportMode? mode,
-        FullName? targetFullName)
+        IReadOnlyCollection<FullName> sources,
+        TransportMode mode,
+        FullName targetFullName)
         : base("Copy - Calculating...")
     {
+        ArgumentNullException.ThrowIfNull(sources);
+        ArgumentNullException.ThrowIfNull(mode);
+        ArgumentNullException.ThrowIfNull(targetFullName);
+        
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
         _logger = logger;
@@ -54,12 +58,8 @@ public class CopyCommand : CommandBase, ITransportationCommand
             .Switch()
             .Subscribe(SetCurrentProgress);
 
-        if (sources is null) throw new ArgumentException(nameof(Sources) + " can not be null");
-        if (targetFullName is null) throw new ArgumentException(nameof(Target) + " can not be null");
-        if (mode is null) throw new ArgumentException(nameof(TransportMode) + " can not be null");
-
         Sources = new List<FullName>(sources).AsReadOnly();
-        TransportMode = mode.Value;
+        TransportMode = mode;
         Target = targetFullName;
 
         var recentSpeed = DeclarativePropertyHelpers.CombineLatest(

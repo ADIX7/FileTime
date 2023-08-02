@@ -6,4 +6,5 @@ public interface IContentWriter : IDisposable
 
     Task WriteBytesAsync(byte[] data, int? index = null, CancellationToken cancellationToken = default);
     Task FlushAsync(CancellationToken cancellationToken = default);
+    Stream AsStream();
 }

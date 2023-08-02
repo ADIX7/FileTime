@@ -1,4 +1,5 @@
-﻿using FileTime.Core.Models;
+﻿using FileTime.Core.ContentAccess;
+using FileTime.Core.Models;
 using FileTime.Server.Common;
 
 namespace FileTime.Providers.Remote;
@@ -42,6 +43,8 @@ public class RemoteContentWriter : IRemoteContentWriter
         if (!_isRemoteWriterInitialized) return;
         await _remoteConnection.FlushWriterAsync(_transactionId, cancellationToken);
     }
+
+    public Stream AsStream() => new ContentAccessStream(this);
 
     private async Task InitializeRemoteWriter(NativePath nativePath)
     {

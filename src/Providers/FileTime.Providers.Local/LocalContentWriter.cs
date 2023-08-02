@@ -34,6 +34,8 @@ public class LocalContentWriter : IContentWriter
         return Task.CompletedTask;
     }
 
+    public Stream AsStream() => _binaryWriter.BaseStream;
+
     ~LocalContentWriter()
     {
         Dispose(false);

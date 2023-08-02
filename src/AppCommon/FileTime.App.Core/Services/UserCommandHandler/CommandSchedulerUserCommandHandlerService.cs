@@ -10,7 +10,7 @@ public class CommandSchedulerUserCommandHandlerService : UserCommandHandlerServi
     public CommandSchedulerUserCommandHandlerService(ICommandScheduler commandScheduler)
     {
         _commandScheduler = commandScheduler;
-        AddCommandHandlers(new IUserCommandHandler[]
+        AddCommandHandler(new IUserCommandHandler[]
         {
             new TypeUserCommandHandler<PauseCommandSchedulerCommand>(PauseCommandScheduler),
             new TypeUserCommandHandler<StartCommandSchedulerCommand>(StartCommandScheduler),

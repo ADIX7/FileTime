@@ -69,5 +69,5 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
     public Task InitAsync() => Task.CompletedTask;
 
     private void AddUserCommand(IIdentifiableUserCommand command)
-        => _userCommandHandlerService.AddIdentifiableUserCommandFactory(command.UserCommandID, command);
+        => _userCommandHandlerService.AddIdentifiableUserCommand(command);
 }

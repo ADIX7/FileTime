@@ -59,7 +59,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
         appState.ViewMode.Subscribe(v => _viewMode = v);
 
-        AddCommandHandlers(new IUserCommandHandler[]
+        AddCommandHandler(new IUserCommandHandler[]
         {
             new TypeUserCommandHandler<CloseTabCommand>(CloseTab),
             new TypeUserCommandHandler<EnterRapidTravelCommand>(EnterRapidTravel),

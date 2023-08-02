@@ -1,4 +1,7 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:interactions="clr-namespace:FileTime.Core.Interactions;assembly=FileTime.Core.Abstraction"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -78,10 +81,11 @@
                 <ControlTemplate>
                     <Border>
                         <RadioButton
-                            Content="{TemplateBinding ContentPresenter.Content}"
                             Foreground="{DynamicResource ForegroundBrush}"
                             IsChecked="{Binding Path=IsSelected, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                            VerticalAlignment="Center" />
+                            VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Text}" x:DataType="interactions:IOptionElement" />
+                        </RadioButton>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

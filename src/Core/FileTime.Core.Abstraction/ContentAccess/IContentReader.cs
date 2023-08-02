@@ -7,4 +7,5 @@ public interface IContentReader : IDisposable
 
     Task<byte[]> ReadBytesAsync(int bufferSize, int? offset = null);
     void SetPosition(long position);
+    Stream AsStream();
 }

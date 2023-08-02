@@ -45,7 +45,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
         SaveSelectedTab(t => _currentSelectedTab = t);
 
-        AddCommandHandlers(new IUserCommandHandler[]
+        AddCommandHandler(new IUserCommandHandler[]
         {
             new TypeUserCommandHandler<OpenInDefaultFileExplorerCommand>(OpenInDefaultFileExplorer),
             new TypeUserCommandHandler<CopyNativePathCommand>(CopyNativePath),
