@@ -64,13 +64,15 @@ public static class Program
         if (!Directory.Exists(logFolder)) Directory.CreateDirectory(logFolder);
 
         Log.Logger = new LoggerConfiguration()
+#if DEBUG || VERBOSE_LOGGING
             .MinimumLevel.Verbose()
+#endif
             .Enrich.FromLogContext()
             .WriteTo.File(
                 Path.Combine(logFolder, "appLog.log"),
                 fileSizeLimitBytes: 10 * 1024 * 1024,
-                rollOnFileSizeLimit: true,
-                rollingInterval: RollingInterval.Day)
+                rollingInterval: RollingInterval.Day,
+                rollOnFileSizeLimit: true)
             .CreateBootstrapLogger();
     }
 
@@ -82,9 +84,11 @@ public static class Program
     {
 #if DEBUG
         InitDevelopment();
-#else
-        InitRelease();
 #endif
+        if (AppDataRoot is null)
+        {
+            InitRelease();
+        }
         InitLogging();
 
         Log.Logger.Information("Early app starting...");

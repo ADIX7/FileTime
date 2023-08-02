@@ -87,18 +87,20 @@ public static class Startup
             (serviceProvider, loggerConfiguration) =>
             {
                 loggerConfiguration
+#if DEBUG || VERBOSE_LOGGING
                     .MinimumLevel.Verbose()
+#endif
                     .ReadFrom.Configuration(serviceProvider.GetRequiredService<IConfiguration>())
                     .Enrich.FromLogContext()
                     .WriteTo.File(
                         Path.Combine(Program.AppDataRoot, "logs", "appLog.log"),
                         fileSizeLimitBytes: 10 * 1024 * 1024,
-                        rollOnFileSizeLimit: true,
-                        rollingInterval: RollingInterval.Day)
+                        rollingInterval: RollingInterval.Day,
+                        rollOnFileSizeLimit: true)
                     .WriteTo.Sink(serviceProvider.GetRequiredService<ToastMessageSink>());
             }
         );
-        
+
         serviceCollection.AddLogging(loggingBuilder =>
             loggingBuilder.AddSerilog(dispose: true)
         );

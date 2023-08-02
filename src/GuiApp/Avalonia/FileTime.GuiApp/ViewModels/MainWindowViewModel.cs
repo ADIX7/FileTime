@@ -55,6 +55,9 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         }
 
         Title = "FileTime " + versionString;
+#if DEBUG
+        Title += " (Debug)";
+#endif
 
         Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
     }
