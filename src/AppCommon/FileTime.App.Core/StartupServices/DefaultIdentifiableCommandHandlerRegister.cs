@@ -48,6 +48,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(RefreshCommand.Instance);
         AddUserCommand(RenameCommand.Instance);
         AddUserCommand(RunOrOpenCommand.Instance);
+        AddUserCommand(ScanSizeCommand.Instance);
         AddUserCommand(StartCommandSchedulerCommand.Instance);
         AddUserCommand(SortItemsCommand.OrderByNameCommand);
         AddUserCommand(SortItemsCommand.OrderByNameDescCommand);

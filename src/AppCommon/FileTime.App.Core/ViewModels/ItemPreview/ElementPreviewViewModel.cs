@@ -7,13 +7,14 @@ using MvvmGen;
 namespace FileTime.App.Core.ViewModels.ItemPreview;
 
 [ViewModel]
-public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInitable<IElement>
+public partial class ElementPreviewViewModel : IElementPreviewViewModel, IAsyncInitable<IElement>
 {
+    public const string PreviewName = "ElementPreview";
     private record EncodingResult(char BinaryChar, string PartialResult);
 
     private const int MaxTextPreviewSize = 1024 * 1024;
 
-    private static readonly List<Encoding> _encodings = new()
+    private static readonly List<Encoding> Encodings = new()
     {
         Encoding.UTF8,
         Encoding.Unicode,
@@ -26,6 +27,8 @@ public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInit
 
     [Property] private string? _textContent;
     [Property] private string? _textEncoding;
+
+    public string Name => PreviewName;
 
     public async Task InitAsync(IElement element)
     {
@@ -59,7 +62,7 @@ public partial class ElementPreviewViewModel : IItemPreviewViewModel, IAsyncInit
         (string, Encoding?) GetNormalizedText(byte[] data)
         {
             var binaryCharacter = new Dictionary<string, EncodingResult>();
-            foreach (var encoding in _encodings)
+            foreach (var encoding in Encodings)
             {
                 var text = encoding.GetString(data);
                 var binary = false;

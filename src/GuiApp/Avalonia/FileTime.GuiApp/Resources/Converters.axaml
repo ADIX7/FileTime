@@ -8,40 +8,45 @@
                 <ResourceInclude Source="avares://FileTime.GuiApp/Resources/Brushes.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
+        <ResourceDictionary>
+            <converters:ItemViewModeToBrushConverter
+                AlternativeBrush="{StaticResource AlternativeItemForegroundBrush}"
+                DefaultBrush="{StaticResource ForegroundBrush}"
+                MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemForegroundBrush}"
+                MarkedBrush="{StaticResource MarkedItemForegroundBrush}"
+                MarkedSelectedBrush="{StaticResource MarkedSelectedItemForegroundBrush}"
+                SelectedBrush="{StaticResource SelectedItemForegroundBrush}"
+                x:Key="ItemViewModeToForegroundConverter" />
+            <converters:ItemViewModeToBrushConverter
+                AlternativeBrush="{StaticResource AlternativeItemBackgroundBrush}"
+                DefaultBrush="{StaticResource ItemBackgroundBrush}"
+                MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemBackgroundBrush}"
+                MarkedBrush="{StaticResource MarkedItemBackgroundBrush}"
+                MarkedSelectedBrush="{StaticResource MarkedSelectedItemBackgroundBrush}"
+                SelectedBrush="{StaticResource SelectedItemBackgroundBrush}"
+                x:Key="ItemViewModeToBackgroundConverter" />
+            <converters:NamePartShrinkerConverter x:Key="NamePartShrinkerConverter" />
+            <converters:ItemViewModelIsAttributeTypeConverter x:Key="ItemViewModelIsAttributeTypeConverter" />
+            <converters:ItemViewModelIsAttributeTypeConverter Invert="true"
+                                                              x:Key="ItemViewModelIsNotAttributeTypeConverter" />
+            <converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter" />
+            <converters:FormatSizeConverter x:Key="FormatSizeConverter" />
+            <converters:DateTimeConverter x:Key="DateTimeConverter" />
+            <converters:SplitStringConverter x:Key="SplitStringConverter" />
+            <converters:CompareConverter x:Key="EqualsConverter" />
+            <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}"
+                                         x:Key="NotEqualsConverter" />
+            <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.GreaterThan}"
+                                         x:Key="GreaterThanConverter" />
+            <converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter" />
+            <converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter" />
+            <converters:ItemToImageConverter x:Key="ItemToImageConverter" />
+            <converters:StringReplaceConverter
+                NewValue="/"
+                OldValue="://"
+                x:Key="PathPreformatter" />
+            <converters:ContextMenuGenerator x:Key="ContextMenuGenerator" />
+            <converters:TextDecorationConverter x:Key="TextDecorationConverter" />
+        </ResourceDictionary>
     </ResourceDictionary.MergedDictionaries>
-    <converters:ItemViewModeToBrushConverter
-        AlternativeBrush="{StaticResource AlternativeItemForegroundBrush}"
-        DefaultBrush="{StaticResource ForegroundBrush}"
-        MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemForegroundBrush}"
-        MarkedBrush="{StaticResource MarkedItemForegroundBrush}"
-        MarkedSelectedBrush="{StaticResource MarkedSelectedItemForegroundBrush}"
-        SelectedBrush="{StaticResource SelectedItemForegroundBrush}"
-        x:Key="ItemViewModeToForegroundConverter" />
-    <converters:ItemViewModeToBrushConverter
-        AlternativeBrush="{StaticResource AlternativeItemBackgroundBrush}"
-        DefaultBrush="{StaticResource ItemBackgroundBrush}"
-        MarkedAlternativeBrush="{StaticResource MarkedAlternativeItemBackgroundBrush}"
-        MarkedBrush="{StaticResource MarkedItemBackgroundBrush}"
-        MarkedSelectedBrush="{StaticResource MarkedSelectedItemBackgroundBrush}"
-        SelectedBrush="{StaticResource SelectedItemBackgroundBrush}"
-        x:Key="ItemViewModeToBackgroundConverter" />
-    <converters:NamePartShrinkerConverter x:Key="NamePartShrinkerConverter" />
-    <converters:ItemViewModelIsAttributeTypeConverter x:Key="ItemViewModelIsAttributeTypeConverter" />
-    <converters:ItemViewModelIsAttributeTypeConverter Invert="true" x:Key="ItemViewModelIsNotAttributeTypeConverter" />
-    <converters:GetFileExtensionConverter x:Key="GetFileExtensionConverter" />
-    <converters:FormatSizeConverter x:Key="FormatSizeConverter" />
-    <converters:DateTimeConverter x:Key="DateTimeConverter" />
-    <converters:SplitStringConverter x:Key="SplitStringConverter" />
-    <converters:CompareConverter x:Key="EqualsConverter" />
-    <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}" x:Key="NotEqualsConverter" />
-    <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.GreaterThan}" x:Key="GreaterThanConverter" />
-    <converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter" />
-    <converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter" />
-    <converters:ItemToImageConverter x:Key="ItemToImageConverter" />
-    <converters:StringReplaceConverter
-        NewValue="/"
-        OldValue="://"
-        x:Key="PathPreformatter" />
-    <converters:ContextMenuGenerator x:Key="ContextMenuGenerator" />
-    <converters:TextDecorationConverter x:Key="TextDecorationConverter" />
 </ResourceDictionary>

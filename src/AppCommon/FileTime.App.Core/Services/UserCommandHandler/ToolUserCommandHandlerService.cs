@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using DeclarativeProperty;
+using FileTime.App.ContainerSizeScanner;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Search;
+using FileTime.Core.Command;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Interactions;
@@ -20,6 +22,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IContentAccessorFactory _contentAccessorFactory;
+    private readonly IContainerScanSnapshotProvider _containerScanSnapshotProvider;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
     private ITabViewModel? _currentSelectedTab;
@@ -32,7 +35,8 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         IItemNameConverterService itemNameConverterService,
         ITimelessContentProvider timelessContentProvider,
         IUserCommandHandlerService userCommandHandlerService,
-        IContentAccessorFactory contentAccessorFactory) : base(appState)
+        IContentAccessorFactory contentAccessorFactory,
+        IContainerScanSnapshotProvider containerScanSnapshotProvider) : base(appState)
     {
         _systemClipboardService = systemClipboardService;
         _userCommunicationService = userCommunicationService;
@@ -41,6 +45,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         _timelessContentProvider = timelessContentProvider;
         _userCommandHandlerService = userCommandHandlerService;
         _contentAccessorFactory = contentAccessorFactory;
+        _containerScanSnapshotProvider = containerScanSnapshotProvider;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
         SaveSelectedTab(t => _currentSelectedTab = t);
@@ -51,8 +56,18 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<CopyNativePathCommand>(CopyNativePath),
             new TypeUserCommandHandler<CopyBase64Command>(CopyBase64),
             new TypeUserCommandHandler<SearchCommand>(Search),
+            new TypeUserCommandHandler<ScanSizeCommand>(ScanSize),
             new TypeUserCommandHandler<SortItemsCommand>(SortItems),
         });
+    }
+
+    private async Task ScanSize()
+    {
+        if (_currentLocation?.Value is null) return;
+        
+        var searchTask = _containerScanSnapshotProvider.StartSizeScan(_currentLocation.Value);
+        var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, searchTask.SizeContainer));
+        await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
     }
 
     private async Task SortItems(SortItemsCommand sortItemsCommand)

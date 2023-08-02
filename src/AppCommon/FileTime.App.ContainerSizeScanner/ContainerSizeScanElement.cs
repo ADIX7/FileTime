@@ -1,11 +1,12 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
+using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
-namespace FileTime.Core.Models;
+namespace FileTime.App.ContainerSizeScanner;
 
-public record Element(
+public record ContainerSizeScanElement(
     string Name,
     string DisplayName,
     FullName FullName,

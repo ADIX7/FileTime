@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using DynamicData;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FileTime.App.CommandPalette;
+using FileTime.App.ContainerSizeScanner;
 using FileTime.App.DependencyInjection;
 using FileTime.App.FrequencyNavigation;
 using FileTime.App.Search;
@@ -25,6 +26,7 @@ public class App : Application
             .AddServerCoreServices()
             .AddFrequencyNavigation()
             .AddCommandPalette()
+            .AddContainerSizeScanner()
             .AddSearch()
             .AddCompression()
             .AddConfiguration(configuration)

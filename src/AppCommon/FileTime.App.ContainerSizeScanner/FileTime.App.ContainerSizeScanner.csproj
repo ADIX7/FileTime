@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\FileTime.Core.ContentAccess\FileTime.Core.ContentAccess.csproj" />
+    <ProjectReference Include="..\FileTime.App.ContainerSizeScanner.Abstractions\FileTime.App.ContainerSizeScanner.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+  </ItemGroup>
+
+</Project>

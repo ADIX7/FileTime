@@ -10,7 +10,7 @@ public sealed class CombineProperty<TFrom, TTo> : DeclarativePropertyBase<TTo>
         _combiner = combiner;
     }
 
-    public async Task AddSource(IDeclarativeProperty<TFrom> source)
+    public async Task AddSourceAsync(IDeclarativeProperty<TFrom> source)
     {
         if (_sourceProperties.Contains(source)) return;
         _sourceProperties.Add(source);

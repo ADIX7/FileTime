@@ -18,7 +18,8 @@ public class TabPersistenceService : ITabPersistenceService
     //TODO: make this a configuration maybe?
     private readonly List<string> _contentProvidersNotToRestore = new()
     {
-        "search"
+        "search",
+        "container-size-scan"
     };
 
     private record PersistenceRoot(TabStates? TabStates);
