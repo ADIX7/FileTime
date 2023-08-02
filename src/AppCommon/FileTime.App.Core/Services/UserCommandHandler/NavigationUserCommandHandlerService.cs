@@ -332,7 +332,11 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         }
         else if (tabViewModel == null)
         {
-            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(_currentLocation?.Value ?? _localContentProvider)
+            var newLocation = _currentLocation?.Value?.FullName is { } fullName
+                ? (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(fullName, PointInTime.Present)
+                : _localContentProvider;
+
+            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(newLocation)
                 .GetRequiredServiceAsync<ITab>();
             var newTabViewModel = _serviceProvider.GetInitableResolver(tab, number).GetRequiredService<ITabViewModel>();
 

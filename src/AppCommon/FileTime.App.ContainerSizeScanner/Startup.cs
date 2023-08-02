@@ -9,10 +9,10 @@ public static class Startup
 {
     public static IServiceCollection AddContainerSizeScanner(this IServiceCollection services)
     {
-        services.TryAddSingleton<IContainerScanSnapshotProvider, ContainerScanSnapshotProvider>();
+        services.TryAddSingleton<IContainerScanSnapshotProvider, ContainerScanProvider>();
         services.AddSingleton<IContentProvider>(sp => sp.GetRequiredService<IContainerScanSnapshotProvider>());
         services.AddTransient<ISizeScanTask, SizeScanTask>();
-        services.AddTransient<IItemPreviewProvider, ContainerSizePreviewProvider>();
+        services.AddTransient<IItemPreviewProvider, PreviewProvider>();
         return services;
     }
 }

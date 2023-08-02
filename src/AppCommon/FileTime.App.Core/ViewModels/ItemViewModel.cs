@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reactive.Linq;
 using DeclarativeProperty;
@@ -27,7 +28,7 @@ public abstract partial class ItemViewModel : IItemViewModel
 
     [Property] private IDeclarativeProperty<bool>? _isMarked;
 
-    [Property] private IObservable<ItemViewMode> _viewMode;
+    [Property] private IDeclarativeProperty<ItemViewMode> _viewMode;
 
     [Property] private DateTime? _createdAt;
 
@@ -38,8 +39,8 @@ public abstract partial class ItemViewModel : IItemViewModel
     public IDeclarativeProperty<IReadOnlyList<ItemNamePart>>? DisplayName { get; private set; }
 
     public void Init(
-        IItem item, 
-        ITabViewModel parentTab, 
+        IItem item,
+        ITabViewModel parentTab,
         ItemViewModelType itemViewModelType)
     {
         _parentTab = parentTab;
@@ -55,7 +56,7 @@ public abstract partial class ItemViewModel : IItemViewModel
         var displayName = itemViewModelType switch
         {
             ItemViewModelType.Main => _appState.RapidTravelText.Map(async (s, _) =>
-                _appState.ViewMode.Value != Models.Enums.ViewMode.RapidTravel 
+                _appState.ViewMode.Value != Models.Enums.ViewMode.RapidTravel
                 && _appState.SelectedTab.Value?.CurrentLocation.Value?.Provider is IItemNameConverterProvider nameConverterProvider
                     ? (IReadOnlyList<ItemNamePart>) await nameConverterProvider.GetItemNamePartsAsync(item)
                     : _itemNameConverterService.GetDisplayName(item.DisplayName, s)
@@ -75,15 +76,23 @@ public abstract partial class ItemViewModel : IItemViewModel
             ? parentTab.CurrentSelectedItem.Map(EqualsTo)
             : new DeclarativeProperty<bool>(IsInDeepestPath());
 
-        IsAlternative = sourceCollection.Map(c => c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 0);
+        IsAlternative = sourceCollection
+            .Debounce(TimeSpan.FromMilliseconds(100))
+            .Map(c =>
+                c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 1
+            );
 
-        ViewMode = Observable.CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode).Throttle(TimeSpan.FromMilliseconds(10));
+        ViewMode = DeclarativePropertyHelpers
+            .CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode)
+            .DistinctUntilChanged()
+            .Debounce(TimeSpan.FromMilliseconds(100));
         Attributes = item.Attributes;
         CreatedAt = item.CreatedAt;
     }
 
-    private ItemViewMode GenerateViewMode(bool isMarked, bool isSelected, bool isAlternative)
-        => (isMarked, isSelected, isAlternative) switch
+    private Task<ItemViewMode> GenerateViewMode(bool isMarked, bool isSelected, bool isAlternative)
+    {
+        var result = (isMarked, isSelected, isAlternative) switch
         {
             (true, true, _) => ItemViewMode.MarkedSelected,
             (true, false, true) => ItemViewMode.MarkedAlternative,
@@ -93,11 +102,12 @@ public abstract partial class ItemViewModel : IItemViewModel
             _ => ItemViewMode.Default
         };
 
-
-    public bool EqualsTo(IItemViewModel? itemViewModel)
-    {
-        return BaseItem?.FullName?.Path is string path && path == itemViewModel?.BaseItem?.FullName?.Path;
+        return Task.FromResult(result);
     }
+
+
+    public bool EqualsTo(IItemViewModel? itemViewModel) 
+        => BaseItem?.FullName?.Path is { } path && path == itemViewModel?.BaseItem?.FullName?.Path;
 
     private bool IsInDeepestPath()
     {

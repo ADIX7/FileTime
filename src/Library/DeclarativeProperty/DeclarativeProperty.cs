@@ -8,6 +8,14 @@ public static class DeclarativePropertyHelpers
         Func<T1, T2, Task<TResult>> func,
         Action<TResult?>? setValueHook = null)
         => new(prop1, prop2, func, setValueHook);
+
+    public static CombineLatestProperty<T1, T2, T3, TResult> CombineLatest<T1, T2, T3, TResult>(
+        IDeclarativeProperty<T1> prop1,
+        IDeclarativeProperty<T2> prop2,
+        IDeclarativeProperty<T3> prop3,
+        Func<T1, T2, T3, Task<TResult>> func,
+        Action<TResult?>? setValueHook = null)
+        => new(prop1, prop2, prop3, func, setValueHook);
 }
 
 public sealed class DeclarativeProperty<T> : DeclarativePropertyBase<T>

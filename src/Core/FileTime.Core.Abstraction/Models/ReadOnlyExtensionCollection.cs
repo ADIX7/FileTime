@@ -6,6 +6,11 @@ public class ReadOnlyExtensionCollection : IEnumerable<object>
 {
     private readonly ExtensionCollection _collection;
 
+    public ReadOnlyExtensionCollection()
+    {
+        _collection = new ExtensionCollection();
+    }
+
     public ReadOnlyExtensionCollection(ExtensionCollection collection)
     {
         _collection = collection;

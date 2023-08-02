@@ -1,52 +1,49 @@
 <UserControl
+    Background="{Binding ViewMode.Value, Converter={StaticResource ItemViewModeToBackgroundConverter}}"
+    HorizontalAlignment="Stretch"
+    HorizontalContentAlignment="Stretch"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
     x:Class="FileTime.GuiApp.Views.ItemView"
+    x:CompileBindings="True"
+    x:DataType="appcore:IItemViewModel"
+    x:Name="ItemRoot"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:appcore="using:FileTime.App.Core.ViewModels"
     xmlns:appcoreenums="using:FileTime.App.Core.Models.Enums"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:guiappvm="using:FileTime.GuiApp.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    x:Name="ItemRoot"
-    HorizontalAlignment="Stretch"
-    HorizontalContentAlignment="Stretch"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:CompileBindings="True"
-    x:DataType="appcore:IItemViewModel"
-    Background="{Binding ViewMode^, Converter={StaticResource ItemViewModeToBackgroundConverter}}"
-    mc:Ignorable="d">
+    xmlns:traits="clr-namespace:FileTime.App.Core.Models.Traits;assembly=FileTime.App.Core.Abstraction"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid
-        x:Name="RootGrid"
+        ColumnDefinitions="20,*,Auto"
         Margin="3"
-        ColumnDefinitions="20,*,Auto">
+        x:Name="RootGrid">
         <Grid.Styles>
             <Style Selector="TextBlock">
-                <Setter x:CompileBindings="False" Property="Foreground" Value="{Binding DataContext.ViewMode^, Converter={StaticResource ItemViewModeToForegroundConverter}, ElementName=ItemRoot}" />
+                <Setter Property="Foreground" Value="{Binding DataContext.ViewMode.Value, Converter={StaticResource ItemViewModeToForegroundConverter}, ElementName=ItemRoot}" x:CompileBindings="False" />
             </Style>
         </Grid.Styles>
         <Image
-            Width="18"
             Height="18"
             HorizontalAlignment="Left"
+            Source="{Binding Converter={StaticResource ItemToImageConverter}}"
             VerticalAlignment="Center"
-            Source="{Binding Converter={StaticResource ItemToImageConverter}}" />
+            Width="18" />
 
         <ItemsControl
             Grid.Column="1"
-            Margin="5,0,0,0"
             HorizontalAlignment="Stretch"
+            Margin="5,0,0,0"
             VerticalAlignment="Center">
             <ItemsControl.ItemsSource>
                 <MultiBinding Converter="{StaticResource NamePartShrinkerConverter}">
                     <MultiBinding.Bindings>
                         <Binding Path="DisplayName^" />
-                        <Binding
-                            ElementName="RootGrid"
-                            Path="Bounds.Width" />
-                        <Binding
-                            ElementName="ItemRoot"
-                            Path="ShowAttributes" />
+                        <Binding ElementName="RootGrid" Path="Bounds.Width" />
+                        <Binding ElementName="ItemRoot" Path="ShowAttributes" />
                     </MultiBinding.Bindings>
                 </MultiBinding>
             </ItemsControl.ItemsSource>
@@ -58,96 +55,55 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="guiappvm:ItemNamePartViewModel">
                     <Grid>
-                        <TextBlock
-                            Text="{Binding Text}"
-                            TextDecorations="{Binding TextDecorations}" />
+                        <TextBlock Text="{Binding Text}" TextDecorations="{Binding TextDecorations}" />
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <Grid
-            Grid.Column="2"
-            IsVisible="{Binding ShowAttributes, ElementName=ItemRoot}">
-            <Grid
-                HorizontalAlignment="Right"
-                x:DataType="appcore:IFileViewModel"
-                ColumnDefinitions="50,50,90,40,45"
-                IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttributeTypeConverter}, ConverterParameter={x:Static appcoreenums:ItemAttributeType.File}}">
+        <Grid Grid.Column="2" IsVisible="{Binding ShowAttributes, ElementName=ItemRoot}">
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <TextBlock
+                    Classes="SmallText"
+                    IsVisible="{Binding Converter={StaticResource IsTypeConverter}, ConverterParameter={x:Type appcore:IElementViewModel}}"
+                    Text="{Binding BaseItem.DisplayName, Converter={StaticResource GetFileExtensionConverter}}"
+                    Width="50" />
+                <Grid DataContext="{Binding BaseItem}" IsVisible="{Binding Converter={StaticResource IsTypeConverter}, ConverterParameter={x:Type traits:ISizeProvider}}">
+                    <TextBlock
+                        Classes="SmallText"
+                        Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}"
+                        TextAlignment="Right"
+                        Width="60"
+                        x:DataType="traits:ISizeProvider" />
+                </Grid>
+                <Grid IsVisible="{Binding BaseItem, Converter={StaticResource IsNotTypeConverter}, ConverterParameter={x:Type traits:ISizeProvider}}">
 
+                    <TextBlock
+                        Classes="SmallText"
+                        IsVisible="{Binding Converter={StaticResource IsTypeConverter}, ConverterParameter={x:Type traits:ISizeProvider}}"
+                        Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}"
+                        TextAlignment="Right"
+                        Width="60"
+                        x:DataType="traits:ISizeProvider" />
+                </Grid>
                 <TextBlock
-                    HorizontalAlignment="Right"
                     Classes="SmallText"
-                    Text="{Binding BaseItem.DisplayName, Converter={StaticResource GetFileExtensionConverter}}" />
+                    Text="{Binding CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"
+                    TextAlignment="Right"
+                    Width="95" />
                 <TextBlock
-                    Grid.Column="1"
-                    HorizontalAlignment="Right"
                     Classes="SmallText"
-                    Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
+                    Text="{Binding CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"
+                    TextAlignment="Right"
+                    Width="35" />
                 <TextBlock
-                    Grid.Column="2"
-                    HorizontalAlignment="Right"
                     Classes="SmallText"
-                    Text="{Binding BaseItem.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}" />
-                <TextBlock
-                    Grid.Column="3"
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding BaseItem.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}" />
-                <TextBlock
-                    Grid.Column="4"
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding BaseItem.Attributes}" />
-            </Grid>
-            <Grid
-                HorizontalAlignment="Right"
-                x:DataType="appcore:IContainerViewModel"
-                ColumnDefinitions="90,40,45"
-                IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttributeTypeConverter}, ConverterParameter={x:Static appcoreenums:ItemAttributeType.Container}}">
+                    Text="{Binding BaseItem.Attributes}"
+                    TextAlignment="Right"
+                    Width="45" />
 
-                <TextBlock
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}" />
-                <TextBlock
-                    Grid.Column="1"
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding BaseItem.CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}" />
-                <TextBlock
-                    Grid.Column="2"
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding BaseItem.Attributes}" />
-            </Grid>
-            <Grid
-                HorizontalAlignment="Right"
-                x:DataType="appcore:IContainerSizeContainerViewModel"
-                ColumnDefinitions="50,90,40,45"
-                IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttributeTypeConverter}, ConverterParameter={x:Static appcoreenums:ItemAttributeType.SizeContainer}}">
+            </StackPanel>
 
-                <TextBlock
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
-            </Grid>
-            <Grid
-                HorizontalAlignment="Right"
-                x:DataType="appcore:IElementViewModel"
-                ColumnDefinitions="50,50"
-                IsVisible="{Binding Converter={StaticResource ItemViewModelIsAttributeTypeConverter}, ConverterParameter={x:Static appcoreenums:ItemAttributeType.Element}}">
-
-                <TextBlock
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding BaseItem.DisplayName, Converter={StaticResource GetFileExtensionConverter}}" />
-                <TextBlock
-                    Grid.Column="1"
-                    HorizontalAlignment="Right"
-                    Classes="SmallText"
-                    Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
-            </Grid>
         </Grid>
     </Grid>
 </UserControl>

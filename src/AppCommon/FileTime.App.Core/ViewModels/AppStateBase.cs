@@ -5,6 +5,8 @@ using DeclarativeProperty;
 using DynamicData;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels.Timeline;
+using FileTime.Core.Models;
+using FileTime.Core.Models.ContainerTraits;
 using MvvmGen;
 using MoreLinq;
 
@@ -27,6 +29,8 @@ public abstract partial class AppStateBase : IAppState
     public IDeclarativeProperty<ITabViewModel?> SelectedTab { get; private set; }
     public DeclarativeProperty<string?> RapidTravelText { get; private set; }
 
+    public IDeclarativeProperty<string?> ContainerStatus { get; private set; }
+
     partial void OnInitialize()
     {
         RapidTravelText = new("");
@@ -40,6 +44,12 @@ public abstract partial class AppStateBase : IAppState
         );
 
         Tabs = new ReadOnlyObservableCollection<ITabViewModel>(_tabs);
+
+        ContainerStatus = SelectedTab
+            .Map(t => t?.CurrentLocation)
+            .Switch()
+            .Map(c => c is IStatusProviderContainer statusProvider ? statusProvider.Status : null)
+            .Switch();
     }
 
     public void AddTab(ITabViewModel tabViewModel)

@@ -1,8 +1,8 @@
-﻿using FileTime.Core.Models;
+﻿using FileTime.App.Core.Models.Traits;
+using FileTime.Core.Models;
 
 namespace FileTime.App.ContainerSizeScanner;
 
-public interface ISizeItem : IItem
+public interface ISizeItem : IItem, ISizeProvider
 {
-    
 }

@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using DeclarativeProperty;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.ItemPreview;
 using FileTime.Core.Models;
@@ -10,7 +11,7 @@ public class ItemPreviewService : IItemPreviewService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IEnumerable<IItemPreviewProvider> _itemPreviewProviders;
-    public IObservable<IItemPreviewViewModel?> ItemPreview { get; }
+    public IDeclarativeProperty<IItemPreviewViewModel?> ItemPreview { get; }
 
     public ItemPreviewService(
         IAppState appState,
@@ -21,18 +22,15 @@ public class ItemPreviewService : IItemPreviewService
         _itemPreviewProviders = itemPreviewProviders;
         ItemPreview = appState
             .SelectedTab
-            .Select(t =>
-                t?.CurrentSelectedItem.Throttle(TimeSpan.FromMilliseconds(250))
-                ?? Observable.Return<IItemViewModel?>(null))
+            .Map(t => t.CurrentSelectedItem)
             .Switch()
-            .Select(item =>
+            .Debounce(TimeSpan.FromMilliseconds(250))
+            .Map(async (item, _) =>
                 item == null
-                    ? Observable.Return<IItemPreviewViewModel?>(null)
-                    : Observable.FromAsync(async () => await Map(item))
+                    ? null
+                    : await Map(item)
             )
-            .Switch()
-            .Publish(null)
-            .RefCount();
+            .DistinctUntilChanged();
     }
 
     private async Task<IItemPreviewViewModel?> Map(IItemViewModel itemViewModel)

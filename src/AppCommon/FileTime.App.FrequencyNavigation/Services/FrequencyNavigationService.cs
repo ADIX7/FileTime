@@ -140,7 +140,7 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         {
             return _containerScores
                 .Where(c => c.Key.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(c => GetWeightedScore(c.Value.Score, c.Value.LastAccessed))
+                .OrderByDescending(c => GetWeightedScore(c.Value.Score, c.Value.LastAccessed))
                 .Select(c => c.Key)
                 .ToList();
         }

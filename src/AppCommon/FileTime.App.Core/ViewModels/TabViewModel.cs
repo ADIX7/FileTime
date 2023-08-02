@@ -162,7 +162,7 @@ public partial class TabViewModel : ITabViewModel
                 .Selecting(i => MapItem(i))
                 .Ordering(i => i.Type)
                 .ThenOrdering(i => i.Name)
-                .Selecting(i => MapItemToViewModel(i, ItemViewModelType.SelectedChild));
+                .Selecting(i => MapItemToViewModel(i, ItemViewModelType.Parent));
 
             return items;
         });

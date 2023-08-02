@@ -7,14 +7,14 @@ using InitableService;
 
 namespace FileTime.App.ContainerSizeScanner;
 
-public class ContainerScanSnapshotProvider : ContentProviderBase, IContainerScanSnapshotProvider
+public class ContainerScanProvider : ContentProviderBase, IContainerScanSnapshotProvider
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IServiceProvider _serviceProvider;
     private readonly List<ISizeScanTask> _sizeScanTasks = new();
     internal const string ContentProviderName = "container-size-scan";
 
-    public ContainerScanSnapshotProvider(
+    public ContainerScanProvider(
         ITimelessContentProvider timelessContentProvider,
         IServiceProvider serviceProvider)
         : base(ContentProviderName, timelessContentProvider)
@@ -36,7 +36,7 @@ public class ContainerScanSnapshotProvider : ContentProviderBase, IContainerScan
 
         var pathParts = fullName.Path.Split(Constants.SeparatorChar);
 
-        var item = _sizeScanTasks.FirstOrDefault(t => t.SizeContainer.Name == pathParts[1])?.SizeContainer;
+        var item = _sizeScanTasks.FirstOrDefault(t => t.SizeSizeScanContainer.Name == pathParts[1])?.SizeSizeScanContainer;
 
         if (pathParts.Length == 2)
             return item ?? throw new ItemNotFoundException(fullName);
@@ -49,10 +49,10 @@ public class ContainerScanSnapshotProvider : ContentProviderBase, IContainerScan
 
         if (item is not null)
         {
-            var container = item.ChildContainers.FirstOrDefault(c => c.Name == pathParts[^1]);
-            if (container is not null) return container;
+            var childItem = item.SizeItems.FirstOrDefault(c => c.Name == pathParts[^1]);
+            if (childItem is not null) return childItem;
 
-            var childName = item.RealContainer.FullName?.GetChild(pathParts[^1]);
+            /*var childName = item.RealContainer.FullName?.GetChild(pathParts[^1]);
             if (childName is null) throw new ItemNotFoundException(fullName);
 
             return await _timelessContentProvider.GetItemByFullNameAsync(
@@ -61,7 +61,7 @@ public class ContainerScanSnapshotProvider : ContentProviderBase, IContainerScan
                 forceResolve,
                 forceResolvePathType,
                 itemInitializationSettings
-            );
+            );*/
         }
 
         throw new ItemNotFoundException(fullName);
@@ -106,7 +106,7 @@ public class ContainerScanSnapshotProvider : ContentProviderBase, IContainerScan
 
         _sizeScanTasks.Add(searchTask);
         searchTask.Start();
-        Items.Add(new AbsolutePath(_timelessContentProvider, searchTask.SizeContainer));
+        Items.Add(new AbsolutePath(_timelessContentProvider, searchTask.SizeSizeScanContainer));
 
         return searchTask;
     }

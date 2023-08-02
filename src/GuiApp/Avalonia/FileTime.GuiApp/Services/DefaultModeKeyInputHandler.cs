@@ -5,6 +5,7 @@ using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
+using FileTime.Core.Models.ContainerTraits;
 using FileTime.GuiApp.Configuration;
 using FileTime.GuiApp.Extensions;
 using FileTime.GuiApp.Models;
@@ -66,20 +67,23 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 
         if (key == Key.Escape)
         {
-            bool doGeneralReset = _appState.PreviousKeys.Count > 1 || _appState.IsAllShortcutVisible;
+            var doGeneralReset = _appState.PreviousKeys.Count > 1 || _appState.IsAllShortcutVisible;
 
             if ((_openModals.Collection?.Count ?? 0) > 0)
             {
                 _modalService.CloseModal(_openModals.Collection!.Last());
             }
-            /*else if (_currentLocation.Container.CanHandleEscape)
+            else if (_currentLocation is IEscHandlerContainer escHandler)
             {
-                var escapeResult = await _currentLocation.Container.HandleEscape();
+                var escapeResult = await escHandler.HandleEsc();
                 if (escapeResult.NavigateTo != null)
                 {
                     setHandled(true);
                     _appState.PreviousKeys.Clear();
-                    await _appState.SelectedTab.OpenContainer(escapeResult.NavigateTo);
+                    if (_appState.SelectedTab.Value?.Tab is { } selectedTab)
+                    {
+                        await selectedTab.SetCurrentLocation(escapeResult.NavigateTo);
+                    }
                 }
                 else
                 {
@@ -92,7 +96,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
                         doGeneralReset = true;
                     }
                 }
-            }*/
+            }
 
             if (doGeneralReset)
             {

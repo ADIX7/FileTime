@@ -61,8 +61,8 @@
 
                     <Grid ColumnDefinitions="*, Auto">
                         <StackPanel Margin="20,10" Orientation="Horizontal">
-                            <local:PathPresenter DataContext="{Binding AppState.SelectedTab^.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
-                            <TextBlock Foreground="{StaticResource AccentBrush}" Text="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value.DisplayNameText}" />
+                            <local:PathPresenter DataContext="{Binding AppState.SelectedTab.Value.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
+                            <TextBlock Foreground="{StaticResource AccentBrush}" Text="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.DisplayNameText}" />
                         </StackPanel>
                         <StackPanel
                             Grid.Column="1"
@@ -153,7 +153,7 @@
 
                                                     <TextBlock
                                                         Classes="SmallText"
-                                                        Text="{Binding Free, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}"
+                                                        Text="{Binding Free, Converter={StaticResource FormatSizeConverter}}"
                                                         VerticalAlignment="Center" />
 
                                                     <TextBlock
@@ -163,7 +163,7 @@
 
                                                     <TextBlock
                                                         Classes="SmallText"
-                                                        Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}"
+                                                        Text="{Binding Size, Converter={StaticResource FormatSizeConverter}}"
                                                         VerticalAlignment="Center" />
                                                 </StackPanel>
 
@@ -437,7 +437,7 @@
                                 AutoScrollToSelectedItem="True"
                                 Classes="ContentListView"
                                 IsTabStop="True"
-                                ItemsSource="{Binding AppState.SelectedTab^.ParentsChildren.Value}"
+                                ItemsSource="{Binding AppState.SelectedTab.Value.ParentsChildren.Value}"
                                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                 ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <ListBox.ItemTemplate>
@@ -459,7 +459,7 @@
                                 Width="1" />
 
                             <Grid Grid.Column="2" RowDefinitions="Auto,*">
-                                <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentLocation.Value.IsLoading^, FallbackValue=False}">
+                                <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentLocation.Value.IsLoading^, FallbackValue=False}">
                                     <Image
                                         Classes="LoadingAnimation"
                                         Height="40"
@@ -471,10 +471,10 @@
                                     Classes="ContentListView"
                                     Grid.Row="1"
                                     IsTabStop="True"
-                                    ItemsSource="{Binding AppState.SelectedTab^.CurrentItems.Value}"
+                                    ItemsSource="{Binding AppState.SelectedTab.Value.CurrentItems.Value}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                    SelectedItem="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value}"
+                                    SelectedItem="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value}"
                                     x:Name="CurrentItems">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="corevm:IItemViewModel">
@@ -488,7 +488,7 @@
                                     Foreground="{DynamicResource ErrorBrush}"
                                     Grid.Row="1"
                                     HorizontalAlignment="Center"
-                                    IsVisible="{Binding AppState.SelectedTab^.CurrentItems.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
+                                    IsVisible="{Binding AppState.SelectedTab.Value.CurrentItems.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
                                     Margin="10"
                                     x:Name="CurrentEmpty">
                                     Empty
@@ -504,11 +504,11 @@
                                 Width="1" />
 
                             <Grid Grid.Column="4">
-                                <Grid IsVisible="{Binding ItemPreviewService.ItemPreview^, Converter={x:Static ObjectConverters.IsNull}}">
-                                    <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                                <Grid IsVisible="{Binding ItemPreviewService.ItemPreview.Value, Converter={x:Static ObjectConverters.IsNull}}">
+                                    <Grid IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                                         <Grid RowDefinitions="Auto, Auto, *">
 
-                                            <Grid IsVisible="{Binding AppState.SelectedTab^.CurrentSelectedItemAsContainer.Value.Container.IsLoading^, FallbackValue=False}">
+                                            <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentSelectedItemAsContainer.Value.Container.IsLoading^, FallbackValue=False}">
                                                 <Image
                                                     Classes="LoadingAnimation"
                                                     Height="40"
@@ -517,7 +517,7 @@
                                             </Grid>
 
 
-                                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab^.CurrentLocation.Value.Exceptions}">
+                                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab.Value.CurrentLocation.Value.Exceptions}">
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate>
                                                         <TextBlock
@@ -532,8 +532,8 @@
                                                 AutoScrollToSelectedItem="True"
                                                 Classes="ContentListView"
                                                 Grid.Row="2"
-                                                IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
-                                                ItemsSource="{Binding AppState.SelectedTab^.SelectedsChildren.Value}"
+                                                IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
+                                                ItemsSource="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value}"
                                                 x:Name="ChildItems">
                                                 <ListBox.ItemTemplate>
                                                     <DataTemplate x:DataType="corevm:IItemViewModel">
@@ -547,14 +547,14 @@
                                             FontWeight="Bold"
                                             Foreground="{DynamicResource ErrorBrush}"
                                             HorizontalAlignment="Center"
-                                            IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
+                                            IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
                                             Margin="10"
                                             x:Name="ChildEmpty">
                                             Empty
                                         </TextBlock>
                                     </Grid>
 
-                                    <Grid IsVisible="{Binding AppState.SelectedTab^.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}" RowDefinitions="Auto, Auto">
+                                    <Grid IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}" RowDefinitions="Auto, Auto">
                                         <TextBlock
                                             Foreground="{DynamicResource ErrorBrush}"
                                             HorizontalAlignment="Center"
@@ -562,7 +562,7 @@
                                             Text="There were some errors while opening container."
                                             TextWrapping="Wrap" />
 
-                                        <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab^.CurrentSelectedItem.Value.BaseItem.Exceptions}">
+                                        <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.BaseItem.Exceptions}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock
@@ -574,109 +574,109 @@
                                         </ItemsRepeater>
                                     </Grid>
                                 </Grid>
-                                <Grid DataContext="{Binding ItemPreviewService.ItemPreview^}" IsVisible="{Binding Converter={x:Static ObjectConverters.IsNotNull}}">
-                                    <Grid IsVisible="{Binding Name, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static itemPreview:ElementPreviewViewModel.PreviewName}}" x:DataType="itemPreview:ElementPreviewViewModel">
-                                        <TextBlock
-                                            HorizontalAlignment="Center"
-                                            IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
-                                            Text="Don't know how to preview this item." />
-                                        <TextBlock
-                                            HorizontalAlignment="Center"
-                                            IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
-                                            Text="Empty" />
-                                        <Grid IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" RowDefinitions="*, Auto">
-                                            <ScrollViewer>
-                                                <TextBox IsReadOnly="True" Text="{Binding TextContent}" />
-                                            </ScrollViewer>
+                                <Grid DataContext="{Binding ItemPreviewService.ItemPreview.Value}" IsVisible="{Binding FallbackValue=false, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    <Grid IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static itemPreview:ElementPreviewViewModel.PreviewName}}">
+                                        <Grid x:DataType="itemPreview:ElementPreviewViewModel">
                                             <TextBlock
-                                                Grid.Row="1"
-                                                Margin="5"
-                                                Text="{Binding TextEncoding, StringFormat=Encoding: {0}}" />
+                                                HorizontalAlignment="Center"
+                                                IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
+                                                Text="Don't know how to preview this item." />
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
+                                                Text="Empty" />
+                                            <Grid IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" RowDefinitions="*, Auto">
+                                                <ScrollViewer>
+                                                    <TextBox IsReadOnly="True" Text="{Binding TextContent}" />
+                                                </ScrollViewer>
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Margin="5"
+                                                    Text="{Binding TextEncoding, StringFormat=Encoding: {0}}" />
+                                            </Grid>
                                         </Grid>
                                     </Grid>
-                                    <Grid
-                                        IsVisible="{Binding Name, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static sizePreview:ContainerSizeContainerPreview.PreviewName}}"
-                                        RowDefinitions="Auto, Auto"
-                                        x:DataType="sizePreview:ContainerSizeContainerPreview">
-                                        <ItemsControl Items="{Binding TopItems^}" Margin="0,0,0,30">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid>
-                                                        <Grid.Width>
-                                                            <MultiBinding Converter="{StaticResource ItemSizeToSizeConverter}">
-                                                                <MultiBinding.Bindings>
-                                                                    <Binding />
-                                                                    <Binding ElementName="SizeContainerPreview" Path="DataContext.TopItems^" />
-                                                                    <Binding ElementName="SizeContainerPreview" Path="Bounds.Width" />
-                                                                </MultiBinding.Bindings>
-                                                            </MultiBinding>
-                                                        </Grid.Width>
-
-                                                        <Rectangle HorizontalAlignment="Stretch">
-                                                            <Rectangle.Fill>
-                                                                <MultiBinding Converter="{StaticResource ItemSizeToBrushConverter}">
+                                    <Grid IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static sizePreview:ContainerPreview.PreviewName}}" x:Name="SizeContainerPreview">
+                                        <Grid RowDefinitions="Auto, Auto" x:DataType="sizePreview:ContainerPreview">
+                                            <ItemsControl ItemsSource="{Binding TopItems}" Margin="0,0,0,30">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <Grid.Width>
+                                                                <MultiBinding Converter="{StaticResource ItemSizeToSizeConverter}">
                                                                     <MultiBinding.Bindings>
                                                                         <Binding />
-                                                                        <Binding ElementName="SizeContainerPreview" Path="DataContext.Items^" />
+                                                                        <Binding ElementName="SizeContainerPreview" Path="DataContext" />
+                                                                        <Binding ElementName="SizeContainerPreview" Path="Bounds.Width" />
                                                                     </MultiBinding.Bindings>
                                                                 </MultiBinding>
-                                                            </Rectangle.Fill>
-                                                        </Rectangle>
-                                                        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                            <TextBlock
-                                                                Classes="SmallText"
-                                                                Margin="0,5,0,2"
-                                                                Text="{Binding Name}">
-                                                                <TextBlock.Foreground>
-                                                                    <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
-                                                                        <MultiBinding.Bindings>
-                                                                            <Binding />
-                                                                            <Binding ElementName="SizeContainerPreview" Path="DataContext.Items^" />
-                                                                        </MultiBinding.Bindings>
-                                                                    </MultiBinding>
-                                                                </TextBlock.Foreground>
-                                                            </TextBlock>
-                                                            <TextBlock
-                                                                Classes="SmallText"
-                                                                Margin="0,2,0,5"
-                                                                Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}">
-                                                                <TextBlock.Foreground>
-                                                                    <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
-                                                                        <MultiBinding.Bindings>
-                                                                            <Binding />
-                                                                            <Binding ElementName="SizeContainerPreview" Path="DataContext.Items^" />
-                                                                        </MultiBinding.Bindings>
-                                                                    </MultiBinding>
-                                                                </TextBlock.Foreground>
-                                                            </TextBlock>
-                                                        </StackPanel>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                                            </Grid.Width>
 
-                                        <ItemsControl
-                                            Grid.Row="1"
-                                            Items="{Binding Items^}"
-                                            x:CompileBindings="False">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,20">
-                                                        <TextBlock Text="{Binding Name}" />
-                                                        <TextBlock
-                                                            Grid.Column="1"
-                                                            HorizontalAlignment="Right"
-                                                            Margin="0,0,20,0"
-                                                            Text="{Binding Size, Converter={StaticResource FormatSizeConverter}, ConverterParameter=0}" />
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                                            <Rectangle HorizontalAlignment="Stretch">
+                                                                <Rectangle.Fill>
+                                                                    <MultiBinding Converter="{StaticResource ItemSizeToBrushConverter}">
+                                                                        <MultiBinding.Bindings>
+                                                                            <Binding />
+                                                                            <Binding ElementName="SizeContainerPreview" Path="DataContext" />
+                                                                        </MultiBinding.Bindings>
+                                                                    </MultiBinding>
+                                                                </Rectangle.Fill>
+                                                            </Rectangle>
+                                                            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                                <TextBlock
+                                                                    Classes="SmallText"
+                                                                    FontWeight="Bold"
+                                                                    Margin="5,5,5,2"
+                                                                    Text="{Binding Name}">
+                                                                    <TextBlock.Foreground>
+                                                                        <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
+                                                                            <MultiBinding.Bindings>
+                                                                                <Binding />
+                                                                                <Binding ElementName="SizeContainerPreview" Path="DataContext" />
+                                                                            </MultiBinding.Bindings>
+                                                                        </MultiBinding>
+                                                                    </TextBlock.Foreground>
+                                                                </TextBlock>
+                                                                <TextBlock
+                                                                    Classes="SmallText"
+                                                                    FontWeight="Bold"
+                                                                    Margin="5,2,5,5"
+                                                                    Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}">
+                                                                    <TextBlock.Foreground>
+                                                                        <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
+                                                                            <MultiBinding.Bindings>
+                                                                                <Binding />
+                                                                                <Binding ElementName="SizeContainerPreview" Path="DataContext" />
+                                                                            </MultiBinding.Bindings>
+                                                                        </MultiBinding>
+                                                                    </TextBlock.Foreground>
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <ItemsControl Grid.Row="1" ItemsSource="{Binding TopItems}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,20">
+                                                            <TextBlock Text="{Binding Name}" />
+                                                            <TextBlock
+                                                                Grid.Column="1"
+                                                                HorizontalAlignment="Right"
+                                                                Margin="0,0,20,0"
+                                                                Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -684,7 +684,7 @@
 
                         <ItemsRepeater
                             HorizontalAlignment="Center"
-                            IsVisible="{Binding AppState.PopupTexts.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
+                            IsVisible="{Binding AppState.PopupTexts.Count, Converter={StaticResource NotEqualsConverter}}"
                             ItemsSource="{Binding AppState.PopupTexts}"
                             Margin="0,0,0,20"
                             VerticalAlignment="Top">
@@ -718,57 +718,62 @@
                         </ItemsRepeater>
                     </Grid>
 
-                    <Grid Grid.Row="3">
-                        <Grid IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualsConverter}, ConverterParameter=RapidTravel}" RowDefinitions="1,Auto">
-
-                            <Rectangle
-                                Fill="{DynamicResource ContentSeparatorBrush}"
-                                Height="1"
-                                HorizontalAlignment="Stretch"
-                                Margin="10,0"
-                                VerticalAlignment="Center" />
-
-                            <StackPanel
-                                Grid.Row="1"
-                                Margin="30,10,10,10"
-                                Orientation="Horizontal">
-
-                                <TextBlock Margin="0,0,30,0" Text="Rapid travel mode" />
-
-                                <TextBlock Text="Filter " />
-
-                                <TextBlock Text="{Binding AppState.RapidTravelText.Value}" />
-                            </StackPanel>
+                    <Grid Grid.Row="3" RowDefinitions="Auto, Auto">
+                        <Grid>
+                            <TextBlock IsVisible="{Binding AppState.ContainerStatus.Value, Converter={x:Static ObjectConverters.IsNotNull}}" Text="{Binding AppState.ContainerStatus.Value}" />
                         </Grid>
+                        <Grid Grid.Row="1">
+                            <Grid IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualsConverter}, ConverterParameter=RapidTravel}" RowDefinitions="1,Auto">
 
-                        <Grid IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="1" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                                <Rectangle
+                                    Fill="{DynamicResource ContentSeparatorBrush}"
+                                    Height="1"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="10,0"
+                                    VerticalAlignment="Center" />
 
-                            <Rectangle
-                                Fill="{DynamicResource ContentSeparatorBrush}"
-                                Height="1"
-                                HorizontalAlignment="Stretch"
-                                Margin="10,0"
-                                VerticalAlignment="Center" />
+                                <StackPanel
+                                    Grid.Row="1"
+                                    Margin="30,10,10,10"
+                                    Orientation="Horizontal">
 
-                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.PossibleCommands}">
-                                <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate x:DataType="config:CommandBindingConfiguration">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="200" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
+                                    <TextBlock Margin="0,0,30,0" Text="Rapid travel mode" />
 
-                                            <TextBlock Text="{Binding KeysDisplayText}" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                            </ItemsRepeater>
+                                    <TextBlock Text="Filter " />
+
+                                    <TextBlock Text="{Binding AppState.RapidTravelText.Value}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Rectangle
+                                    Fill="{DynamicResource ContentSeparatorBrush}"
+                                    Height="1"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="10,0"
+                                    VerticalAlignment="Center" />
+
+                                <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.PossibleCommands}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="config:CommandBindingConfiguration">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="200" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Text="{Binding KeysDisplayText}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>

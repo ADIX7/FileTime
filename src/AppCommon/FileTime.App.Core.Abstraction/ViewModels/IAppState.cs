@@ -13,6 +13,7 @@ public interface IAppState
     IDeclarativeProperty<ViewMode> ViewMode { get; }
     DeclarativeProperty<string?> RapidTravelText { get; }
     ITimelineViewModel TimelineViewModel { get; }
+    IDeclarativeProperty<string?> ContainerStatus { get; }
 
     void AddTab(ITabViewModel tabViewModel);
     void RemoveTab(ITabViewModel tabViewModel);

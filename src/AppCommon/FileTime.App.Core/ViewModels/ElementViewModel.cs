@@ -1,3 +1,4 @@
+using DeclarativeProperty;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
@@ -9,9 +10,6 @@ namespace FileTime.App.Core.ViewModels;
 public partial class ElementViewModel : ItemViewModel, IElementViewModel
 {
     public IElement? Element => BaseItem as Element;
-    
-    [Property]
-    private long? _size;
 
     public ElementViewModel(IItemNameConverterService itemNameConverterService, IAppState appState) : base(itemNameConverterService, appState)
     {
@@ -19,4 +17,6 @@ public partial class ElementViewModel : ItemViewModel, IElementViewModel
 
     public void Init(IElement item, ITabViewModel parentTab, ItemViewModelType itemViewModelType) 
         => Init((IItem)item, parentTab, itemViewModelType);
+
+    public IDeclarativeProperty<long> Size { get; protected set; } = new DeclarativeProperty<long>(0);
 }

@@ -112,6 +112,7 @@ public class TabPersistenceService : ITabPersistenceService
                 try
                 {
                     if (tab.Path == null) continue;
+                    if (_contentProvidersNotToRestore.Any(p => tab.Path.StartsWith(p))) continue;
 
                     IContainer? container = null;
                     var path = FullName.CreateSafe(tab.Path);
@@ -186,7 +187,7 @@ public class TabPersistenceService : ITabPersistenceService
     public void SaveStates(CancellationToken token = default)
     {
         var state = new PersistenceRoot(SerializeTabStates());
-        
+
         var settingsDirectory = new DirectoryInfo(string.Join(Path.DirectorySeparatorChar,
             _settingsPath.Split(Path.DirectorySeparatorChar)[0..^1]));
         if (!settingsDirectory.Exists) settingsDirectory.Create();

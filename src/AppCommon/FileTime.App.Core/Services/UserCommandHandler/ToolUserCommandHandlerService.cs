@@ -66,7 +66,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         if (_currentLocation?.Value is null) return;
         
         var searchTask = _containerScanSnapshotProvider.StartSizeScan(_currentLocation.Value);
-        var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, searchTask.SizeContainer));
+        var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, searchTask.SizeSizeScanContainer));
         await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
     }
 
