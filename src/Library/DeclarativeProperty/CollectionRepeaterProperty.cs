@@ -7,14 +7,23 @@ public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropert
 {
     private TCollection? _currentCollection;
 
-    public CollectionRepeaterProperty(IDeclarativeProperty<TCollection?> from)
+    public CollectionRepeaterProperty(IDeclarativeProperty<TCollection?> from) : base(from.Value)
     {
         _currentCollection = from.Value;
         if (from.Value is { } value)
         {
             value.CollectionChanged += HandleCollectionChanged;
         }
+
         AddDisposable(from.Subscribe(Handle));
+    }
+
+    public CollectionRepeaterProperty(TCollection? collection) : base(collection)
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+
+        _currentCollection = collection;
+        collection.CollectionChanged += HandleCollectionChanged;
     }
 
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -29,7 +38,8 @@ public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropert
         {
             currentCollection.CollectionChanged -= HandleCollectionChanged;
         }
-        if (collection is {} newCollection)
+
+        if (collection is { } newCollection)
         {
             newCollection.CollectionChanged -= HandleCollectionChanged;
             newCollection.CollectionChanged += HandleCollectionChanged;

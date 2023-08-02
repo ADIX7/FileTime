@@ -345,7 +345,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             await _userCommandHandlerService.HandleCommandAsync(ExitRapidTravelCommand.Instance);
         }
 
-        _appState.SetSelectedTab(tabViewModel!);
+        await _appState.SetSelectedTabAsync(tabViewModel!);
     }
 
     private Task CloseTab()

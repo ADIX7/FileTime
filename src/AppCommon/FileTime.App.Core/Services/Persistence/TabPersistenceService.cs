@@ -177,7 +177,7 @@ public class TabPersistenceService : ITabPersistenceService
             .SkipWhile(t => t.TabNumber <= tabStates.ActiveTabNumber);
 
         var tabToActivate = optimalTabs.Concat(suboptimalTabs).FirstOrDefault();
-        if (tabToActivate is not null) _appState.SetSelectedTab(tabToActivate);
+        if (tabToActivate is not null) await _appState.SetSelectedTabAsync(tabToActivate);
 
         return true;
     }
@@ -205,7 +205,7 @@ public class TabPersistenceService : ITabPersistenceService
 
         return new TabStates(
             tabStates,
-            _appState.CurrentSelectedTab?.TabNumber
+            _appState.SelectedTab.Value?.TabNumber
         );
     }
 

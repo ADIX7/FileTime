@@ -15,17 +15,16 @@ namespace FileTime.App.Core.ViewModels;
 public abstract partial class AppStateBase : IAppState
 {
     private readonly BehaviorSubject<string?> _searchText = new(null);
-    private readonly BehaviorSubject<ITabViewModel?> _selectedTab = new(null);
+    private readonly DeclarativeProperty<ITabViewModel?> _selectedTab = new();
     private readonly DeclarativeProperty<ViewMode> _viewMode = new(Models.Enums.ViewMode.Default);
-    private readonly SourceList<ITabViewModel> _tabs = new();
+    private readonly ObservableCollection<ITabViewModel> _tabs = new();
 
     public IDeclarativeProperty<ViewMode> ViewMode { get; private set; }
 
     public ReadOnlyObservableCollection<ITabViewModel> Tabs { get; private set; }
     public IObservable<string?> SearchText { get; private set; }
 
-    public IObservable<ITabViewModel?> SelectedTab { get; private set; }
-    public ITabViewModel? CurrentSelectedTab { get; private set; }
+    public IDeclarativeProperty<ITabViewModel?> SelectedTab { get; private set; }
     public DeclarativeProperty<string?> RapidTravelText { get; private set; }
 
     partial void OnInitialize()
@@ -33,37 +32,28 @@ public abstract partial class AppStateBase : IAppState
         RapidTravelText = new("");
         ViewMode = _viewMode;
 
-        var tabsObservable = _tabs.Connect();
-
         SearchText = _searchText.AsObservable();
-        SelectedTab = Observable.CombineLatest(tabsObservable.ToCollection(), _selectedTab.DistinctUntilChanged(), GetSelectedTab);
+        SelectedTab = DeclarativePropertyHelpers.CombineLatest<ObservableCollection<ITabViewModel>, ITabViewModel, ITabViewModel>(
+            _tabs.Watch(),
+            _selectedTab,
+            (tabs, selectedTab) => Task.FromResult(GetSelectedTab(tabs, selectedTab))
+        );
 
-        SelectedTab.Subscribe(t =>
-        {
-            _selectedTab.OnNext(t);
-            CurrentSelectedTab = t;
-        });
-
-        tabsObservable
-            .Bind(out var collection)
-            .DisposeMany()
-            .Subscribe();
-
-        Tabs = collection;
+        Tabs = new ReadOnlyObservableCollection<ITabViewModel>(_tabs);
     }
 
     public void AddTab(ITabViewModel tabViewModel)
     {
-        if (_tabs.Items.Any(t => t.TabNumber == tabViewModel.TabNumber))
+        if (_tabs.Any(t => t.TabNumber == tabViewModel.TabNumber))
             throw new ArgumentException($"There is a tab with the same tab number {tabViewModel.TabNumber}.", nameof(tabViewModel));
 
-        var index = _tabs.Items.Count(t => t.TabNumber < tabViewModel.TabNumber);
+        var index = _tabs.Count(t => t.TabNumber < tabViewModel.TabNumber);
         _tabs.Insert(index, tabViewModel);
     }
 
     public void RemoveTab(ITabViewModel tabViewModel)
     {
-        if (!_tabs.Items.Contains(tabViewModel)) return;
+        if (!_tabs.Contains(tabViewModel)) return;
 
         _tabs.Remove(tabViewModel);
     }
@@ -72,7 +62,7 @@ public abstract partial class AppStateBase : IAppState
 
     public async Task SwitchViewModeAsync(ViewMode newViewMode) => await _viewMode.SetValue(newViewMode);
 
-    public void SetSelectedTab(ITabViewModel tabToSelect) => _selectedTab.OnNext(tabToSelect);
+    public async Task SetSelectedTabAsync(ITabViewModel tabToSelect) => await _selectedTab.SetValue(tabToSelect);
 
     private ITabViewModel? GetSelectedTab(IEnumerable<ITabViewModel> tabs, ITabViewModel? expectedSelectedTab)
     {

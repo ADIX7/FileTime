@@ -69,6 +69,19 @@ public static class DeclarativePropertyExtensions
         this IDeclarativeProperty<TCollection?> collection)
         where TCollection : IList<TItem>, INotifyCollectionChanged
         => new CollectionRepeaterProperty<TCollection?, TItem>(collection);
+
+    public static IDeclarativeProperty<TCollection?> Watch<TCollection, TItem>(
+        this TCollection collection)
+        where TCollection : IList<TItem>, INotifyCollectionChanged
+        => new CollectionRepeaterProperty<TCollection?, TItem>(collection);
+
+    public static IDeclarativeProperty<ObservableCollection<TItem>?> Watch<TItem>(
+        this ObservableCollection<TItem> collection)
+        => new CollectionRepeaterProperty<ObservableCollection<TItem>?, TItem>(collection);
+
+    public static IDeclarativeProperty<ReadOnlyObservableCollection<TItem>?> Watch<TItem>(
+        this ReadOnlyObservableCollection<TItem> collection)
+        => new CollectionRepeaterProperty<ReadOnlyObservableCollection<TItem>?, TItem>(collection);
     
     
     public static IDeclarativeProperty<TResult?> CombineLatest<T1, T2, TResult>(
