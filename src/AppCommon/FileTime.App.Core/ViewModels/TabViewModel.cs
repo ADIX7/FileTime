@@ -29,7 +29,7 @@ public partial class TabViewModel : ITabViewModel
     private readonly IAppState _appState;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IRefreshSmoothnessCalculator _refreshSmoothnessCalculator;
-    private readonly SourceList<FullName> _markedItems = new();
+    private readonly ObservableCollection<FullName> _markedItems = new();
     private readonly List<IDisposable> _disposables = new();
     private bool _disposed;
     private OcConsumer? _currentItemsConsumer;
@@ -45,7 +45,7 @@ public partial class TabViewModel : ITabViewModel
     public IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; private set; }
     public IDeclarativeProperty<IContainerViewModel?> CurrentSelectedItemAsContainer { get; private set; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> CurrentItems { get; private set; }
-    public IObservable<IChangeSet<FullName>> MarkedItems { get; }
+    public IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> SelectedsChildren { get; private set; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> ParentsChildren { get; private set; }
     public DeclarativeProperty<ItemOrdering?> Ordering { get; } = new(ItemOrdering.Name);
@@ -60,7 +60,7 @@ public partial class TabViewModel : ITabViewModel
         _serviceProvider = serviceProvider;
         _appState = appState;
 
-        MarkedItems = _markedItems.Connect().StartWithEmpty();
+        MarkedItems = _markedItems.Watch();
         IsSelected = _appState.SelectedTab.Select(s => s == this);
         _timelessContentProvider = timelessContentProvider;
         _refreshSmoothnessCalculator = refreshSmoothnessCalculator;
@@ -240,14 +240,14 @@ public partial class TabViewModel : ITabViewModel
 
     public void RemoveMarkedItem(FullName fullName)
     {
-        var itemsToRemove = _markedItems.Items.Where(i => i.Path == fullName.Path).ToList();
+        var itemsToRemove = _markedItems.Where(i => i.Path == fullName.Path).ToList();
 
         _markedItems.RemoveMany(itemsToRemove);
     }
 
     public void ToggleMarkedItem(FullName fullName)
     {
-        if (_markedItems.Items.Any(i => i.Path == fullName.Path))
+        if (_markedItems.Any(i => i.Path == fullName.Path))
         {
             RemoveMarkedItem(fullName);
         }

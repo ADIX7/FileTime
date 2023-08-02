@@ -18,7 +18,7 @@ public interface ITabViewModel : IInitable<ITab, int>, IDisposable
     IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; }
     IDeclarativeProperty<IContainerViewModel?> CurrentSelectedItemAsContainer { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>?> CurrentItems { get; }
-    IObservable<IChangeSet<FullName>> MarkedItems { get; }
+    IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> SelectedsChildren { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> ParentsChildren { get; }
     DeclarativeProperty<ItemOrdering?> Ordering { get; }

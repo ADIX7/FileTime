@@ -1,17 +1,16 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using DeclarativeProperty;
 using DynamicData;
 using FileTime.App.Core.Interactions;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Command;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.Move;
-using FileTime.Core.Extensions;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -34,7 +33,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private readonly ICommandScheduler _commandScheduler;
     private readonly IServiceProvider _serviceProvider;
     private readonly ISystemClipboardService _systemClipboardService;
-    private readonly BindedCollection<FullName>? _markedItems;
+    private readonly IDeclarativeProperty<ObservableCollection<FullName>> _markedItems;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
 
     public ItemManipulationUserCommandHandlerService(
@@ -61,7 +60,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
 
-        _markedItems = appState.SelectedTab.Select(t => t?.MarkedItems).ToBindedCollection();
+        _markedItems = appState.SelectedTab.Map(t => t?.MarkedItems).Switch();
 
         AddCommandHandlers(new IUserCommandHandler[]
         {
@@ -80,9 +79,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private async Task CopyFilesToClipboardAsync()
     {
         var list = new List<FullName>();
-        if ((_markedItems?.Collection?.Count ?? 0) > 0)
+        if ((_markedItems.Value?.Count ?? 0) > 0)
         {
-            list.AddRange(_markedItems!.Collection!);
+            list.AddRange(_markedItems.Value!);
         }
         else if(_currentSelectedItem?.Value?.BaseItem?.FullName is { } selectedItemName)
         {
@@ -128,9 +127,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         _clipboardService.Clear();
         _clipboardService.SetCommand<FileTime.Core.Command.Copy.CopyCommandFactory>();
 
-        if ((_markedItems?.Collection?.Count ?? 0) > 0)
+        if ((_markedItems.Value?.Count ?? 0) > 0)
         {
-            foreach (var item in _markedItems!.Collection!)
+            foreach (var item in _markedItems.Value!)
             {
                 _clipboardService.AddContent(item);
             }
@@ -214,12 +213,12 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
     private async Task RenameAsync(RenameCommand command)
     {
         List<ItemToMove> itemsToMove = new();
-        if ((_markedItems?.Collection?.Count ?? 0) > 0)
+        if ((_markedItems.Value?.Count ?? 0) > 0)
         {
             BehaviorSubject<string> templateRegexValue = new(string.Empty);
             BehaviorSubject<string> newNameSchemaValue = new(string.Empty);
 
-            var itemsToRename = new List<FullName>(_markedItems!.Collection!);
+            var itemsToRename = new List<FullName>(_markedItems.Value!);
 
             var itemPreviews = itemsToRename
                 .Select(item =>
@@ -406,9 +405,9 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         IList<FullName>? itemsToDelete = null;
         var shouldDelete = false;
         string? questionText = null;
-        if ((_markedItems?.Collection?.Count ?? 0) > 0)
+        if ((_markedItems.Value?.Count ?? 0) > 0)
         {
-            itemsToDelete = new List<FullName>(_markedItems!.Collection!);
+            itemsToDelete = new List<FullName>(_markedItems.Value!);
         }
         else if (_currentSelectedItem?.Value?.BaseItem?.FullName is not null)
         {

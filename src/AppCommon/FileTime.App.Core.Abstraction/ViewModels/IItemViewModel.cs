@@ -11,7 +11,7 @@ public interface IItemViewModel : IInitable<IItem, ITabViewModel, ItemViewModelT
     IDeclarativeProperty<IReadOnlyList<ItemNamePart>>? DisplayName { get; }
     string? DisplayNameText { get; set; }
     IDeclarativeProperty<bool> IsSelected { get; set; }
-    IObservable<bool>? IsMarked { get; set; }
+    IDeclarativeProperty<bool>? IsMarked { get; set; }
     IDeclarativeProperty<bool> IsAlternative { get; }
     IObservable<ItemViewMode> ViewMode { get; set; }
     DateTime? CreatedAt { get; set; }

@@ -54,9 +54,6 @@ public abstract class UserCommandHandlerServiceBase : IUserCommandHandler
 
     protected IDisposable SaveCurrentItems(Action<IDeclarativeProperty<ObservableCollection<IItemViewModel>?>?> handler)
         => RunWithAppState(appState => appState.SelectedTab.Select(t => t?.CurrentItems).Subscribe(handler));
-
-    protected IDisposable SaveMarkedItems(Action<IChangeSet<FullName>> handler)
-        => RunWithAppState(appState => appState.SelectedTab.Select(t => t == null ? Observable.Empty<IChangeSet<FullName>>() : t.MarkedItems).Switch().Subscribe(handler));
     
     protected IDisposable SaveCurrentPointInTime(Action<PointInTime> handler)
         => RunWithTimelessContentProvider(timelessContentProvider => timelessContentProvider.CurrentPointInTime.Subscribe(handler));

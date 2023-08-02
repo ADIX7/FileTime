@@ -25,7 +25,7 @@ public abstract partial class ItemViewModel : IItemViewModel
 
     [Property] private IDeclarativeProperty<bool> _isSelected;
 
-    [Property] private IObservable<bool>? _isMarked;
+    [Property] private IDeclarativeProperty<bool>? _isMarked;
 
     [Property] private IObservable<ItemViewMode> _viewMode;
 
@@ -68,8 +68,8 @@ public abstract partial class ItemViewModel : IItemViewModel
         DisplayNameText = item.DisplayName;
 
         IsMarked = itemViewModelType is ItemViewModelType.Main
-            ? parentTab.MarkedItems.ToCollection().Select(m => m.Any(i => i.Path == item.FullName?.Path))
-            : Observable.Return(false);
+            ? parentTab.MarkedItems.Map(m => m.Any(i => i.Path == item.FullName?.Path))
+            : new DeclarativeProperty<bool>(false);
 
         IsSelected = itemViewModelType is ItemViewModelType.Main
             ? parentTab.CurrentSelectedItem.Map(EqualsTo)
