@@ -24,7 +24,7 @@
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <Content Include="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup Condition="Exists('appsettings.Local.json') AND '$(Configuration)' == 'Debug'">
     <Content Include="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppCommon", "AppCommon", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Avalonia", "Avalonia", "{01F231DE-4A65-435F-B4BB-77EE5221890C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp.App", "GuiApp\Avalonia\FileTime.GuiApp.App\FileTime.GuiApp.App.csproj", "{C389087E-EB78-4DCD-96AF-F1E2A4DEE0B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp", "GuiApp\Avalonia\FileTime.GuiApp\FileTime.GuiApp.csproj", "{C389087E-EB78-4DCD-96AF-F1E2A4DEE0B0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Providers", "Providers", "{2FC40FE1-4446-44AB-BF77-00F94D995FA3}"
 EndProject
@@ -39,13 +39,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.App.Core", "AppCom
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.App.Core.Abstraction", "AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj", "{3E9CCD7F-86AA-4BD8-A100-0CD71BDB1AA0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp", "GuiApp\Avalonia\FileTime.GuiApp\FileTime.GuiApp.csproj", "{26331AB9-6E4D-40DB-8FF0-CB7133F67CA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp.App", "GuiApp\Avalonia\FileTime.GuiApp.App\FileTime.GuiApp.App.csproj", "{26331AB9-6E4D-40DB-8FF0-CB7133F67CA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp.CustomImpl", "GuiApp\Avalonia\FileTime.GuiApp.CustomImpl\FileTime.GuiApp.CustomImpl.csproj", "{4B742649-225F-4C73-B118-1B29FE2A5774}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.Providers.Local.Abstractions", "Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj", "{1500A537-2116-4111-B216-7632040619B0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp.Abstractions", "GuiApp\Avalonia\FileTime.GuiApp.Abstractions\FileTime.GuiApp.Abstractions.csproj", "{D7D1C76A-05B0-49BC-BCFF-06340E264EC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileTime.GuiApp.App.Abstractions", "GuiApp\Avalonia\FileTime.GuiApp.App.Abstractions\FileTime.GuiApp.App.Abstractions.csproj", "{D7D1C76A-05B0-49BC-BCFF-06340E264EC1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{8C3CFEFE-78A5-4940-B388-D15FCE02ECE9}"
 EndProject

@@ -1,5 +1,5 @@
-using FileTime.GuiApp.Configuration;
-using FileTime.GuiApp.Services;
+using FileTime.GuiApp.App.Configuration;
+using FileTime.GuiApp.App.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

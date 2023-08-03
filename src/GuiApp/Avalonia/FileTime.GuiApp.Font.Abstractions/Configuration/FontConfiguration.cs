@@ -1,4 +1,4 @@
-namespace FileTime.GuiApp.Configuration;
+namespace FileTime.GuiApp.App.Configuration;
 
 public class FontConfiguration
 {

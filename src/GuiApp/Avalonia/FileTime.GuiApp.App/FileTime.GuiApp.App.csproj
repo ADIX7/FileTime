@@ -1,13 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!--Avalonia doesen't support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->
-    <TrimMode>copyused</TrimMode>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationIcon>filetime.ico</ApplicationIcon>
-    <Version>0.2.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,47 +11,42 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="filetime.ico" />
+    <None Remove="Assets\filetime.ico" />
   </ItemGroup>
+
   <ItemGroup>
-    <!--This helps with theme dll-s trimming.
-	If you will publish your application in self-contained mode with p:PublishTrimmed=true and it will use Fluent theme Default theme will be trimmed from the output and vice versa.
-	https://github.com/AvaloniaUI/Avalonia/issues/5593 -->
-    <TrimmableAssembly Include="Avalonia.Themes.Fluent" />
-    <TrimmableAssembly Include="Avalonia.Themes.Default" />
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.1" />
+    <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="11.0.1" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.1" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.1" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.1" />
+    <PackageReference Include="Avalonia.Svg.Skia" Version="11.0.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.1" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="MvvmGen" Version="1.2.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.CommandPalette\FileTime.App.CommandPalette.csproj" />
-    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.ContainerSizeScanner\FileTime.App.ContainerSizeScanner.csproj" />
-    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core\FileTime.App.Core.csproj" />
-    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.DependencyInjection\FileTime.App.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.FrequencyNavigation\FileTime.App.FrequencyNavigation.csproj" />
-    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Search\FileTime.App.Search.csproj" />
-    <ProjectReference Include="..\..\..\Tools\FileTime.Tools.Compression\FileTime.Tools.Compression.csproj" />
-    <ProjectReference Include="..\FileTime.GuiApp.CustomImpl\FileTime.GuiApp.CustomImpl.csproj" />
-    <ProjectReference Include="..\FileTime.GuiApp.Font\FileTime.GuiApp.Font.csproj" />
-    <ProjectReference Include="..\FileTime.GuiApp\FileTime.GuiApp.csproj" />
+    <PackageReference Include="Syroot.Windows.IO.KnownFolders" Version="1.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <Content Include="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.CommandPalette.Abstractions\FileTime.App.CommandPalette.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.ContainerSizeScanner\FileTime.App.ContainerSizeScanner.csproj" />
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\..\AppCommon\FileTime.App.FrequencyNavigation.Abstractions\FileTime.App.FrequencyNavigation.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Providers\FileTime.Providers.LocalAdmin.Abstractions\FileTime.Providers.LocalAdmin.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.GuiApp.App.Abstractions\FileTime.GuiApp.App.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.GuiApp.DesignPreview\FileTime.GuiApp.DesignPreview.csproj" />
+    <ProjectReference Include="..\FileTime.GuiApp.Font.Abstractions\FileTime.GuiApp.Font.Abstractions.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <Content Include="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+
 </Project>

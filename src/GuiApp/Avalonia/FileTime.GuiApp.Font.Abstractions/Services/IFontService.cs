@@ -1,4 +1,4 @@
-namespace FileTime.GuiApp.Services;
+namespace FileTime.GuiApp.App.Services;
 
 public interface IFontService
 {

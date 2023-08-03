@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Core\FileTime.App.Core.csproj" />
-    <ProjectReference Include="..\FileTime.GuiApp.Abstractions\FileTime.GuiApp.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.GuiApp.App.Abstractions\FileTime.GuiApp.App.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

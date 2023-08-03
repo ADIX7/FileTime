@@ -19,7 +19,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp.App/FileTime.GuiApp.App.csproj",
+        "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp/FileTime.GuiApp.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -77,7 +77,7 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp.App/FileTime.GuiApp.App.csproj",
+        "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp/FileTime.GuiApp.csproj",
         "-c",
         "Release"
       ],

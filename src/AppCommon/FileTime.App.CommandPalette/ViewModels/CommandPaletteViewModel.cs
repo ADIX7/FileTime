@@ -4,8 +4,8 @@ using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FuzzyPanel;
-using FileTime.GuiApp.Configuration;
-using FileTime.GuiApp.Services;
+using FileTime.GuiApp.App.Configuration;
+using FileTime.GuiApp.App.Services;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.CommandPalette.ViewModels;

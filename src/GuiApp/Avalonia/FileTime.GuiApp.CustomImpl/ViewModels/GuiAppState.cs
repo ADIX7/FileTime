@@ -4,9 +4,9 @@ using System.Reactive.Subjects;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.Core.Models;
-using FileTime.GuiApp.Configuration;
-using FileTime.GuiApp.Models;
-using FileTime.GuiApp.ViewModels;
+using FileTime.GuiApp.App.Configuration;
+using FileTime.GuiApp.App.Models;
+using FileTime.GuiApp.App.ViewModels;
 using MvvmGen;
 
 namespace FileTime.GuiApp.CustomImpl.ViewModels;

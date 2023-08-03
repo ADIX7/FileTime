@@ -4,9 +4,9 @@ using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.Core.Models;
-using FileTime.GuiApp.Configuration;
-using FileTime.GuiApp.Models;
-using FileTime.GuiApp.ViewModels;
+using FileTime.GuiApp.App.Configuration;
+using FileTime.GuiApp.App.Models;
+using FileTime.GuiApp.App.ViewModels;
 
 namespace FileTime.GuiApp.DesignPreview.Services;
 

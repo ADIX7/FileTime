@@ -20,9 +20,9 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build gui",
-      "program": "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp.App/bin/Debug/net6.0/FileTime.GuiApp.App.dll",
+      "program": "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp/bin/Debug/net6.0/FileTime.GuiApp.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp.App/bin/Debug/net6.0",
+      "cwd": "${workspaceFolder}/src/GuiApp/Avalonia/FileTime.GuiApp/bin/Debug/net6.0",
       "console": "internalConsole",
       "stopAtEntry": false
     },

@@ -1,10 +1,10 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Media;
-using FileTime.GuiApp.Configuration;
+using FileTime.GuiApp.App.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace FileTime.GuiApp.Services;
+namespace FileTime.GuiApp.App.Services;
 
 public class FontService : IFontService
 {
