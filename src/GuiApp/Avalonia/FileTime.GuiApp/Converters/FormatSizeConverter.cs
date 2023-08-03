@@ -22,8 +22,9 @@ public class FormatSizeConverter : IValueConverter
 
     public static string ToSizeString(long fileSize, int? precision = null)
     {
-        var size = new ByteSize(fileSize);
-        return precision == null? size.ToString()
+        var size = ByteSize.FromBytes(fileSize);
+        return precision == null
+            ? size.ToString()
             : size.ToString("0." + new string('#', precision.Value));
     }
 }

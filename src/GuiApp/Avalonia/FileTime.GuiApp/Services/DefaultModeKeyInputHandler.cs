@@ -1,16 +1,16 @@
-using System.Reactive.Linq;
 using Avalonia.Input;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
-using FileTime.Core.Models.ContainerTraits;
+using FileTime.Core.Models.Extensions;
 using FileTime.GuiApp.Configuration;
 using FileTime.GuiApp.Extensions;
 using FileTime.GuiApp.Models;
 using FileTime.GuiApp.ViewModels;
 using Microsoft.Extensions.Logging;
+using DeclarativeProperty;
 
 namespace FileTime.GuiApp.Services;
 
@@ -20,8 +20,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
     private readonly IModalService _modalService;
     private readonly IKeyboardConfigurationService _keyboardConfigurationService;
     private readonly List<KeyConfig[]> _keysToSkip = new();
-    private ITabViewModel? _selectedTab;
-    private IContainer? _currentLocation;
+    private readonly IDeclarativeProperty<IContainer?> _currentLocation;
     private readonly ILogger<DefaultModeKeyInputHandler> _logger;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
@@ -42,19 +41,20 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         _modalService = modalService;
         _userCommandHandlerService = userCommandHandlerService;
 
-        _appState.SelectedTab.Subscribe(t => _selectedTab = t);
-        _appState.SelectedTab.Select(t => t == null ? Observable.Return<IContainer?>(null) : t.CurrentLocation!).Switch().Subscribe(l => _currentLocation = l);
+        _currentLocation = _appState.SelectedTab
+            .Map(t => t?.CurrentLocation)
+            .Switch();
 
         _openModals = modalService.OpenModals.ToBindedCollection();
 
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Up) });
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Down) });
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.Tab) });
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.PageDown) });
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.PageUp) });
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.F4, alt: true) });
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.LWin) });
-        _keysToSkip.Add(new KeyConfig[] { new KeyConfig(Key.RWin) });
+        _keysToSkip.Add(new[] {new KeyConfig(Key.Up)});
+        _keysToSkip.Add(new[] {new KeyConfig(Key.Down)});
+        _keysToSkip.Add(new[] {new KeyConfig(Key.Tab)});
+        _keysToSkip.Add(new[] {new KeyConfig(Key.PageDown)});
+        _keysToSkip.Add(new[] {new KeyConfig(Key.PageUp)});
+        _keysToSkip.Add(new[] {new KeyConfig(Key.F4, alt: true)});
+        _keysToSkip.Add(new[] {new KeyConfig(Key.LWin)});
+        _keysToSkip.Add(new[] {new KeyConfig(Key.RWin)});
     }
 
     public async Task HandleInputKey(Key key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
@@ -73,7 +73,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             {
                 _modalService.CloseModal(_openModals.Collection!.Last());
             }
-            else if (_currentLocation is IEscHandlerContainer escHandler)
+            else if (_currentLocation.Value?.GetExtension<EscHandlerContainerExtension>() is { } escHandler)
             {
                 var escapeResult = await escHandler.HandleEsc();
                 if (escapeResult.NavigateTo != null)
@@ -118,7 +118,11 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             setHandled(true);
             _appState.PreviousKeys.Clear();
             _appState.PossibleCommands = new();
-            await CallCommandAsync(_identifiableUserCommandService.GetCommand(selectedCommandBinding.Command));
+            var command = _identifiableUserCommandService.GetCommand(selectedCommandBinding.Command);
+            if (command is not null)
+            {
+                await CallCommandAsync(command);
+            }
         }
         else if (_keysToSkip.Any(k => k.AreKeysEqual(_appState.PreviousKeys)))
         {

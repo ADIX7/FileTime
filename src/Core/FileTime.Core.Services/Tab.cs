@@ -165,7 +165,7 @@ public class Tab : ITab
 
         if (newLocation.FullName != null)
         {
-            _tabEvents.OnLocationChanged(this, newLocation.FullName);
+            _tabEvents.OnLocationChanged(this, newLocation);
         }
     }
 
@@ -177,7 +177,7 @@ public class Tab : ITab
 
         if (newLocation.FullName != null)
         {
-            _tabEvents.OnLocationChanged(this, newLocation.FullName);
+            _tabEvents.OnLocationChanged(this, newLocation);
         }
     }
 

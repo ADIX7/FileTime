@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
+using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 
 namespace FileTime.App.Search;
@@ -38,7 +39,8 @@ public class SearchTask : ISearchTask
 
         var extensions = new ExtensionCollection
         {
-            new SearchExtension(this)
+            new SearchExtension(this),
+            new RealContainerProviderExtension(() => new AbsolutePath(_timelessContentProvider, baseContainer))
         };
         _container = new Container(
             baseContainer.Name,
@@ -102,9 +104,9 @@ public class SearchTask : ISearchTask
                 var childName = _container.FullName.GetChild(itemPath.Path.GetName());
                 _realFullNames.Add(childName, itemPath.Path);
                 _items.Add(new AbsolutePath(
-                    _timelessContentProvider, 
-                    PointInTime.Present, 
-                    childName, 
+                    _timelessContentProvider,
+                    PointInTime.Present,
+                    childName,
                     AbsolutePathType.Container
                 ));
             }

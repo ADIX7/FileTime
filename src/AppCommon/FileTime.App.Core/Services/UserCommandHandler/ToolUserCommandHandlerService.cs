@@ -22,7 +22,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IContentAccessorFactory _contentAccessorFactory;
-    private readonly IContainerScanSnapshotProvider _containerScanSnapshotProvider;
+    private readonly IContainerSizeScanProvider _containerSizeScanProvider;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
     private ITabViewModel? _currentSelectedTab;
@@ -36,7 +36,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         ITimelessContentProvider timelessContentProvider,
         IUserCommandHandlerService userCommandHandlerService,
         IContentAccessorFactory contentAccessorFactory,
-        IContainerScanSnapshotProvider containerScanSnapshotProvider) : base(appState)
+        IContainerSizeScanProvider containerSizeScanProvider) : base(appState)
     {
         _systemClipboardService = systemClipboardService;
         _userCommunicationService = userCommunicationService;
@@ -45,7 +45,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         _timelessContentProvider = timelessContentProvider;
         _userCommandHandlerService = userCommandHandlerService;
         _contentAccessorFactory = contentAccessorFactory;
-        _containerScanSnapshotProvider = containerScanSnapshotProvider;
+        _containerSizeScanProvider = containerSizeScanProvider;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
         SaveSelectedTab(t => _currentSelectedTab = t);
@@ -65,7 +65,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     {
         if (_currentLocation?.Value is null) return;
         
-        var searchTask = _containerScanSnapshotProvider.StartSizeScan(_currentLocation.Value);
+        var searchTask = _containerSizeScanProvider.StartSizeScan(_currentLocation.Value);
         var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, searchTask.SizeSizeScanContainer));
         await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
     }

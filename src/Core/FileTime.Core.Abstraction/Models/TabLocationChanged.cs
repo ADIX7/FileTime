@@ -4,10 +4,10 @@ namespace FileTime.Core.Models;
 
 public class TabLocationChanged : EventArgs
 {
-    public FullName Location { get; }
+    public IContainer Location { get; }
     public ITab Tab { get; }
     
-    public TabLocationChanged(FullName location, ITab tab)
+    public TabLocationChanged(IContainer location, ITab tab)
     {
         Location = location;
         Tab = tab;

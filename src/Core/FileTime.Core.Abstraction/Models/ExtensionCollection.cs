@@ -6,18 +6,10 @@ namespace FileTime.Core.Models;
 
 public class ExtensionCollection : IEnumerable<object>
 {
-    private readonly List<object> _extensions = new();
+    private readonly HashSet<object> _extensions = new();
 
     public ExtensionCollection()
     {
-    }
-
-    public ExtensionCollection(IEnumerable<object> objects)
-    {
-        foreach (var obj in objects)
-        {
-            AddSafe(obj);
-        }
     }
 
     private void AddSafe(object obj)
@@ -35,12 +27,7 @@ public class ExtensionCollection : IEnumerable<object>
         AddSafe(obj);
     }
 
-    public void Remove<T>()
-    {
-        _extensions.RemoveAll(i => i is T);
-    }
-
-    public ReadOnlyExtensionCollection AsReadOnly() => new ReadOnlyExtensionCollection(this);
+    public ReadOnlyExtensionCollection AsReadOnly() => new(this);
 
     public IEnumerator<object> GetEnumerator() => _extensions.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => _extensions.GetEnumerator();

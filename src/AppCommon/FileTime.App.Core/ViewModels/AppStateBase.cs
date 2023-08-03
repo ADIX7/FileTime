@@ -2,11 +2,9 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DeclarativeProperty;
-using DynamicData;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels.Timeline;
-using FileTime.Core.Models;
-using FileTime.Core.Models.ContainerTraits;
+using FileTime.Core.Models.Extensions;
 using MvvmGen;
 using MoreLinq;
 
@@ -48,7 +46,7 @@ public abstract partial class AppStateBase : IAppState
         ContainerStatus = SelectedTab
             .Map(t => t?.CurrentLocation)
             .Switch()
-            .Map(c => c is IStatusProviderContainer statusProvider ? statusProvider.Status : null)
+            .Map(c => c?.GetExtension<StatusProviderContainerExtension>()?.GetStatusProperty())
             .Switch();
     }
 

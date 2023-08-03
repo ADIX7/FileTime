@@ -6,6 +6,7 @@ using FileTime.App.Core.Services;
 using FileTime.App.FrequencyNavigation.Models;
 using FileTime.App.FrequencyNavigation.ViewModels;
 using FileTime.Core.Models;
+using FileTime.Core.Models.Extensions;
 using FileTime.Core.Services;
 using Microsoft.Extensions.Logging;
 using PropertyChanged.SourceGenerator;
@@ -38,9 +39,16 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         tabEvents.LocationChanged += OnTabLocationChanged;
     }
 
-    void OnTabLocationChanged(object? sender, TabLocationChanged e)
+    async void OnTabLocationChanged(object? sender, TabLocationChanged e)
     {
-        IncreaseContainerScore(e.Location);
+        try
+        {
+            await IncreaseContainerScore(e.Location);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Fatal error while increasing container score");
+        }
     }
 
     public void OpenNavigationWindow()
@@ -59,12 +67,16 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         }
     }
 
-    private async void IncreaseContainerScore(FullName containerName)
+    private async Task IncreaseContainerScore(IContainer container)
     {
         await _saveLock.WaitAsync();
         try
         {
-            var containerNameString = containerName.Path;
+            if (container.GetExtension<NonRestorableContainerExtension>() is not null) return;
+
+            var containerNameString = container.FullName?.Path;
+            if (containerNameString is null) return;
+
             if (_containerScores.ContainsKey(containerNameString))
             {
                 _containerScores[containerNameString].Score++;
@@ -89,6 +101,7 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
             if (TryAgeContainerScores() || DateTime.Now - _lastSave > TimeSpan.FromMinutes(5))
             {
             }
+
             //TODO: move to if above
             await SaveStateAsync();
         }
@@ -113,7 +126,7 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         var itemsToRemove = new List<string>();
         foreach (var container in _containerScores)
         {
-            var newScore = (int)Math.Floor(container.Value.Score * 0.9);
+            var newScore = (int) Math.Floor(container.Value.Score * 0.9);
             if (newScore > 0)
             {
                 container.Value.Score = newScore;

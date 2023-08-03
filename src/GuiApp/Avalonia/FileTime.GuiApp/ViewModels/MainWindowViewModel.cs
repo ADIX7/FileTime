@@ -32,12 +32,14 @@ namespace FileTime.GuiApp.ViewModels;
 [Inject(typeof(IRefreshSmoothnessCalculator), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IAdminElevationManager), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IClipboardService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IModalService), PropertyName = "_modalService")]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
     public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
     public IGuiAppState AppState => _appState;
     public string Title { get; private set; }
+    public Action? FocusDefaultElement { get; set; }
 
     partial void OnInitialize()
     {
@@ -59,13 +61,13 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         Title += " (Debug)";
 #endif
 
+        _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
+
         Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
     }
 
-    public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
-    {
-        _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
-    }
+    public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled) 
+        => _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
 
     public async Task OpenContainerByFullName(FullName fullName)
     {
@@ -75,8 +77,6 @@ public partial class MainWindowViewModel : IMainWindowViewModel
             new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, resolvedContainer)));
     }
 
-    public async Task OnExit()
-    {
-        await _lifecycleService.ExitAsync();
-    }
+    public async Task OnExit() 
+        => await _lifecycleService.ExitAsync();
 }

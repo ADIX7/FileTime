@@ -13,6 +13,7 @@ using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using InitableService;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
@@ -27,6 +28,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IUserCommunicationService _userCommunicationService;
     private readonly IFrequencyNavigationService _frequencyNavigationService;
     private readonly ICommandPaletteService _commandPaletteService;
+    private readonly ILogger<NavigationUserCommandHandlerService> _logger;
     private ITabViewModel? _selectedTab;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
@@ -41,7 +43,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         ITimelessContentProvider timelessContentProvider,
         IUserCommunicationService userCommunicationService,
         IFrequencyNavigationService frequencyNavigationService,
-        ICommandPaletteService commandPaletteService) : base(appState)
+        ICommandPaletteService commandPaletteService,
+        ILogger<NavigationUserCommandHandlerService> logger) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
@@ -51,6 +54,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         _userCommunicationService = userCommunicationService;
         _frequencyNavigationService = frequencyNavigationService;
         _commandPaletteService = commandPaletteService;
+        _logger = logger;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -332,11 +336,23 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         }
         else if (tabViewModel == null)
         {
-            var newLocation = _currentLocation?.Value?.FullName is { } fullName
-                ? (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(fullName, PointInTime.Present)
-                : _localContentProvider;
+            IContainer? newLocation = null;
 
-            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(newLocation)
+            try
+            {
+                newLocation = _currentLocation?.Value?.FullName is { } fullName
+                    ? (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(fullName, PointInTime.Present)
+                    : _localContentProvider;
+            }
+            catch(Exception ex)
+            {
+                var fullName = _currentLocation?.Value?.FullName?.Path ?? "unknown";
+                _logger.LogError(ex, "Could not resolve container while switching to tab {TabNumber} to path {FullName}", number, fullName);
+            }
+
+            newLocation ??= _localContentProvider;
+
+            var tab = await _serviceProvider.GetAsyncInitableResolver(newLocation)
                 .GetRequiredServiceAsync<ITab>();
             var newTabViewModel = _serviceProvider.GetInitableResolver(tab, number).GetRequiredService<ITabViewModel>();
 

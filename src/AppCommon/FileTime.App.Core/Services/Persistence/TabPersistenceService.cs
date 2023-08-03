@@ -2,6 +2,7 @@ using System.Text.Json;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
+using FileTime.Core.Models.Extensions;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
@@ -202,7 +203,14 @@ public class TabPersistenceService : ITabPersistenceService
         {
             var currentLocation = tab.CurrentLocation.Value;
             if (currentLocation is null) continue;
-            tabStates.Add(new TabState(currentLocation.FullName!.Path, tab.TabNumber));
+            var path = currentLocation.FullName!.Path;
+
+            if (currentLocation.GetExtension<RealContainerProviderExtension>()?.RealContainer() is { } realPath)
+            {
+                path = realPath.Path.Path;
+            }
+
+            tabStates.Add(new TabState(path, tab.TabNumber));
         }
 
         return new TabStates(

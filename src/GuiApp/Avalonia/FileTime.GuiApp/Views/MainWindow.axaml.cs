@@ -74,7 +74,10 @@ public partial class MainWindow : Window, IUiAccessor
 
             _logger?.LogInformation(
                 $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
-            ViewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
+
+            var viewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
+            viewModel.FocusDefaultElement = () => Focus();
+            ViewModel = viewModel;
         }
     }
 
@@ -111,7 +114,7 @@ public partial class MainWindow : Window, IUiAccessor
             && sender is StyledElement control)
         {
             FullName? path = null;
-            if (control.DataContext is IHaveFullPath { Path: { } } hasFullPath)
+            if (control.DataContext is IHaveFullPath {Path: { }} hasFullPath)
             {
                 path = hasFullPath.Path;
             }
@@ -154,7 +157,12 @@ public partial class MainWindow : Window, IUiAccessor
     private void OnWindowClosed(object? sender, EventArgs e)
     {
         var vm = ViewModel;
-        Task.Run(() => vm?.OnExit()).Wait();
+        Task.Run(async () =>
+            {
+                if (vm is null) return;
+                await vm.OnExit();
+            })
+            .Wait();
     }
 
     private void InputList_OnKeyUp(object? sender, KeyEventArgs e)

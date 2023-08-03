@@ -1,4 +1,5 @@
 ﻿using FileTime.App.Core.Exceptions;
+using FileTime.App.Core.Services;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
@@ -7,14 +8,14 @@ using InitableService;
 
 namespace FileTime.App.ContainerSizeScanner;
 
-public class ContainerScanProvider : ContentProviderBase, IContainerScanSnapshotProvider
+public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSizeScanProvider
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IServiceProvider _serviceProvider;
     private readonly List<ISizeScanTask> _sizeScanTasks = new();
     internal const string ContentProviderName = "container-size-scan";
 
-    public ContainerScanProvider(
+    public ContainerSizeSizeScanProvider(
         ITimelessContentProvider timelessContentProvider,
         IServiceProvider serviceProvider)
         : base(ContentProviderName, timelessContentProvider)
@@ -109,5 +110,21 @@ public class ContainerScanProvider : ContentProviderBase, IContainerScanSnapshot
         Items.Add(new AbsolutePath(_timelessContentProvider, searchTask.SizeSizeScanContainer));
 
         return searchTask;
+    }
+
+    public Task ExitAsync(CancellationToken token = default)
+    {
+        foreach (var sizeScanTask in _sizeScanTasks)
+        {
+            try
+            {
+                sizeScanTask.Stop();
+            }
+            catch
+            {
+            }
+        }
+
+        return Task.CompletedTask;
     }
 }

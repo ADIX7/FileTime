@@ -1,5 +1,4 @@
 ﻿using DeclarativeProperty;
-using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
@@ -13,7 +12,7 @@ public class SizeScanTask : ISizeScanTask
     private int _processedItems;
     private ulong _processedItemsTotal;
     private IContainer _scanSizeOf = null!;
-    private readonly IContainerScanSnapshotProvider _containerScanSnapshotProvider;
+    private readonly IContainerSizeScanProvider _containerSizeScanProvider;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ILogger<SizeScanTask> _logger;
     private Thread? _sizeScanThread;
@@ -24,11 +23,11 @@ public class SizeScanTask : ISizeScanTask
     public bool IsRunning { get; private set; }
 
     public SizeScanTask(
-        IContainerScanSnapshotProvider containerScanSnapshotProvider,
+        IContainerSizeScanProvider containerSizeScanProvider,
         ITimelessContentProvider timelessContentProvider,
         ILogger<SizeScanTask> logger)
     {
-        _containerScanSnapshotProvider = containerScanSnapshotProvider;
+        _containerSizeScanProvider = containerSizeScanProvider;
         _timelessContentProvider = timelessContentProvider;
         _logger = logger;
         _containerStatusDebounced = _containerStatus.Debounce(TimeSpan.FromMilliseconds(250));
@@ -38,16 +37,16 @@ public class SizeScanTask : ISizeScanTask
     {
         _scanSizeOf = scanSizeOf;
         var name = $"{_searchId++}_{scanSizeOf.Name}";
-        var randomId = ContainerScanProvider.ContentProviderName + Constants.SeparatorChar + name;
-        SizeSizeScanContainer = new SizeScanContainer
+        var randomId = ContainerSizeSizeScanProvider.ContentProviderName + Constants.SeparatorChar + name;
+        SizeSizeScanContainer = new SizeScanContainer(_timelessContentProvider)
         {
             Name = name,
             DisplayName = scanSizeOf.DisplayName,
             FullName = new FullName(randomId),
             NativePath = new NativePath(randomId),
-            Parent = new AbsolutePath(_timelessContentProvider, _containerScanSnapshotProvider),
+            Parent = new AbsolutePath(_timelessContentProvider, _containerSizeScanProvider),
             RealContainer = scanSizeOf,
-            Provider = _containerScanSnapshotProvider,
+            Provider = _containerSizeScanProvider,
             Status = _containerStatusDebounced,
             SizeScanTask = this
         };
@@ -87,8 +86,8 @@ public class SizeScanTask : ISizeScanTask
         IContainer realContainer,
         ISizeScanContainer sizeScanContainer)
     {
-        if(_cancelled) return;
-        
+        if (_cancelled) return;
+
         await realContainer.WaitForLoaded();
         var resolvedItems = new List<IItem>(realContainer.Items.Count);
         foreach (var item in realContainer.Items)
@@ -99,43 +98,36 @@ public class SizeScanTask : ISizeScanTask
 
         foreach (var element in resolvedItems.OfType<IElement>())
         {
-            if(_cancelled) return;
-            
+            if (_cancelled) return;
+
             var fileExtension = element.GetExtension<FileExtension>();
-            if (fileExtension?.Size is not { } size) continue;
+            var size = fileExtension?.Size ?? 0;
 
             var sizeProperty = new DeclarativeProperty<long>(size);
-
             var childName = sizeScanContainer.FullName!.GetChild(element.Name).Path;
-            await sizeScanContainer.AddSizeSourceAsync(sizeProperty);
-            sizeScanContainer.Items.Add(new AbsolutePath(
-                _timelessContentProvider,
-                PointInTime.Present,
-                new FullName(childName),
-                AbsolutePathType.Element));
 
-
-            var childSearchContainer = new SizeScanElement
+            var childElement = new SizeScanElement
             {
                 Name = element.Name,
                 DisplayName = element.DisplayName,
                 FullName = new FullName(childName),
                 NativePath = new NativePath(childName),
                 Parent = new AbsolutePath(_timelessContentProvider, sizeScanContainer),
-                Provider = _containerScanSnapshotProvider,
+                Provider = _containerSizeScanProvider,
                 Size = sizeProperty
             };
-            sizeScanContainer.SizeItems.Add(childSearchContainer);
+            await sizeScanContainer.AddSizeChildAsync(childElement);
+
             _processedItems++;
             _processedItemsTotal++;
         }
 
         foreach (var childContainer in resolvedItems.OfType<IContainer>())
         {
-            if(_cancelled) return;
-            
+            if (_cancelled) return;
+
             var childName = sizeScanContainer.FullName!.GetChild(childContainer.Name).Path;
-            var childSearchContainer = new SizeScanContainer
+            var childSearchContainer = new SizeScanContainer(_timelessContentProvider)
             {
                 Name = childContainer.Name,
                 DisplayName = childContainer.DisplayName,
@@ -143,19 +135,12 @@ public class SizeScanTask : ISizeScanTask
                 NativePath = new NativePath(childName),
                 Parent = new AbsolutePath(_timelessContentProvider, sizeScanContainer),
                 RealContainer = childContainer,
-                Provider = _containerScanSnapshotProvider,
+                Provider = _containerSizeScanProvider,
                 Status = _containerStatusDebounced,
                 SizeScanTask = this
             };
 
-            sizeScanContainer.ChildContainers.Add(childSearchContainer);
-            sizeScanContainer.SizeItems.Add(childSearchContainer);
-            await sizeScanContainer.AddSizeSourceAsync(childSearchContainer.Size);
-            sizeScanContainer.Items.Add(new AbsolutePath(
-                _timelessContentProvider,
-                PointInTime.Present,
-                new FullName(childName),
-                AbsolutePathType.Container));
+            await sizeScanContainer.AddSizeChildAsync(childSearchContainer);
 
             await TraverseTree(childContainer, childSearchContainer);
         }

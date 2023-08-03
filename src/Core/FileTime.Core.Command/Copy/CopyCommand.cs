@@ -69,7 +69,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
             {
                 var elapsed = DateTime.Now - start;
 
-                var size = new ByteSize(total / elapsed.TotalSeconds);
+                var size = ByteSize.FromBytes(total / elapsed.TotalSeconds);
                 return Task.FromResult(size + "/s");
             });
 
