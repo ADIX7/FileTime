@@ -1,6 +1,7 @@
 <Window
     Background="Transparent"
-    Closed="OnWindowClosed"
+    Closed="Window_OnClosed"
+    Closing="Window_OnClosing"
     ExtendClientAreaToDecorationsHint="True"
     FontFamily="{Binding MainFont^, Mode=OneWay}"
     Icon="/Assets/filetime.ico"

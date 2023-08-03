@@ -23,6 +23,9 @@ public partial class MainWindow : Window, IUiAccessor
     private IReadOnlyCollection<IModalViewModel>? _openModals;
     private ReadInputsViewModel? _inputViewModel;
     private IDisposable? _inputViewModelSubscription;
+    private bool _isShuttingDown;
+    private bool _shutdownCompleted;
+    private readonly object _isClosingLock = new();
 
     public MainWindowViewModel? ViewModel
     {
@@ -167,15 +170,9 @@ public partial class MainWindow : Window, IUiAccessor
         }
     }
 
-    private void OnWindowClosed(object? sender, EventArgs e)
+
+    private void Window_OnClosed(object? sender, EventArgs e)
     {
-        var vm = ViewModel;
-        Task.Run(async () =>
-            {
-                if (vm is null) return;
-                await vm.OnExit();
-            })
-            .Wait();
     }
 
     private void InputList_OnKeyUp(object? sender, KeyEventArgs e)
@@ -217,6 +214,54 @@ public partial class MainWindow : Window, IUiAccessor
                     itemViewModel.BaseItem?.FullName?.Path ?? itemViewModel.DisplayNameText
                 );
             }
+        }
+    }
+
+    private void Window_OnClosing(object? sender, WindowClosingEventArgs e)
+    {
+        lock (_isClosingLock)
+        {
+            if (_isShuttingDown)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            if (_shutdownCompleted)
+            {
+                return;
+            }
+
+            _isShuttingDown = true;
+            e.Cancel = true;
+
+            var vm = ViewModel;
+            var exitVm = new MainWindowLoadingViewModel();
+            exitVm.Title.SetValueSafe("Shutting down...");
+            DataContext = exitVm;
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                try
+                {
+                    if (vm is not null)
+                    {
+                        await vm.OnExit();
+                    }
+                }
+                catch
+                {
+                }
+
+                lock (_isClosingLock)
+                {
+                    _isShuttingDown = false;
+                    _shutdownCompleted = true;
+                }
+
+                Dispatcher.UIThread.Invoke(Close);
+            });
         }
     }
 }
