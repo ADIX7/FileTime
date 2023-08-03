@@ -67,6 +67,11 @@
         <Setter Property="Background" Value="{DynamicResource AppBackgroundColor}" />
     </Style>
 
+    <Style Selector="TextBlock.PathPresenterItem:pointerover">
+        <Setter Property="TextDecorations" Value="Underline" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
     <Style Selector="Border.SelectedTimelineCommand">
         <Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}" />
     </Style>

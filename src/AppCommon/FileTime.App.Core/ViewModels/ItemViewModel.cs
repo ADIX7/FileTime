@@ -53,7 +53,7 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         var displayName = itemViewModelType switch
         {
-            ItemViewModelType.Main => _appState.RapidTravelText.Map(async (s, _) =>
+            ItemViewModelType.Main => _appState.RapidTravelTextDebounced.Map(async (s, _) =>
                 _appState.ViewMode.Value != Models.Enums.ViewMode.RapidTravel
                 && _appState.SelectedTab.Value?.CurrentLocation.Value?.Provider is IItemNameConverterProvider nameConverterProvider
                     ? (IReadOnlyList<ItemNamePart>) await nameConverterProvider.GetItemNamePartsAsync(item)

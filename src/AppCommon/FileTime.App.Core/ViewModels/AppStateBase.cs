@@ -26,12 +26,21 @@ public abstract partial class AppStateBase : IAppState
 
     public IDeclarativeProperty<ITabViewModel?> SelectedTab { get; private set; }
     public DeclarativeProperty<string?> RapidTravelText { get; private set; }
+    public IDeclarativeProperty<string?> RapidTravelTextDebounced { get; private set; }
 
     public IDeclarativeProperty<string?> ContainerStatus { get; private set; }
 
     partial void OnInitialize()
     {
         RapidTravelText = new("");
+        RapidTravelTextDebounced = RapidTravelText
+            .Debounce(v =>
+                    string.IsNullOrEmpty(v)
+                        ? TimeSpan.Zero
+                        : TimeSpan.FromMilliseconds(200)
+                , resetTimer: true
+            );
+
         ViewMode = _viewMode;
 
         SearchText = _searchText.AsObservable();

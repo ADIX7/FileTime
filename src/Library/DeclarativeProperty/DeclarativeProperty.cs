@@ -16,6 +16,9 @@ public static class DeclarativePropertyHelpers
         Func<T1, T2, T3, Task<TResult>> func,
         Action<TResult?>? setValueHook = null)
         => new(prop1, prop2, prop3, func, setValueHook);
+    
+    public static MergeProperty<T> Merge<T>(params IDeclarativeProperty<T>[] props)
+        => new(props);
 }
 
 public sealed class DeclarativeProperty<T> : DeclarativePropertyBase<T>

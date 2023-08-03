@@ -68,7 +68,9 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<CloseTabCommand>(CloseTab),
             new TypeUserCommandHandler<EnterRapidTravelCommand>(EnterRapidTravel),
             new TypeUserCommandHandler<ExitRapidTravelCommand>(ExitRapidTravel),
+            new TypeUserCommandHandler<GoBackCommand>(GoBack),
             new TypeUserCommandHandler<GoByFrequencyCommand>(GoByFrequency),
+            new TypeUserCommandHandler<GoForwardCommand>(GoForward),
             new TypeUserCommandHandler<GoToHomeCommand>(GoToHome),
             new TypeUserCommandHandler<GoToPathCommand>(GoToPath),
             new TypeUserCommandHandler<GoToProviderCommand>(GoToProvider),
@@ -87,6 +89,20 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<RefreshCommand>(Refresh),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
+    }
+
+    private async Task GoBack()
+    {
+        if (_selectedTab?.Tab is null) return;
+
+        await _selectedTab.Tab.GoBackAsync();
+    }
+
+    private async Task GoForward()
+    {
+        if (_selectedTab?.Tab is null) return;
+
+        await _selectedTab.Tab.GoForwardAsync();
     }
 
     private async Task RunOrOpen(RunOrOpenCommand command)

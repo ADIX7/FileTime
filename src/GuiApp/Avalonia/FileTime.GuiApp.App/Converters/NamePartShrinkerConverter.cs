@@ -1,6 +1,7 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using Avalonia.Threading;
 using FileTime.Core.Models;
 using FileTime.GuiApp.App.ViewModels;
 
@@ -9,6 +10,7 @@ namespace FileTime.GuiApp.App.Converters;
 public class NamePartShrinkerConverter : IMultiValueConverter
 {
     private const int PixelPerChar = 8;
+
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
         if (values.Count > 0 && values[0] is IList<ItemNamePart> nameParts)
@@ -20,8 +22,13 @@ public class NamePartShrinkerConverter : IMultiValueConverter
                 newNameParts = GetNamePartsForWidth(nameParts, width - attributeWidth);
             }
 
-            return newNameParts.Select(p => new ItemNamePartViewModel(p.Text, p.IsSpecial ? TextDecorations.Underline : null)).ToList();
+            var result = /* Dispatcher.UIThread.Invoke(() => */
+                newNameParts.Select(p => new ItemNamePartViewModel(p.Text, p.IsSpecial ? TextDecorations.Underline : null)).ToList();
+            /* ); */
+
+            return result;
         }
+
         return null;
     }
 
@@ -75,6 +82,7 @@ public class NamePartShrinkerConverter : IMultiValueConverter
                 proposedText = proposedText[0..^1];
                 trimmed = true;
             }
+
             newNameParts[trimmedIndex] = new ItemNamePart(proposedText + (trimmed ? "..." : ""));
             if (trimmed) break;
         }
@@ -100,6 +108,7 @@ public class NamePartShrinkerConverter : IMultiValueConverter
             if (!string.IsNullOrWhiteSpace(proposedText)) newNameParts.Add(new ItemNamePart(proposedText, namePart.IsSpecial));
             if (trimmed) break;
         }
+
         if (newNameParts.Last().IsSpecial)
         {
             newNameParts.Add(new ItemNamePart("..."));
@@ -109,6 +118,7 @@ public class NamePartShrinkerConverter : IMultiValueConverter
             var last = newNameParts.Last();
             newNameParts[^1] = new ItemNamePart(last.Text + "...");
         }
+
         return newNameParts;
     }
 }

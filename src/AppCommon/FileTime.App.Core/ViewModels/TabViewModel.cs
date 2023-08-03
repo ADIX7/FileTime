@@ -138,7 +138,7 @@ public partial class TabViewModel : ITabViewModel
         CurrentSelectedItemAsContainer = CurrentSelectedItem.Map(i => i as IContainerViewModel);
 
         SelectedsChildren = CurrentSelectedItem
-            .Debounce(() => _refreshSmoothnessCalculator.RefreshDelay, resetTimer: true)
+            .Debounce(_ => _refreshSmoothnessCalculator.RefreshDelay, resetTimer: true)
             .DistinctUntilChanged()
             .Map(item =>
             {

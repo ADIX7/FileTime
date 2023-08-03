@@ -12,6 +12,7 @@ public interface IAppState
     IObservable<string?> SearchText { get; }
     IDeclarativeProperty<ViewMode> ViewMode { get; }
     DeclarativeProperty<string?> RapidTravelText { get; }
+    IDeclarativeProperty<string?> RapidTravelTextDebounced { get; }
     ITimelineViewModel TimelineViewModel { get; }
     IDeclarativeProperty<string?> ContainerStatus { get; }
 

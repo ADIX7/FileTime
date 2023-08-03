@@ -3,7 +3,7 @@
 public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
 {
     private readonly object _lock = new();
-    private readonly Func<TimeSpan> _interval;
+    private readonly Func<T?, TimeSpan> _interval;
     private DateTime _startTime = DateTime.MinValue;
     private T? _nextValue;
     private CancellationToken _nextCancellationToken;
@@ -13,7 +13,7 @@ public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
 
     public DebounceProperty(
         IDeclarativeProperty<T> from,
-        Func<TimeSpan> interval,
+        Func<T?, TimeSpan> interval,
         Action<T?>? setValueHook = null) : base(from.Value, setValueHook)
     {
         _interval = interval;
@@ -46,7 +46,7 @@ public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
 
     private async Task StartDebounceTask()
     {
-        while (DateTime.Now - _startTime < _interval())
+        while (DateTime.Now - _startTime < _interval(_nextValue))
         {
             await Task.Delay(WaitInterval);
         }

@@ -18,4 +18,6 @@ public interface ITab : IAsyncInitable<IContainer>, IDisposable
     void RemoveItemFilter(string name);
     Task SetSelectedItem(AbsolutePath newSelectedItem);
     Task ForceSetCurrentLocation(IContainer newLocation);
+    Task GoBackAsync();
+    Task GoForwardAsync();
 }

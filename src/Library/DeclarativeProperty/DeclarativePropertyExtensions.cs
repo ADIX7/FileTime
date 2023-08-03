@@ -7,9 +7,9 @@ namespace DeclarativeProperty;
 public static class DeclarativePropertyExtensions
 {
     public static IDeclarativeProperty<T> Debounce<T>(this IDeclarativeProperty<T> from, TimeSpan interval, bool resetTimer = false)
-        => new DebounceProperty<T>(from, () => interval) {ResetTimer = resetTimer};
+        => new DebounceProperty<T>(from, _ => interval) {ResetTimer = resetTimer};
 
-    public static IDeclarativeProperty<T> Debounce<T>(this IDeclarativeProperty<T> from, Func<TimeSpan> interval, bool resetTimer = false)
+    public static IDeclarativeProperty<T> Debounce<T>(this IDeclarativeProperty<T> from, Func<T?, TimeSpan> interval, bool resetTimer = false)
         => new DebounceProperty<T>(from, interval) {ResetTimer = resetTimer};
 
     public static IDeclarativeProperty<T> Throttle<T>(this IDeclarativeProperty<T> from, TimeSpan interval)

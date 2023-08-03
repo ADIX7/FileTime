@@ -1,8 +1,7 @@
 using System.Collections.ObjectModel;
-using System.Reactive.Subjects;
+using CircularBuffer;
 using DeclarativeProperty;
 using DynamicData;
-using DynamicData.Binding;
 using FileTime.App.Core.Services;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
@@ -16,10 +15,11 @@ public class Tab : ITab
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ITabEvents _tabEvents;
     private readonly DeclarativeProperty<IContainer?> _currentLocation = new(null);
-    private readonly BehaviorSubject<IContainer?> _currentLocationForced = new(null);
+    private readonly DeclarativeProperty<IContainer?> _currentLocationForced = new(null);
     private readonly DeclarativeProperty<AbsolutePath?> _currentRequestItem = new(null);
     private readonly ObservableCollection<ItemFilter> _itemFilters = new();
-    private readonly DeclarativeProperty<ObservableCollection<ItemFilter>?> _itemFiltersProperty;
+    private readonly CircularBuffer<FullName> _history = new(20);
+    private readonly CircularBuffer<FullName> _future = new(20);
     private AbsolutePath? _currentSelectedItemCached;
     private PointInTime _currentPointInTime;
     private CancellationTokenSource? _setCurrentLocationCancellationTokenSource;
@@ -38,11 +38,16 @@ public class Tab : ITab
         _timelessContentProvider = timelessContentProvider;
         _tabEvents = tabEvents;
         _currentPointInTime = null!;
-        _itemFiltersProperty = new(_itemFilters);
+        var itemFiltersProperty = new DeclarativeProperty<ObservableCollection<ItemFilter>>(_itemFilters)
+            .Watch<ObservableCollection<ItemFilter>, ItemFilter>();
 
         _timelessContentProvider.CurrentPointInTime.Subscribe(p => _currentPointInTime = p);
 
-        CurrentLocation = _currentLocation;
+        CurrentLocation = DeclarativePropertyHelpers.Merge(
+            _currentLocation.DistinctUntilChanged(),
+            _currentLocationForced
+        );
+
         CurrentLocation.Subscribe((c, _) =>
         {
             if (_currentSelectedItemCached is not null)
@@ -55,7 +60,7 @@ public class Tab : ITab
 
         CurrentItems = DeclarativePropertyHelpers.CombineLatest(
             CurrentLocation,
-            _itemFiltersProperty.Watch<ObservableCollection<ItemFilter>, ItemFilter>(),
+            itemFiltersProperty,
             (container, filters) =>
             {
                 ObservableCollection<IItem>? items = null;
@@ -101,15 +106,6 @@ public class Tab : ITab
         });
     }
 
-    static void UpdateConsumer<T>(ObservableCollection<T>? collection, ref OcConsumer? consumer)
-    {
-        if (collection is not IComputing computing) return;
-
-        consumer?.Dispose();
-        consumer = new OcConsumer();
-        computing.For(consumer);
-    }
-
     private static IItem MapItem(AbsolutePath item)
     {
         var t = Task.Run(async () => await item.ResolveAsync(true));
@@ -117,15 +113,9 @@ public class Tab : ITab
         return t.Result;
     }
 
-    private static SortExpressionComparer<IItem> SortItems()
-        //TODO: Order
-        => SortExpressionComparer<IItem>
-            .Ascending(i => i.Type)
-            .ThenByAscending(i => i.DisplayName.ToLower());
-
 
     public async Task InitAsync(IContainer currentLocation)
-        => await _currentLocation.SetValue(currentLocation);
+        => await SetCurrentLocation(currentLocation);
 
     private AbsolutePath? GetSelectedItemByItems(IReadOnlyCollection<IItem> items)
     {
@@ -159,8 +149,23 @@ public class Tab : ITab
 
     public async Task SetCurrentLocation(IContainer newLocation)
     {
+        _future.Clear();
+        await SetCurrentLocation(newLocation, true);
+    }
+
+    private async Task SetCurrentLocation(IContainer newLocation, bool addToHistory)
+    {
         _setCurrentLocationCancellationTokenSource?.Cancel();
         _setCurrentLocationCancellationTokenSource = new CancellationTokenSource();
+
+        if (addToHistory
+            && newLocation.FullName is { } fullName
+            && (_history.Count == 0
+                || _history.Last() != fullName))
+        {
+            _history.PushFront(fullName);
+        }
+
         await _currentLocation.SetValue(newLocation, _setCurrentLocationCancellationTokenSource.Token);
 
         if (newLocation.FullName != null)
@@ -173,12 +178,38 @@ public class Tab : ITab
     {
         _setCurrentLocationCancellationTokenSource?.Cancel();
         _setCurrentLocationCancellationTokenSource = new CancellationTokenSource();
-        await _currentLocation.SetValue(newLocation, _setCurrentLocationCancellationTokenSource.Token);
+        await _currentLocationForced.SetValue(newLocation, _setCurrentLocationCancellationTokenSource.Token);
 
         if (newLocation.FullName != null)
         {
             _tabEvents.OnLocationChanged(this, newLocation);
         }
+    }
+
+    public async Task GoBackAsync()
+    {
+        if (_history.Count < 2) return;
+
+        var currentLocationFullName = _history.PopFront();
+        _future.PushFront(currentLocationFullName);
+
+        var lastLocationFullName = _history.First();
+        var container = (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(
+            lastLocationFullName,
+            PointInTime.Present);
+        await SetCurrentLocation(container, false);
+    }
+
+    public async Task GoForwardAsync()
+    {
+        if (_future.Count == 0) return;
+
+        var fullName = _future.PopFront();
+        _history.PushFront(fullName);
+        var container = (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(
+            fullName,
+            PointInTime.Present);
+        await SetCurrentLocation(container, false);
     }
 
     public async Task SetSelectedItem(AbsolutePath newSelectedItem)

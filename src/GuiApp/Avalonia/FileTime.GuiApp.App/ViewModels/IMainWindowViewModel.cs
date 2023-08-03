@@ -1,4 +1,5 @@
-﻿using FileTime.App.CommandPalette.Services;
+﻿using DeclarativeProperty;
+using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FrequencyNavigation.Services;
