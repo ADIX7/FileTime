@@ -13,12 +13,13 @@ public record SizeScanElement : ISizeScanElement
     public required string DisplayName { get; init; }
     public required FullName FullName { get; init; }
     public required NativePath NativePath { get; init; }
-    public AbsolutePath? Parent { get; init; }
+    public required AbsolutePath? Parent { get; init; }
+    public required DateTime? CreatedAt { get; init; }
+    public required DateTime? ModifiedAt { get; init;}
 
     public required IDeclarativeProperty<long> Size { get; init; }
     public bool IsHidden => false;
     public bool IsExists => true;
-    public DateTime? CreatedAt { get; } = DateTime.Now;
     public SupportsDelete CanDelete => SupportsDelete.False;
     public bool CanRename => false;
     public string? Attributes => "";

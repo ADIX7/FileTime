@@ -14,6 +14,7 @@ public record Element(
     bool IsHidden,
     bool IsExists,
     DateTime? CreatedAt,
+    DateTime? ModifiedAt,
     SupportsDelete CanDelete,
     bool CanRename,
     string? Attributes,

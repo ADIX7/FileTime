@@ -93,18 +93,24 @@ public partial class TabViewModel : ITabViewModel
                         {
                             ItemOrdering.Name =>
                                 items
-                                    .Ordering(i => i.BaseItem.Type)
+                                    .Ordering(i => i.BaseItem!.Type)
                                     .ThenOrdering(i => i.DisplayNameText),
                             ItemOrdering.NameDesc =>
                                 items
-                                    .Ordering(i => i.BaseItem.Type)
+                                    .Ordering(i => i.BaseItem!.Type)
                                     .ThenOrdering(i => i.DisplayNameText, ListSortDirection.Descending),
-                            ItemOrdering.LastModifyDate =>
+                            ItemOrdering.CreationDate =>
                                 items
                                     .Ordering(i => i.CreatedAt),
-                            ItemOrdering.LastModifyDateDesc =>
+                            ItemOrdering.CreationDateDesc =>
                                 items
                                     .Ordering(i => i.CreatedAt, ListSortDirection.Descending),
+                            ItemOrdering.LastModifyDate =>
+                                items
+                                    .Ordering(i => i.ModifiedAt),
+                            ItemOrdering.LastModifyDateDesc =>
+                                items
+                                    .Ordering(i => i.ModifiedAt, ListSortDirection.Descending),
                             _ => throw new NotImplementedException()
                         };
 

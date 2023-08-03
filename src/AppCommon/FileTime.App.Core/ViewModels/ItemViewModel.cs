@@ -31,6 +31,7 @@ public abstract partial class ItemViewModel : IItemViewModel
     [Property] private IDeclarativeProperty<ItemViewMode> _viewMode;
 
     [Property] private DateTime? _createdAt;
+    [Property] private DateTime? _modifiedAt;
 
     [Property] private string? _attributes;
 
@@ -88,6 +89,7 @@ public abstract partial class ItemViewModel : IItemViewModel
             .Debounce(TimeSpan.FromMilliseconds(100));
         Attributes = item.Attributes;
         CreatedAt = item.CreatedAt;
+        ModifiedAt = item.ModifiedAt;
     }
 
     private Task<ItemViewMode> GenerateViewMode(bool isMarked, bool isSelected, bool isAlternative)

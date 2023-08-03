@@ -1,4 +1,5 @@
 ﻿using DeclarativeProperty;
+using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
@@ -48,7 +49,10 @@ public class SizeScanTask : ISizeScanTask
             RealContainer = scanSizeOf,
             Provider = _containerSizeScanProvider,
             Status = _containerStatusDebounced,
-            SizeScanTask = this
+            SizeScanTask = this,
+            CreatedAt = scanSizeOf.CreatedAt,
+            ModifiedAt = scanSizeOf.ModifiedAt,
+            CanDelete = SupportsDelete.True
         };
     }
 
@@ -114,7 +118,9 @@ public class SizeScanTask : ISizeScanTask
                 NativePath = new NativePath(childName),
                 Parent = new AbsolutePath(_timelessContentProvider, sizeScanContainer),
                 Provider = _containerSizeScanProvider,
-                Size = sizeProperty
+                Size = sizeProperty,
+                CreatedAt = element.CreatedAt,
+                ModifiedAt = element.ModifiedAt,
             };
             await sizeScanContainer.AddSizeChildAsync(childElement);
 
@@ -137,7 +143,10 @@ public class SizeScanTask : ISizeScanTask
                 RealContainer = childContainer,
                 Provider = _containerSizeScanProvider,
                 Status = _containerStatusDebounced,
-                SizeScanTask = this
+                SizeScanTask = this,
+                CreatedAt = childContainer.CreatedAt,
+                ModifiedAt = childContainer.ModifiedAt,
+                CanDelete = SupportsDelete.False
             };
 
             await sizeScanContainer.AddSizeChildAsync(childSearchContainer);

@@ -52,8 +52,10 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(StartCommandSchedulerCommand.Instance);
         AddUserCommand(SortItemsCommand.OrderByNameCommand);
         AddUserCommand(SortItemsCommand.OrderByNameDescCommand);
-        AddUserCommand(SortItemsCommand.OrderByDateCommand);
-        AddUserCommand(SortItemsCommand.OrderByDateDescCommand);
+        AddUserCommand(SortItemsCommand.OrderByCreatedAtCommand);
+        AddUserCommand(SortItemsCommand.OrderByCreatedAtDescCommand);
+        AddUserCommand(SortItemsCommand.OrderByLastModifiedCommand);
+        AddUserCommand(SortItemsCommand.OrderByLastModifiedDescCommand);
         AddUserCommand(IdentifiableSearchCommand.SearchByNameContains);
         AddUserCommand(IdentifiableSearchCommand.SearchByRegex);
         AddUserCommand(SwitchToTabCommand.SwitchToLastTab);

@@ -15,6 +15,7 @@ public interface IItemViewModel : IInitable<IItem, ITabViewModel, ItemViewModelT
     IDeclarativeProperty<bool> IsAlternative { get; }
     IDeclarativeProperty<ItemViewMode> ViewMode { get; set; }
     DateTime? CreatedAt { get; set; }
+    DateTime? ModifiedAt { get; set; }
     string? Attributes { get; set; }
     bool EqualsTo(IItemViewModel? itemViewModel);
 }

@@ -11,7 +11,6 @@
     x:Name="ItemRoot"
     xmlns="https://github.com/avaloniaui"
     xmlns:appcore="using:FileTime.App.Core.ViewModels"
-    xmlns:appcoreenums="using:FileTime.App.Core.Models.Enums"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:guiappvm="using:FileTime.GuiApp.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -88,12 +87,12 @@
                 </Grid>
                 <TextBlock
                     Classes="SmallText"
-                    Text="{Binding CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"
+                    Text="{Binding ModifiedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"
                     TextAlignment="Right"
                     Width="95" />
                 <TextBlock
                     Classes="SmallText"
-                    Text="{Binding CreatedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"
+                    Text="{Binding ModifiedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"
                     TextAlignment="Right"
                     Width="35" />
                 <TextBlock

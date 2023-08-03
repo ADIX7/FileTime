@@ -15,6 +15,7 @@ public interface IItem
     bool IsHidden { get; }
     bool IsExists { get; }
     DateTime? CreatedAt { get; }
+    DateTime? ModifiedAt { get; }
     SupportsDelete CanDelete { get; }
     bool CanRename { get; }
     IContentProvider Provider { get; }

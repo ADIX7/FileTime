@@ -51,6 +51,7 @@ public class SearchTask : ISearchTask
             false,
             true,
             null,
+            null,
             SupportsDelete.False,
             false,
             null,

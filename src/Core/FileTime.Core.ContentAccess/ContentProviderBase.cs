@@ -34,6 +34,7 @@ public abstract class ContentProviderBase : IContentProvider
     public AbsolutePath? Parent { get; }
 
     public DateTime? CreatedAt => null;
+    public DateTime? ModifiedAt => null;
 
     public string? Attributes => null;
 

@@ -23,10 +23,11 @@ public record SizeScanContainer : ISizeScanContainer
     public required NativePath? NativePath { get; init; }
     public required AbsolutePath? Parent { get; init; }
     public required IContentProvider Provider { get; init; }
+    public required DateTime? CreatedAt { get; init; } = DateTime.Now;
+    public required DateTime? ModifiedAt { get; init;} = DateTime.Now;
+    public required SupportsDelete CanDelete { get; init; }
     public bool IsHidden => false;
     public bool IsExists => true;
-    public DateTime? CreatedAt { get; } = DateTime.Now;
-    public SupportsDelete CanDelete => SupportsDelete.True;
     public bool CanRename => false;
     public string? Attributes => null;
     public AbsolutePathType Type => AbsolutePathType.Container;

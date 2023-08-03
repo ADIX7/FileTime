@@ -18,6 +18,7 @@ public class RootContentProvider : IRootContentProvider
     public bool IsHidden => false;
     public bool IsExists => true;
     public DateTime? CreatedAt => null;
+    public DateTime? ModifiedAt => null;
     public SupportsDelete CanDelete => SupportsDelete.False;
     public bool CanRename => false;
     public IContentProvider Provider => this;
