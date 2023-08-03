@@ -1,8 +1,6 @@
-﻿using System.Text;
-using FileTime.Core.Models;
+﻿using FileTime.Core.Models;
 using InitableService;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using TypedSignalR.Client;
 

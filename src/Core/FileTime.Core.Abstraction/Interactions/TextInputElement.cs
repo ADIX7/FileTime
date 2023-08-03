@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using PropertyChanged.SourceGenerator;
 
 namespace FileTime.Core.Interactions;

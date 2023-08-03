@@ -1,5 +1,4 @@
 ﻿using DeclarativeProperty;
-using FileTime.App.Core.ViewModels.ItemPreview;
 
 namespace FileTime.App.ContainerSizeScanner;
 

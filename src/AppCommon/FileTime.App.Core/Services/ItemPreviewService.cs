@@ -1,9 +1,6 @@
-using System.Reactive.Linq;
 using DeclarativeProperty;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.ItemPreview;
-using FileTime.Core.Models;
-using InitableService;
 
 namespace FileTime.App.Core.Services;
 

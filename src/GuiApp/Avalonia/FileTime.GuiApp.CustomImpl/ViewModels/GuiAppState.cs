@@ -3,7 +3,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
-using FileTime.Core.Models;
 using FileTime.GuiApp.App.Configuration;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;

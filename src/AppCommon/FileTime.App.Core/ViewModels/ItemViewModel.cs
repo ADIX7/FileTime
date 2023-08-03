@@ -1,8 +1,5 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Reactive.Linq;
 using DeclarativeProperty;
-using DynamicData;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Behaviors;

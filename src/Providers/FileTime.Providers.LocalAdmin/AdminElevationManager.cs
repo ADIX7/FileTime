@@ -6,7 +6,6 @@ using FileTime.Core.Interactions;
 using FileTime.Providers.Local;
 using FileTime.Server.Common;
 using FileTime.Server.Common.Connections.SignalR;
-using InitableService;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

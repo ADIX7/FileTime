@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
-using DeclarativeProperty;
 using FileTime.App.Core.ViewModels;
-using FileTime.Core.Models;
 using FileTime.GuiApp.App.Configuration;
 using FileTime.GuiApp.App.Models;
 

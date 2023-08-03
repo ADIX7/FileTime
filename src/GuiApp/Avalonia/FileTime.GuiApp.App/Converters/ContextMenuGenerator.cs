@@ -2,7 +2,6 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using FileTime.App.Core.ViewModels;
-using FileTime.Core.Models;
 using FileTime.GuiApp.App.Services;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,4 +1,3 @@
-using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.UserCommandHandler;
 using FileTime.App.Core.StartupServices;

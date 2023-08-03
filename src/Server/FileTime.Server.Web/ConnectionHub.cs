@@ -1,5 +1,4 @@
-﻿using System.Text;
-using FileTime.Core.ContentAccess;
+﻿using FileTime.Core.ContentAccess;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using FileTime.Server.Common;

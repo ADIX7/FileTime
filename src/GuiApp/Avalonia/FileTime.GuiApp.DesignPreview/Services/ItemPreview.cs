@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using DynamicData;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;

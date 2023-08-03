@@ -2,7 +2,6 @@
 using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.FrequencyNavigation.Services;
-using FileTime.GuiApp.DesignPreview.Services;
 using FileTime.GuiApp.App.Services;
 
 namespace FileTime.GuiApp.App.ViewModels;

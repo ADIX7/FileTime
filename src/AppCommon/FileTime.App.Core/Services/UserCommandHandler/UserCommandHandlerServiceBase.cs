@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using DeclarativeProperty;
-using DynamicData;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;

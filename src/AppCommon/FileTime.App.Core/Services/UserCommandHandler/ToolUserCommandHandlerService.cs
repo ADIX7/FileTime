@@ -4,7 +4,6 @@ using FileTime.App.ContainerSizeScanner;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Search;
-using FileTime.Core.Command;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Interactions;

@@ -3,7 +3,6 @@ using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.Persistence;
 using FileTime.Core.Command;
-using FileTime.Core.Command.Copy;
 using FileTime.Core.Command.CreateContainer;
 using FileTime.Core.Command.CreateElement;
 using FileTime.Core.Command.Delete;

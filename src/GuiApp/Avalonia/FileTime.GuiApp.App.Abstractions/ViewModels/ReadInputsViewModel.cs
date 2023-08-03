@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
-using PropertyChanged.SourceGenerator;
 
 namespace FileTime.GuiApp.App.ViewModels;
 

@@ -6,7 +6,6 @@ using FileTime.Server.App;
 using FileTime.Server.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 
 

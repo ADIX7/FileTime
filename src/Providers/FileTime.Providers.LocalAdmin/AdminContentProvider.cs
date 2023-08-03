@@ -1,5 +1,4 @@
-﻿using FileTime.Core.ContentAccess;
-using FileTime.Core.Enums;
+﻿using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using FileTime.Providers.Remote;

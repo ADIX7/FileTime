@@ -1,10 +1,4 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using DynamicData;
-using FileTime.Core.Models;
-using FileTime.Core.Services;
-
-namespace FileTime.GuiApp.DesignPreview.Services;
+﻿namespace FileTime.GuiApp.DesignPreview.Services;
 
 /*public class TabPreview : ITab
 {
