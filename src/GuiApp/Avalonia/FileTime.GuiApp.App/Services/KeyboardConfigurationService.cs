@@ -55,6 +55,7 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
             or MoveCursorDownCommand.CommandName
             or MoveCursorDownPageCommand.CommandName
             or MoveCursorUpCommand.CommandName
-            or MoveCursorUpPageCommand.CommandName;
+            or MoveCursorUpPageCommand.CommandName
+            or IdentifiableRunOrOpenCommand.CommandName;
     }
 }
