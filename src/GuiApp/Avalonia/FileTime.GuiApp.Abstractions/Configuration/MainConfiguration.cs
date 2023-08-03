@@ -97,7 +97,7 @@ public static class MainConfiguration
             new(RefreshCommand.CommandName, Key.R),
             new(RenameCommand.CommandName, Key.F2),
             new(RenameCommand.CommandName, new[] {Key.C, Key.W}),
-            new(RunOrOpenCommand.CommandName, Key.Enter),
+            new(IdentifiableRunOrOpenCommand.CommandName, Key.Enter),
             //new CommandBindingConfiguration(ConfigCommand.RunCommand, new KeyConfig(Key.D4, shift: true)),
             //new CommandBindingConfiguration(ConfigCommand.ScanContainerSize, new[] { Key.C, Key.S }),
             //new CommandBindingConfiguration(ConfigCommand.ShowAllShortcut, Key.F1),

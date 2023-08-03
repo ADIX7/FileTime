@@ -184,4 +184,26 @@ public partial class MainWindow : Window, IUiAccessor
     public async Task InvokeOnUIThread(Func<Task> func) => await Dispatcher.UIThread.InvokeAsync(func);
 
     public async Task<T> InvokeOnUIThread<T>(Func<Task<T>> func) => await Dispatcher.UIThread.InvokeAsync(func);
+
+    private async void Child_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e is {Handled: false, ClickCount: 2} 
+            && ViewModel != null 
+            && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed 
+            && sender is StyledElement {DataContext: IItemViewModel itemViewModel})
+        {
+            try
+            {
+                await ViewModel.RunOrOpenItem(itemViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(
+                    ex, 
+                    "Error while opening item {Item}", 
+                    itemViewModel.BaseItem?.FullName?.Path ?? itemViewModel.DisplayNameText
+                );
+            }
+        }
+    }
 }

@@ -478,7 +478,10 @@
                                     x:Name="CurrentItems">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="corevm:IItemViewModel">
-                                            <local:ItemView HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" />
+                                            <local:ItemView
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                PointerPressed="Child_OnPointerPressed" />
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>

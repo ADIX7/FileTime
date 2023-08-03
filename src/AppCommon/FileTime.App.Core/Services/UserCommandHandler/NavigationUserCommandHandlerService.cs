@@ -89,14 +89,15 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         });
     }
 
-    private async Task RunOrOpen()
+    private async Task RunOrOpen(RunOrOpenCommand command)
     {
-        if (_currentSelectedItem?.Value is IContainerViewModel)
+        var item = command.Item ?? _currentSelectedItem?.Value;
+        if (item is IContainerViewModel)
         {
             await OpenSelected();
         }
         else if (
-            _currentSelectedItem?.Value is IElementViewModel
+            item is IElementViewModel
             {
                 Element: {NativePath: not null, Provider: ILocalContentProvider} localFile
             }
@@ -344,7 +345,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
                     ? (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(fullName, PointInTime.Present)
                     : _localContentProvider;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var fullName = _currentLocation?.Value?.FullName?.Path ?? "unknown";
                 _logger.LogError(ex, "Could not resolve container while switching to tab {TabNumber} to path {FullName}", number, fullName);

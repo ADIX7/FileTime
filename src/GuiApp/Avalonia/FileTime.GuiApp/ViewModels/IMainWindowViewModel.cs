@@ -1,5 +1,6 @@
 ﻿using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
+using FileTime.App.Core.ViewModels;
 using FileTime.App.FrequencyNavigation.Services;
 using FileTime.GuiApp.Services;
 using FileTime.Providers.LocalAdmin;
@@ -17,4 +18,5 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     IRefreshSmoothnessCalculator RefreshSmoothnessCalculator { get; }
     IAdminElevationManager AdminElevationManager { get; }
     IClipboardService ClipboardService { get; }
+    Task RunOrOpenItem(IItemViewModel itemViewModel);
 }

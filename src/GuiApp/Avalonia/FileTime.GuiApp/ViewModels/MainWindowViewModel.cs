@@ -4,6 +4,7 @@ using Avalonia.Input;
 using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
+using FileTime.App.Core.ViewModels;
 using FileTime.App.FrequencyNavigation.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -76,6 +77,13 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         await UserCommandHandlerService.HandleCommandAsync(
             new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, resolvedContainer)));
     }
+
+    public async Task RunOrOpenItem(IItemViewModel itemViewModel) =>
+        await UserCommandHandlerService.HandleCommandAsync(
+            new RunOrOpenCommand
+            {
+                Item = itemViewModel
+            });
 
     public async Task OnExit() 
         => await _lifecycleService.ExitAsync();
