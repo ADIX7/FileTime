@@ -9,7 +9,6 @@ namespace FileTime.GuiApp.ViewModels;
 
 public interface IMainWindowViewModel : IMainWindowViewModelBase
 {
-    string Title { get; }
     IGuiAppState AppState { get; }
     IItemPreviewService ItemPreviewService { get; }
     IDialogService DialogService { get; }

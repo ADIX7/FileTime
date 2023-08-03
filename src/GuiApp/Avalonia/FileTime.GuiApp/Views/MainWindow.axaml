@@ -53,7 +53,7 @@
 
                 <Grid PointerPressed="HeaderPointerPressed">
                     <Rectangle Fill="#01000000" />
-                    <TextBlock Margin="15,10" Text="{Binding Title}" />
+                    <TextBlock Margin="15,10" Text="{Binding Title.Value}" />
                 </Grid>
 
                 <Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
@@ -998,7 +998,12 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     Margin="50"
-                    Text="Loading..." />
+                    Text="{Binding Title.Value}" />
+                <TextBlock
+                    Foreground="Red"
+                    HorizontalAlignment="Center"
+                    Margin="50"
+                    Text="{Binding FatalError.Value}" />
             </StackPanel>
         </Grid>
     </Grid>

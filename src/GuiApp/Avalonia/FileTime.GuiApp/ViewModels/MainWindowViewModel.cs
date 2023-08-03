@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Input;
+using DeclarativeProperty;
 using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
@@ -38,8 +39,9 @@ public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
     public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
+    public DeclarativeProperty<string> FatalError { get; } = new();
     public IGuiAppState AppState => _appState;
-    public string Title { get; private set; }
+    public DeclarativeProperty<string> Title { get; } = new();
     public Action? FocusDefaultElement { get; set; }
 
     partial void OnInitialize()
@@ -57,10 +59,12 @@ public partial class MainWindowViewModel : IMainWindowViewModel
             }
         }
 
-        Title = "FileTime " + versionString;
+        var title = "FileTime " + versionString;
 #if DEBUG
-        Title += " (Debug)";
+        title += " (Debug)";
 #endif
+        
+        Title.SetValueSafe(title);
 
         _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
 

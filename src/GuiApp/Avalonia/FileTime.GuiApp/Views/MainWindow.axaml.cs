@@ -75,9 +75,22 @@ public partial class MainWindow : Window, IUiAccessor
             _logger?.LogInformation(
                 $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
 
-            var viewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
-            viewModel.FocusDefaultElement = () => Focus();
-            ViewModel = viewModel;
+            try
+            {
+                var viewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
+                viewModel.FocusDefaultElement = () => Focus();
+                ViewModel = viewModel;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error initializing {ViewModel}", nameof(MainWindowViewModel));
+                if (DataContext is IMainWindowViewModelBase mainWindowViewModelBase)
+                {
+                    mainWindowViewModelBase.FatalError.SetValueSafe(
+                        $"Error initializing {nameof(MainWindowViewModel)}: " + ex.Message
+                    );
+                }
+            }
         }
     }
 
@@ -187,9 +200,9 @@ public partial class MainWindow : Window, IUiAccessor
 
     private async void Child_OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (e is {Handled: false, ClickCount: 2} 
-            && ViewModel != null 
-            && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed 
+        if (e is {Handled: false, ClickCount: 2}
+            && ViewModel != null
+            && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
             && sender is StyledElement {DataContext: IItemViewModel itemViewModel})
         {
             try
@@ -199,8 +212,8 @@ public partial class MainWindow : Window, IUiAccessor
             catch (Exception ex)
             {
                 _logger?.LogError(
-                    ex, 
-                    "Error while opening item {Item}", 
+                    ex,
+                    "Error while opening item {Item}",
                     itemViewModel.BaseItem?.FullName?.Path ?? itemViewModel.DisplayNameText
                 );
             }
