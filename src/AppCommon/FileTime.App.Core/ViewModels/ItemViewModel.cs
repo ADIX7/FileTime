@@ -71,7 +71,10 @@ public abstract partial class ItemViewModel : IItemViewModel
             : new DeclarativeProperty<bool>(false);
 
         IsSelected = itemViewModelType is ItemViewModelType.Main
-            ? parentTab.CurrentSelectedItem.Map(EqualsTo)
+            ? parentTab.CurrentSelectedItem
+                .Map(EqualsTo)
+                .DistinctUntilChanged()
+                .Debounce(TimeSpan.FromMilliseconds(10))
             : new DeclarativeProperty<bool>(IsInDeepestPath());
 
         IsAlternative = sourceCollection
