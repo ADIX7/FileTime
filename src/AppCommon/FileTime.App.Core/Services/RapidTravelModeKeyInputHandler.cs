@@ -1,16 +1,13 @@
-using Avalonia.Input;
 using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models;
-using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
-using FileTime.GuiApp.App.Models;
 using Microsoft.Extensions.Logging;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.App.Core.Services;
 
 public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
 {
@@ -22,7 +19,6 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly ILogger<RapidTravelModeKeyInputHandler> _logger;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
-    private readonly IAppKeyService<Key> _appKeyService;
     private readonly BindedCollection<IModalViewModel> _openModals;
     private ITabViewModel? _selectedTab;
 
@@ -32,8 +28,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         IKeyboardConfigurationService keyboardConfigurationService,
         IUserCommandHandlerService userCommandHandlerService,
         ILogger<RapidTravelModeKeyInputHandler> logger,
-        IIdentifiableUserCommandService identifiableUserCommandService,
-        IAppKeyService<Key> appKeyService)
+        IIdentifiableUserCommandService identifiableUserCommandService)
     {
         _appState = appState;
         _modalService = modalService;
@@ -41,7 +36,6 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         _userCommandHandlerService = userCommandHandlerService;
         _logger = logger;
         _identifiableUserCommandService = identifiableUserCommandService;
-        _appKeyService = appKeyService;
 
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
 
@@ -59,9 +53,8 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         });
     }
 
-    public async Task HandleInputKey(Key key2, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
+    public async Task HandleInputKey(Keys key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
     {
-        if (_appKeyService.MapKey(key2) is not { } key) return;
         var keyString = key.ToString();
 
         if (key == Keys.Escape)

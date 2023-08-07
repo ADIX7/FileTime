@@ -8,30 +8,26 @@ using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;
 using MvvmGen;
+using PropertyChanged.SourceGenerator;
 
 namespace FileTime.GuiApp.CustomImpl.ViewModels;
 
-[ViewModel(GenerateConstructor = false)]
 public partial class GuiAppState : AppStateBase, IGuiAppState, IDisposable
 {
     private readonly BehaviorSubject<GuiPanel> _activePanel = new(GuiPanel.FileBrowser);
 
-    public GuiAppState(ITimelineViewModel timelineViewModel) : base(timelineViewModel)
+    public GuiAppState()
     {
         ActivePanel = _activePanel.AsObservable();
     }
 
-    [Property] private bool _isAllShortcutVisible;
+    [Notify] private bool _noCommandFound;
 
-    [Property] private bool _noCommandFound;
+    [Notify] private List<CommandBindingConfiguration> _possibleCommands = new();
 
-    [Property] private List<CommandBindingConfiguration> _possibleCommands = new();
+    [Notify] private ObservableCollection<RootDriveInfo> _rootDriveInfos = new();
 
-    [Property] private ObservableCollection<RootDriveInfo> _rootDriveInfos = new();
-
-    [Property] private IReadOnlyList<PlaceInfo> _places = new List<PlaceInfo>();
-
-    public List<KeyConfig> PreviousKeys { get; } = new();
+    [Notify] private IReadOnlyList<PlaceInfo> _places = new List<PlaceInfo>();
     public ObservableCollection<string> PopupTexts { get; } = new();
 
     public IObservable<GuiPanel> ActivePanel { get; }

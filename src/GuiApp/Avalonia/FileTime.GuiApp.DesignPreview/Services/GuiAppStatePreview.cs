@@ -38,7 +38,6 @@
     public void AddTab(ITabViewModel tabViewModel) => throw new NotImplementedException();
 
     public List<KeyConfig> PreviousKeys { get; }
-    public bool IsAllShortcutVisible { get; set; }
     public bool NoCommandFound { get; set; }
     public List<CommandBindingConfiguration> PossibleCommands { get; set; }
     public BindedCollection<RootDriveInfo, string> RootDriveInfos { get; set; }

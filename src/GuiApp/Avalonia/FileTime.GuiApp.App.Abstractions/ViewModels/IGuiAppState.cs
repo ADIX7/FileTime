@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using FileTime.App.Core.Configuration;
 using FileTime.App.Core.ViewModels;
 using FileTime.GuiApp.App.Models;
 
@@ -7,10 +6,6 @@ namespace FileTime.GuiApp.App.ViewModels;
 
 public interface IGuiAppState : IAppState
 {
-    List<KeyConfig> PreviousKeys { get; }
-    bool IsAllShortcutVisible { get; set; }
-    bool NoCommandFound { get; set; }
-    List<CommandBindingConfiguration> PossibleCommands { get; set; }
     ObservableCollection<RootDriveInfo> RootDriveInfos { get; set; }
     IReadOnlyList<PlaceInfo> Places { get; set; }
     ObservableCollection<string> PopupTexts { get; }

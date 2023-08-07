@@ -6,6 +6,7 @@ using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
+using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.App.FrequencyNavigation.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
@@ -35,6 +36,7 @@ namespace FileTime.GuiApp.App.ViewModels;
 [Inject(typeof(IAdminElevationManager), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IClipboardService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IModalService), PropertyName = "_modalService")]
+[Inject(typeof(ITimelineViewModel), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
@@ -63,7 +65,7 @@ public partial class MainWindowViewModel : IMainWindowViewModel
 #if DEBUG
         title += " (Debug)";
 #endif
-        
+
         Title.SetValueSafe(title);
 
         _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
@@ -71,7 +73,7 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
     }
 
-    public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled) 
+    public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
         => _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
 
     public async Task OpenContainerByFullName(FullName fullName)
@@ -89,6 +91,6 @@ public partial class MainWindowViewModel : IMainWindowViewModel
                 Item = itemViewModel
             });
 
-    public async Task OnExit() 
+    public async Task OnExit()
         => await _lifecycleService.ExitAsync();
 }

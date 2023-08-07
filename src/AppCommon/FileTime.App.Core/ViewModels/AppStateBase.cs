@@ -2,16 +2,16 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using DeclarativeProperty;
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.Core.Models.Extensions;
 using MvvmGen;
 using MoreLinq;
+using PropertyChanged.SourceGenerator;
 
 namespace FileTime.App.Core.ViewModels;
 
-[ViewModel]
-[Inject(typeof(ITimelineViewModel), "TimelineViewModel", PropertyAccessModifier = AccessModifier.Public)]
 public abstract partial class AppStateBase : IAppState
 {
     private readonly BehaviorSubject<string?> _searchText = new(null);
@@ -29,8 +29,11 @@ public abstract partial class AppStateBase : IAppState
     public IDeclarativeProperty<string?> RapidTravelTextDebounced { get; private set; }
 
     public IDeclarativeProperty<string?> ContainerStatus { get; private set; }
+    [Notify] public List<KeyConfig> PreviousKeys { get; } = new();
+    [Notify] public List<CommandBindingConfiguration> PossibleCommands { get; set; } = new();
+    [Notify] public bool NoCommandFound { get; set; }
 
-    partial void OnInitialize()
+    protected AppStateBase()
     {
         RapidTravelText = new("");
         RapidTravelTextDebounced = RapidTravelText

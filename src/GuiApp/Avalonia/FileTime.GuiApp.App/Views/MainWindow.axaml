@@ -323,7 +323,7 @@
                             </ia:DataTriggerBehavior>
                         </i:Interaction.Behaviors>
                         <ItemsControl
-                            ItemsSource="{Binding AppState.TimelineViewModel.ParallelCommandsGroups.Collection}"
+                            ItemsSource="{Binding TimelineViewModel.ParallelCommandsGroups.Collection}"
                             VerticalAlignment="Stretch"
                             x:Name="CommandGroups">
                             <ItemsControl.ItemsPanel>

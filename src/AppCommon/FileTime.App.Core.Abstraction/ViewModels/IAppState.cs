@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using DeclarativeProperty;
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels.Timeline;
 
@@ -13,8 +14,10 @@ public interface IAppState
     IDeclarativeProperty<ViewMode> ViewMode { get; }
     DeclarativeProperty<string?> RapidTravelText { get; }
     IDeclarativeProperty<string?> RapidTravelTextDebounced { get; }
-    ITimelineViewModel TimelineViewModel { get; }
     IDeclarativeProperty<string?> ContainerStatus { get; }
+    List<KeyConfig> PreviousKeys { get; }
+    List<CommandBindingConfiguration> PossibleCommands { get; set; }
+    bool NoCommandFound { get; set; }
 
     void AddTab(ITabViewModel tabViewModel);
     void RemoveTab(ITabViewModel tabViewModel);

@@ -2,7 +2,6 @@
 using Avalonia.Input;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
-using FileTime.GuiApp.App.Models;
 
 namespace FileTime.GuiApp.App.Services;
 
@@ -55,6 +54,16 @@ public class GuiAppKeyService : IAppKeyService<Key>
             {Key.F10, Keys.F10},
             {Key.F11, Keys.F11},
             {Key.F12, Keys.F12},
+            {Key.D0, Keys.Num0},
+            {Key.D1, Keys.Num1},
+            {Key.D2, Keys.Num2},
+            {Key.D3, Keys.Num3},
+            {Key.D4, Keys.Num4},
+            {Key.D5, Keys.Num5},
+            {Key.D6, Keys.Num6},
+            {Key.D7, Keys.Num7},
+            {Key.D8, Keys.Num8},
+            {Key.D9, Keys.Num9},
             {Key.Up, Keys.Up},
             {Key.Down, Keys.Down},
             {Key.Left, Keys.Left},

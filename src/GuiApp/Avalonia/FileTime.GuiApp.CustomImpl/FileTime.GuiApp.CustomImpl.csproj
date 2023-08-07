@@ -15,4 +15,11 @@
     <ProjectReference Include="..\FileTime.GuiApp.App.Abstractions\FileTime.GuiApp.App.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

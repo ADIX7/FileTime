@@ -1,23 +1,19 @@
-using Avalonia.Input;
-using FileTime.App.Core.Services;
+using DeclarativeProperty;
+using FileTime.App.Core.Configuration;
+using FileTime.App.Core.Extensions;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
-using FileTime.GuiApp.App.Models;
-using FileTime.GuiApp.App.ViewModels;
 using Microsoft.Extensions.Logging;
-using DeclarativeProperty;
-using FileTime.App.Core.Configuration;
-using FileTime.App.Core.Extensions;
-using FileTime.App.Core.Models;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.App.Core.Services;
 
 public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 {
-    private readonly IGuiAppState _appState;
+    private readonly IAppState _appState;
     private readonly IModalService _modalService;
     private readonly IKeyboardConfigurationService _keyboardConfigurationService;
     private readonly List<KeyConfig[]> _keysToSkip = new();
@@ -25,21 +21,18 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
     private readonly ILogger<DefaultModeKeyInputHandler> _logger;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
-    private readonly IAppKeyService<Key> _appKeyService;
     private readonly BindedCollection<IModalViewModel> _openModals;
 
     public DefaultModeKeyInputHandler(
-        IGuiAppState appState,
+        IAppState appState,
         IModalService modalService,
         IKeyboardConfigurationService keyboardConfigurationService,
         ILogger<DefaultModeKeyInputHandler> logger,
         IUserCommandHandlerService userCommandHandlerService,
-        IIdentifiableUserCommandService identifiableUserCommandService,
-        IAppKeyService<Key> appKeyService)
+        IIdentifiableUserCommandService identifiableUserCommandService)
     {
         _appState = appState;
         _identifiableUserCommandService = identifiableUserCommandService;
-        _appKeyService = appKeyService;
         _keyboardConfigurationService = keyboardConfigurationService;
         _logger = logger;
         _modalService = modalService;
@@ -61,9 +54,8 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         _keysToSkip.Add(new[] {new KeyConfig(Keys.RWin)});
     }
 
-    public async Task HandleInputKey(Key key2, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
+    public async Task HandleInputKey(Keys key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
     {
-        if (_appKeyService.MapKey(key2) is not { } key) return;
         var keyWithModifiers = new KeyConfig(key, shift: specialKeysStatus.IsShiftPressed, alt: specialKeysStatus.IsAltPressed, ctrl: specialKeysStatus.IsCtrlPressed);
         _appState.PreviousKeys.Add(keyWithModifiers);
 
@@ -72,7 +64,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 
         if (key == Keys.Escape)
         {
-            var doGeneralReset = _appState.PreviousKeys.Count > 1 || _appState.IsAllShortcutVisible;
+            var doGeneralReset = _appState.PreviousKeys.Count > 1;
 
             if ((_openModals.Collection?.Count ?? 0) > 0)
             {
@@ -106,7 +98,6 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             if (doGeneralReset)
             {
                 setHandled(true);
-                _appState.IsAllShortcutVisible = false;
                 _appState.PreviousKeys.Clear();
                 _appState.PossibleCommands = new();
             }

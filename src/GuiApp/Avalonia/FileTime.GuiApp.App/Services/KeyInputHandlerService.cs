@@ -1,5 +1,7 @@
 using Avalonia.Input;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
+using FileTime.App.Core.Services;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;
 
@@ -10,8 +12,10 @@ public class KeyInputHandlerService : IKeyInputHandlerService
     private readonly IGuiAppState _appState;
     private readonly IDefaultModeKeyInputHandler _defaultModeKeyInputHandler;
     private readonly IRapidTravelModeKeyInputHandler _rapidTravelModeKeyInputHandler;
+    private readonly IAppKeyService<Key> _appKeyService;
     private ViewMode _viewMode;
     private GuiPanel _activePanel;
+
     private readonly Dictionary<(GuiPanel, Key), GuiPanel> _panelMovements = new()
     {
         [(GuiPanel.FileBrowser, Key.Up)] = GuiPanel.Timeline,
@@ -21,12 +25,13 @@ public class KeyInputHandlerService : IKeyInputHandlerService
     public KeyInputHandlerService(
         IGuiAppState appState,
         IDefaultModeKeyInputHandler defaultModeKeyInputHandler,
-        IRapidTravelModeKeyInputHandler rapidTravelModeKeyInputHandler
-    )
+        IRapidTravelModeKeyInputHandler rapidTravelModeKeyInputHandler,
+        IAppKeyService<Key> appKeyService)
     {
         _appState = appState;
         _defaultModeKeyInputHandler = defaultModeKeyInputHandler;
         _rapidTravelModeKeyInputHandler = rapidTravelModeKeyInputHandler;
+        _appKeyService = appKeyService;
 
         appState.ViewMode.Subscribe(v => _viewMode = v);
         appState.ActivePanel.Subscribe(p => _activePanel = p);
@@ -51,8 +56,8 @@ public class KeyInputHandlerService : IKeyInputHandlerService
         var isCtrlPressed = (keyModifiers & KeyModifiers.Control) == KeyModifiers.Control;
 
         if (isCtrlPressed
-                && key is Key.Left or Key.Right or Key.Up or Key.Down
-                && _panelMovements.TryGetValue((_activePanel, key), out var newPanel))
+            && key is Key.Left or Key.Right or Key.Up or Key.Down
+            && _panelMovements.TryGetValue((_activePanel, key), out var newPanel))
         {
             _appState.SetActivePanel(newPanel);
             setHandled(true);
@@ -65,11 +70,17 @@ public class KeyInputHandlerService : IKeyInputHandlerService
         {
             if (_viewMode == ViewMode.Default)
             {
-                await _defaultModeKeyInputHandler.HandleInputKey(key, specialKeyStatus, setHandled);
+                if (_appKeyService.MapKey(key) is { } mappedKey)
+                {
+                    await _defaultModeKeyInputHandler.HandleInputKey(mappedKey, specialKeyStatus, setHandled);
+                }
             }
             else
             {
-                await _rapidTravelModeKeyInputHandler.HandleInputKey(key, specialKeyStatus, setHandled);
+                if (_appKeyService.MapKey(key) is { } mappedKey)
+                {
+                    await _rapidTravelModeKeyInputHandler.HandleInputKey(mappedKey, specialKeyStatus, setHandled);
+                }
             }
         }
         else if (_activePanel == GuiPanel.Timeline)
