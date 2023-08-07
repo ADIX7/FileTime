@@ -12,15 +12,17 @@ public class App : IApplication
     private readonly IConsoleAppState _consoleAppState;
     private readonly IAppKeyService<Key> _appKeyService;
     private readonly MainWindow _mainWindow;
-    private readonly IKeyInputHandlerService _keyInputHandlerService = null!;
+    private readonly IKeyInputHandlerService _keyInputHandlerService;
 
     public App(
         ILifecycleService lifecycleService,
+        IKeyInputHandlerService keyInputHandlerService,
         IConsoleAppState consoleAppState,
         IAppKeyService<Key> appKeyService,
         MainWindow mainWindow)
     {
         _lifecycleService = lifecycleService;
+        _keyInputHandlerService = keyInputHandlerService;
         _consoleAppState = consoleAppState;
         _appKeyService = appKeyService;
         _mainWindow = mainWindow;
@@ -28,6 +30,7 @@ public class App : IApplication
 
     public void Run()
     {
+        Console.WriteLine("Loading...");
         Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
 
         _mainWindow.Initialize();
@@ -41,14 +44,10 @@ public class App : IApplication
 
         Application.RootKeyEvent += e =>
         {
-            if (e.ToGeneralKeyEventArgs(_appKeyService) is { } args)
-            {
-                _keyInputHandlerService.HandleKeyInput(args);
+            if (e.ToGeneralKeyEventArgs(_appKeyService) is not { } args) return false;
+            _keyInputHandlerService.HandleKeyInput(args);
 
-                return args.Handled;
-            }
-
-            return false;
+            return args.Handled;
         };
 
         Application.Run();

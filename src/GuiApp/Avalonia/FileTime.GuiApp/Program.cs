@@ -8,6 +8,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.ReactiveUI;
+using FileTime.App.Core;
 using Serilog;
 using Serilog.Debugging;
 
@@ -17,43 +18,6 @@ public static class Program
 {
     public static string AppDataRoot { get; private set; }
     public static string EnvironmentName { get; private set; }
-
-    private static void InitDevelopment()
-    {
-        EnvironmentName = "Development";
-
-        AppDataRoot = Path.Combine(Environment.CurrentDirectory, "appdata");
-    }
-
-    private static void InitRelease()
-    {
-        EnvironmentName = "Release";
-
-        var possibleDataRootsPaths = new List<string>
-        {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FileTime"),
-            Path.Combine(Assembly.GetEntryAssembly()?.Location ?? ".", "fallbackDataRoot")
-        };
-
-        string? appDataRoot = null;
-        foreach (var possibleAppDataRoot in possibleDataRootsPaths)
-        {
-            try
-            {
-                var appDataRootDirectory = new DirectoryInfo(possibleAppDataRoot);
-                if (!appDataRootDirectory.Exists) appDataRootDirectory.Create();
-
-                //TODO write test
-                appDataRoot = possibleAppDataRoot;
-                break;
-            }
-            catch
-            {
-            }
-        }
-
-        AppDataRoot = appDataRoot ?? throw new UnauthorizedAccessException();
-    }
 
     private static void InitLogging()
     {
@@ -83,12 +47,13 @@ public static class Program
     public static void Main(string[] args)
     {
 #if DEBUG
-        InitDevelopment();
+        (AppDataRoot, EnvironmentName) = Init.InitDevelopment();
 #endif
         if (AppDataRoot is null)
         {
-            InitRelease();
+            (AppDataRoot, EnvironmentName) = Init.InitRelease();
         }
+
         InitLogging();
 
         Log.Logger.Information("Early app starting...");

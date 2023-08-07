@@ -16,23 +16,24 @@ public class KeyInputHandlerService : IKeyInputHandlerService
 
     public KeyInputHandlerService(
         IAppState appState,
-        IDefaultModeKeyInputHandler defaultModeKeyInputHandler, 
+        IDefaultModeKeyInputHandler defaultModeKeyInputHandler,
         IRapidTravelModeKeyInputHandler rapidTravelModeKeyInputHandler)
     {
         _appState = appState;
         _defaultModeKeyInputHandler = defaultModeKeyInputHandler;
         _rapidTravelModeKeyInputHandler = rapidTravelModeKeyInputHandler;
     }
+
     public void HandleKeyInput(GeneralKeyEventArgs keyEvent)
     {
         var specialKeysStatus = new SpecialKeysStatus(_isAltPressed, _isShiftPressed, _isCtrlPressed);
         if (_appState.ViewMode.Value == ViewMode.Default)
         {
-            _defaultModeKeyInputHandler.HandleInputKey(keyEvent, specialKeysStatus);
+            Task.Run(async () => await _defaultModeKeyInputHandler.HandleInputKey(keyEvent, specialKeysStatus)).Wait();
         }
         else
         {
-            _rapidTravelModeKeyInputHandler.HandleInputKey(keyEvent, specialKeysStatus);
+            Task.Run(async () => await _rapidTravelModeKeyInputHandler.HandleInputKey(keyEvent, specialKeysStatus)).Wait();
         }
     }
 }

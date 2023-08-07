@@ -1,9 +1,11 @@
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.UserCommandHandler;
 using FileTime.App.Core.StartupServices;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.ItemPreview;
 using FileTime.App.Core.ViewModels.Timeline;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -11,7 +13,7 @@ namespace FileTime.App.Core;
 
 public static class Startup
 {
-    public static IServiceCollection AddCoreAppServices(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddCoreAppServices(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
     {
         serviceCollection.TryAddTransient<ITabViewModel, TabViewModel>();
         serviceCollection.TryAddTransient<IContainerViewModel, ContainerViewModel>();
@@ -34,6 +36,7 @@ public static class Startup
 
         return serviceCollection
             .AddCommandHandlers()
+            .AddConfiguration(configuration)
             .AddSingleton<IStartupHandler, DefaultIdentifiableCommandHandlerRegister>()
             .AddSingleton<IExitHandler, ContainerRefreshHandler>();
     }
@@ -45,5 +48,13 @@ public static class Startup
             .AddSingleton<IUserCommandHandler, ItemManipulationUserCommandHandlerService>()
             .AddSingleton<IUserCommandHandler, ToolUserCommandHandlerService>()
             .AddSingleton<IUserCommandHandler, CommandSchedulerUserCommandHandlerService>();
+    }
+
+    internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
+    {
+        return serviceCollection
+            .Configure<ProgramsConfiguration>(configuration.GetSection(SectionNames.ProgramsSectionName))
+            .Configure<KeyBindingConfiguration>(configuration.GetSection(SectionNames.KeybindingSectionName))
+            .AddSingleton<IConfiguration>(configuration);
     }
 }

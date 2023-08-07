@@ -1,6 +1,7 @@
 ﻿using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.KeyInputHandling;
+using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -19,6 +20,8 @@ public static class Startup
         services.TryAddSingleton<IUserCommunicationService, ConsoleUserCommunicationService>();
         services.TryAddSingleton<IKeyInputHandlerService, KeyInputHandlerService>();
         services.TryAddSingleton<IAppKeyService<Key>, ConsoleAppKeyService>();
+        services.TryAddSingleton<ISystemClipboardService, SystemClipboardService>();
+        services.AddSingleton<CustomLoggerSink>();
 
         return services;
     }

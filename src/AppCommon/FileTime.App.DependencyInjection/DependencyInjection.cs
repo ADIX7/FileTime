@@ -43,7 +43,7 @@ public static class DependencyInjection
         serviceCollection.AddSingleton<IStartupHandler, ITabPersistenceService>(sp => sp.GetRequiredService<ITabPersistenceService>());
 
         return serviceCollection
-            .AddCoreAppServices()
+            .AddCoreAppServices(configuration)
             .AddLocalProviderServices()
             .AddLocalAdminProviderServices(configuration)
             .AddRemoteProviderServices()

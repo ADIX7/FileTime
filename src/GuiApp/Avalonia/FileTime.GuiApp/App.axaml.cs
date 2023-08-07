@@ -29,7 +29,6 @@ public class Application : Avalonia.Application
             .AddContainerSizeScanner()
             .AddSearch()
             .AddCompression()
-            .AddConfiguration(configuration)
             .ConfigureFont(configuration)
             .RegisterLogging()
             .RegisterServices()

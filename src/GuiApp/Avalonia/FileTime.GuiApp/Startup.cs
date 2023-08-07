@@ -105,12 +105,4 @@ public static class Startup
 
         return serviceCollection;
     }
-
-    internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
-    {
-        return serviceCollection
-            .Configure<ProgramsConfiguration>(configuration.GetSection(SectionNames.ProgramsSectionName))
-            .Configure<KeyBindingConfiguration>(configuration.GetSection(SectionNames.KeybindingSectionName))
-            .AddSingleton<IConfiguration>(configuration);
-    }
 }
