@@ -36,6 +36,7 @@ public class App : IApplication
         _mainWindow.Initialize();
 
         Application.Init();
+        var asd = Application.Top.ColorScheme;
 
         foreach (var element in _mainWindow.GetElements())
         {

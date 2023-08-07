@@ -12,14 +12,13 @@ public class ItemRenderer : IListDataSource
 
     public ItemRenderer(
         IDeclarativeProperty<ObservableCollection<IItemViewModel>?> source,
-        ListView listView
+        Action update
     )
     {
         _source = source;
         source.Subscribe((_, _) =>
         {
-            listView.EnsureSelectedItemVisible();
-            listView.SetNeedsDisplay();
+            update();
         });
     }
 

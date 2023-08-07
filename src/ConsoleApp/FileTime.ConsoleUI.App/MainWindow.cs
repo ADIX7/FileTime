@@ -1,9 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using DeclarativeProperty;
-using FileTime.App.Core.ViewModels;
+﻿using DeclarativeProperty;
 using FileTime.ConsoleUI.App.Controls;
-using FileTime.Core.Models;
-using ObservableComputations;
+using FileTime.ConsoleUI.App.Extensions;
 using Terminal.Gui;
 
 namespace FileTime.ConsoleUI.App;
@@ -11,24 +8,25 @@ namespace FileTime.ConsoleUI.App;
 public class MainWindow
 {
     private readonly IConsoleAppState _consoleAppState;
-    private readonly ListView _selectedItemsView;
+    private View[] _views;
+    private const int ParentColumnWidth = 20;
 
     public MainWindow(IConsoleAppState consoleAppState)
     {
         _consoleAppState = consoleAppState;
-
-        _selectedItemsView = new() {X = 1, Y = 0, Width = Dim.Fill(), Height = Dim.Fill()};
-        _selectedItemsView.AddKeyBinding(Key.Space, Command.ToggleChecked);
-        /*_selectedItemsView.OpenSelectedItem += (e) =>
-        {
-            if (e.Value is IItemViewModel {BaseItem: IContainer container}
-                && consoleAppState.SelectedTab.Value?.Tab is { } tab)
-                tab.SetCurrentLocation(container);
-        };*/
     }
 
-    public void Initialize()
+    public void Initialize() =>
+        _views = new View[]
+        {
+            GetSelectedItemsView(),
+            GetParentsChildren(),
+            GetSelectedsChildren()
+        };
+
+    private ListView GetSelectedItemsView()
     {
+        ListView selectedItemsView = new() {X = ParentColumnWidth, Y = 1, Width = Dim.Percent(60) - 20, Height = Dim.Fill()};
         var selectedsItems = _consoleAppState
             .SelectedTab
             .Map(t => t.CurrentItems)
@@ -45,17 +43,40 @@ public class MainWindow
             .Subscribe((index, _) =>
             {
                 if (index == -1) return;
-                _selectedItemsView.SelectedItem = index;
-                _selectedItemsView.EnsureSelectedItemVisible();
-                _selectedItemsView.SetNeedsDisplay();
+                selectedItemsView.SelectedItem = index;
+                selectedItemsView.Update();
             });
 
-        var renderer = new ItemRenderer(selectedsItems, _selectedItemsView);
-        _selectedItemsView.Source = renderer;
+        var renderer = new ItemRenderer(selectedsItems, selectedItemsView.Update);
+        selectedItemsView.Source = renderer;
+        return selectedItemsView;
     }
 
-    public IEnumerable<View> GetElements()
+    private ListView GetParentsChildren()
     {
-        return new View[] {_selectedItemsView};
+        ListView parentsChildrenView = new() {X = 0, Y = 1, Width = ParentColumnWidth, Height = Dim.Fill()};
+        var parentsChildren = _consoleAppState
+            .SelectedTab
+            .Map(t => t.ParentsChildren)
+            .Switch();
+
+        var renderer = new ItemRenderer(parentsChildren, parentsChildrenView.Update);
+        parentsChildrenView.Source = renderer;
+        return parentsChildrenView;
     }
+
+    private ListView GetSelectedsChildren()
+    {
+        ListView selectedsChildrenView = new() {X = Pos.Percent(60), Y = 1, Width = Dim.Percent(40), Height = Dim.Fill()};
+        var selectedsChildren = _consoleAppState
+            .SelectedTab
+            .Map(t => t.SelectedsChildren)
+            .Switch();
+
+        var renderer = new ItemRenderer(selectedsChildren, selectedsChildrenView.Update);
+        selectedsChildrenView.Source = renderer;
+        return selectedsChildrenView;
+    }
+
+    public IEnumerable<View> GetElements() => _views;
 }
