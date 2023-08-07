@@ -1,4 +1,4 @@
-﻿using Avalonia.Input;
+﻿using FileTime.App.Core.Models;
 
 namespace FileTime.App.FuzzyPanel;
 
@@ -8,5 +8,5 @@ public interface IFuzzyPanelViewModel<TItem> where TItem : class
     TItem? SelectedItem { get; }
     string SearchText { get; set; }
     void UpdateFilteredMatches();
-    Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs);
+    Task<bool> HandleKeyDown(GeneralKeyEventArgs keyEventArgs);
 }

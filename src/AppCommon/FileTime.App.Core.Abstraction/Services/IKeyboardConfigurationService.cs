@@ -1,6 +1,6 @@
-using FileTime.GuiApp.App.Configuration;
+using FileTime.App.Core.Configuration;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.App.Core.Services;
 
 public interface IKeyboardConfigurationService
 {

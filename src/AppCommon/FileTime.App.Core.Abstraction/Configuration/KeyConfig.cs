@@ -1,10 +1,10 @@
-using Avalonia.Input;
+using FileTime.App.Core.Models;
 
-namespace FileTime.GuiApp.App.Configuration;
+namespace FileTime.App.Core.Configuration;
 
 public class KeyConfig
 {
-    public Key Key { get; set; }
+    public Keys Key { get; set; }
     public bool Shift { get; set; }
     public bool Alt { get; set; }
     public bool Ctrl { get; set; }
@@ -12,7 +12,7 @@ public class KeyConfig
     public KeyConfig() { }
 
     public KeyConfig(
-        Key key,
+        Keys key,
         bool shift = false,
         bool alt = false,
         bool ctrl = false)
@@ -24,7 +24,7 @@ public class KeyConfig
     }
 
     public bool AreEquals(KeyConfig otherKeyConfig) =>
-        Key == otherKeyConfig.Key
+        Key.Equals(otherKeyConfig.Key)
         && Alt == otherKeyConfig.Alt
         && Shift == otherKeyConfig.Shift
         && Ctrl == otherKeyConfig.Ctrl;

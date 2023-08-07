@@ -24,7 +24,7 @@ namespace FileTime.GuiApp.App.ViewModels;
 [Inject(typeof(ILogger<MainWindowViewModel>), PropertyName = "_logger")]
 [Inject(typeof(IKeyInputHandlerService), PropertyName = "_keyInputHandlerService")]
 [Inject(typeof(IUserCommandHandlerService), PropertyAccessModifier = AccessModifier.Public)]
-[Inject(typeof(LifecycleService), PropertyName = "_lifecycleService")]
+[Inject(typeof(ILifecycleService), PropertyName = "_lifecycleService")]
 [Inject(typeof(IItemPreviewService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IDialogService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(ITimelessContentProvider), PropertyName = "_timelessContentProvider")]

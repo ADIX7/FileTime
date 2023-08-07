@@ -1,9 +1,8 @@
 using DynamicData;
-using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.App.Core.Services;
 
 public class ModalService : IModalService
 {

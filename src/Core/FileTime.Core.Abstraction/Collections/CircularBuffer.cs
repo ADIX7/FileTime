@@ -2,7 +2,7 @@
 
 using System.Collections;
 
-namespace CircularBuffer;
+namespace FileTime.Core.Collections;
 #if (NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 
 /// <summary>
@@ -490,7 +490,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
             throw new ArgumentNullException(nameof(array));
 
         if (array.Length < _size)
-            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer)} is greater than the available " +
+            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer<int>)} is greater than the available " +
                                         "number of elements of the destination array.", nameof(array));
 
         CopyToInternal(array, 0);
@@ -506,7 +506,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
             throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} is less than the lower bound of {nameof(array)}.");
 
         if (array.Length - index < _size)
-            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer)} is greater than the available " +
+            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer<int>)} is greater than the available " +
                                         "number of elements from index to the end of the destination array.", nameof(array));
 
         CopyToInternal(array, index);
@@ -522,7 +522,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
             throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} is less than the lower bound of {nameof(array)}.");
 
         if (array.LongLength - index < _size)
-            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer)} is greater than the available " +
+            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer<int>)} is greater than the available " +
                                         "number of elements from index to the end of the destination array.", nameof(array));
 
         CopyToInternal(array, index);
@@ -534,7 +534,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     public void CopyTo(Memory<T> memory)
     {
         if (memory.Length < _size)
-            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer)} is greater than the available " +
+            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer<int>)} is greater than the available " +
                                         "number of elements of the destination Memory.", nameof(memory));
 
         CopyToInternal(memory);
@@ -544,7 +544,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     public void CopyTo(Span<T> span)
     {
         if (span.Length < _size)
-            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer)} is greater than the available " +
+            throw new ArgumentException($"The number of elements in the source {nameof(CircularBuffer<int>)} is greater than the available " +
                                         "number of elements of the destination Span.", nameof(span));
 
         CopyToInternal(span);

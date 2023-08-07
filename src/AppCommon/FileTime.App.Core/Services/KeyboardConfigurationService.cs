@@ -1,8 +1,8 @@
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.UserCommand;
-using FileTime.GuiApp.App.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.App.Core.Services;
 
 public class KeyboardConfigurationService : IKeyboardConfigurationService
 {
@@ -48,8 +48,7 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
     }
 
     private static bool IsUniversal(CommandBindingConfiguration keyMapping)
-    {
-        return keyMapping.Command is
+        => keyMapping.Command is
             GoUpCommand.CommandName
             or OpenSelectedCommand.CommandName
             or MoveCursorDownCommand.CommandName
@@ -57,5 +56,4 @@ public class KeyboardConfigurationService : IKeyboardConfigurationService
             or MoveCursorUpCommand.CommandName
             or MoveCursorUpPageCommand.CommandName
             or IdentifiableRunOrOpenCommand.CommandName;
-    }
 }

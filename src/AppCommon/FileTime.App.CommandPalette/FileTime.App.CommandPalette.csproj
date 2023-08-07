@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\GuiApp\Avalonia\FileTime.GuiApp.App.Abstractions\FileTime.GuiApp.App.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.App.CommandPalette.Abstractions\FileTime.App.CommandPalette.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\FileTime.App.FuzzyPanel\FileTime.App.FuzzyPanel.csproj" />

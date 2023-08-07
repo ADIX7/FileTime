@@ -26,6 +26,8 @@ public static class Startup
         serviceCollection.TryAddSingleton<ITimelineViewModel, TimelineViewModel>();
         serviceCollection.TryAddSingleton<IRefreshSmoothnessCalculator, RefreshSmoothnessCalculator>();
         serviceCollection.TryAddSingleton<IItemPreviewProvider, ElementPreviewProvider>();
+        serviceCollection.TryAddSingleton<ILifecycleService, LifecycleService>();
+        serviceCollection.TryAddSingleton<IModalService, ModalService>();
 
         return serviceCollection
             .AddCommandHandlers()

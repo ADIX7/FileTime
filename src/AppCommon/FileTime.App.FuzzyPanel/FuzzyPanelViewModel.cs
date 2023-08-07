@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Avalonia.Input;
+using FileTime.App.Core.Models;
 using PropertyChanged.SourceGenerator;
 
 namespace FileTime.App.FuzzyPanel;
@@ -44,9 +44,9 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
 
     public abstract void UpdateFilteredMatches();
 
-    public virtual Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs)
+    public virtual Task<bool> HandleKeyDown(GeneralKeyEventArgs keyEventArgs)
     {
-        if (keyEventArgs.Key == Key.Down)
+        if (keyEventArgs.Key == Keys.Down)
         {
             var nextItem = SelectedItem is null
                 ? FilteredMatches.FirstOrDefault()
@@ -60,7 +60,7 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
 
             return Task.FromResult(true);
         }
-        else if (keyEventArgs.Key == Key.Up)
+        else if (keyEventArgs.Key == Keys.Up)
         {
             var previousItem = SelectedItem is null
                 ? FilteredMatches.LastOrDefault()

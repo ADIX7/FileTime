@@ -115,6 +115,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.ContainerSizeS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.App.ContainerSizeScanner.Abstractions", "AppCommon\FileTime.App.ContainerSizeScanner.Abstractions\FileTime.App.ContainerSizeScanner.Abstractions.csproj", "{826AFD32-E36B-48BA-BC1E-1476B393CF24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.ConsoleUI.App.Abstractions", "ConsoleApp\FileTime.ConsoleUI.App.Abstractions\FileTime.ConsoleUI.App.Abstractions.csproj", "{81F44BBB-6F89-41B4-89F1-4A3204843DB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -309,6 +311,10 @@ Global
 		{826AFD32-E36B-48BA-BC1E-1476B393CF24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{826AFD32-E36B-48BA-BC1E-1476B393CF24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{826AFD32-E36B-48BA-BC1E-1476B393CF24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81F44BBB-6F89-41B4-89F1-4A3204843DB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81F44BBB-6F89-41B4-89F1-4A3204843DB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81F44BBB-6F89-41B4-89F1-4A3204843DB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81F44BBB-6F89-41B4-89F1-4A3204843DB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -362,6 +368,7 @@ Global
 		{EE1721A0-D15A-4E40-BEA5-8AB6BAB8FD44} = {8C3CFEFE-78A5-4940-B388-D15FCE02ECE9}
 		{E5FD38ED-6E4B-42AA-850B-470B939B836B} = {A5291117-3001-498B-AC8B-E14F71F72570}
 		{826AFD32-E36B-48BA-BC1E-1476B393CF24} = {A5291117-3001-498B-AC8B-E14F71F72570}
+		{81F44BBB-6F89-41B4-89F1-4A3204843DB5} = {CAEEAD3C-41EB-405C-ACA9-BA1E4C352549}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

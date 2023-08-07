@@ -1,7 +1,6 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using Avalonia.Threading;
 using FileTime.Core.Models;
 using FileTime.GuiApp.App.ViewModels;
 

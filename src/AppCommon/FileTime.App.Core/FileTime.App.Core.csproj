@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
     <PackageReference Include="morelinq" Version="3.4.2" />
     <PackageReference Include="MvvmGen" Version="1.2.1" />
     <PackageReference Include="ObservableComputations" Version="2.3.0" />
@@ -24,6 +25,7 @@
     <ProjectReference Include="..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
     <ProjectReference Include="..\..\Library\Defer\Defer.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Providers\FileTime.Providers.LocalAdmin.Abstractions\FileTime.Providers.LocalAdmin.Abstractions.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools\FileTime.Tools.csproj" />
     <ProjectReference Include="..\FileTime.App.CommandPalette.Abstractions\FileTime.App.CommandPalette.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.App.CommandPalette\FileTime.App.CommandPalette.csproj" />

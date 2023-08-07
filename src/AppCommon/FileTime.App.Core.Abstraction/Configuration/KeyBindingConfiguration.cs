@@ -1,4 +1,4 @@
-namespace FileTime.GuiApp.App.Configuration;
+namespace FileTime.App.Core.Configuration;
 
 public class KeyBindingConfiguration
 {

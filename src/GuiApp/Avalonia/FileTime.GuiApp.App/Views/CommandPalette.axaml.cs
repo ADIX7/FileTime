@@ -2,11 +2,16 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using FileTime.App.CommandPalette.ViewModels;
+using FileTime.App.Core.Services;
+using FileTime.GuiApp.App.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.GuiApp.App.Views;
 
 public partial class CommandPalette : UserControl
 {
+    private readonly Lazy<IAppKeyService<Key>> _appKeyService = new(() => DI.ServiceProvider.GetRequiredService<IAppKeyService<Key>>());
+
     public CommandPalette()
     {
         InitializeComponent();
@@ -34,14 +39,18 @@ public partial class CommandPalette : UserControl
         }
         else
         {
-            viewModel.HandleKeyDown(e);
+            if (e.ToGeneralKeyEventArgs(_appKeyService.Value) is not { } eventArgs) return;
+            
+            viewModel.HandleKeyDown(eventArgs);
         }
     }
 
     private void Search_OnKeyUp(object? sender, KeyEventArgs e)
     {
-        if (e.Handled) return;
-        if (DataContext is not ICommandPaletteViewModel viewModel) return;
-        viewModel.HandleKeyUp(e);
+        if (e.Handled
+            || DataContext is not ICommandPaletteViewModel viewModel) return;
+        
+        if (e.ToGeneralKeyEventArgs(_appKeyService.Value) is not { } eventArgs) return;
+        viewModel.HandleKeyUp(eventArgs);
     }
 }

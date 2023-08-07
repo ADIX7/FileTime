@@ -1,5 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using Avalonia.Input;
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
@@ -54,14 +56,13 @@ public static class Startup
         serviceCollection.TryAddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>();
         serviceCollection.TryAddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>();
         serviceCollection.TryAddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>();
-        serviceCollection.TryAddSingleton<LifecycleService>();
         serviceCollection.TryAddSingleton<IIconProvider, MaterialIconProvider>();
-        serviceCollection.TryAddSingleton<IModalService, ModalService>();
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
         serviceCollection.TryAddSingleton<SystemClipboardService>();
         serviceCollection.TryAddSingleton<ISystemClipboardService>(sp => sp.GetRequiredService<SystemClipboardService>());
         serviceCollection.TryAddSingleton<ToastMessageSink>();
         serviceCollection.TryAddSingleton<IUserCommunicationService>(s => s.GetRequiredService<IDialogService>());
+        serviceCollection.TryAddSingleton<IAppKeyService<Key>, GuiAppKeyService>();
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

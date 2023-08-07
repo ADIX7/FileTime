@@ -1,4 +1,4 @@
-using Avalonia.Input;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
@@ -30,11 +30,11 @@ public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFreque
     public void Close()
         => _frequencyNavigationService.CloseNavigationWindow();
 
-    public async Task<bool> HandleKeyUp(KeyEventArgs keyEventArgs)
+    public async Task<bool> HandleKeyUp(GeneralKeyEventArgs keyEventArgs)
     {
         if (keyEventArgs.Handled) return false;
 
-        if (keyEventArgs.Key == Key.Enter)
+        if (keyEventArgs.Key == Keys.Enter)
         {
             keyEventArgs.Handled = true;
             var targetContainer = await _timelessContentProvider.GetItemByFullNameAsync(new FullName(SelectedItem), PointInTime.Present);
@@ -47,14 +47,14 @@ public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFreque
         return false;
     }
 
-    public override async Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs)
+    public override async Task<bool> HandleKeyDown(GeneralKeyEventArgs keyEventArgs)
     {
         if (keyEventArgs.Handled) return false;
         var handled = await base.HandleKeyDown(keyEventArgs);
 
         if (handled) return true;
 
-        if (keyEventArgs.Key == Key.Escape)
+        if (keyEventArgs.Key == Keys.Escape)
         {
             keyEventArgs.Handled = true;
             Close();

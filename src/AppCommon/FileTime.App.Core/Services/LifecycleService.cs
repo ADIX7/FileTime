@@ -1,10 +1,9 @@
-using FileTime.App.Core.Services;
 using FileTime.Core.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.App.Core.Services;
 
-public class LifecycleService
+public class LifecycleService : ILifecycleService
 {
     private readonly IEnumerable<IExitHandler> _exitHandlers;
     private readonly IEnumerable<IStartupHandler> _startupHandlers;

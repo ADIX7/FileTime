@@ -1,6 +1,6 @@
-using Avalonia.Input;
+using FileTime.App.Core.Models;
 
-namespace FileTime.GuiApp.App.Configuration;
+namespace FileTime.App.Core.Configuration;
 
 public class CommandBindingConfiguration
 {
@@ -24,19 +24,19 @@ public class CommandBindingConfiguration
 
     public CommandBindingConfiguration(string command, KeyConfig key)
     {
-        Keys = new List<KeyConfig>() { key };
+        Keys = new List<KeyConfig> { key };
         Command = command;
     }
 
-    public CommandBindingConfiguration(string command, IEnumerable<Key> keys)
+    public CommandBindingConfiguration(string command, IEnumerable<Keys> keys)
     {
         Keys = keys.Select(k => new KeyConfig(k)).ToList();
         Command = command;
     }
 
-    public CommandBindingConfiguration(string command, Key key)
+    public CommandBindingConfiguration(string command, Keys key)
     {
-        Keys = new List<KeyConfig>() { new KeyConfig(key) };
+        Keys = new List<KeyConfig>() { new(key) };
         Command = command;
     }
 
@@ -61,7 +61,10 @@ public class CommandBindingConfiguration
         return s;
     }
 
-    private static string AddKeyWithCtrlOrAlt(KeyConfig key, string currentText, Func<KeyConfig, string, bool, string> keyProcessor)
+    private static string AddKeyWithCtrlOrAlt(
+        KeyConfig key,
+        string currentText,
+        Func<KeyConfig, string, bool, string> keyProcessor)
     {
         var s = "";
 

@@ -5,12 +5,13 @@ using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
-using FileTime.GuiApp.App.Configuration;
-using FileTime.GuiApp.App.Extensions;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;
 using Microsoft.Extensions.Logging;
 using DeclarativeProperty;
+using FileTime.App.Core.Configuration;
+using FileTime.App.Core.Extensions;
+using FileTime.App.Core.Models;
 
 namespace FileTime.GuiApp.App.Services;
 
@@ -24,6 +25,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
     private readonly ILogger<DefaultModeKeyInputHandler> _logger;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
+    private readonly IAppKeyService<Key> _appKeyService;
     private readonly BindedCollection<IModalViewModel> _openModals;
 
     public DefaultModeKeyInputHandler(
@@ -32,10 +34,12 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         IKeyboardConfigurationService keyboardConfigurationService,
         ILogger<DefaultModeKeyInputHandler> logger,
         IUserCommandHandlerService userCommandHandlerService,
-        IIdentifiableUserCommandService identifiableUserCommandService)
+        IIdentifiableUserCommandService identifiableUserCommandService,
+        IAppKeyService<Key> appKeyService)
     {
         _appState = appState;
         _identifiableUserCommandService = identifiableUserCommandService;
+        _appKeyService = appKeyService;
         _keyboardConfigurationService = keyboardConfigurationService;
         _logger = logger;
         _modalService = modalService;
@@ -47,25 +51,26 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 
         _openModals = modalService.OpenModals.ToBindedCollection();
 
-        _keysToSkip.Add(new[] {new KeyConfig(Key.Up)});
-        _keysToSkip.Add(new[] {new KeyConfig(Key.Down)});
-        _keysToSkip.Add(new[] {new KeyConfig(Key.Tab)});
-        _keysToSkip.Add(new[] {new KeyConfig(Key.PageDown)});
-        _keysToSkip.Add(new[] {new KeyConfig(Key.PageUp)});
-        _keysToSkip.Add(new[] {new KeyConfig(Key.F4, alt: true)});
-        _keysToSkip.Add(new[] {new KeyConfig(Key.LWin)});
-        _keysToSkip.Add(new[] {new KeyConfig(Key.RWin)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.Up)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.Down)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.Tab)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.PageDown)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.PageUp)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.F4, alt: true)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.LWin)});
+        _keysToSkip.Add(new[] {new KeyConfig(Keys.RWin)});
     }
 
-    public async Task HandleInputKey(Key key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
+    public async Task HandleInputKey(Key key2, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
     {
+        if (_appKeyService.MapKey(key2) is not { } key) return;
         var keyWithModifiers = new KeyConfig(key, shift: specialKeysStatus.IsShiftPressed, alt: specialKeysStatus.IsAltPressed, ctrl: specialKeysStatus.IsCtrlPressed);
         _appState.PreviousKeys.Add(keyWithModifiers);
 
         var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
         selectedCommandBinding ??= _keyboardConfigurationService.CommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
 
-        if (key == Key.Escape)
+        if (key == Keys.Escape)
         {
             var doGeneralReset = _appState.PreviousKeys.Count > 1 || _appState.IsAllShortcutVisible;
 

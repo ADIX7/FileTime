@@ -1,6 +1,6 @@
-using FileTime.GuiApp.App.Configuration;
+using FileTime.App.Core.Configuration;
 
-namespace FileTime.GuiApp.App.Extensions;
+namespace FileTime.App.Core.Extensions;
 
 public static class KeyConfigExtensions
 {

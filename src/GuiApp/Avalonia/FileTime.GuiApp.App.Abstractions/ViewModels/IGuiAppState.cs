@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.ViewModels;
-using FileTime.GuiApp.App.Configuration;
 using FileTime.GuiApp.App.Models;
 
 namespace FileTime.GuiApp.App.ViewModels;

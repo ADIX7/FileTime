@@ -12,8 +12,4 @@
     <ProjectReference Include="..\FileTime.App.FuzzyPanel.Abstraction\FileTime.App.FuzzyPanel.Abstraction.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.0.2" />
-  </ItemGroup>
-
 </Project>

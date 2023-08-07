@@ -3,7 +3,7 @@ using FileTime.GuiApp.App.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FileTime.GuiApp.Font;
+namespace FileTime.GuiApp.App.Font;
 
 public static class Startup
 {

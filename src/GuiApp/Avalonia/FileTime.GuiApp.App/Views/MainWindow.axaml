@@ -23,6 +23,7 @@
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
     xmlns:appInteractions="using:FileTime.App.Core.Interactions"
     xmlns:config="using:FileTime.GuiApp.App.Configuration"
+    xmlns:configuration="clr-namespace:FileTime.App.Core.Configuration;assembly=FileTime.App.Core.Abstraction"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
@@ -764,7 +765,7 @@
 
                                 <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.PossibleCommands}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="config:CommandBindingConfiguration">
+                                        <DataTemplate x:DataType="configuration:CommandBindingConfiguration">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="200" />

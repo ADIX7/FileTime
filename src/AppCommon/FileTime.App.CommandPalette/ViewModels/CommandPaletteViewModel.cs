@@ -1,11 +1,10 @@
 ﻿using System.Text;
-using Avalonia.Input;
 using FileTime.App.CommandPalette.Services;
+using FileTime.App.Core.Configuration;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FuzzyPanel;
-using FileTime.GuiApp.App.Configuration;
-using FileTime.GuiApp.App.Services;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.CommandPalette.ViewModels;
@@ -89,7 +88,7 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
             .Select(k => k.Keys)
             .ToList();
 
-    public override async Task<bool> HandleKeyDown(KeyEventArgs keyEventArgs)
+    public override async Task<bool> HandleKeyDown(GeneralKeyEventArgs keyEventArgs)
     {
         if (keyEventArgs.Handled) return false;
 
@@ -99,7 +98,7 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
             return true;
         }
 
-        if (keyEventArgs.Key == Key.Escape)
+        if (keyEventArgs.Key == Keys.Escape)
         {
             keyEventArgs.Handled = true;
             Close();
@@ -109,11 +108,11 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
         return false;
     }
 
-    public async Task<bool> HandleKeyUp(KeyEventArgs keyEventArgs)
+    public async Task<bool> HandleKeyUp(GeneralKeyEventArgs keyEventArgs)
     {
         if (keyEventArgs.Handled) return false;
 
-        if (keyEventArgs.Key == Key.Enter)
+        if (keyEventArgs.Key == Keys.Enter)
         {
             if (SelectedItem is null) return false;
 

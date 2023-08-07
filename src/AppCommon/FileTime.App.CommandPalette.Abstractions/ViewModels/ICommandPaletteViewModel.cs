@@ -1,4 +1,4 @@
-﻿using Avalonia.Input;
+﻿using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FuzzyPanel;
 
@@ -8,5 +8,5 @@ public interface ICommandPaletteViewModel : IFuzzyPanelViewModel<ICommandPalette
 {
     IObservable<bool> ShowWindow { get; }
     void Close();
-    Task<bool> HandleKeyUp(KeyEventArgs keyEventArgs);
+    Task<bool> HandleKeyUp(GeneralKeyEventArgs keyEventArgs);
 }
