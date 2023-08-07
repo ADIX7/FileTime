@@ -1,7 +1,14 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using FileTime.ConsoleUI;
+using FileTime.ConsoleUI.App;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-var d1 = new DirectoryInfo("C:");
-var d2 = new DirectoryInfo("C:\\");
+var configuration = new ConfigurationBuilder()
+#if DEBUG
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+#endif
+    .Build();
+DI.Initialize(configuration);
 
-;
+var app = DI.ServiceProvider.GetRequiredService<IApplication>();
+app.Run();
