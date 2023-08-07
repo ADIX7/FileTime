@@ -91,6 +91,6 @@ public static class DeclarativePropertyExtensions
         Action<TResult?>? setValueHook = null)
         => new CombineLatestProperty<T1,T2,TResult?>(prop1, prop2, func, setValueHook);
 
-    public static IDeclarativeProperty<T?> Switch<T>(this IDeclarativeProperty<IDeclarativeProperty<T>> from)
+    public static IDeclarativeProperty<T> Switch<T>(this IDeclarativeProperty<IDeclarativeProperty<T>?> from)
         => new SwitchProperty<T>(from);
 }

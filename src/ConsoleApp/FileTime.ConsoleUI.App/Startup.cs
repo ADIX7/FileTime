@@ -5,7 +5,6 @@ using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Terminal.Gui;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -19,8 +18,6 @@ public static class Startup
         services.TryAddSingleton<IAppState>(sp => sp.GetRequiredService<IConsoleAppState>());
         services.TryAddSingleton<IUserCommunicationService, ConsoleUserCommunicationService>();
         services.TryAddSingleton<IKeyInputHandlerService, KeyInputHandlerService>();
-        services.TryAddSingleton<IAppKeyService<Key>, ConsoleAppKeyService>();
-        services.TryAddSingleton<ISystemClipboardService, SystemClipboardService>();
         services.AddSingleton<CustomLoggerSink>();
 
         return services;
