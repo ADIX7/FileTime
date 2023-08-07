@@ -28,6 +28,9 @@ public static class Startup
         serviceCollection.TryAddSingleton<IItemPreviewProvider, ElementPreviewProvider>();
         serviceCollection.TryAddSingleton<ILifecycleService, LifecycleService>();
         serviceCollection.TryAddSingleton<IModalService, ModalService>();
+        serviceCollection.TryAddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>();
+        serviceCollection.TryAddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>();
+        serviceCollection.TryAddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>();
 
         return serviceCollection
             .AddCommandHandlers()

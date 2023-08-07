@@ -54,15 +54,15 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         _keysToSkip.Add(new[] {new KeyConfig(Keys.RWin)});
     }
 
-    public async Task HandleInputKey(Keys key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
+    public async Task HandleInputKey(GeneralKeyEventArgs args, SpecialKeysStatus specialKeysStatus)
     {
-        var keyWithModifiers = new KeyConfig(key, shift: specialKeysStatus.IsShiftPressed, alt: specialKeysStatus.IsAltPressed, ctrl: specialKeysStatus.IsCtrlPressed);
+        var keyWithModifiers = new KeyConfig(args.Key, shift: specialKeysStatus.IsShiftPressed, alt: specialKeysStatus.IsAltPressed, ctrl: specialKeysStatus.IsCtrlPressed);
         _appState.PreviousKeys.Add(keyWithModifiers);
 
         var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
         selectedCommandBinding ??= _keyboardConfigurationService.CommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
 
-        if (key == Keys.Escape)
+        if (args.Key == Keys.Escape)
         {
             var doGeneralReset = _appState.PreviousKeys.Count > 1;
 
@@ -75,7 +75,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
                 var escapeResult = await escHandler.HandleEsc();
                 if (escapeResult.NavigateTo != null)
                 {
-                    setHandled(true);
+                    args.Handled = true;
                     _appState.PreviousKeys.Clear();
                     if (_appState.SelectedTab.Value?.Tab is { } selectedTab)
                     {
@@ -97,7 +97,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 
             if (doGeneralReset)
             {
-                setHandled(true);
+                args.Handled = true;
                 _appState.PreviousKeys.Clear();
                 _appState.PossibleCommands = new();
             }
@@ -107,11 +107,11 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         {
             _appState.PreviousKeys.Clear();
             //_dialogService.ProcessMessageBox();
-            setHandled(true);
+            args.Handled = true;
         }*/
         else if (selectedCommandBinding != null)
         {
-            setHandled(true);
+            args.Handled = true;
             _appState.PreviousKeys.Clear();
             _appState.PossibleCommands = new();
             var command = _identifiableUserCommandService.GetCommand(selectedCommandBinding.Command);
@@ -128,14 +128,14 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         }
         else if (_appState.PreviousKeys.Count == 2)
         {
-            setHandled(true);
+            args.Handled = true;
             _appState.NoCommandFound = true;
             _appState.PreviousKeys.Clear();
             _appState.PossibleCommands = new();
         }
         else
         {
-            setHandled(true);
+            args.Handled = true;
             var possibleCommands = _keyboardConfigurationService.AllShortcut.Where(c => c.Keys[0].AreEquals(keyWithModifiers)).ToList();
 
             if (possibleCommands.Count == 0)

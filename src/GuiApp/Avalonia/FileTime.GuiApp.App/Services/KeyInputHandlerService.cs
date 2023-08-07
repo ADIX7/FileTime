@@ -2,6 +2,7 @@ using Avalonia.Input;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
+using FileTime.GuiApp.App.Extensions;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;
 
@@ -13,7 +14,6 @@ public class KeyInputHandlerService : IKeyInputHandlerService
     private readonly IDefaultModeKeyInputHandler _defaultModeKeyInputHandler;
     private readonly IRapidTravelModeKeyInputHandler _rapidTravelModeKeyInputHandler;
     private readonly IAppKeyService<Key> _appKeyService;
-    private ViewMode _viewMode;
     private GuiPanel _activePanel;
 
     private readonly Dictionary<(GuiPanel, Key), GuiPanel> _panelMovements = new()
@@ -33,13 +33,12 @@ public class KeyInputHandlerService : IKeyInputHandlerService
         _rapidTravelModeKeyInputHandler = rapidTravelModeKeyInputHandler;
         _appKeyService = appKeyService;
 
-        appState.ViewMode.Subscribe(v => _viewMode = v);
         appState.ActivePanel.Subscribe(p => _activePanel = p);
     }
 
-    public async Task ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
+    public async Task ProcessKeyDown(KeyEventArgs e)
     {
-        if (key is Key.LeftAlt
+        if (e.Key is Key.LeftAlt
             or Key.RightAlt
             or Key.LeftShift
             or Key.RightShift
@@ -51,16 +50,16 @@ public class KeyInputHandlerService : IKeyInputHandlerService
 
         //_appState.NoCommandFound = false;
 
-        var isAltPressed = (keyModifiers & KeyModifiers.Alt) == KeyModifiers.Alt;
-        var isShiftPressed = (keyModifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
-        var isCtrlPressed = (keyModifiers & KeyModifiers.Control) == KeyModifiers.Control;
+        var isAltPressed = (e.KeyModifiers & KeyModifiers.Alt) == KeyModifiers.Alt;
+        var isShiftPressed = (e.KeyModifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
+        var isCtrlPressed = (e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control;
 
         if (isCtrlPressed
-            && key is Key.Left or Key.Right or Key.Up or Key.Down
-            && _panelMovements.TryGetValue((_activePanel, key), out var newPanel))
+            && e.Key is Key.Left or Key.Right or Key.Up or Key.Down
+            && _panelMovements.TryGetValue((_activePanel, e.Key), out var newPanel))
         {
             _appState.SetActivePanel(newPanel);
-            setHandled(true);
+            e.Handled = true;
             return;
         }
 
@@ -68,18 +67,18 @@ public class KeyInputHandlerService : IKeyInputHandlerService
 
         if (_activePanel == GuiPanel.FileBrowser)
         {
-            if (_viewMode == ViewMode.Default)
+            if (_appState.ViewMode.Value == ViewMode.Default)
             {
-                if (_appKeyService.MapKey(key) is { } mappedKey)
+                if (e.ToGeneralKeyEventArgs(_appKeyService) is { } args)
                 {
-                    await _defaultModeKeyInputHandler.HandleInputKey(mappedKey, specialKeyStatus, setHandled);
+                    await _defaultModeKeyInputHandler.HandleInputKey(args, specialKeyStatus);
                 }
             }
             else
             {
-                if (_appKeyService.MapKey(key) is { } mappedKey)
+                if (e.ToGeneralKeyEventArgs(_appKeyService) is { } args)
                 {
-                    await _rapidTravelModeKeyInputHandler.HandleInputKey(mappedKey, specialKeyStatus, setHandled);
+                    await _rapidTravelModeKeyInputHandler.HandleInputKey(args, specialKeyStatus);
                 }
             }
         }

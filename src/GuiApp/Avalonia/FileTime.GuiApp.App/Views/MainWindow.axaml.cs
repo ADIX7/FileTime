@@ -100,7 +100,7 @@ public partial class MainWindow : Window, IUiAccessor
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
         if ((_openModals?.Count ?? 0) > 0) return;
-        ViewModel?.ProcessKeyDown(e.Key, e.KeyModifiers, h => e.Handled = h);
+        ViewModel?.ProcessKeyDown(e);
     }
 
     private void HeaderPointerPressed(object sender, PointerPressedEventArgs e)

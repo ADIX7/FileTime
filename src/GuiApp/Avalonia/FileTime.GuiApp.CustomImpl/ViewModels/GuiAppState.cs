@@ -21,10 +21,6 @@ public partial class GuiAppState : AppStateBase, IGuiAppState, IDisposable
         ActivePanel = _activePanel.AsObservable();
     }
 
-    [Notify] private bool _noCommandFound;
-
-    [Notify] private List<CommandBindingConfiguration> _possibleCommands = new();
-
     [Notify] private ObservableCollection<RootDriveInfo> _rootDriveInfos = new();
 
     [Notify] private IReadOnlyList<PlaceInfo> _places = new List<PlaceInfo>();
@@ -35,8 +31,5 @@ public partial class GuiAppState : AppStateBase, IGuiAppState, IDisposable
     public void SetActivePanel(GuiPanel newPanel)
         => _activePanel.OnNext(newPanel);
 
-    public void Dispose()
-    {
-        _activePanel.Dispose();
-    }
+    public void Dispose() => _activePanel.Dispose();
 }

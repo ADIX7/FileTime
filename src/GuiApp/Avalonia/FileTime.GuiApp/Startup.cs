@@ -53,9 +53,6 @@ public static class Startup
     {
         serviceCollection.TryAddSingleton<IRxSchedulerService, AvaloniaRxSchedulerService>();
         serviceCollection.TryAddSingleton<IKeyInputHandlerService, KeyInputHandlerService>();
-        serviceCollection.TryAddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>();
-        serviceCollection.TryAddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>();
-        serviceCollection.TryAddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>();
         serviceCollection.TryAddSingleton<IIconProvider, MaterialIconProvider>();
         serviceCollection.TryAddSingleton<IDialogService, DialogService>();
         serviceCollection.TryAddSingleton<SystemClipboardService>();

@@ -5,7 +5,7 @@ using FileTime.App.Core.Services;
 
 namespace FileTime.GuiApp.App.Services;
 
-public class GuiAppKeyService : IAppKeyService<Key>
+public sealed class GuiAppKeyService : IAppKeyService<Key>
 {
     private static readonly Dictionary<Key, Keys> KeyMapping;
 
@@ -70,7 +70,7 @@ public class GuiAppKeyService : IAppKeyService<Key>
             {Key.Right, Keys.Right},
             {Key.Enter, Keys.Enter},
             {Key.Escape, Keys.Escape},
-            {Key.Back, Keys.Back},
+            {Key.Back, Keys.Backspace},
             {Key.Space, Keys.Space},
             {Key.PageUp, Keys.PageUp},
             {Key.PageDown, Keys.PageDown},

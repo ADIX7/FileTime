@@ -19,16 +19,16 @@ public abstract partial class AppStateBase : IAppState
     private readonly DeclarativeProperty<ViewMode> _viewMode = new(Models.Enums.ViewMode.Default);
     private readonly ObservableCollection<ITabViewModel> _tabs = new();
 
-    public IDeclarativeProperty<ViewMode> ViewMode { get; private set; }
+    public IDeclarativeProperty<ViewMode> ViewMode { get; }
 
-    public ReadOnlyObservableCollection<ITabViewModel> Tabs { get; private set; }
-    public IObservable<string?> SearchText { get; private set; }
+    public ReadOnlyObservableCollection<ITabViewModel> Tabs { get; }
+    public IObservable<string?> SearchText { get; }
 
-    public IDeclarativeProperty<ITabViewModel?> SelectedTab { get; private set; }
-    public DeclarativeProperty<string?> RapidTravelText { get; private set; }
-    public IDeclarativeProperty<string?> RapidTravelTextDebounced { get; private set; }
+    public IDeclarativeProperty<ITabViewModel?> SelectedTab { get; }
+    public DeclarativeProperty<string?> RapidTravelText { get; }
+    public IDeclarativeProperty<string?> RapidTravelTextDebounced { get; }
 
-    public IDeclarativeProperty<string?> ContainerStatus { get; private set; }
+    public IDeclarativeProperty<string?> ContainerStatus { get; }
     [Notify] public List<KeyConfig> PreviousKeys { get; } = new();
     [Notify] public List<CommandBindingConfiguration> PossibleCommands { get; set; } = new();
     [Notify] public bool NoCommandFound { get; set; }

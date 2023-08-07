@@ -4,5 +4,5 @@ namespace FileTime.App.Core.Services;
 
 public interface IKeyInputHandler
 {
-    Task HandleInputKey(Keys key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled);
+    Task HandleInputKey(GeneralKeyEventArgs e, SpecialKeysStatus specialKeysStatus);
 }

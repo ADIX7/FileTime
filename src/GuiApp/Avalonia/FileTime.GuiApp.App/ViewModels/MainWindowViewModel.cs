@@ -73,8 +73,8 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
     }
 
-    public void ProcessKeyDown(Key key, KeyModifiers keyModifiers, Action<bool> setHandled)
-        => _keyInputHandlerService.ProcessKeyDown(key, keyModifiers, setHandled);
+    public void ProcessKeyDown(KeyEventArgs e)
+        => _keyInputHandlerService.ProcessKeyDown(e);
 
     public async Task OpenContainerByFullName(FullName fullName)
     {

@@ -1,4 +1,6 @@
-﻿namespace FileTime.App.Core.Models;
+﻿using System.ComponentModel;
+
+namespace FileTime.App.Core.Models;
 
 public enum Keys
 {
@@ -46,7 +48,7 @@ public enum Keys
     Right,
     Enter,
     Escape,
-    Back,
+    Backspace,
     Space,
     PageUp,
     PageDown,
@@ -55,14 +57,24 @@ public enum Keys
     Tab,
     LWin,
     RWin,
+    [Description("0")]
     Num0,
+    [Description("1")]
     Num1,
+    [Description("2")]
     Num2,
+    [Description("3")]
     Num3,
+    [Description("4")]
     Num4,
+    [Description("5")]
     Num5,
+    [Description("6")]
     Num6,
+    [Description("7")]
     Num7,
+    [Description("8")]
     Num8,
+    [Description("9")]
     Num9,
 }

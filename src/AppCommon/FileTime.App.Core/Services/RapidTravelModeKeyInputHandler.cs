@@ -5,6 +5,7 @@ using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.Core.Services;
@@ -53,13 +54,13 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         });
     }
 
-    public async Task HandleInputKey(Keys key, SpecialKeysStatus specialKeysStatus, Action<bool> setHandled)
+    public async Task HandleInputKey(GeneralKeyEventArgs args, SpecialKeysStatus specialKeysStatus)
     {
-        var keyString = key.ToString();
+        var keyString = args.Key.Humanize();
 
-        if (key == Keys.Escape)
+        if (args.Key == Keys.Escape)
         {
-            setHandled(true);
+            args.Handled = true;
             if ((_openModals.Collection?.Count ?? 0) > 0)
             {
                 _modalService.CloseModal(_openModals.Collection!.Last());
@@ -69,11 +70,11 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
                 await CallCommandAsync(ExitRapidTravelCommand.Instance);
             }
         }
-        else if (key == Keys.Back)
+        else if (args.Key == Keys.Backspace)
         {
             if (_appState.RapidTravelText.Value!.Length > 0)
             {
-                setHandled(true);
+                args.Handled = true;
                 await _appState.RapidTravelText.SetValue(
                     _appState.RapidTravelText.Value![..^1]
                 );
@@ -81,18 +82,18 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         }
         else if (keyString.Length == 1)
         {
-            setHandled(true);
+            args.Handled = true;
             await _appState.RapidTravelText.SetValue(
                 _appState.RapidTravelText.Value + keyString.ToLower()
             );
         }
         else
         {
-            var currentKeyAsList = new List<KeyConfig> {new(key)};
+            var currentKeyAsList = new List<KeyConfig> {new(args.Key)};
             var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(currentKeyAsList));
             if (selectedCommandBinding != null)
             {
-                setHandled(true);
+                args.Handled = true;
                 await CallCommandAsync(_identifiableUserCommandService.GetCommand(selectedCommandBinding.Command));
             }
         }
