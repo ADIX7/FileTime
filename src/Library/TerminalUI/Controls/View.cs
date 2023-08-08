@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using PropertyChanged.SourceGenerator;
+using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
@@ -9,10 +10,9 @@ public abstract partial class View<T> : IView<T>
 {
     private readonly List<IDisposable> _disposables = new();
     [Notify] private T? _dataContext;
-    public Action RenderMethod { get; set; }
-    public IApplicationContext ApplicationContext { get; init; }
+    public Action<Position> RenderMethod { get; set; }
+    public IApplicationContext? ApplicationContext { get; init; }
     public event Action<IView>? Disposed;
-    public event Action<IView>? RenderRequested;
     protected List<string> RerenderProperties { get; } = new();
 
     protected View()
@@ -29,13 +29,13 @@ public abstract partial class View<T> : IView<T>
             )
         )
         {
-            RenderRequested?.Invoke(this);
+            ApplicationContext?.EventLoop.RequestRerender();
         }
     }
 
-    protected abstract void DefaultRenderer();
+    protected abstract void DefaultRenderer(Position position);
 
-    public void Render()
+    public void Render(Position position)
     {
         if (RenderMethod is null)
         {
@@ -47,10 +47,8 @@ public abstract partial class View<T> : IView<T>
                 + DataContext?.GetType().Name);
         }
 
-        RenderMethod();
+        RenderMethod(position);
     }
-
-    public void RequestRerender() => RenderRequested?.Invoke(this);
 
     public TChild CreateChild<TChild>() where TChild : IView<T>, new()
     {

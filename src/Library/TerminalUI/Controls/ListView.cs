@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Collections.ObjectModel;
 using DeclarativeProperty;
+using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
@@ -9,7 +10,7 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
     private static readonly ArrayPool<ListViewItem<TItem>> ListViewItemPool = ArrayPool<ListViewItem<TItem>>.Shared;
 
     private readonly List<IDisposable> _itemsDisposables = new();
-    private Func<IEnumerable<TItem>>? _getItems;
+    private Func<IEnumerable<TItem>?>? _getItems;
     private object? _itemsSource;
     private ListViewItem<TItem>[]? _listViewItems;
     private int _listViewItemLength;
@@ -30,11 +31,20 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
             _itemsDisposables.Clear();
 
             if (_itemsSource is IDeclarativeProperty<ObservableCollection<TItem>> observableDeclarativeProperty)
+            {
+                observableDeclarativeProperty.PropertyChanged += (_, _) => ApplicationContext?.EventLoop.RequestRerender();
                 _getItems = () => observableDeclarativeProperty.Value;
+            }
             else if (_itemsSource is IDeclarativeProperty<ReadOnlyObservableCollection<TItem>> readOnlyObservableDeclarativeProperty)
+            {
+                readOnlyObservableDeclarativeProperty.PropertyChanged += (_, _) => ApplicationContext?.EventLoop.RequestRerender();
                 _getItems = () => readOnlyObservableDeclarativeProperty.Value;
+            }
             else if (_itemsSource is IDeclarativeProperty<IEnumerable<TItem>> enumerableDeclarativeProperty)
+            {
+                enumerableDeclarativeProperty.PropertyChanged += (_, _) => ApplicationContext?.EventLoop.RequestRerender();
                 _getItems = () => enumerableDeclarativeProperty.Value;
+            }
             else if (_itemsSource is ICollection<TItem> collection)
                 _getItems = () => collection;
             else if (_itemsSource is TItem[] array)
@@ -54,18 +64,20 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
 
     public Func<ListViewItem<TItem>, IView?> ItemTemplate { get; set; } = DefaultItemTemplate;
 
-    protected override void DefaultRenderer()
+    protected override void DefaultRenderer(Position position)
     {
         var listViewItems = InstantiateItemViews();
+        var deltaY = 0;
         foreach (var item in listViewItems)
         {
-            item.Render();
+            item.Render(position with {PosY = position.PosY + deltaY++});
         }
     }
 
     private Span<ListViewItem<TItem>> InstantiateItemViews()
     {
-        if (_getItems is null)
+        var items = _getItems?.Invoke()?.ToList();
+        if (items is null)
         {
             if (_listViewItemLength != 0)
             {
@@ -74,11 +86,10 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
 
             return _listViewItems;
         }
-        var items = _getItems().ToList();
 
         Span<ListViewItem<TItem>> listViewItems;
 
-        if (_listViewItems is null || _listViewItems.Length != items.Count)
+        if (_listViewItems is null || _listViewItemLength != items.Count)
         {
             var newListViewItems = ListViewItemPool.Rent(items.Count);
             for (var i = 0; i < items.Count; i++)

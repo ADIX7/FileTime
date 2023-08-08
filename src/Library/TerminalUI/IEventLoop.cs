@@ -7,4 +7,5 @@ public interface IEventLoop
     void Render();
     void AddViewToRender(IView view);
     void Run();
+    void RequestRerender();
 }

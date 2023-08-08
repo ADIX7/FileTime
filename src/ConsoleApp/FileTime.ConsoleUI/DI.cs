@@ -18,9 +18,9 @@ public static class DI
 {
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
-    public static void Initialize(IConfigurationRoot configuration)
+    public static void Initialize(IConfigurationRoot configuration, IServiceCollection serviceCollection)
         => ServiceProvider = DependencyInjection
-            .RegisterDefaultServices(configuration: configuration)
+            .RegisterDefaultServices(configuration: configuration, serviceCollection: serviceCollection)
             .AddConsoleServices()
             .AddLocalProviderServices()
             .AddServerCoreServices()

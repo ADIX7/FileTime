@@ -1,10 +1,10 @@
-﻿using TerminalUI.Traits;
+﻿using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
 public class ListViewItem<T> : ContentView<T>
 {
-    protected override void DefaultRenderer()
+    protected override void DefaultRenderer(Position position)
     {
         if (ContentRendererMethod is null)
         {
@@ -16,6 +16,6 @@ public class ListViewItem<T> : ContentView<T>
                 + DataContext?.GetType().Name);
         }
 
-        ContentRendererMethod();
+        ContentRendererMethod(position);
     }
 }

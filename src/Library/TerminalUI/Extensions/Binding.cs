@@ -10,8 +10,7 @@ public static class Binding
         this TView targetView,
         IView<TDataContext> dataSourceView,
         Expression<Func<TDataContext?, TResult>> dataContextExpression,
-        Expression<Func<TView, TResult>> propertyExpression,
-        IEnumerable<string>? rerenderProperties = null)
+        Expression<Func<TView, TResult>> propertyExpression)
     {
         if (propertyExpression.Body is not MemberExpression {Member: PropertyInfo propertyInfo})
             throw new AggregateException(nameof(propertyExpression) + " must be a property expression");
@@ -20,8 +19,7 @@ public static class Binding
             dataSourceView, 
             dataContextExpression, 
             targetView, 
-            propertyInfo, 
-            rerenderProperties
+            propertyInfo
         );
     }
 }

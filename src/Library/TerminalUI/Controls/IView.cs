@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TerminalUI.Models;
 using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
@@ -6,12 +7,10 @@ namespace TerminalUI.Controls;
 public interface IView : INotifyPropertyChanged, IDisposableCollection
 {
     object? DataContext { get; set; }
-    Action RenderMethod { get; set; }
-    IApplicationContext ApplicationContext { get; init;}
+    Action<Position> RenderMethod { get; set; }
+    IApplicationContext? ApplicationContext { get; init;}
     event Action<IView> Disposed;
-    event Action<IView> RenderRequested;
-    void Render();
-    void RequestRerender();
+    void Render(Position position);
 }
 
 public interface IView<T> : IView

@@ -12,16 +12,15 @@ public class Binding<TDataContext, TResult> : IDisposable
     private IView<TDataContext> _dataSourceView;
     private object? _propertySource;
     private PropertyInfo _targetProperty;
-    private readonly List<string> _rerenderProperties;
-    private readonly IDisposableCollection? _propertySourceDisposableCollection;
-    private INotifyPropertyChanged? _dataSourceLastDataContext;
+    private IDisposableCollection? _propertySourceDisposableCollection;
+    private PropertyTrackTreeItem? _propertyTrackTreeItem;
+    private IPropertyChangeTracker? _propertyChangeTracker;
 
     public Binding(
         IView<TDataContext> dataSourceView,
         Expression<Func<TDataContext?, TResult>> dataContextExpression,
         object? propertySource,
-        PropertyInfo targetProperty,
-        IEnumerable<string>? rerenderProperties = null
+        PropertyInfo targetProperty
     )
     {
         ArgumentNullException.ThrowIfNull(dataSourceView);
@@ -31,70 +30,148 @@ public class Binding<TDataContext, TResult> : IDisposable
         _dataContextMapper = dataContextExpression.Compile();
         _propertySource = propertySource;
         _targetProperty = targetProperty;
-        _rerenderProperties = rerenderProperties?.ToList() ?? new List<string>();
 
-        FindReactiveProperties(dataContextExpression);
+        InitTrackingTree(dataContextExpression);
+
+        UpdateTrackers();
 
         dataSourceView.PropertyChanged += View_PropertyChanged;
-        var initialValue = _dataContextMapper(_dataSourceView.DataContext);
-        _targetProperty.SetValue(_propertySource, initialValue);
+        UpdateTargetProperty();
 
+        AddToSourceDisposables(propertySource);
+
+        dataSourceView.AddDisposable(this);
+    }
+
+    private void AddToSourceDisposables(object? propertySource)
+    {
         if (propertySource is IDisposableCollection propertySourceDisposableCollection)
         {
             propertySourceDisposableCollection.AddDisposable(this);
             _propertySourceDisposableCollection = propertySourceDisposableCollection;
         }
-
-        if (_dataSourceView.DataContext is INotifyPropertyChanged dataSourcePropertyChanged)
-        {
-            _dataSourceLastDataContext = dataSourcePropertyChanged;
-            dataSourcePropertyChanged.PropertyChanged += DataContext_PropertyChanged;
-        }
-
-        dataSourceView.AddDisposable(this);
     }
 
-    private void FindReactiveProperties(Expression expression)
+    private void InitTrackingTree(Expression<Func<TDataContext?, TResult>> dataContextExpression)
+    {
+        var properties = new List<string>();
+        FindReactiveProperties(dataContextExpression, properties);
+
+        if (properties.Count > 0)
+        {
+            var rootItem = new PropertyTrackTreeItem();
+            foreach (var property in properties)
+            {
+                var pathParts = property.Split('.');
+                var currentItem = rootItem;
+                for (var i = 0; i < pathParts.Length; i++)
+                {
+                    if (!currentItem.Children.TryGetValue(pathParts[i], out var child))
+                    {
+                        child = new PropertyTrackTreeItem();
+                        currentItem.Children.Add(pathParts[i], child);
+                    }
+
+                    currentItem = child;
+                }
+            }
+
+            _propertyTrackTreeItem = rootItem;
+        }
+    }
+
+    private string? FindReactiveProperties(Expression expression, List<string> properties)
     {
         if (expression is LambdaExpression lambdaExpression)
         {
-            FindReactiveProperties(lambdaExpression.Body);
+            SavePropertyPath(FindReactiveProperties(lambdaExpression.Body, properties));
         }
         else if (expression is ConditionalExpression conditionalExpression)
         {
-            FindReactiveProperties(conditionalExpression.IfFalse);
-            FindReactiveProperties(conditionalExpression.IfTrue);
+            SavePropertyPath(FindReactiveProperties(conditionalExpression.IfFalse, properties));
+            SavePropertyPath(FindReactiveProperties(conditionalExpression.IfTrue, properties));
         }
-        else if (expression is MemberExpression {Member: PropertyInfo dataContextPropertyInfo})
+        else if (expression is MemberExpression memberExpression)
         {
-            _rerenderProperties.Add(dataContextPropertyInfo.Name);
+            if (memberExpression.Expression is not null)
+            {
+                FindReactiveProperties(memberExpression.Expression, properties);
+
+                if (FindReactiveProperties(memberExpression.Expression, properties) is { } path
+                    && memberExpression.Member is PropertyInfo dataContextPropertyInfo)
+                {
+                    path += "." + memberExpression.Member.Name;
+                    return path;
+                }
+            }
         }
-        //TODO: Handle other expression types
+        else if (expression is MethodCallExpression methodCallExpression)
+        {
+            if (methodCallExpression.Object is
+                {
+                    NodeType:
+                    not ExpressionType.Parameter
+                    and not ExpressionType.Constant
+                } methodObject)
+            {
+                SavePropertyPath(FindReactiveProperties(methodObject, properties));
+            }
+
+            foreach (var argument in methodCallExpression.Arguments)
+            {
+                SavePropertyPath(FindReactiveProperties(argument, properties));
+            }
+        }
+        else if (expression is BinaryExpression binaryExpression)
+        {
+            SavePropertyPath(FindReactiveProperties(binaryExpression.Left, properties));
+            SavePropertyPath(FindReactiveProperties(binaryExpression.Right, properties));
+        }
+        else if (expression is UnaryExpression unaryExpression)
+        {
+            SavePropertyPath(FindReactiveProperties(unaryExpression.Operand, properties));
+        }
+        else if (expression is ParameterExpression parameterExpression)
+        {
+            if (parameterExpression.Type == typeof(TDataContext))
+            {
+                return "";
+            }
+        }
+
+        return null;
+
+        void SavePropertyPath(string? path)
+        {
+            if (path is null) return;
+            path = path.TrimStart('.');
+            properties.Add(path);
+        }
     }
 
     private void View_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName != nameof(IView<TDataContext>.DataContext)) return;
 
-        if (_dataSourceLastDataContext is not null)
-        {
-            _dataSourceLastDataContext.PropertyChanged -= DataContext_PropertyChanged;
-        }
-
-        if (_dataSourceView.DataContext is INotifyPropertyChanged dataSourcePropertyChanged)
-        {
-            _dataSourceLastDataContext = dataSourcePropertyChanged;
-            dataSourcePropertyChanged.PropertyChanged += DataContext_PropertyChanged;
-        }
-
+        UpdateTrackers();
         UpdateTargetProperty();
     }
 
-    private void DataContext_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void UpdateTrackers()
     {
-        if (e.PropertyName == null
-            || !_rerenderProperties.Contains(e.PropertyName)) return;
-        UpdateTargetProperty();
+        if (_propertyChangeTracker is not null)
+        {
+            _propertyChangeTracker.Dispose();
+        }
+
+        if (_propertyTrackTreeItem is not null)
+        {
+            _propertyChangeTracker = PropertyChangeHelper.TraverseDataContext(
+                _propertyTrackTreeItem,
+                _dataSourceView.DataContext,
+                UpdateTargetProperty
+            );
+        }
     }
 
     private void UpdateTargetProperty()

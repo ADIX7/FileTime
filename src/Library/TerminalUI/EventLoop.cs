@@ -1,6 +1,5 @@
-﻿using System.Buffers;
-using System.Collections.Concurrent;
-using TerminalUI.Controls;
+﻿using TerminalUI.Controls;
+using TerminalUI.Models;
 
 namespace TerminalUI;
 
@@ -8,10 +7,8 @@ public class EventLoop : IEventLoop
 {
     private readonly IApplicationContext _applicationContext;
     private readonly object _lock = new();
-    private readonly ArrayPool<IView> _viewPool = ArrayPool<IView>.Shared;
-
-    private readonly ConcurrentBag<IView> _viewsToRenderInstantly = new();
-    private readonly LinkedList<IView> _viewsToRender = new();
+    private readonly List<IView> _viewsToRender = new();
+    private bool _rerenderRequested;
 
     public EventLoop(IApplicationContext applicationContext)
     {
@@ -21,6 +18,7 @@ public class EventLoop : IEventLoop
     public void Run()
     {
         _applicationContext.IsRunning = true;
+        _rerenderRequested = true;
         while (_applicationContext.IsRunning)
         {
             Render();
@@ -28,103 +26,36 @@ public class EventLoop : IEventLoop
         }
     }
 
+    public void RequestRerender()
+    {
+        lock (_lock)
+        {
+            _rerenderRequested = true;
+        }
+    }
+
     public void Render()
     {
-        IView[]? viewsToRenderCopy = null;
-        IView[]? viewsAlreadyRendered = null;
-        try
+        List<IView> viewsToRender;
+        lock (_lock)
         {
-            int viewsToRenderCopyCount;
-            IView[]? viewsToRenderInstantly;
+            if (!_rerenderRequested) return;
+            _rerenderRequested = false;
 
-            lock (_lock)
-            {
-                CleanViewsToRender();
-
-                viewsToRenderCopyCount = _viewsToRender.Count;
-                viewsToRenderCopy = _viewPool.Rent(_viewsToRender.Count);
-                _viewsToRender.CopyTo(viewsToRenderCopy, 0);
-
-                viewsToRenderInstantly = _viewsToRenderInstantly.ToArray();
-                _viewsToRenderInstantly.Clear();
-            }
-
-            viewsAlreadyRendered = _viewPool.Rent(viewsToRenderCopy.Length + viewsToRenderInstantly.Length);
-            var viewsAlreadyRenderedIndex = 0;
-
-            foreach (var view in viewsToRenderInstantly)
-            {
-                if (Contains(viewsAlreadyRendered, view, viewsAlreadyRenderedIndex)) continue;
-
-                view.Render();
-                viewsAlreadyRendered[viewsAlreadyRenderedIndex++] = view;
-            }
-
-            for (var i = 0; i < viewsToRenderCopyCount; i++)
-            {
-                var view = viewsToRenderCopy[i];
-                if (Contains(viewsAlreadyRendered, view, viewsAlreadyRenderedIndex)) continue;
-
-                view.Render();
-                viewsAlreadyRendered[viewsAlreadyRenderedIndex++] = view;
-            }
-        }
-        finally
-        {
-            if (viewsToRenderCopy is not null)
-                _viewPool.Return(viewsToRenderCopy);
-
-            if (viewsAlreadyRendered is not null)
-                _viewPool.Return(viewsAlreadyRendered);
-        }
-    }
-
-    private void CleanViewsToRender()
-    {
-        IView[]? viewsAlreadyProcessed = null;
-        try
-        {
-            viewsAlreadyProcessed = _viewPool.Rent(_viewsToRender.Count);
-            var viewsAlreadyProcessedIndex = 0;
-
-            var currentItem = _viewsToRender.First;
-            for (var i = 0; i < _viewsToRender.Count && currentItem is not null; i++)
-            {
-                if (Contains(viewsAlreadyProcessed, currentItem.Value, viewsAlreadyProcessedIndex))
-                {
-                    var itemToRemove = currentItem;
-                    currentItem = currentItem.Next;
-                    _viewsToRender.Remove(itemToRemove);
-                    continue;
-                }
-
-                viewsAlreadyProcessed[viewsAlreadyProcessedIndex++] = currentItem.Value;
-            }
-        }
-        finally
-        {
-            if (viewsAlreadyProcessed is not null)
-            {
-                _viewPool.Return(viewsAlreadyProcessed);
-            }
-        }
-    }
-
-    private static bool Contains(IView[] views, IView view, int max)
-    {
-        for (var i = 0; i < max; i++)
-        {
-            if (views[i] == view) return true;
+            viewsToRender = _viewsToRender.ToList();
         }
 
-        return false;
+        foreach (var view in viewsToRender)
+        {
+            view.Render(new Position(0, 0));
+        }
     }
 
     public void AddViewToRender(IView view)
     {
         lock (_lock)
         {
-            _viewsToRender.AddLast(view);
+            _viewsToRender.Add(view);
         }
     }
 }

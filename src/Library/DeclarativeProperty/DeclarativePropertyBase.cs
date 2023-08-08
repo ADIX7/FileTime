@@ -12,6 +12,7 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
     private readonly List<Action<IDeclarativeProperty<T>, T>> _unsubscribeTriggers = new();
     private readonly List<IDisposable> _triggerDisposables = new();
     private readonly object _triggerLock = new();
+    private readonly object _subscriberLock = new();
 
     private T? _value;
 
@@ -35,7 +36,12 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
 
     protected async Task NotifySubscribersAsync(T? newValue, CancellationToken cancellationToken = default)
     {
-        var subscribers = _subscribers.ToList();
+        List<Func<T?, CancellationToken, Task>> subscribers;
+        lock (_subscriberLock)
+        {
+            subscribers = _subscribers.ToList();
+        }
+
         foreach (var handler in subscribers)
         {
             await handler(newValue, cancellationToken);
@@ -50,13 +56,23 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
 
     public IDisposable Subscribe(Func<T?, CancellationToken, Task> onChange)
     {
-        _subscribers.Add(onChange);
+        lock (_subscriberLock)
+        {
+            _subscribers.Add(onChange);
+        }
+
         onChange(_value, default);
 
         return new Unsubscriber<T>(this, onChange);
     }
 
-    public void Unsubscribe(Func<T, CancellationToken, Task> onChange) => _subscribers.Remove(onChange);
+    public void Unsubscribe(Func<T, CancellationToken, Task> onChange)
+    {
+        lock (_subscriberLock)
+        {
+            _subscribers.Remove(onChange);
+        }
+    }
 
     public IDeclarativeProperty<T> RegisterTrigger(
         Func<IDeclarativeProperty<T>, T, IDisposable?> triggerSubscribe,
@@ -139,7 +155,10 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
             disposable.Dispose();
         }
 
-        _subscribers.Clear();
+        lock (_subscriberLock)
+        {
+            _subscribers.Clear();
+        }
     }
 
     protected void AddDisposable(IDisposable disposable) => _disposables.Add(disposable);

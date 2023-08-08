@@ -1,4 +1,5 @@
-﻿using TerminalUI.Traits;
+﻿using TerminalUI.Models;
+using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
@@ -9,7 +10,7 @@ public abstract class ContentView<T>: View<T>, IContentRenderer
         ContentRendererMethod = DefaultContentRender;
     }
     public IView? Content { get; set; }
-    public Action ContentRendererMethod { get; set; }
+    public Action<Position> ContentRendererMethod { get; set; }
 
-    private void DefaultContentRender() => Content?.Render();
+    private void DefaultContentRender(Position position) => Content?.Render(position);
 }
