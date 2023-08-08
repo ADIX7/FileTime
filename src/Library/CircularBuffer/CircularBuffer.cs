@@ -2,7 +2,7 @@
 
 using System.Collections;
 
-namespace FileTime.Core.Collections;
+namespace CircularBuffer;
 #if (NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 
 /// <summary>
