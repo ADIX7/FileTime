@@ -6,18 +6,22 @@ namespace TerminalUI.Extensions;
 
 public static class Binding
 {
-    public static Binding<TDataContext, TResult> Bind<TDataContext, TResult, TView>(
+    public static Binding<TDataContext, TResult> Bind<TView, TDataContext, TResult>(
         this TView targetView,
-        IView<TDataContext> view,
-        Expression<Func<TDataContext, TResult>> dataContextExpression,
-        Expression<Func<TView, TResult>> propertyExpression)
+        IView<TDataContext> dataSourceView,
+        Expression<Func<TDataContext?, TResult>> dataContextExpression,
+        Expression<Func<TView, TResult>> propertyExpression,
+        IEnumerable<string>? rerenderProperties = null)
     {
-        var dataContextMapper = dataContextExpression.Compile();
-
-        if (propertyExpression.Body is not MemberExpression memberExpression
-            || memberExpression.Member is not PropertyInfo propertyInfo)
+        if (propertyExpression.Body is not MemberExpression {Member: PropertyInfo propertyInfo})
             throw new AggregateException(nameof(propertyExpression) + " must be a property expression");
 
-        return new Binding<TDataContext, TResult>(view, dataContextMapper, targetView, propertyInfo);
+        return new Binding<TDataContext, TResult>(
+            dataSourceView, 
+            dataContextExpression, 
+            targetView, 
+            propertyInfo, 
+            rerenderProperties
+        );
     }
 }

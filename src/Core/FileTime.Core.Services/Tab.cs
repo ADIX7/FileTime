@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
+using CircularBuffer;
 using DeclarativeProperty;
 using DynamicData;
 using FileTime.App.Core.Services;
-using FileTime.Core.Collections;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;

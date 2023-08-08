@@ -119,6 +119,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.ConsoleUI.App.Abst
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalUI", "Library\TerminalUI\TerminalUI.csproj", "{2F01FC4C-D942-48B0-B61C-7C5BEAED4787}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CircularBuffer", "Library\CircularBuffer\CircularBuffer.csproj", "{AF4FE804-12D9-46E2-A584-BFF6D4509766}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -321,6 +323,10 @@ Global
 		{2F01FC4C-D942-48B0-B61C-7C5BEAED4787}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F01FC4C-D942-48B0-B61C-7C5BEAED4787}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F01FC4C-D942-48B0-B61C-7C5BEAED4787}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF4FE804-12D9-46E2-A584-BFF6D4509766}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF4FE804-12D9-46E2-A584-BFF6D4509766}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF4FE804-12D9-46E2-A584-BFF6D4509766}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF4FE804-12D9-46E2-A584-BFF6D4509766}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -376,6 +382,7 @@ Global
 		{826AFD32-E36B-48BA-BC1E-1476B393CF24} = {A5291117-3001-498B-AC8B-E14F71F72570}
 		{81F44BBB-6F89-41B4-89F1-4A3204843DB5} = {CAEEAD3C-41EB-405C-ACA9-BA1E4C352549}
 		{2F01FC4C-D942-48B0-B61C-7C5BEAED4787} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
+		{AF4FE804-12D9-46E2-A584-BFF6D4509766} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

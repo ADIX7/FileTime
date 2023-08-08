@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\Library\CircularBuffer\CircularBuffer.csproj" />
     <ProjectReference Include="..\..\Library\Defer\Defer.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools\FileTime.Tools.csproj" />
     <ProjectReference Include="..\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />

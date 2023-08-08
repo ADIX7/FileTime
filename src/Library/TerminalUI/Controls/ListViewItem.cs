@@ -1,9 +1,21 @@
-﻿namespace TerminalUI.Controls;
+﻿using TerminalUI.Traits;
 
-public class ListViewItem<T> : View<T>
+namespace TerminalUI.Controls;
+
+public class ListViewItem<T> : ContentView<T>
 {
-    public override void Render()
+    protected override void DefaultRenderer()
     {
-        Console.WriteLine(DataContext?.ToString());
+        if (ContentRendererMethod is null)
+        {
+            throw new NullReferenceException(
+                nameof(ContentRendererMethod)
+                + " is null, cannot render content of "
+                + Content?.GetType().Name
+                + " with DataContext of "
+                + DataContext?.GetType().Name);
+        }
+
+        ContentRendererMethod();
     }
 }

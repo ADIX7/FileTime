@@ -5,6 +5,7 @@ using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TerminalUI;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -20,6 +21,7 @@ public static class Startup
         services.TryAddSingleton<IKeyInputHandlerService, KeyInputHandlerService>();
         services.AddSingleton<CustomLoggerSink>();
 
+        services.TryAddSingleton<IApplicationContext, ApplicationContext>();
         return services;
     }
 }

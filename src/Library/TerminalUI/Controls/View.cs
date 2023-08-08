@@ -1,20 +1,63 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using PropertyChanged.SourceGenerator;
 
 namespace TerminalUI.Controls;
 
-public abstract class View<T> : IView<T>
+public abstract partial class View<T> : IView<T>
 {
-    private readonly ConcurrentBag<IDisposable> _disposables = new();
-    public T? DataContext { get; set; }
-    public abstract void Render();
+    private readonly List<IDisposable> _disposables = new();
+    [Notify] private T? _dataContext;
+    public Action RenderMethod { get; set; }
+    public IApplicationContext ApplicationContext { get; init; }
+    public event Action<IView>? Disposed;
+    public event Action<IView>? RenderRequested;
+    protected List<string> RerenderProperties { get; } = new();
+
+    protected View()
+    {
+        RenderMethod = DefaultRenderer;
+        ((INotifyPropertyChanged) this).PropertyChanged += Handle_PropertyChanged;
+    }
+
+    private void Handle_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not null 
+            && (e.PropertyName == nameof(IView.DataContext) 
+                || RerenderProperties.Contains(e.PropertyName)
+            )
+        )
+        {
+            RenderRequested?.Invoke(this);
+        }
+    }
+
+    protected abstract void DefaultRenderer();
+
+    public void Render()
+    {
+        if (RenderMethod is null)
+        {
+            throw new NullReferenceException(
+                nameof(RenderMethod)
+                + " is null, cannot render content of "
+                + GetType().Name
+                + " with DataContext of "
+                + DataContext?.GetType().Name);
+        }
+
+        RenderMethod();
+    }
+
+    public void RequestRerender() => RenderRequested?.Invoke(this);
 
     public TChild CreateChild<TChild>() where TChild : IView<T>, new()
     {
         var child = new TChild
         {
-            DataContext = DataContext
+            DataContext = DataContext,
+            ApplicationContext = ApplicationContext
         };
         var mapper = new DataContextMapper<T>(this, d => child.DataContext = d);
         AddDisposable(mapper);
@@ -23,12 +66,13 @@ public abstract class View<T> : IView<T>
         return child;
     }
 
-    public TChild CreateChild<TChild, TDataContext>(Func<T?, TDataContext?> dataContextMapper) 
+    public TChild CreateChild<TChild, TDataContext>(Func<T?, TDataContext?> dataContextMapper)
         where TChild : IView<TDataContext>, new()
     {
         var child = new TChild
         {
-            DataContext = dataContextMapper(DataContext)
+            DataContext = dataContextMapper(DataContext),
+            ApplicationContext = ApplicationContext
         };
         var mapper = new DataContextMapper<T>(this, d => child.DataContext = dataContextMapper(d));
         AddDisposable(mapper);
@@ -38,36 +82,36 @@ public abstract class View<T> : IView<T>
     }
 
     public void AddDisposable(IDisposable disposable) => _disposables.Add(disposable);
+    public void RemoveDisposable(IDisposable disposable) => _disposables.Remove(disposable);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-    protected bool SetField<TProp>(ref TProp field, TProp value, [CallerMemberName] string? propertyName = null)
-    {
-        if (EqualityComparer<TProp>.Default.Equals(field, value)) return false;
-        field = value;
-        OnPropertyChanged(propertyName);
-        return true;
-    }
 
     public void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this); // Violates rule
+        GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
         {
-            foreach (var disposable in _disposables)
+            var arrayPool = ArrayPool<IDisposable>.Shared;
+            var disposablesCount = _disposables.Count;
+            var disposables = arrayPool.Rent(disposablesCount);
+            _disposables.CopyTo(disposables);
+            for (var i = 0; i < disposablesCount; i++)
             {
-                disposable.Dispose();
+                disposables[i].Dispose();
             }
 
+            arrayPool.Return(disposables, true);
+
             _disposables.Clear();
+            Disposed?.Invoke(this);
         }
     }
 }

@@ -52,12 +52,31 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
         }
     }
 
-    public override void Render()
+    public Func<ListViewItem<TItem>, IView?> ItemTemplate { get; set; } = DefaultItemTemplate;
+
+    protected override void DefaultRenderer()
     {
-        if (_getItems is null) return;
+        var listViewItems = InstantiateItemViews();
+        foreach (var item in listViewItems)
+        {
+            item.Render();
+        }
+    }
+
+    private Span<ListViewItem<TItem>> InstantiateItemViews()
+    {
+        if (_getItems is null)
+        {
+            if (_listViewItemLength != 0)
+            {
+                return InstantiateEmptyItemViews();
+            }
+
+            return _listViewItems;
+        }
         var items = _getItems().ToList();
 
-        Span<ListViewItem<TItem>> listViewItems = null;
+        Span<ListViewItem<TItem>> listViewItems;
 
         if (_listViewItems is null || _listViewItems.Length != items.Count)
         {
@@ -65,7 +84,10 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
             for (var i = 0; i < items.Count; i++)
             {
                 var dataContext = items[i];
-                newListViewItems[i] = CreateChild<ListViewItem<TItem>, TItem>(_ => dataContext);
+                var child = CreateChild<ListViewItem<TItem>, TItem>(_ => dataContext);
+                child.Content = ItemTemplate(child);
+                ItemTemplate(child);
+                newListViewItems[i] = child;
             }
 
             _listViewItems = newListViewItems;
@@ -77,9 +99,15 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
             listViewItems = _listViewItems[.._listViewItemLength];
         }
 
-        foreach (var item in listViewItems)
-        {
-            item.Render();
-        }
+        return listViewItems;
     }
+
+    private Span<ListViewItem<TItem>> InstantiateEmptyItemViews()
+    {
+        _listViewItems = ListViewItemPool.Rent(0);
+        _listViewItemLength = 0;
+        return _listViewItems;
+    }
+
+    private static IView? DefaultItemTemplate(ListViewItem<TItem> listViewItem) => null;
 }
