@@ -74,7 +74,7 @@ public abstract partial class ItemViewModel : IItemViewModel
             ? parentTab.CurrentSelectedItem
                 .Map(EqualsTo)
                 .DistinctUntilChanged()
-                .Debounce(TimeSpan.FromMilliseconds(10))
+                .Debounce(TimeSpan.FromMilliseconds(1))
             : new DeclarativeProperty<bool>(IsInDeepestPath());
 
         IsAlternative = sourceCollection
@@ -86,7 +86,7 @@ public abstract partial class ItemViewModel : IItemViewModel
         ViewMode = DeclarativePropertyHelpers
             .CombineLatest(IsMarked, IsSelected, IsAlternative, GenerateViewMode)
             .DistinctUntilChanged()
-            .Debounce(TimeSpan.FromMilliseconds(100));
+            .Debounce(TimeSpan.FromMilliseconds(1));
         Attributes = item.Attributes;
         CreatedAt = item.CreatedAt;
         ModifiedAt = item.ModifiedAt;

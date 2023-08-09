@@ -18,6 +18,7 @@ public abstract partial class AppStateBase : IAppState
     private readonly DeclarativeProperty<ITabViewModel?> _selectedTab = new();
     private readonly DeclarativeProperty<ViewMode> _viewMode = new(Models.Enums.ViewMode.Default);
     private readonly ObservableCollection<ITabViewModel> _tabs = new();
+    private readonly DeclarativeProperty<string?> _rapidTravelText;
 
     public IDeclarativeProperty<ViewMode> ViewMode { get; }
 
@@ -25,7 +26,7 @@ public abstract partial class AppStateBase : IAppState
     public IObservable<string?> SearchText { get; }
 
     public IDeclarativeProperty<ITabViewModel?> SelectedTab { get; }
-    public DeclarativeProperty<string?> RapidTravelText { get; }
+    public IDeclarativeProperty<string?> RapidTravelText { get; }
     public IDeclarativeProperty<string?> RapidTravelTextDebounced { get; }
 
     public IDeclarativeProperty<string?> ContainerStatus { get; }
@@ -35,7 +36,8 @@ public abstract partial class AppStateBase : IAppState
 
     protected AppStateBase()
     {
-        RapidTravelText = new("");
+        _rapidTravelText = new ("");
+        RapidTravelText = _rapidTravelText.DistinctUntilChanged();
         RapidTravelTextDebounced = RapidTravelText
             .Debounce(v =>
                     string.IsNullOrEmpty(v)
@@ -83,6 +85,7 @@ public abstract partial class AppStateBase : IAppState
     public async Task SwitchViewModeAsync(ViewMode newViewMode) => await _viewMode.SetValue(newViewMode);
 
     public async Task SetSelectedTabAsync(ITabViewModel tabToSelect) => await _selectedTab.SetValue(tabToSelect);
+    public async Task SetRapidTravelTextAsync(string? text) => await _rapidTravelText.SetValue(text);
 
     private ITabViewModel? GetSelectedTab(IEnumerable<ITabViewModel> tabs, ITabViewModel? expectedSelectedTab)
     {

@@ -1,13 +1,11 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq.Expressions;
-using DeclarativeProperty;
+﻿using DeclarativeProperty;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
+using FileTime.Core.Enums;
 using TerminalUI;
 using TerminalUI.Color;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
-using TerminalUI.Models;
 using TerminalUI.ViewExtensions;
 using ConsoleColor = TerminalUI.Color.ConsoleColor;
 
@@ -18,9 +16,8 @@ public class MainWindow
     private readonly IConsoleAppState _consoleAppState;
     private readonly IApplicationContext _applicationContext;
     private readonly ITheme _theme;
-    private ListView<IAppState, IItemViewModel> _selectedItemsView;
 
-    private Grid<object> _grid;
+    private IView _root;
 
     public MainWindow(
         IConsoleAppState consoleAppState,
@@ -34,13 +31,55 @@ public class MainWindow
 
     public void Initialize()
     {
-        _selectedItemsView = new()
+        var root = new Grid<IAppState>
         {
             DataContext = _consoleAppState,
-            ApplicationContext = _applicationContext
+            ApplicationContext = _applicationContext,
+            RowDefinitionsObject = "Auto *",
+            ChildInitializer =
+            {
+                new TextBlock<IAppState>()
+                    .Setup(t =>
+                        t.Bind(
+                            t,
+                            appState => appState.SelectedTab.Value.CurrentLocation.Value.FullName.Path,
+                            tb => tb.Text,
+                            value => value
+                        )
+                    ),
+                new Grid<IAppState>
+                {
+                    ColumnDefinitionsObject = "* 4* 4*",
+                    ChildInitializer =
+                    {
+                        ParentsItemsView(),
+                        SelectedItemsView(),
+                        SelectedsItemsView(),
+                    },
+                    Extensions =
+                    {
+                        new GridPositionExtension(0, 1)
+                    }
+                }
+            }
+        };
+        _root = root;
+    }
+
+    private ListView<IAppState, IItemViewModel> SelectedItemsView()
+    {
+        var list = new ListView<IAppState, IItemViewModel>
+        {
+            DataContext = _consoleAppState,
+            ApplicationContext = _applicationContext,
+            ListPadding = 8,
+            Extensions =
+            {
+                new GridPositionExtension(1, 0)
+            }
         };
 
-        _selectedItemsView.ItemTemplate = item =>
+        list.ItemTemplate = item =>
         {
             var textBlock = item.CreateChild<TextBlock<IItemViewModel>>();
             textBlock.Bind(
@@ -50,19 +89,120 @@ public class MainWindow
             );
             textBlock.Bind(
                 textBlock,
-                dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value),
+                dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
                 tb => tb.Foreground
+            );
+            textBlock.Bind(
+                textBlock,
+                dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+                tb => tb.Background
             );
 
             return textBlock;
         };
 
-        _selectedItemsView.Bind(
-            _selectedItemsView,
+        list.Bind(
+            list,
             appState => appState == null ? null : appState.SelectedTab.Map(t => t == null ? null : t.CurrentItems).Switch(),
             v => v.ItemsSource);
 
-        TestGrid();
+        list.Bind(
+            list,
+            appState =>
+                appState == null
+                    ? null
+                    : appState.SelectedTab.Value == null
+                        ? null
+                        : appState.SelectedTab.Value.CurrentSelectedItem.Value,
+            v => v.SelectedItem);
+
+        return list;
+    }
+
+    private ListView<IAppState, IItemViewModel> SelectedsItemsView()
+    {
+        var list = new ListView<IAppState, IItemViewModel>
+        {
+            DataContext = _consoleAppState,
+            ApplicationContext = _applicationContext,
+            ListPadding = 8,
+            Extensions =
+            {
+                new GridPositionExtension(2, 0)
+            }
+        };
+
+        list.ItemTemplate = item =>
+        {
+            var textBlock = item.CreateChild<TextBlock<IItemViewModel>>();
+            textBlock.Bind(
+                textBlock,
+                dc => dc == null ? string.Empty : dc.DisplayNameText,
+                tb => tb.Text
+            );
+            textBlock.Bind(
+                textBlock,
+                dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+                tb => tb.Foreground
+            );
+            textBlock.Bind(
+                textBlock,
+                dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+                tb => tb.Background
+            );
+
+            return textBlock;
+        };
+
+        list.Bind(
+            list,
+            appState => appState == null ? null : appState.SelectedTab.Map(t => t == null ? null : t.SelectedsChildren).Switch(),
+            v => v.ItemsSource);
+
+        return list;
+    }
+
+    private ListView<IAppState, IItemViewModel> ParentsItemsView()
+    {
+        var list = new ListView<IAppState, IItemViewModel>
+        {
+            DataContext = _consoleAppState,
+            ApplicationContext = _applicationContext,
+            ListPadding = 8,
+            Extensions =
+            {
+                new GridPositionExtension(0, 0)
+            }
+        };
+
+        list.ItemTemplate = item =>
+        {
+            var textBlock = item.CreateChild<TextBlock<IItemViewModel>>();
+            textBlock.Bind(
+                textBlock,
+                dc => dc == null ? string.Empty : dc.DisplayNameText,
+                tb => tb.Text
+            );
+            textBlock.Bind(
+                textBlock,
+                dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+                tb => tb.Foreground
+            );
+            textBlock.Bind(
+                textBlock,
+                dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+                tb => tb.Background
+            );
+
+            return textBlock;
+        };
+
+        list.Bind(
+            list,
+            appState => appState == null ? null : appState.SelectedTab.Map(t => t == null ? null : t.ParentsChildren).Switch(),
+            v => v.ItemsSource);
+
+        return list;
     }
 
     private void TestGrid()
@@ -117,35 +257,37 @@ public class MainWindow
             }
         };
 
-        _grid = grid;
+        //_grid = grid;
     }
 
     public IEnumerable<IView> RootViews() => new IView[]
     {
-        _grid, _selectedItemsView
+        _root
     };
 
-    private IColor? ToForegroundColor(ItemViewMode viewMode)
-        => viewMode switch
+    private IColor? ToForegroundColor(ItemViewMode viewMode, AbsolutePathType absolutePathType) =>
+        (viewMode, absolutePathType) switch
         {
-            ItemViewMode.Default => _theme.DefaultForegroundColor,
-            ItemViewMode.Alternative => _theme.AlternativeItemForegroundColor,
-            ItemViewMode.Selected => _theme.SelectedItemForegroundColor,
-            ItemViewMode.Marked => _theme.MarkedItemForegroundColor,
-            ItemViewMode.MarkedSelected => _theme.MarkedSelectedItemForegroundColor,
-            ItemViewMode.MarkedAlternative => _theme.MarkedAlternativeItemForegroundColor,
+            (ItemViewMode.Default, AbsolutePathType.Container) => _theme.ContainerColor,
+            (ItemViewMode.Alternative, AbsolutePathType.Container) => _theme.ContainerColor,
+            (ItemViewMode.Default, _) => _theme.ElementColor,
+            (ItemViewMode.Alternative, _) => _theme.ElementColor,
+            (ItemViewMode.Selected, _) => ToBackgroundColor(ItemViewMode.Default, absolutePathType)?.AsForeground(),
+            (ItemViewMode.Marked, _) => _theme.MarkedItemColor,
+            (ItemViewMode.MarkedSelected, _) => ToBackgroundColor(ItemViewMode.Marked, absolutePathType)?.AsForeground(),
+            (ItemViewMode.MarkedAlternative, _) => _theme.MarkedItemColor,
             _ => throw new NotImplementedException()
         };
 
-    private IColor? ToBackgroundColor(ItemViewMode viewMode)
-        => viewMode switch
+    private IColor? ToBackgroundColor(ItemViewMode viewMode, AbsolutePathType absolutePathType)
+        => (viewMode, absolutePathType) switch
         {
-            ItemViewMode.Default => _theme.DefaultBackgroundColor,
-            ItemViewMode.Alternative => _theme.AlternativeItemBackgroundColor,
-            ItemViewMode.Selected => _theme.SelectedItemBackgroundColor,
-            ItemViewMode.Marked => _theme.MarkedItemBackgroundColor,
-            ItemViewMode.MarkedSelected => _theme.MarkedSelectedItemBackgroundColor,
-            ItemViewMode.MarkedAlternative => _theme.MarkedAlternativeItemBackgroundColor,
+            (ItemViewMode.Default, _) => _theme.DefaultBackgroundColor,
+            (ItemViewMode.Alternative, _) => _theme.DefaultBackgroundColor,
+            (ItemViewMode.Selected, _) => ToForegroundColor(ItemViewMode.Default, absolutePathType)?.AsBackground(),
+            (ItemViewMode.Marked, _) => _theme.MarkedItemColor,
+            (ItemViewMode.MarkedSelected, _) => ToForegroundColor(ItemViewMode.Marked, absolutePathType)?.AsBackground(),
+            (ItemViewMode.MarkedAlternative, _) => _theme.MarkedItemColor,
             _ => throw new NotImplementedException()
         };
 }

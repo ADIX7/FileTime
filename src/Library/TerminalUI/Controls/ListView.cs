@@ -1,12 +1,12 @@
 ﻿using System.Buffers;
 using System.Collections.ObjectModel;
-using System.Security.Cryptography.X509Certificates;
 using DeclarativeProperty;
+using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
-public class ListView<TDataContext, TItem> : View<TDataContext>
+public partial class ListView<TDataContext, TItem> : View<TDataContext>
 {
     private static readonly ArrayPool<ListViewItem<TItem>> ListViewItemPool = ArrayPool<ListViewItem<TItem>>.Shared;
 
@@ -18,6 +18,8 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
     private int _selectedIndex = 0;
     private int _renderStartIndex = 0;
     private Size _requestedItemSize = new(0, 0);
+    [Notify] private int _listPadding = 0;
+    [Notify] private Orientation _orientation = Orientation.Vertical;
 
     public int SelectedIndex
     {
@@ -28,7 +30,34 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
             {
                 _selectedIndex = value;
                 OnPropertyChanged();
-                ApplicationContext?.EventLoop.RequestRerender();
+                OnPropertyChanged(nameof(SelectedItem));
+            }
+        }
+    }
+
+    public TItem? SelectedItem
+    {
+        get => _listViewItems is null ? default : _listViewItems[_selectedIndex].DataContext;
+        set
+        {
+            if (_listViewItems is null || value is null) return;
+
+            var newSelectedIndex = -1;
+            for (var i = 0; i < _listViewItemLength; i++)
+            {
+                var dataContext = _listViewItems[i].DataContext;
+                if (dataContext is null) continue;
+
+                if (dataContext.Equals(value))
+                {
+                    newSelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (newSelectedIndex != -1)
+            {
+                SelectedIndex = newSelectedIndex;
             }
         }
     }
@@ -76,59 +105,86 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
                 _listViewItems = null;
             }
 
+            _renderStartIndex = 0;
+            SelectedIndex = 0;
             OnPropertyChanged();
         }
     }
 
     public Func<ListViewItem<TItem>, IView?> ItemTemplate { get; set; } = DefaultItemTemplate;
 
+    public ListView()
+    {
+        RerenderProperties.Add(nameof(ItemsSource));
+        RerenderProperties.Add(nameof(SelectedIndex));
+        RerenderProperties.Add(nameof(Orientation));
+    }
+
     public override Size GetRequestedSize()
     {
-        if (_listViewItems is null || _listViewItems.Length == 0)
+        InstantiateItemViews();
+        if (_listViewItems is null || _listViewItemLength == 0)
             return new Size(0, 0);
-
 
         var itemSize = _listViewItems[0].GetRequestedSize();
         _requestedItemSize = itemSize;
-        return itemSize with {Height = itemSize.Height * _listViewItems.Length};
+        return itemSize with {Height = itemSize.Height * _listViewItemLength};
     }
 
     protected override void DefaultRenderer(Position position, Size size)
     {
+        var requestedItemSize = _requestedItemSize;
+        if (requestedItemSize.Height == 0 || requestedItemSize.Width == 0)
+            return;
+
         var listViewItems = InstantiateItemViews();
         if (listViewItems.Length == 0) return;
-
-        var requestedItemSize = _requestedItemSize;
 
         var itemsToRender = listViewItems.Length;
         var heightNeeded = requestedItemSize.Height * listViewItems.Length;
         var renderStartIndex = _renderStartIndex;
-        if (heightNeeded < size.Height)
+        if (heightNeeded > size.Height)
         {
             var maxItemsToRender = (int) Math.Floor((double) size.Height / requestedItemSize.Height);
-            if (SelectedIndex < renderStartIndex)
+            itemsToRender = maxItemsToRender;
+
+            if (SelectedIndex - ListPadding < renderStartIndex)
             {
-                renderStartIndex = SelectedIndex - 1;
+                renderStartIndex = SelectedIndex - ListPadding;
             }
-            else if (SelectedIndex > renderStartIndex + maxItemsToRender)
+            else if (SelectedIndex + ListPadding >= renderStartIndex + maxItemsToRender)
             {
-                renderStartIndex = SelectedIndex - maxItemsToRender + 1;
+                renderStartIndex = SelectedIndex + ListPadding - maxItemsToRender + 1;
             }
-            
-            if(renderStartIndex < 0)
+
+            if (renderStartIndex + itemsToRender > listViewItems.Length)
+                renderStartIndex = listViewItems.Length - itemsToRender;
+
+            if (renderStartIndex < 0)
                 renderStartIndex = 0;
-            else if (renderStartIndex + maxItemsToRender > listViewItems.Length)
-                renderStartIndex = listViewItems.Length - maxItemsToRender;
 
             _renderStartIndex = renderStartIndex;
         }
 
         var deltaY = 0;
-        for (var i = renderStartIndex; i < itemsToRender && i < listViewItems.Length; i++)
+        var lastItemIndex = renderStartIndex + itemsToRender;
+        if (lastItemIndex > listViewItems.Length)
+            lastItemIndex = listViewItems.Length;
+
+        for (var i = renderStartIndex; i < lastItemIndex; i++)
         {
             var item = listViewItems[i];
-            item.Render(position with {Y = position.Y + deltaY}, requestedItemSize);
+            item.Render(position with {Y = position.Y + deltaY}, requestedItemSize with {Width = size.Width});
             deltaY += requestedItemSize.Height;
+        }
+
+        var driver = ApplicationContext!.ConsoleDriver;
+        var placeholder = new string(' ', size.Width);
+        driver.ResetColor();
+        for (var i = deltaY; i < size.Height; i++)
+        {
+            driver.SetCursorPosition(position with {Y = position.Y + i});
+            driver.Write(placeholder);
         }
     }
 

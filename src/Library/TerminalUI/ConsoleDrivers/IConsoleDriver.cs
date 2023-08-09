@@ -17,6 +17,6 @@ public interface IConsoleDriver
     void SetCursorVisible(bool cursorVisible);
     void SetForegroundColor(IColor foreground);
     void SetBackgroundColor(IColor background);
-    Size GetBufferSize();
+    Size GetWindowSize();
     void Clear();
 }

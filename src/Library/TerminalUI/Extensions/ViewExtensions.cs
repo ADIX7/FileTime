@@ -11,4 +11,10 @@ public static class ViewExtensions
         this IView<TTargetDataContext> view,
         Func<TSourceDataContext?, TTargetDataContext?> dataContextMapper)
         => new(view, dataContextMapper);
+
+    public static TView Setup<TView>(this TView view, Action<TView> action)
+    {
+        action(view);
+        return view;
+    }
 }

@@ -251,7 +251,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         if (_currentSelectedItem?.Value is not IContainerViewModel containerViewModel || containerViewModel.Container is null)
             return;
 
-        await _appState.RapidTravelText.SetValue("");
+        await _appState.SetRapidTravelTextAsync("");
         if (_selectedTab?.Tab is { } tab)
         {
             await tab.SetCurrentLocation(containerViewModel.Container);
@@ -260,13 +260,13 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task GoUp()
     {
-        if (_currentLocation?.Value?.Parent is not AbsolutePath parentPath ||
+        if (_currentLocation?.Value?.Parent is not { } parentPath ||
             await parentPath.ResolveAsyncSafe() is not IContainer newContainer)
         {
             return;
         }
 
-        await _appState.RapidTravelText.SetValue("");
+        await _appState.SetRapidTravelTextAsync("");
         if (_selectedTab?.Tab is { } tab)
         {
             await tab.SetCurrentLocation(newContainer);

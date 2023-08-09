@@ -2,11 +2,9 @@ using DeclarativeProperty;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
-using MvvmGen;
 
 namespace FileTime.App.Core.ViewModels;
 
-[ViewModel(GenerateConstructor = false)]
 public partial class ElementViewModel : ItemViewModel, IElementViewModel
 {
     public IElement? Element => BaseItem as Element;

@@ -16,6 +16,7 @@ public abstract partial class View<T> : IView<T>
     [Notify] private int? _minHeight;
     [Notify] private int? _maxHeight;
     [Notify] private int? _height;
+    [Notify] private IApplicationContext? _applicationContext;
     private bool _attached;
 
     public bool Attached
@@ -33,7 +34,6 @@ public abstract partial class View<T> : IView<T>
     }
     public List<object> Extensions { get; } = new();
     public Action<Position, Size> RenderMethod { get; set; }
-    public IApplicationContext? ApplicationContext { get; set; }
     public event Action<IView>? Disposed;
     protected List<string> RerenderProperties { get; } = new();
 

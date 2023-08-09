@@ -44,6 +44,6 @@ public class DotnetDriver : IConsoleDriver
         Console.BackgroundColor = consoleColor.Color;
     }
 
-    public Size GetBufferSize() => new(Console.BufferWidth, Console.BufferHeight);
+    public Size GetWindowSize() => new(Console.WindowWidth, Console.WindowHeight);
     public void Clear() => Console.Clear();
 }

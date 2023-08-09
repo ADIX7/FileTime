@@ -8,6 +8,7 @@ using FileTime.Core.Interactions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using TerminalUI;
 using TerminalUI.ConsoleDrivers;
 
@@ -33,7 +34,8 @@ public static class Startup
         services.TryAddSingleton<IApplicationContext>(sp
             => new ApplicationContext
             {
-                ConsoleDriver = sp.GetRequiredService<IConsoleDriver>()
+                ConsoleDriver = sp.GetRequiredService<IConsoleDriver>(),
+                LoggerFactory = sp.GetRequiredService<ILoggerFactory>()
             }
         );
         return services;

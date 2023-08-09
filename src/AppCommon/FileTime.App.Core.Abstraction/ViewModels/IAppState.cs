@@ -12,7 +12,7 @@ public interface IAppState
     IDeclarativeProperty<ITabViewModel?> SelectedTab { get; }
     IObservable<string?> SearchText { get; }
     IDeclarativeProperty<ViewMode> ViewMode { get; }
-    DeclarativeProperty<string?> RapidTravelText { get; }
+    IDeclarativeProperty<string?> RapidTravelText { get; }
     IDeclarativeProperty<string?> RapidTravelTextDebounced { get; }
     IDeclarativeProperty<string?> ContainerStatus { get; }
     List<KeyConfig> PreviousKeys { get; }
@@ -24,4 +24,5 @@ public interface IAppState
     void SetSearchText(string? searchText);
     Task SwitchViewModeAsync(ViewMode newViewMode);
     Task SetSelectedTabAsync(ITabViewModel tabToSelect);
+    Task SetRapidTravelTextAsync(string? text);
 }

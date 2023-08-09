@@ -23,7 +23,6 @@ public class Tab : ITab
     private AbsolutePath? _currentSelectedItemCached;
     private PointInTime _currentPointInTime;
     private CancellationTokenSource? _setCurrentLocationCancellationTokenSource;
-    private CancellationTokenSource? _setCurrentItemCancellationTokenSource;
 
     public IDeclarativeProperty<IContainer?> CurrentLocation { get; }
     public IDeclarativeProperty<ObservableCollection<IItem>?> CurrentItems { get; }
@@ -214,9 +213,8 @@ public class Tab : ITab
 
     public async Task SetSelectedItem(AbsolutePath newSelectedItem)
     {
-        _setCurrentItemCancellationTokenSource?.Cancel();
-        _setCurrentItemCancellationTokenSource = new CancellationTokenSource();
-        await _currentRequestItem.SetValue(newSelectedItem, _setCurrentItemCancellationTokenSource.Token);
+        if (_currentRequestItem.Value is {} v && v.Path == newSelectedItem.Path) return;
+        await _currentRequestItem.SetValue(newSelectedItem);
     }
 
     public void AddItemFilter(ItemFilter filter) => _itemFilters.Add(filter);

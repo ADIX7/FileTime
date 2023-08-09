@@ -1,3 +1,3 @@
 ﻿namespace TerminalUI.ViewExtensions;
 
-public record GridPositionExtension(int Row, int Column);
+public record GridPositionExtension(int Column, int Row);

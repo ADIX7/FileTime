@@ -41,14 +41,14 @@ public class EventLoop : IEventLoop
         {
             if (!_rerenderRequested) return;
             _rerenderRequested = false;
-
             viewsToRender = _viewsToRender.ToList();
         }
 
-        var size =_applicationContext.ConsoleDriver.GetBufferSize();
+        var size = _applicationContext.ConsoleDriver.GetWindowSize();
         foreach (var view in viewsToRender)
         {
             view.Attached = true;
+            view.GetRequestedSize();
             view.Render(new Position(0, 0), size);
         }
     }

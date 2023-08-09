@@ -6,30 +6,38 @@ using TerminalUI.Traits;
 
 namespace TerminalUI;
 
-public class Binding<TDataContext, TResult> : IDisposable
+public class Binding<TDataContext, TExpressionResult, TResult> : IDisposable
 {
-    private readonly Func<TDataContext, TResult> _dataContextMapper;
+    private readonly Func<TDataContext, TExpressionResult> _dataContextMapper;
     private IView<TDataContext> _dataSourceView;
     private object? _propertySource;
     private PropertyInfo _targetProperty;
+    private readonly Func<TExpressionResult, TResult> _converter;
+    private readonly TResult? _fallbackValue;
     private IDisposableCollection? _propertySourceDisposableCollection;
     private PropertyTrackTreeItem? _propertyTrackTreeItem;
     private IPropertyChangeTracker? _propertyChangeTracker;
 
     public Binding(
         IView<TDataContext> dataSourceView,
-        Expression<Func<TDataContext?, TResult>> dataContextExpression,
+        Expression<Func<TDataContext?, TExpressionResult>> dataContextExpression,
         object? propertySource,
-        PropertyInfo targetProperty
+        PropertyInfo targetProperty,
+        Func<TExpressionResult, TResult> converter,
+        TResult? fallbackValue = default
     )
     {
         ArgumentNullException.ThrowIfNull(dataSourceView);
         ArgumentNullException.ThrowIfNull(dataContextExpression);
         ArgumentNullException.ThrowIfNull(targetProperty);
+        ArgumentNullException.ThrowIfNull(converter);
+
         _dataSourceView = dataSourceView;
         _dataContextMapper = dataContextExpression.Compile();
         _propertySource = propertySource;
         _targetProperty = targetProperty;
+        _converter = converter;
+        _fallbackValue = fallbackValue;
 
         InitTrackingTree(dataContextExpression);
 
@@ -52,7 +60,7 @@ public class Binding<TDataContext, TResult> : IDisposable
         }
     }
 
-    private void InitTrackingTree(Expression<Func<TDataContext?, TResult>> dataContextExpression)
+    private void InitTrackingTree(Expression<Func<TDataContext?, TExpressionResult>> dataContextExpression)
     {
         var properties = new List<string>();
         FindReactiveProperties(dataContextExpression, properties);
@@ -175,7 +183,19 @@ public class Binding<TDataContext, TResult> : IDisposable
     }
 
     private void UpdateTargetProperty()
-        => _targetProperty.SetValue(_propertySource, _dataContextMapper(_dataSourceView.DataContext));
+    {
+        TResult value;
+        try
+        {
+            value = _converter(_dataContextMapper(_dataSourceView.DataContext));
+        }
+        catch
+        {
+            value = _fallbackValue;
+        }
+
+        _targetProperty.SetValue(_propertySource, value);
+    }
 
     public void Dispose()
     {

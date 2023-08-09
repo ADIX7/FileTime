@@ -1,3 +1,3 @@
 ﻿namespace TerminalUI.Models;
 
-public record Size(int Width, int Height);
+public record struct Size(int Width, int Height);

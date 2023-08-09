@@ -75,7 +75,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
             if (_appState.RapidTravelText.Value!.Length > 0)
             {
                 args.Handled = true;
-                await _appState.RapidTravelText.SetValue(
+                await _appState.SetRapidTravelTextAsync(
                     _appState.RapidTravelText.Value![..^1]
                 );
             }
@@ -83,7 +83,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         else if (keyString.Length == 1)
         {
             args.Handled = true;
-            await _appState.RapidTravelText.SetValue(
+            await _appState.SetRapidTravelTextAsync(
                 _appState.RapidTravelText.Value + keyString.ToLower()
             );
         }
