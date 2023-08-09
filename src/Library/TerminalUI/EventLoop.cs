@@ -45,9 +45,11 @@ public class EventLoop : IEventLoop
             viewsToRender = _viewsToRender.ToList();
         }
 
+        var size =_applicationContext.ConsoleDriver.GetBufferSize();
         foreach (var view in viewsToRender)
         {
-            view.Render(new Position(0, 0));
+            view.Attached = true;
+            view.Render(new Position(0, 0), size);
         }
     }
 

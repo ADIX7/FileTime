@@ -18,8 +18,8 @@ public class CompressionUserCommandHandler : AggregatedUserCommandHandler
         IClipboardService clipboardService)
     {
         _clipboardService = clipboardService;
-        _markedItems = appState.SelectedTab.Map(t => t.MarkedItems).Switch();
-        _selectedItem = appState.SelectedTab.Map(t => t.CurrentSelectedItem).Switch();
+        _markedItems = appState.SelectedTab.Map(t => t?.MarkedItems).Switch();
+        _selectedItem = appState.SelectedTab.Map(t => t?.CurrentSelectedItem).Switch();
 
         AddCommandHandler(new[]
         {

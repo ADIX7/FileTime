@@ -18,10 +18,10 @@ public static class DI
 {
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
-    public static void Initialize(IConfigurationRoot configuration, IServiceCollection serviceCollection)
+    public static IServiceProvider Initialize(IConfigurationRoot configuration)
         => ServiceProvider = DependencyInjection
-            .RegisterDefaultServices(configuration: configuration, serviceCollection: serviceCollection)
-            .AddConsoleServices()
+            .RegisterDefaultServices(configuration: configuration)
+            .AddConsoleServices(configuration)
             .AddLocalProviderServices()
             .AddServerCoreServices()
             .AddFrequencyNavigation()
@@ -31,6 +31,8 @@ public static class DI
             .AddCompression()
             .SetupLogging()
             .AddLogging(loggingBuilder => loggingBuilder.AddSerilog())
+            .AddConsoleDriver()
+            .AddTheme()
             .BuildServiceProvider();
 
 

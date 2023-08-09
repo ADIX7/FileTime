@@ -1,4 +1,4 @@
-﻿namespace TerminalUI.Models;
+﻿namespace TerminalUI.Color;
 
 public record ConsoleColor(System.ConsoleColor Color, ColorType Type) : IColor
 {

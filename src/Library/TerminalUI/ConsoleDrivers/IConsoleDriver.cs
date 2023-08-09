@@ -1,10 +1,11 @@
-﻿using TerminalUI.Models;
+﻿using TerminalUI.Color;
+using TerminalUI.Models;
 
 namespace TerminalUI.ConsoleDrivers;
 
 public interface IConsoleDriver
 {
-    void Init();
+    bool Init();
     void Dispose();
     void SetCursorPosition(Position position);
     void ResetColor();
@@ -16,4 +17,6 @@ public interface IConsoleDriver
     void SetCursorVisible(bool cursorVisible);
     void SetForegroundColor(IColor foreground);
     void SetBackgroundColor(IColor background);
+    Size GetBufferSize();
+    void Clear();
 }

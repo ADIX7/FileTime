@@ -1,4 +1,5 @@
-﻿using TerminalUI.Models;
+﻿using TerminalUI.Color;
+using TerminalUI.Models;
 
 namespace FileTime.ConsoleUI.App;
 

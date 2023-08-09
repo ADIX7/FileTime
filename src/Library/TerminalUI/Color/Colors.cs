@@ -1,4 +1,4 @@
-﻿namespace TerminalUI.Models;
+﻿namespace TerminalUI.Color;
 
 public static class Color256Colors
 {

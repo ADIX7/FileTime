@@ -4,9 +4,12 @@ using DeclarativeProperty;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using TerminalUI;
+using TerminalUI.Color;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
+using TerminalUI.ViewExtensions;
+using ConsoleColor = TerminalUI.Color.ConsoleColor;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -16,6 +19,8 @@ public class MainWindow
     private readonly IApplicationContext _applicationContext;
     private readonly ITheme _theme;
     private ListView<IAppState, IItemViewModel> _selectedItemsView;
+
+    private Grid<object> _grid;
 
     public MainWindow(
         IConsoleAppState consoleAppState,
@@ -56,9 +61,69 @@ public class MainWindow
             _selectedItemsView,
             appState => appState == null ? null : appState.SelectedTab.Map(t => t == null ? null : t.CurrentItems).Switch(),
             v => v.ItemsSource);
+
+        TestGrid();
     }
 
-    public IEnumerable<IView> RootViews() => new IView[] {_selectedItemsView};
+    private void TestGrid()
+    {
+        var grid = new Grid<object>
+        {
+            ApplicationContext = _applicationContext,
+            ColumnDefinitionsObject = "Auto Auto",
+            RowDefinitionsObject = "Auto Auto",
+            ChildInitializer =
+            {
+                new Rectangle<object>
+                {
+                    Fill = new ConsoleColor(System.ConsoleColor.Blue, ColorType.Foreground),
+                    Extensions =
+                    {
+                        new GridPositionExtension(0, 0)
+                    },
+                    Width = 2,
+                    Height = 2,
+                },
+                new Rectangle<object>
+                {
+                    Fill = new ConsoleColor(System.ConsoleColor.Red, ColorType.Foreground),
+                    Extensions =
+                    {
+                        new GridPositionExtension(0, 1)
+                    },
+                    Width = 3,
+                    Height = 3,
+                },
+                new Rectangle<object>
+                {
+                    Fill = new ConsoleColor(System.ConsoleColor.Green, ColorType.Foreground),
+                    Extensions =
+                    {
+                        new GridPositionExtension(1, 0)
+                    },
+                    Width = 4,
+                    Height = 4,
+                },
+                new Rectangle<object>
+                {
+                    Fill = new ConsoleColor(System.ConsoleColor.Yellow, ColorType.Foreground),
+                    Extensions =
+                    {
+                        new GridPositionExtension(1, 1)
+                    },
+                    Width = 5,
+                    Height = 5,
+                }
+            }
+        };
+
+        _grid = grid;
+    }
+
+    public IEnumerable<IView> RootViews() => new IView[]
+    {
+        _grid, _selectedItemsView
+    };
 
     private IColor? ToForegroundColor(ItemViewMode viewMode)
         => viewMode switch

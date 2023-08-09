@@ -1,13 +1,18 @@
-﻿using TerminalUI.Models;
-using ConsoleColor = TerminalUI.Models.ConsoleColor;
+﻿using TerminalUI.Color;
+using TerminalUI.Models;
+using ConsoleColor = TerminalUI.Color.ConsoleColor;
 
 namespace TerminalUI.ConsoleDrivers;
 
 public class DotnetDriver : IConsoleDriver
 {
-    public virtual void Init() => Console.Clear();
+    public virtual bool Init()
+    {
+        Console.Clear();
+        return true;
+    }
 
-    public void SetCursorPosition(Position position) => Console.SetCursorPosition(position.PosX, position.PosY);
+    public void SetCursorPosition(Position position) => Console.SetCursorPosition(position.X, position.Y);
 
     public void ResetColor() => Console.ResetColor();
 
@@ -21,8 +26,8 @@ public class DotnetDriver : IConsoleDriver
 
     public void Write(char text) => Console.Write(text);
 
-    public virtual void Dispose() {}
-    
+    public virtual void Dispose() => Console.Clear();
+
     public bool CanRead() => Console.KeyAvailable;
     public ConsoleKeyInfo ReadKey() => Console.ReadKey(true);
 
@@ -36,6 +41,9 @@ public class DotnetDriver : IConsoleDriver
     public virtual void SetBackgroundColor(IColor background)
     {
         if (background is not ConsoleColor consoleColor) throw new NotSupportedException();
-        Console.ForegroundColor = consoleColor.Color;
+        Console.BackgroundColor = consoleColor.Color;
     }
+
+    public Size GetBufferSize() => new(Console.BufferWidth, Console.BufferHeight);
+    public void Clear() => Console.Clear();
 }

@@ -41,20 +41,16 @@ public static class Startup
             .AddSingleton<IExitHandler, ContainerRefreshHandler>();
     }
 
-    private static IServiceCollection AddCommandHandlers(this IServiceCollection serviceCollection)
-    {
-        return serviceCollection
+    private static IServiceCollection AddCommandHandlers(this IServiceCollection serviceCollection) =>
+        serviceCollection
             .AddSingleton<IUserCommandHandler, NavigationUserCommandHandlerService>()
             .AddSingleton<IUserCommandHandler, ItemManipulationUserCommandHandlerService>()
             .AddSingleton<IUserCommandHandler, ToolUserCommandHandlerService>()
             .AddSingleton<IUserCommandHandler, CommandSchedulerUserCommandHandlerService>();
-    }
 
-    internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
-    {
-        return serviceCollection
+    internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection, IConfigurationRoot configuration) =>
+        serviceCollection
             .Configure<ProgramsConfiguration>(configuration.GetSection(SectionNames.ProgramsSectionName))
             .Configure<KeyBindingConfiguration>(configuration.GetSection(SectionNames.KeybindingSectionName))
             .AddSingleton<IConfiguration>(configuration);
-    }
 }

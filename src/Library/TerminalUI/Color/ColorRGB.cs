@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace TerminalUI.Models;
+namespace TerminalUI.Color;
 
 public record struct ColorRgb(byte R, byte G, byte B, ColorType Type) : IColor
 {

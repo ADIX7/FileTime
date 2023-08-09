@@ -1,6 +1,7 @@
 ﻿using FileTime.ConsoleUI.App;
+using TerminalUI.Color;
 using TerminalUI.Models;
-using ConsoleColor = TerminalUI.Models.ConsoleColor;
+using ConsoleColor = TerminalUI.Color.ConsoleColor;
 
 namespace FileTime.ConsoleUI.Styles;
 

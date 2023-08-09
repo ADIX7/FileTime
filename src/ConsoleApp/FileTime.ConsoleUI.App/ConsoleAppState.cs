@@ -1,8 +1,9 @@
 ﻿using FileTime.App.Core.ViewModels;
-using FileTime.App.Core.ViewModels.Timeline;
+using PropertyChanged.SourceGenerator;
 
 namespace FileTime.ConsoleUI.App;
 
-public class ConsoleAppState : AppStateBase, IConsoleAppState
+public partial class ConsoleAppState : AppStateBase, IConsoleAppState
 {
+    [Notify] private string? _errorText;
 }

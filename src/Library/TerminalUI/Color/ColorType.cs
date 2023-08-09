@@ -1,4 +1,4 @@
-﻿namespace TerminalUI.Models;
+﻿namespace TerminalUI.Color;
 
 public enum ColorType
 {

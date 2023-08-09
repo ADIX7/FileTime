@@ -56,11 +56,11 @@ void HandleStartup(Action action)
 IConfigurationRoot CreateConfiguration()
 {
     var configurationBuilder = new ConfigurationBuilder();
-    configurationBuilder.AddCommandLine(args);
 #if DEBUG
     configurationBuilder.AddJsonFile("appsettings.Development.json", optional: true);
     configurationBuilder.AddJsonFile("appsettings.Local.json", optional: true);
 #endif
+    configurationBuilder.AddCommandLine(args);
     return configurationBuilder.Build();
 }
 

@@ -60,6 +60,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<ToastMessageSink>();
         serviceCollection.TryAddSingleton<IUserCommunicationService>(s => s.GetRequiredService<IDialogService>());
         serviceCollection.TryAddSingleton<IAppKeyService<Key>, GuiAppKeyService>();
+        serviceCollection.TryAddSingleton(new ApplicationConfiguration(false));
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

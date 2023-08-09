@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using DeclarativeProperty;
 using FileTime.App.CommandPalette.Services;
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
@@ -14,6 +15,7 @@ using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using InitableService;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 
@@ -29,6 +31,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IFrequencyNavigationService _frequencyNavigationService;
     private readonly ICommandPaletteService _commandPaletteService;
     private readonly ILogger<NavigationUserCommandHandlerService> _logger;
+    private readonly ApplicationConfiguration _applicationConfiguration;
     private ITabViewModel? _selectedTab;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
@@ -44,7 +47,8 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         IUserCommunicationService userCommunicationService,
         IFrequencyNavigationService frequencyNavigationService,
         ICommandPaletteService commandPaletteService,
-        ILogger<NavigationUserCommandHandlerService> logger) : base(appState)
+        ILogger<NavigationUserCommandHandlerService> logger,
+        ApplicationConfiguration applicationConfiguration) : base(appState)
     {
         _appState = appState;
         _serviceProvider = serviceProvider;
@@ -55,6 +59,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         _frequencyNavigationService = frequencyNavigationService;
         _commandPaletteService = commandPaletteService;
         _logger = logger;
+        _applicationConfiguration = applicationConfiguration;
 
         SaveSelectedTab(t => _selectedTab = t);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -387,7 +392,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private Task CloseTab()
     {
-        if (_appState.Tabs.Count < 2 || _selectedTab == null) return Task.CompletedTask;
+        if ((!_applicationConfiguration.AllowCloseLastTab && _appState.Tabs.Count < 2) || _selectedTab == null) return Task.CompletedTask;
 
         var tabToRemove = _selectedTab;
         _appState.RemoveTab(tabToRemove!);

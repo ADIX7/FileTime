@@ -1,5 +1,7 @@
-﻿using FileTime.App.Core.Models;
+﻿using System.Collections.Specialized;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
+using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.KeyInputHandling;
 using TerminalUI;
 using TerminalUI.ConsoleDrivers;
@@ -16,6 +18,7 @@ public class App : IApplication
     private readonly MainWindow _mainWindow;
     private readonly IApplicationContext _applicationContext;
     private readonly IConsoleDriver _consoleDriver;
+    private readonly IAppState _appState;
     private readonly IKeyInputHandlerService _keyInputHandlerService;
     private readonly Thread _renderThread;
 
@@ -26,7 +29,8 @@ public class App : IApplication
         IAppKeyService<ConsoleKey> appKeyService,
         MainWindow mainWindow,
         IApplicationContext applicationContext,
-        IConsoleDriver consoleDriver)
+        IConsoleDriver consoleDriver,
+        IAppState appState)
     {
         _lifecycleService = lifecycleService;
         _keyInputHandlerService = keyInputHandlerService;
@@ -35,6 +39,7 @@ public class App : IApplication
         _mainWindow = mainWindow;
         _applicationContext = applicationContext;
         _consoleDriver = consoleDriver;
+        _appState = appState;
 
         _renderThread = new Thread(Render);
     }
@@ -42,6 +47,12 @@ public class App : IApplication
     public void Run()
     {
         Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
+
+        ((INotifyCollectionChanged) _appState.Tabs).CollectionChanged += (_, _) =>
+        {
+            if(_appState.Tabs.Count == 0)
+                _applicationContext.IsRunning = false;
+        };
 
         _mainWindow.Initialize();
         foreach (var rootView in _mainWindow.RootViews())
@@ -66,6 +77,7 @@ public class App : IApplication
                     _keyInputHandlerService.HandleKeyInput(keyEventArgs);
                 }
             }
+
             Thread.Sleep(10);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Collections.ObjectModel;
+using System.Security.Cryptography.X509Certificates;
 using DeclarativeProperty;
 using TerminalUI.Models;
 
@@ -14,6 +15,23 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
     private object? _itemsSource;
     private ListViewItem<TItem>[]? _listViewItems;
     private int _listViewItemLength;
+    private int _selectedIndex = 0;
+    private int _renderStartIndex = 0;
+    private Size _requestedItemSize = new(0, 0);
+
+    public int SelectedIndex
+    {
+        get => _selectedIndex;
+        set
+        {
+            if (_selectedIndex != value)
+            {
+                _selectedIndex = value;
+                OnPropertyChanged();
+                ApplicationContext?.EventLoop.RequestRerender();
+            }
+        }
+    }
 
     public object? ItemsSource
     {
@@ -64,13 +82,53 @@ public class ListView<TDataContext, TItem> : View<TDataContext>
 
     public Func<ListViewItem<TItem>, IView?> ItemTemplate { get; set; } = DefaultItemTemplate;
 
-    protected override void DefaultRenderer(Position position)
+    public override Size GetRequestedSize()
+    {
+        if (_listViewItems is null || _listViewItems.Length == 0)
+            return new Size(0, 0);
+
+
+        var itemSize = _listViewItems[0].GetRequestedSize();
+        _requestedItemSize = itemSize;
+        return itemSize with {Height = itemSize.Height * _listViewItems.Length};
+    }
+
+    protected override void DefaultRenderer(Position position, Size size)
     {
         var listViewItems = InstantiateItemViews();
-        var deltaY = 0;
-        foreach (var item in listViewItems)
+        if (listViewItems.Length == 0) return;
+
+        var requestedItemSize = _requestedItemSize;
+
+        var itemsToRender = listViewItems.Length;
+        var heightNeeded = requestedItemSize.Height * listViewItems.Length;
+        var renderStartIndex = _renderStartIndex;
+        if (heightNeeded < size.Height)
         {
-            item.Render(position with {PosY = position.PosY + deltaY++});
+            var maxItemsToRender = (int) Math.Floor((double) size.Height / requestedItemSize.Height);
+            if (SelectedIndex < renderStartIndex)
+            {
+                renderStartIndex = SelectedIndex - 1;
+            }
+            else if (SelectedIndex > renderStartIndex + maxItemsToRender)
+            {
+                renderStartIndex = SelectedIndex - maxItemsToRender + 1;
+            }
+            
+            if(renderStartIndex < 0)
+                renderStartIndex = 0;
+            else if (renderStartIndex + maxItemsToRender > listViewItems.Length)
+                renderStartIndex = listViewItems.Length - maxItemsToRender;
+
+            _renderStartIndex = renderStartIndex;
+        }
+
+        var deltaY = 0;
+        for (var i = renderStartIndex; i < itemsToRender && i < listViewItems.Length; i++)
+        {
+            var item = listViewItems[i];
+            item.Render(position with {Y = position.Y + deltaY}, requestedItemSize);
+            deltaY += requestedItemSize.Height;
         }
     }
 

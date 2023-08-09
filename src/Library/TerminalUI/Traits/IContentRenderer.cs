@@ -6,5 +6,5 @@ namespace TerminalUI.Traits;
 public interface IContentRenderer
 {
     IView? Content { get; set; }
-    Action<Position> ContentRendererMethod { get; set; }
+    Action<Position, Size> ContentRendererMethod { get; set; }
 }

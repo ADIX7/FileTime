@@ -7,10 +7,20 @@ namespace TerminalUI.Controls;
 public interface IView : INotifyPropertyChanged, IDisposableCollection
 {
     object? DataContext { get; set; }
-    Action<Position> RenderMethod { get; set; }
-    IApplicationContext? ApplicationContext { get; init;}
+    int? MinWidth { get; set; }
+    int? MaxWidth { get; set; }
+    int? Width { get; set; }
+    int? MinHeight { get; set; }
+    int? MaxHeight { get; set; }
+    int? Height { get; set; }
+    bool Attached { get; set; }
+    Size GetRequestedSize();
+    IApplicationContext? ApplicationContext { get; set; }
+    List<object> Extensions { get; }
+    
+    Action<Position, Size> RenderMethod { get; set; }
     event Action<IView> Disposed;
-    void Render(Position position);
+    void Render(Position position, Size size);
 }
 
 public interface IView<T> : IView
@@ -28,4 +38,9 @@ public interface IView<T> : IView
 
     TChild CreateChild<TChild, TDataContext>(Func<T?, TDataContext?> dataContextMapper)
         where TChild : IView<TDataContext>, new();
+
+    TChild AddChild<TChild>(TChild child) where TChild : IView<T>;
+
+    TChild AddChild<TChild, TDataContext>(TChild child, Func<T?, TDataContext?> dataContextMapper)
+        where TChild : IView<TDataContext>;
 }

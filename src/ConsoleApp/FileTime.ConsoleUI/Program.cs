@@ -1,52 +1,75 @@
-﻿using FileTime.App.Core;
+﻿using System.Diagnostics;
+using FileTime.App.Core;
 using FileTime.App.Core.Configuration;
 using FileTime.ConsoleUI;
 using FileTime.ConsoleUI.App;
-using FileTime.ConsoleUI.Styles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Serilog;
+using Serilog.Debugging;
 using TerminalUI.ConsoleDrivers;
 
-IConsoleDriver driver = new WindowsDriver();
-driver.Init();
-ITheme theme;
-if (driver.GetCursorPosition() is not {PosX: 0, PosY: 0})
+if(args.Contains("--help"))
 {
-    driver = new DotnetDriver();
-    driver.Init();
-    theme = DefaultThemes.ConsoleColorTheme;
-}
-else
-{
-    theme = DefaultThemes.Color256Theme;
+    Help.PrintHelp();
+    return;
 }
 
-driver.SetCursorVisible(false);
+IConsoleDriver? driver = null;
 
+(AppDataRoot, EnvironmentName) = Init.InitDevelopment();
+InitLogging();
 try
 {
-    (AppDataRoot, EnvironmentName) = Init.InitDevelopment();
-    var configuration = new ConfigurationBuilder()
-        .AddInMemoryCollection(MainConfiguration.Configuration)
-#if DEBUG
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-#endif
-        .Build();
+    var configuration = CreateConfiguration(args);
 
-    var serviceCollection = new ServiceCollection();
-    serviceCollection.TryAddSingleton<IConsoleDriver>(driver);
-    serviceCollection.TryAddSingleton<ITheme>(theme);
+    var serviceProvider = DI.Initialize(configuration);
 
-    DI.Initialize(configuration, serviceCollection);
+    driver = serviceProvider.GetRequiredService<IConsoleDriver>();
+    Log.Logger.Debug("Using driver {Driver}", driver.GetType().Name);
+    driver.SetCursorVisible(false);
 
-    var app = DI.ServiceProvider.GetRequiredService<IApplication>();
+    var app = serviceProvider.GetRequiredService<IApplication>();
     app.Run();
 }
 finally
 {
-    driver.SetCursorVisible(true);
-    driver.Dispose();
+    driver?.SetCursorVisible(true);
+    driver?.Dispose();
+}
+
+static void InitLogging()
+{
+    SelfLog.Enable(l => Debug.WriteLine(l));
+
+    var logFolder = Path.Combine(AppDataRoot, "logs", "bootstrap");
+
+    if (!Directory.Exists(logFolder)) Directory.CreateDirectory(logFolder);
+
+    Log.Logger = new LoggerConfiguration()
+#if DEBUG || VERBOSE_LOGGING
+        .MinimumLevel.Verbose()
+#endif
+        .Enrich.FromLogContext()
+        .WriteTo.File(
+            Path.Combine(logFolder, "appLog.log"),
+            fileSizeLimitBytes: 10 * 1024 * 1024,
+            rollingInterval: RollingInterval.Day,
+            rollOnFileSizeLimit: true)
+        .CreateBootstrapLogger();
+}
+
+static IConfigurationRoot CreateConfiguration(string[] strings)
+{
+    var configurationRoot = new ConfigurationBuilder()
+        .AddInMemoryCollection(MainConfiguration.Configuration)
+        .AddInMemoryCollection(MainConsoleConfiguration.Configuration)
+#if DEBUG
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+#endif
+        .AddCommandLine(strings)
+        .Build();
+    return configurationRoot;
 }
 
 public partial class Program

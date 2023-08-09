@@ -1,4 +1,5 @@
 ﻿using PropertyChanged.SourceGenerator;
+using TerminalUI.Color;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
 
@@ -27,7 +28,9 @@ public partial class TextBlock<T> : View<T>
         RerenderProperties.Add(nameof(Background));
     }
 
-    protected override void DefaultRenderer(Position position)
+    public override Size GetRequestedSize() => new(Text?.Length ?? 0, 1);
+
+    protected override void DefaultRenderer(Position position, Size size)
     {
         var driver = ApplicationContext!.ConsoleDriver;
         var renderContext = new RenderContext(position, Text, _foreground, _background);
