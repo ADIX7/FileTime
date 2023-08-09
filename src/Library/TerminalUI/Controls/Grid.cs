@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Microsoft.Extensions.Logging;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
 using TerminalUI.ViewExtensions;
@@ -7,6 +8,8 @@ namespace TerminalUI.Controls;
 
 public class Grid<T> : ChildContainerView<T>
 {
+    private ILogger<Grid<T>>? Logger => ApplicationContext?.LoggerFactory?.CreateLogger<Grid<T>>();
+
     private delegate void WithSizes(Span<int> widths, Span<int> heights);
 
     private delegate TResult WithSizes<TResult>(Span<int> widths, Span<int> heights);
@@ -90,6 +93,18 @@ public class Grid<T> : ChildContainerView<T>
                 var positionExtension = child.GetExtension<GridPositionExtension>();
                 var x = positionExtension?.Column ?? 0;
                 var y = positionExtension?.Row ?? 0;
+
+                if (x > columnWidths.Length)
+                {
+                    Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", child, x, y);
+                    x = 0;
+                }
+
+                if (y > rowHeights.Length)
+                {
+                    Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", child, x, y);
+                    y = 0;
+                }
 
                 var width = columnWidths[x];
                 var height = rowHeights[y];

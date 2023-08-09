@@ -50,7 +50,7 @@ public class App : IApplication
 
         ((INotifyCollectionChanged) _appState.Tabs).CollectionChanged += (_, _) =>
         {
-            if(_appState.Tabs.Count == 0)
+            if (_appState.Tabs.Count == 0)
                 _applicationContext.IsRunning = false;
         };
 
@@ -68,13 +68,21 @@ public class App : IApplication
             if (_consoleDriver.CanRead())
             {
                 var key = _consoleDriver.ReadKey();
+
                 if (_appKeyService.MapKey(key.Key) is { } mappedKey)
                 {
+                    SpecialKeysStatus specialKeysStatus = new(
+                        (key.Modifiers & ConsoleModifiers.Alt) != 0,
+                        (key.Modifiers & ConsoleModifiers.Shift) != 0,
+                        (key.Modifiers & ConsoleModifiers.Control) != 0
+                    );
+                    
                     var keyEventArgs = new GeneralKeyEventArgs
                     {
                         Key = mappedKey
                     };
-                    _keyInputHandlerService.HandleKeyInput(keyEventArgs);
+                    
+                    _keyInputHandlerService.HandleKeyInput(keyEventArgs, specialKeysStatus);
                 }
             }
 

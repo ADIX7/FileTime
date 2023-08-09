@@ -1,5 +1,4 @@
 ﻿using TerminalUI.Color;
-using TerminalUI.Models;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -10,4 +9,5 @@ public interface ITheme
     IColor? ElementColor { get; }
     IColor? ContainerColor { get; }
     IColor? MarkedItemColor { get; }
+    IColor? SelectedTabBackgroundColor { get; }
 }

@@ -126,13 +126,103 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         if (_listViewItems is null || _listViewItemLength == 0)
             return new Size(0, 0);
 
-        var itemSize = _listViewItems[0].GetRequestedSize();
-        _requestedItemSize = itemSize;
-        return itemSize with {Height = itemSize.Height * _listViewItemLength};
+        if (Orientation == Orientation.Vertical)
+        {
+            var itemSize = _listViewItems[0].GetRequestedSize();
+            _requestedItemSize = itemSize;
+            return itemSize with {Height = itemSize.Height * _listViewItemLength};
+        }
+        else
+        {
+            var width = 0;
+            var height = 0;
+            for (var i = 0; i < _listViewItemLength; i++)
+            {
+                var item = _listViewItems[i];
+                width += item.GetRequestedSize().Width;
+                height = Math.Max(height, item.GetRequestedSize().Height);
+            }
+
+            return new Size(width, height);
+        }
     }
 
     protected override void DefaultRenderer(Position position, Size size)
     {
+        if (Orientation == Orientation.Vertical)
+            RenderVertical(position, size);
+        else
+            RenderHorizontal(position, size);
+    }
+
+    private void RenderHorizontal(Position position, Size size)
+    {
+        //Note: no support for same width elements
+        var listViewItems = InstantiateItemViews();
+        if (listViewItems.Length == 0) return;
+
+        Span<Size> requestedSizes = stackalloc Size[_listViewItemLength];
+
+        var totalRequestedWidth = 0;
+        Span<int> widthSumUpToIndex = stackalloc int[_listViewItemLength];
+        for (var i = 0; i < listViewItems.Length; i++)
+        {
+            widthSumUpToIndex[i] = totalRequestedWidth;
+            var item = listViewItems[i];
+            var requestedItemSize = item.GetRequestedSize();
+            totalRequestedWidth += requestedItemSize.Width;
+            requestedSizes[i] = requestedItemSize;
+        }
+
+        var renderStartIndex = _renderStartIndex;
+        var lastItemIndex = _listViewItemLength;
+
+        if (totalRequestedWidth > size.Width)
+        {
+            //Moving the render "window" to the right
+            //Until the selected item's end is in it
+            //So when RenderStartPosition (ie all the widths up to RenderStartIndex) + size.Width >= SelectedItemEnd
+            var selectedIndexEnd = widthSumUpToIndex[SelectedIndex] + requestedSizes[SelectedIndex].Width;
+            var startXOfRenderStartItem = widthSumUpToIndex[renderStartIndex];
+
+            while (selectedIndexEnd > startXOfRenderStartItem + size.Width)
+            {
+                startXOfRenderStartItem += requestedSizes[renderStartIndex].Width;
+                renderStartIndex++;
+            }
+
+            //Moving the render "window" to the left
+            //Until the selected item's start is in it
+            //So when RenderStartPosition (ie all the widths up to RenderStartIndex) <= SelectedItemStart
+            var selectedIndexStart = widthSumUpToIndex[SelectedIndex];
+            startXOfRenderStartItem = widthSumUpToIndex[renderStartIndex];
+            while (selectedIndexStart < startXOfRenderStartItem)
+            {
+                renderStartIndex--;
+                startXOfRenderStartItem -= requestedSizes[renderStartIndex].Width;
+            }
+        }
+
+        var deltaX = 0;
+        for (var i = renderStartIndex; i < _listViewItemLength; i++)
+        {
+            var item = listViewItems[i];
+            var requestedItemSize = requestedSizes[i];
+            var width = requestedItemSize.Width;
+            var nextDeltaX = deltaX + requestedItemSize.Width;
+            if (nextDeltaX > size.Width)
+            {
+                width = size.Width - deltaX;
+            }
+
+            item.Render(position with {X = position.X + deltaX}, size with {Width = width});
+            deltaX = nextDeltaX;
+        }
+    }
+
+    private void RenderVertical(Position position, Size size)
+    {
+        //Note: only same height is supported
         var requestedItemSize = _requestedItemSize;
         if (requestedItemSize.Height == 0 || requestedItemSize.Width == 0)
             return;

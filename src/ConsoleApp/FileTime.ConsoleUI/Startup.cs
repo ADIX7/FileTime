@@ -32,8 +32,6 @@ public static class Startup
             if (driver == null)
             {
                 driver = new XTermDriver();
-                var asd = driver.GetCursorPosition();
-                driver.Init();
                 if (!driver.Init())
                 {
                     driver = new DotnetDriver();

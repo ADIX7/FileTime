@@ -10,9 +10,6 @@ public class KeyInputHandlerService : IKeyInputHandlerService
     private readonly IAppState _appState;
     private readonly IDefaultModeKeyInputHandler _defaultModeKeyInputHandler;
     private readonly IRapidTravelModeKeyInputHandler _rapidTravelModeKeyInputHandler;
-    bool _isCtrlPressed = false;
-    bool _isShiftPressed = false;
-    bool _isAltPressed = false;
 
     public KeyInputHandlerService(
         IAppState appState,
@@ -24,9 +21,8 @@ public class KeyInputHandlerService : IKeyInputHandlerService
         _rapidTravelModeKeyInputHandler = rapidTravelModeKeyInputHandler;
     }
 
-    public void HandleKeyInput(GeneralKeyEventArgs keyEvent)
+    public void HandleKeyInput(GeneralKeyEventArgs keyEvent, SpecialKeysStatus specialKeysStatus)
     {
-        var specialKeysStatus = new SpecialKeysStatus(_isAltPressed, _isShiftPressed, _isCtrlPressed);
         if (_appState.ViewMode.Value == ViewMode.Default)
         {
             Task.Run(async () => await _defaultModeKeyInputHandler.HandleInputKey(keyEvent, specialKeysStatus)).Wait();

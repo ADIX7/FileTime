@@ -3,17 +3,12 @@ using FileTime.App.Core;
 using FileTime.App.Core.Configuration;
 using FileTime.ConsoleUI;
 using FileTime.ConsoleUI.App;
+using FileTime.ConsoleUI.InfoProviders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Debugging;
 using TerminalUI.ConsoleDrivers;
-
-if(args.Contains("--help"))
-{
-    Help.PrintHelp();
-    return;
-}
 
 IConsoleDriver? driver = null;
 
@@ -25,8 +20,11 @@ try
 
     var serviceProvider = DI.Initialize(configuration);
 
+    if (HandleInfoProviders(args, serviceProvider)) return;
+
     driver = serviceProvider.GetRequiredService<IConsoleDriver>();
     Log.Logger.Debug("Using driver {Driver}", driver.GetType().Name);
+    
     driver.SetCursorVisible(false);
 
     var app = serviceProvider.GetRequiredService<IApplication>();
@@ -54,6 +52,7 @@ static void InitLogging()
         .WriteTo.File(
             Path.Combine(logFolder, "appLog.log"),
             fileSizeLimitBytes: 10 * 1024 * 1024,
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}",
             rollingInterval: RollingInterval.Day,
             rollOnFileSizeLimit: true)
         .CreateBootstrapLogger();
@@ -70,6 +69,32 @@ static IConfigurationRoot CreateConfiguration(string[] strings)
         .AddCommandLine(strings)
         .Build();
     return configurationRoot;
+}
+
+static bool HandleInfoProviders(string[] args, IServiceProvider serviceProvider)
+{
+    Dictionary<string, Action> infoProviders = new()
+    {
+        {
+            "--info=colors",
+            () => ColorSchema.PrintColorSchema(
+                serviceProvider.GetRequiredService<ITheme>(),
+                serviceProvider.GetRequiredService<IConsoleDriver>()
+            )
+        },
+    };
+    infoProviders.Add("--help", () => Help.PrintHelp(infoProviders.Keys));
+    foreach (var infoProviderKey in infoProviders.Keys)
+    {
+        if (args.Contains(infoProviderKey))
+        {
+            infoProviders[infoProviderKey]();
+            return true;
+        }
+    }
+
+
+    return false;
 }
 
 public partial class Program

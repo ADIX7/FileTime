@@ -38,7 +38,7 @@ public partial class TabViewModel : ITabViewModel
     public ITab? Tab { get; private set; }
     public int TabNumber { get; private set; }
 
-    public IObservable<bool> IsSelected { get; }
+    public IDeclarativeProperty<bool> IsSelected { get; }
 
     public IDeclarativeProperty<IContainer?> CurrentLocation { get; private set; }
     public IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; private set; }
@@ -60,7 +60,7 @@ public partial class TabViewModel : ITabViewModel
         _appState = appState;
 
         MarkedItems = _markedItems.Watch();
-        IsSelected = _appState.SelectedTab.Select(s => s == this);
+        IsSelected = _appState.SelectedTab.Map(s => s == this);
         _timelessContentProvider = timelessContentProvider;
         _refreshSmoothnessCalculator = refreshSmoothnessCalculator;
     }

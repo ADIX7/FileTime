@@ -12,7 +12,7 @@ public interface ITabViewModel : IInitable<ITab, int>, IDisposable
 {
     ITab? Tab { get; }
     int TabNumber { get; }
-    IObservable<bool> IsSelected { get; }
+    IDeclarativeProperty<bool> IsSelected { get; }
     IDeclarativeProperty<IContainer?> CurrentLocation { get; }
     IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; }
     IDeclarativeProperty<IContainerViewModel?> CurrentSelectedItemAsContainer { get; }

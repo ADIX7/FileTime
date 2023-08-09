@@ -426,7 +426,7 @@
                                     <Rectangle
                                         Fill="{DynamicResource ForegroundBrush}"
                                         Grid.Row="1"
-                                        IsVisible="{Binding IsSelected^}" />
+                                        IsVisible="{Binding IsSelected.Value}" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

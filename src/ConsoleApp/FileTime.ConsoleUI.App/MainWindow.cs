@@ -6,6 +6,7 @@ using TerminalUI;
 using TerminalUI.Color;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
+using TerminalUI.Models;
 using TerminalUI.ViewExtensions;
 using ConsoleColor = TerminalUI.Color.ConsoleColor;
 
@@ -38,15 +39,23 @@ public class MainWindow
             RowDefinitionsObject = "Auto *",
             ChildInitializer =
             {
-                new TextBlock<IAppState>()
-                    .Setup(t =>
-                        t.Bind(
-                            t,
-                            appState => appState.SelectedTab.Value.CurrentLocation.Value.FullName.Path,
-                            tb => tb.Text,
-                            value => value
-                        )
-                    ),
+                new Grid<IAppState>
+                {
+                    ColumnDefinitionsObject = "* Auto",
+                    ChildInitializer =
+                    {
+                        new TextBlock<IAppState>()
+                            .Setup(t =>
+                                t.Bind(
+                                    t,
+                                    appState => appState.SelectedTab.Value.CurrentLocation.Value.FullName.Path,
+                                    tb => tb.Text,
+                                    value => value
+                                )
+                            ),
+                        TabControl()
+                    }
+                },
                 new Grid<IAppState>
                 {
                     ColumnDefinitionsObject = "* 4* 4*",
@@ -64,6 +73,44 @@ public class MainWindow
             }
         };
         _root = root;
+    }
+
+    private IView<IAppState> TabControl()
+    {
+        var tabList = new ListView<IAppState, ITabViewModel>
+        {
+            Orientation = Orientation.Horizontal,
+            Extensions =
+            {
+                new GridPositionExtension(1, 0)
+            },
+            ItemTemplate = item =>
+            {
+                var textBlock = item.CreateChild<TextBlock<ITabViewModel>>();
+                textBlock.Foreground = _theme.DefaultForegroundColor;
+                
+                textBlock.Bind(
+                    textBlock,
+                    dc => dc.TabNumber.ToString(),
+                    tb => tb.Text,
+                    fallbackValue: "?");
+                
+                textBlock.Bind(
+                    textBlock,
+                    dc => dc.IsSelected.Value ? _theme.SelectedTabBackgroundColor : null,
+                    tb => tb.Background,
+                    fallbackValue: null
+                );
+                return textBlock;
+            }
+        };
+
+        tabList.Bind(
+            tabList,
+            appState => appState == null ? null : appState.Tabs,
+            v => v.ItemsSource);
+
+        return tabList;
     }
 
     private ListView<IAppState, IItemViewModel> SelectedItemsView()
