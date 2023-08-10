@@ -1,3 +1,3 @@
 ﻿namespace TerminalUI.Models;
 
-public record struct Size(int Width, int Height);
+public readonly record struct Size(int Width, int Height);

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
@@ -8,15 +9,79 @@ namespace TerminalUI.Controls;
 
 public class Grid<T> : ChildContainerView<T>
 {
+    private List<RowDefinition> _rowDefinitions = new() {RowDefinition.Star(1)};
+    private List<ColumnDefinition> _columnDefinitions = new() {ColumnDefinition.Star(1)};
     private ILogger<Grid<T>>? Logger => ApplicationContext?.LoggerFactory?.CreateLogger<Grid<T>>();
 
-    private delegate void WithSizes(Span<int> widths, Span<int> heights);
+    private delegate void WithSizes(RenderContext renderContext, Span<int> widths, Span<int> heights);
 
-    private delegate TResult WithSizes<TResult>(Span<int> widths, Span<int> heights);
+    private delegate TResult WithSizes<TResult>(RenderContext renderContext, Span<int> widths, Span<int> heights);
 
     private const int ToBeCalculated = -1;
-    public ObservableCollection<RowDefinition> RowDefinitions { get; } = new() {RowDefinition.Star(1)};
-    public ObservableCollection<ColumnDefinition> ColumnDefinitions { get; } = new() {ColumnDefinition.Star(1)};
+
+    public IReadOnlyList<RowDefinition> RowDefinitions
+    {
+        get => _rowDefinitions;
+        set
+        {
+            var nextValue = value;
+            if (value.Count == 0)
+            {
+                nextValue = new List<RowDefinition> {RowDefinition.Star(1)};
+            }
+
+            var needUpdate = nextValue.Count != _rowDefinitions.Count;
+            if (!needUpdate)
+            {
+                for (var i = 0; i < nextValue.Count; i++)
+                {
+                    if (!nextValue[i].Equals(_rowDefinitions[i]))
+                    {
+                        needUpdate = true;
+                        break;
+                    }
+                }
+            }
+
+            if (needUpdate)
+            {
+                _rowDefinitions = nextValue.ToList();
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public IReadOnlyList<ColumnDefinition> ColumnDefinitions
+    {
+        get => _columnDefinitions;
+        set
+        {
+            var nextValue = value;
+            if (value.Count == 0)
+            {
+                nextValue = new List<ColumnDefinition> {ColumnDefinition.Star(1)};
+            }
+
+            var needUpdate = nextValue.Count != _columnDefinitions.Count;
+            if (!needUpdate)
+            {
+                for (var i = 0; i < nextValue.Count; i++)
+                {
+                    if (!nextValue[i].Equals(_columnDefinitions[i]))
+                    {
+                        needUpdate = true;
+                        break;
+                    }
+                }
+            }
+
+            if (needUpdate)
+            {
+                _columnDefinitions = nextValue.ToList();
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public object? ColumnDefinitionsObject
     {
@@ -25,11 +90,7 @@ public class Grid<T> : ChildContainerView<T>
         {
             if (value is IEnumerable<ColumnDefinition> columnDefinitions)
             {
-                ColumnDefinitions.Clear();
-                foreach (var columnDefinition in columnDefinitions)
-                {
-                    ColumnDefinitions.Add(columnDefinition);
-                }
+                ColumnDefinitions = columnDefinitions.ToList();
             }
             else if (value is string s)
             {
@@ -49,11 +110,7 @@ public class Grid<T> : ChildContainerView<T>
         {
             if (value is IEnumerable<RowDefinition> rowDefinitions)
             {
-                RowDefinitions.Clear();
-                foreach (var rowDefinition in rowDefinitions)
-                {
-                    RowDefinitions.Add(rowDefinition);
-                }
+                RowDefinitions = rowDefinitions.ToList();
             }
             else if (value is string s)
             {
@@ -66,85 +123,135 @@ public class Grid<T> : ChildContainerView<T>
         }
     }
 
-    public override Size GetRequestedSize()
-        => WithCalculatedSize((columnWidths, rowHeights) =>
-        {
-            var width = 0;
-            var height = 0;
-
-            for (var i = 0; i < columnWidths.Length; i++)
+    protected override Size CalculateSize()
+        => WithCalculatedSize(
+            RenderContext.Empty,
+            new Option<Size>(new Size(0, 0), false),
+            (_, columnWidths, rowHeights) =>
             {
-                width += columnWidths[i];
-            }
+                var width = 0;
+                var height = 0;
 
-            for (var i = 0; i < rowHeights.Length; i++)
+                for (var i = 0; i < columnWidths.Length; i++)
+                {
+                    width += columnWidths[i];
+                }
+
+                for (var i = 0; i < rowHeights.Length; i++)
+                {
+                    height += rowHeights[i];
+                }
+
+                return new Size(width, height);
+            });
+
+    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+        => WithCalculatedSize(
+            renderContext,
+            new Option<Size>(size, true),
+            (context, columnWidths, rowHeights) =>
             {
-                height += rowHeights[i];
-            }
-
-            return new Size(width, height);
-        }, new Option<Size>(new Size(0, 0), false));
-
-    protected override void DefaultRenderer(Position position, Size size)
-        => WithCalculatedSize((columnWidths, rowHeights) =>
-        {
-            foreach (var child in Children)
-            {
-                var positionExtension = child.GetExtension<GridPositionExtension>();
-                var x = positionExtension?.Column ?? 0;
-                var y = positionExtension?.Row ?? 0;
-
-                if (x > columnWidths.Length)
+                foreach (var child in Children)
                 {
-                    Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", child, x, y);
-                    x = 0;
+                    var (x, y) = GetViewColumnAndRow(child, columnWidths.Length, rowHeights.Length);
+
+                    var width = columnWidths[x];
+                    var height = rowHeights[y];
+
+                    var left = position.X;
+                    var top = position.Y;
+
+                    for (var i = 0; i < x; i++)
+                    {
+                        left += columnWidths[i];
+                    }
+
+                    for (var i = 0; i < y; i++)
+                    {
+                        top += rowHeights[i];
+                    }
+
+                    child.Render(context, new Position(left, top), new Size(width, height));
                 }
 
-                if (y > rowHeights.Length)
-                {
-                    Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", child, x, y);
-                    y = 0;
-                }
+                return true;
 
-                var width = columnWidths[x];
-                var height = rowHeights[y];
+                /*var viewsByPosition = GroupViewsByPosition(columnWidths, rowHeights);
+                CleanUnusedArea(viewsByPosition, columnWidths, rowHeights);*/
+            });
 
-                var left = 0;
-                var top = 0;
-
-                for (var i = 0; i < x; i++)
-                {
-                    left += columnWidths[i];
-                }
-
-                for (var i = 0; i < y; i++)
-                {
-                    top += rowHeights[i];
-                }
-
-                child.Render(new Position(position.X + left, position.Y + top), new Size(width, height));
-            }
-        }, new Option<Size>(size, true));
-
-    private void WithCalculatedSize(WithSizes actionWithSizes, Option<Size> size)
+    /*private void CleanUnusedArea(Dictionary<(int, int),List<IView>> viewsByPosition, Span<int> columnWidths, Span<int> rowHeights)
     {
-        WithCalculatedSize(Helper, size);
-
-        object? Helper(Span<int> widths, Span<int> heights)
+        for (var x = 0; x < columnWidths.Length; x++)
         {
-            actionWithSizes(widths, heights);
+            for (var y = 0; y < rowHeights.Length; y++)
+            {
+                if (!viewsByPosition.TryGetValue((x, y), out var list)) continue;
+                
+                
+            }
+        }
+    }*/
+
+    /*private Dictionary<(int, int), List<IView>> GroupViewsByPosition(int columns, int rows)
+    {
+        Dictionary<ValueTuple<int, int>, List<IView>> viewsByPosition = new();
+        foreach (var child in Children)
+        {
+            var (x, y) = GetViewColumnAndRow(child, columns, rows);
+            if (viewsByPosition.TryGetValue((x, y), out var list))
+            {
+                list.Add(child);
+            }
+            else
+            {
+                viewsByPosition[(x, y)] = new List<IView> {child};
+            }
+        }
+
+        return viewsByPosition;
+    }*/
+
+    private ValueTuple<int, int> GetViewColumnAndRow(IView view, int columns, int rows)
+    {
+        var positionExtension = view.GetExtension<GridPositionExtension>();
+        var x = positionExtension?.Column ?? 0;
+        var y = positionExtension?.Row ?? 0;
+
+        if (x > columns)
+        {
+            Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", view, x, y);
+            x = 0;
+        }
+
+        if (y > rows)
+        {
+            Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", view, x, y);
+            y = 0;
+        }
+
+        return (x, y);
+    }
+
+    private void WithCalculatedSize(RenderContext renderContext, Option<Size> size, WithSizes actionWithSizes)
+    {
+        WithCalculatedSize(renderContext, size, Helper);
+
+        object? Helper(RenderContext renderContext1, Span<int> widths, Span<int> heights)
+        {
+            actionWithSizes(renderContext1, widths, heights);
             return null;
         }
     }
 
-    private TResult WithCalculatedSize<TResult>(WithSizes<TResult> actionWithSizes, Option<Size> size)
+    private TResult WithCalculatedSize<TResult>(RenderContext renderContext, Option<Size> size, WithSizes<TResult> actionWithSizes)
     {
         //TODO: Optimize it, dont calculate all of these, only if there is Auto value(s)
         var columns = ColumnDefinitions.Count;
         var rows = RowDefinitions.Count;
 
-        if (columns < 1) columns = 1;
-        if (rows < 1) rows = 1;
+        Debug.Assert(columns > 0, "Columns must contain at least one element");
+        Debug.Assert(rows > 0, "Rows must contain at least one element");
 
         Span<int> allWidth = stackalloc int[columns * rows];
         Span<int> allHeight = stackalloc int[columns * rows];
@@ -152,9 +259,7 @@ public class Grid<T> : ChildContainerView<T>
         foreach (var child in Children)
         {
             var childSize = child.GetRequestedSize();
-            var positionExtension = child.GetExtension<GridPositionExtension>();
-            var x = positionExtension?.Column ?? 0;
-            var y = positionExtension?.Row ?? 0;
+            var (x, y) = GetViewColumnAndRow(child, columns, rows);
 
             allWidth.SetToMatrix(childSize.Width, x, y, columns);
             allHeight.SetToMatrix(childSize.Height, x, y, columns);
@@ -246,60 +351,64 @@ public class Grid<T> : ChildContainerView<T>
             }
         }
 
-        return actionWithSizes(columnWidths, rowHeights);
+        return actionWithSizes(renderContext, columnWidths, rowHeights);
     }
 
     public void SetRowDefinitions(string value)
     {
         var values = value.Split(' ');
-        RowDefinitions.Clear();
+        var rowDefinitions = new List<RowDefinition>();
 
         foreach (var v in values)
         {
             if (v == "Auto")
             {
-                RowDefinitions.Add(RowDefinition.Auto);
+                rowDefinitions.Add(RowDefinition.Auto);
             }
             else if (v.EndsWith("*"))
             {
                 var starValue = v.Length == 1 ? 1 : int.Parse(v[..^1]);
-                RowDefinitions.Add(RowDefinition.Star(starValue));
+                rowDefinitions.Add(RowDefinition.Star(starValue));
             }
             else if (int.TryParse(v, out var pixelValue))
             {
-                RowDefinitions.Add(RowDefinition.Pixel(pixelValue));
+                rowDefinitions.Add(RowDefinition.Pixel(pixelValue));
             }
             else
             {
                 throw new ArgumentException("Invalid row definition: " + v);
             }
         }
+
+        RowDefinitions = rowDefinitions;
     }
 
     public void SetColumnDefinitions(string value)
     {
         var values = value.Split(' ');
-        ColumnDefinitions.Clear();
+        var columnDefinitions = new List<ColumnDefinition>();
 
         foreach (var v in values)
         {
             if (v == "Auto")
             {
-                ColumnDefinitions.Add(ColumnDefinition.Auto);
+                columnDefinitions.Add(ColumnDefinition.Auto);
             }
             else if (v.EndsWith("*"))
             {
                 var starValue = v.Length == 1 ? 1 : int.Parse(v[..^1]);
-                ColumnDefinitions.Add(ColumnDefinition.Star(starValue));
+                columnDefinitions.Add(ColumnDefinition.Star(starValue));
             }
             else if (int.TryParse(v, out var pixelValue))
             {
-                ColumnDefinitions.Add(ColumnDefinition.Pixel(pixelValue));
+                columnDefinitions.Add(ColumnDefinition.Pixel(pixelValue));
             }
             else
             {
                 throw new ArgumentException("Invalid column definition: " + v);
             }
         }
+
+        ColumnDefinitions = columnDefinitions;
     }
 }

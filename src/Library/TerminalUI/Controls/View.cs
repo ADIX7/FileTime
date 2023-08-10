@@ -13,9 +13,13 @@ public abstract partial class View<T> : IView<T>
     [Notify] private int? _minWidth;
     [Notify] private int? _maxWidth;
     [Notify] private int? _width;
+    [Notify] private int _actualWidth;
     [Notify] private int? _minHeight;
     [Notify] private int? _maxHeight;
     [Notify] private int? _height;
+    [Notify] private int _actualHeight;
+    [Notify] private Margin _margin = new Margin(0, 0, 0, 0);
+    [Notify] private string? _name;
     [Notify] private IApplicationContext? _applicationContext;
     private bool _attached;
 
@@ -32,17 +36,50 @@ public abstract partial class View<T> : IView<T>
             }
         }
     }
+
     public List<object> Extensions { get; } = new();
-    public Action<Position, Size> RenderMethod { get; set; }
+    public RenderMethod RenderMethod { get; set; }
     public event Action<IView>? Disposed;
     protected List<string> RerenderProperties { get; } = new();
 
     protected View()
     {
         RenderMethod = DefaultRenderer;
+
+        RerenderProperties.Add(nameof(MinWidth));
+        RerenderProperties.Add(nameof(MaxWidth));
+        RerenderProperties.Add(nameof(MinHeight));
+        RerenderProperties.Add(nameof(MaxHeight));
+        RerenderProperties.Add(nameof(Margin));
+
         ((INotifyPropertyChanged) this).PropertyChanged += Handle_PropertyChanged;
     }
-    public abstract Size GetRequestedSize();
+
+    public virtual Size GetRequestedSize()
+    {
+        var size = CalculateSize();
+
+        if (MinWidth.HasValue && size.Width < MinWidth.Value)
+            size = size with {Width = MinWidth.Value};
+        else if (MaxWidth.HasValue && size.Width > MaxWidth.Value)
+            size = size with {Width = MaxWidth.Value};
+
+        if (MinHeight.HasValue && size.Height < MinHeight.Value)
+            size = size with {Height = MinHeight.Value};
+        else if (MaxHeight.HasValue && size.Height > MaxHeight.Value)
+            size = size with {Height = MaxHeight.Value};
+
+        if (Margin.Left != 0 || Margin.Right != 0)
+            size = size with {Width = size.Width + Margin.Left + Margin.Right};
+
+        if (Margin.Top != 0 || Margin.Bottom != 0)
+            size = size with {Height = size.Height + Margin.Top + Margin.Bottom};
+
+        return size;
+    }
+
+    protected abstract Size CalculateSize();
+
 
     protected virtual void AttachChildren()
     {
@@ -50,7 +87,8 @@ public abstract partial class View<T> : IView<T>
 
     private void Handle_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not null
+        if (Attached
+            && e.PropertyName is not null
             && (e.PropertyName == nameof(IView.DataContext)
                 || RerenderProperties.Contains(e.PropertyName)
             )
@@ -60,10 +98,16 @@ public abstract partial class View<T> : IView<T>
         }
     }
 
-    protected abstract void DefaultRenderer(Position position, Size size);
+    protected abstract bool DefaultRenderer(RenderContext renderContext, Position position, Size size);
 
-    public void Render(Position position, Size size)
+    public bool Render(RenderContext renderContext, Position position, Size size)
     {
+        if (!Attached)
+            throw new InvalidOperationException("Cannot render unattached view");
+
+        ActualWidth = size.Width;
+        ActualHeight = size.Height;
+
         if (RenderMethod is null)
         {
             throw new NullReferenceException(
@@ -74,7 +118,31 @@ public abstract partial class View<T> : IView<T>
                 + DataContext?.GetType().Name);
         }
 
-        RenderMethod(position, size);
+        if (Margin.Left != 0 || Margin.Top != 0 || Margin.Right != 0 || Margin.Bottom != 0)
+        {
+            position = new Position(
+                X: position.X + Margin.Left,
+                Y: position.Y + Margin.Top
+            );
+
+            size = new Size(
+                size.Width - Margin.Left - Margin.Right,
+                size.Height - Margin.Top - Margin.Bottom
+            );
+        }
+
+        return RenderMethod(renderContext, position, size);
+    }
+
+    protected void RenderEmpty(RenderContext renderContext, Position position, Size size)
+    {
+        var driver = renderContext.ConsoleDriver;
+        var placeHolder = new string(ApplicationContext!.EmptyCharacter, size.Width);
+        for (var i = 0; i < size.Height; i++)
+        {
+            driver.SetCursorPosition(position with {Y = position.Y + i});
+            driver.Write(placeHolder);
+        }
     }
 
     public TChild CreateChild<TChild>() where TChild : IView<T>, new()
@@ -93,9 +161,9 @@ public abstract partial class View<T> : IView<T>
     public virtual TChild AddChild<TChild>(TChild child) where TChild : IView<T>
     {
         child.DataContext = DataContext;
-        child.ApplicationContext = ApplicationContext;
+        CopyCommonPropertiesToNewChild(child);
 
-        var mapper = new DataContextMapper<T>(this, d => child.DataContext = d);
+        var mapper = new DataContextMapper<T, T>(this, child, d => d);
         AddDisposable(mapper);
         child.AddDisposable(mapper);
 
@@ -106,13 +174,34 @@ public abstract partial class View<T> : IView<T>
         where TChild : IView<TDataContext>
     {
         child.DataContext = dataContextMapper(DataContext);
-        child.ApplicationContext = ApplicationContext;
+        CopyCommonPropertiesToNewChild(child);
 
-        var mapper = new DataContextMapper<T>(this, d => child.DataContext = dataContextMapper(d));
+        var mapper = new DataContextMapper<T, TDataContext>(this, child, dataContextMapper);
         AddDisposable(mapper);
         child.AddDisposable(mapper);
 
         return child;
+    }
+
+    private void CopyCommonPropertiesToNewChild(IView child)
+    {
+        child.ApplicationContext = ApplicationContext;
+        child.Attached = Attached;
+    }
+
+    public virtual void RemoveChild<TDataContext>(IView<TDataContext> child)
+    {
+        var mappers = _disposables
+            .Where(d => d is DataContextMapper<T, TDataContext> mapper && mapper.Target == child)
+            .ToList();
+
+        foreach (var mapper in mappers)
+        {
+            mapper.Dispose();
+            RemoveDisposable(mapper);
+        }
+
+        child.Attached = false;
     }
 
     public void AddDisposable(IDisposable disposable) => _disposables.Add(disposable);

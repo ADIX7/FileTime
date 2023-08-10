@@ -45,11 +45,12 @@ public class EventLoop : IEventLoop
         }
 
         var size = _applicationContext.ConsoleDriver.GetWindowSize();
+        var renderContext = new RenderContext(_applicationContext.ConsoleDriver);
         foreach (var view in viewsToRender)
         {
             view.Attached = true;
             view.GetRequestedSize();
-            view.Render(new Position(0, 0), size);
+            view.Render(renderContext, new Position(0, 0), size);
         }
     }
 

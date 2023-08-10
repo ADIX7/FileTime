@@ -1,5 +1,7 @@
-﻿using PropertyChanged.SourceGenerator;
+﻿using System.ComponentModel;
+using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
+using TerminalUI.ConsoleDrivers;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
 
@@ -7,9 +9,16 @@ namespace TerminalUI.Controls;
 
 public partial class TextBlock<T> : View<T>
 {
-    private record RenderContext(Position Position, string? Text, IColor? Foreground, IColor? Background);
+    private record RenderState(
+        Position Position,
+        Size Size,
+        string? Text,
+        IColor? Foreground,
+        IColor? Background);
 
-    private RenderContext? _renderContext;
+    private RenderState? _lastRenderState;
+    private string[]? _textLines;
+    private bool _placeholderRenderDone;
 
     [Notify] private string? _text = string.Empty;
     [Notify] private IColor? _foreground;
@@ -28,23 +37,41 @@ public partial class TextBlock<T> : View<T>
         RerenderProperties.Add(nameof(Foreground));
         RerenderProperties.Add(nameof(Background));
         RerenderProperties.Add(nameof(TextAlignment));
+
+        ((INotifyPropertyChanged) this).PropertyChanged += (o, e) =>
+        {
+            if (e.PropertyName == nameof(Text))
+            {
+                _textLines = Text?.Split(Environment.NewLine);
+            }
+        };
     }
 
-    public override Size GetRequestedSize() => new(Text?.Length ?? 0, 1);
+    protected override Size CalculateSize() => new(_textLines?.Max(l => l.Length) ?? 0, _textLines?.Length ?? 0);
 
-    protected override void DefaultRenderer(Position position, Size size)
+    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
     {
-        if (size.Width == 0 || size.Height == 0) return;
+        if (size.Width == 0 || size.Height == 0) return false;
 
-        var driver = ApplicationContext!.ConsoleDriver;
-        var renderContext = new RenderContext(position, Text, _foreground, _background);
-        if (!NeedsRerender(renderContext)) return;
+        var driver = renderContext.ConsoleDriver;
+        var renderState = new RenderState(position, size, Text, _foreground, _background);
+        if (!NeedsRerender(renderState)) return false;
 
-        _renderContext = renderContext;
+        _lastRenderState = renderState;
 
-        if (Text is null) return;
+        if (_textLines is null)
+        {
+            if (_placeholderRenderDone)
+            {
+                _placeholderRenderDone = true;
+                RenderEmpty(renderContext, position, size);
+            }
 
-        driver.SetCursorPosition(position);
+            return false;
+        }
+
+        _placeholderRenderDone = false;
+
         driver.ResetColor();
         if (Foreground is { } foreground)
         {
@@ -56,19 +83,31 @@ public partial class TextBlock<T> : View<T>
             driver.SetBackgroundColor(background);
         }
 
-        var text = TextAlignment switch
-        {
-            TextAlignment.Right => string.Format($"{{0,{size.Width}}}", Text),
-            _ => string.Format($"{{0,{-size.Width}}}", Text)
-        };
-        if (text.Length > size.Width)
-        {
-            text = text[..size.Width];
-        }
+        RenderText(_textLines, driver, position, size);
 
-        driver.Write(text);
+        return true;
     }
 
-    private bool NeedsRerender(RenderContext renderContext)
-        => _renderContext is null || _renderContext != renderContext;
+    private void RenderText(string[] textLines, IConsoleDriver driver, Position position, Size size)
+    {
+        for (var i = 0; i < textLines.Length; i++)
+        {
+            var text = textLines[i];
+            text = TextAlignment switch
+            {
+                TextAlignment.Right => string.Format($"{{0,{size.Width}}}", text),
+                _ => string.Format($"{{0,{-size.Width}}}", text)
+            };
+            if (text.Length > size.Width)
+            {
+                text = text[..size.Width];
+            }
+
+            driver.SetCursorPosition(position with {Y = position.Y + i});
+            driver.Write(text);
+        }
+    }
+
+    private bool NeedsRerender(RenderState renderState)
+        => _lastRenderState is null || _lastRenderState != renderState;
 }

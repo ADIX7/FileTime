@@ -9,6 +9,7 @@ public class ApplicationContext : IApplicationContext
     public ILoggerFactory? LoggerFactory { get; init; }
     public IEventLoop EventLoop { get; init; }
     public bool IsRunning { get; set; }
+    public char EmptyCharacter { get; init; } = ' ';
 
     public ApplicationContext()
     {

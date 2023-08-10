@@ -21,6 +21,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
     private readonly ILogger<DefaultModeKeyInputHandler> _logger;
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
+    private readonly IPossibleCommandsService _possibleCommandsService;
     private readonly BindedCollection<IModalViewModel> _openModals;
 
     public DefaultModeKeyInputHandler(
@@ -29,10 +30,12 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         IKeyboardConfigurationService keyboardConfigurationService,
         ILogger<DefaultModeKeyInputHandler> logger,
         IUserCommandHandlerService userCommandHandlerService,
-        IIdentifiableUserCommandService identifiableUserCommandService)
+        IIdentifiableUserCommandService identifiableUserCommandService,
+        IPossibleCommandsService possibleCommandsService)
     {
         _appState = appState;
         _identifiableUserCommandService = identifiableUserCommandService;
+        _possibleCommandsService = possibleCommandsService;
         _keyboardConfigurationService = keyboardConfigurationService;
         _logger = logger;
         _modalService = modalService;
@@ -99,7 +102,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             {
                 args.Handled = true;
                 _appState.PreviousKeys.Clear();
-                _appState.PossibleCommands = new();
+                _possibleCommandsService.Clear();
             }
         }
         /*else if (key == Key.Enter
@@ -113,7 +116,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         {
             args.Handled = true;
             _appState.PreviousKeys.Clear();
-            _appState.PossibleCommands = new();
+            _possibleCommandsService.Clear();
             var command = _identifiableUserCommandService.GetCommand(selectedCommandBinding.Command);
             if (command is not null)
             {
@@ -123,7 +126,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         else if (_keysToSkip.Any(k => k.AreKeysEqual(_appState.PreviousKeys)))
         {
             _appState.PreviousKeys.Clear();
-            _appState.PossibleCommands = new();
+            _possibleCommandsService.Clear();
             return;
         }
         else if (_appState.PreviousKeys.Count == 2)
@@ -131,7 +134,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             args.Handled = true;
             _appState.NoCommandFound = true;
             _appState.PreviousKeys.Clear();
-            _appState.PossibleCommands = new();
+            _possibleCommandsService.Clear();
         }
         else
         {
@@ -145,7 +148,8 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             }
             else
             {
-                _appState.PossibleCommands = possibleCommands;
+                _possibleCommandsService.Clear();
+                _possibleCommandsService.AddRange(possibleCommands);
             }
         }
     }

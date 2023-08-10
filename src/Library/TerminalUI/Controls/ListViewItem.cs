@@ -4,13 +4,13 @@ namespace TerminalUI.Controls;
 
 public class ListViewItem<T> : ContentView<T>
 {
-    public override Size GetRequestedSize()
+    protected override Size CalculateSize()
     {
         if (Content is null) return new Size(0, 0);
         return Content.GetRequestedSize();
     }
 
-    protected override void DefaultRenderer(Position position, Size size)
+    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
     {
         if (ContentRendererMethod is null)
         {
@@ -22,6 +22,6 @@ public class ListViewItem<T> : ContentView<T>
                 + DataContext?.GetType().Name);
         }
 
-        ContentRendererMethod(position, size);
+        return ContentRendererMethod(renderContext, position, size);
     }
 }

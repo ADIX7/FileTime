@@ -123,6 +123,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CircularBuffer", "Library\C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.ConsoleUI.Styles", "ConsoleApp\FileTime.ConsoleUI.Styles\FileTime.ConsoleUI.Styles.csproj", "{CCB6F86A-7E80-448E-B543-DF9DB337C42A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObservableComputations.Extensions", "Library\ObservableComputations.Extensions\ObservableComputations.Extensions.csproj", "{6C3C3151-9341-4792-9B0B-A11C0658524E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -333,6 +335,10 @@ Global
 		{CCB6F86A-7E80-448E-B543-DF9DB337C42A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCB6F86A-7E80-448E-B543-DF9DB337C42A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCB6F86A-7E80-448E-B543-DF9DB337C42A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C3C3151-9341-4792-9B0B-A11C0658524E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C3C3151-9341-4792-9B0B-A11C0658524E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C3C3151-9341-4792-9B0B-A11C0658524E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C3C3151-9341-4792-9B0B-A11C0658524E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -390,6 +396,7 @@ Global
 		{2F01FC4C-D942-48B0-B61C-7C5BEAED4787} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 		{AF4FE804-12D9-46E2-A584-BFF6D4509766} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 		{CCB6F86A-7E80-448E-B543-DF9DB337C42A} = {CAEEAD3C-41EB-405C-ACA9-BA1E4C352549}
+		{6C3C3151-9341-4792-9B0B-A11C0658524E} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

@@ -750,7 +750,7 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Grid IsVisible="{Binding AppState.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+                            <Grid IsVisible="{Binding PossibleCommands.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="1" />
                                     <RowDefinition Height="Auto" />
@@ -763,17 +763,17 @@
                                     Margin="10,0"
                                     VerticalAlignment="Center" />
 
-                                <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.PossibleCommands}">
+                                <ItemsRepeater Grid.Row="1" ItemsSource="{Binding PossibleCommands.PossibleCommands}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="configuration:CommandBindingConfiguration">
+                                        <DataTemplate x:DataType="corevm:IPossibleCommandEntryViewModel">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="200" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBlock Text="{Binding KeysDisplayText}" />
-                                                <TextBlock Grid.Column="1" Text="{Binding Command, Converter={StaticResource CommandToCommandNameConverter}}" />
+                                                <TextBlock Text="{Binding KeysText}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Title}" />
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>

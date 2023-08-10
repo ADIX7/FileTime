@@ -41,6 +41,14 @@ public abstract class ChildContainerView<T> : View<T>, IChildContainer<T>
         };
     }
 
+    protected override void AttachChildren()
+    {
+        foreach (var child in Children)
+        {
+            child.Attached = true;
+        }
+    }
+
     public override TChild AddChild<TChild>(TChild child)
     {
         child = base.AddChild(child);

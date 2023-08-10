@@ -9,7 +9,7 @@ public partial class StackPanel<T> : ChildContainerView<T>
     private readonly Dictionary<IView, Size> _requestedSizes = new();
     [Notify] private Orientation _orientation = Orientation.Vertical;
 
-    public override Size GetRequestedSize()
+    protected override Size CalculateSize()
     {
         _requestedSizes.Clear();
         var width = 0;
@@ -35,20 +35,38 @@ public partial class StackPanel<T> : ChildContainerView<T>
         return new Size(width, height);
     }
 
-    protected override void DefaultRenderer(Position position, Size size)
+    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
     {
         var delta = 0;
+        var neededRerender = false;
         foreach (var child in Children)
         {
             if (!_requestedSizes.TryGetValue(child, out var childSize)) throw new Exception("Child size not found");
+
             var childPosition = Orientation == Orientation.Vertical
                 ? position with {Y = position.Y + delta}
                 : position with {X = position.X + delta};
-            child.Render(childPosition, childSize);
+
+            var endX = position.X + size.Width;
+            var endY = position.Y + size.Height;
+            
+            if (childPosition.X > endX || childPosition.Y > endY) break;
+            if (childPosition.X + childSize.Width > endX)
+            {
+                childSize = childSize with {Width = endX - childPosition.X};
+            }
+            if (childPosition.Y + childSize.Height > endY)
+            {
+                childSize = childSize with {Height = endY - childPosition.Y};
+            }
+
+            neededRerender = child.Render(renderContext, childPosition, childSize) || neededRerender;
 
             delta += Orientation == Orientation.Vertical
                 ? childSize.Height
                 : childSize.Width;
         }
+
+        return neededRerender;
     }
 }

@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
     <ProjectReference Include="..\..\Library\Defer\Defer.csproj" />
+    <ProjectReference Include="..\..\Library\ObservableComputations.Extensions\ObservableComputations.Extensions.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.LocalAdmin.Abstractions\FileTime.Providers.LocalAdmin.Abstractions.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools\FileTime.Tools.csproj" />

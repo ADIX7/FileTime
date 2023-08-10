@@ -1,10 +1,9 @@
 ﻿using TerminalUI.Controls;
-using TerminalUI.Models;
 
 namespace TerminalUI.Traits;
 
-public interface IContentRenderer
+public interface IContentRenderer<T>
 {
-    IView? Content { get; set; }
-    Action<Position, Size> ContentRendererMethod { get; set; }
+    IView<T>? Content { get; set; }
+    RenderMethod ContentRendererMethod { get; set; }
 }

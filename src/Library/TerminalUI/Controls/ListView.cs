@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using DeclarativeProperty;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
@@ -79,18 +80,30 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
 
             if (_itemsSource is IDeclarativeProperty<ObservableCollection<TItem>> observableDeclarativeProperty)
             {
-                observableDeclarativeProperty.PropertyChanged += (_, _) => ApplicationContext?.EventLoop.RequestRerender();
-                _getItems = () => observableDeclarativeProperty.Value;
+                throw new NotSupportedException();
             }
             else if (_itemsSource is IDeclarativeProperty<ReadOnlyObservableCollection<TItem>> readOnlyObservableDeclarativeProperty)
             {
-                readOnlyObservableDeclarativeProperty.PropertyChanged += (_, _) => ApplicationContext?.EventLoop.RequestRerender();
-                _getItems = () => readOnlyObservableDeclarativeProperty.Value;
+                throw new NotSupportedException();
             }
             else if (_itemsSource is IDeclarativeProperty<IEnumerable<TItem>> enumerableDeclarativeProperty)
             {
-                enumerableDeclarativeProperty.PropertyChanged += (_, _) => ApplicationContext?.EventLoop.RequestRerender();
-                _getItems = () => enumerableDeclarativeProperty.Value;
+                throw new NotSupportedException();
+            }
+
+            if (_itemsSource is ObservableCollection<TItem> observableDeclarative)
+            {
+                ((INotifyCollectionChanged) observableDeclarative).CollectionChanged +=
+                    (_, _) => ApplicationContext?.EventLoop.RequestRerender();
+
+                _getItems = () => observableDeclarative;
+            }
+            else if (_itemsSource is ReadOnlyObservableCollection<TItem> readOnlyObservableDeclarative)
+            {
+                ((INotifyCollectionChanged) readOnlyObservableDeclarative).CollectionChanged +=
+                    (_, _) => ApplicationContext?.EventLoop.RequestRerender();
+
+                _getItems = () => readOnlyObservableDeclarative;
             }
             else if (_itemsSource is ICollection<TItem> collection)
                 _getItems = () => collection;
@@ -111,7 +124,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         }
     }
 
-    public Func<ListViewItem<TItem>, IView?> ItemTemplate { get; set; } = DefaultItemTemplate;
+    public Func<ListViewItem<TItem>, IView<TItem>?> ItemTemplate { get; set; } = DefaultItemTemplate;
 
     public ListView()
     {
@@ -120,7 +133,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         RerenderProperties.Add(nameof(Orientation));
     }
 
-    public override Size GetRequestedSize()
+    protected override Size CalculateSize()
     {
         InstantiateItemViews();
         if (_listViewItems is null || _listViewItemLength == 0)
@@ -147,19 +160,16 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         }
     }
 
-    protected override void DefaultRenderer(Position position, Size size)
-    {
-        if (Orientation == Orientation.Vertical)
-            RenderVertical(position, size);
-        else
-            RenderHorizontal(position, size);
-    }
+    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+        => Orientation == Orientation.Vertical
+            ? RenderVertical(renderContext, position, size)
+            : RenderHorizontal(renderContext, position, size);
 
-    private void RenderHorizontal(Position position, Size size)
+    private bool RenderHorizontal(RenderContext renderContext, Position position, Size size)
     {
         //Note: no support for same width elements
         var listViewItems = InstantiateItemViews();
-        if (listViewItems.Length == 0) return;
+        if (listViewItems.Length == 0) return false;
 
         Span<Size> requestedSizes = stackalloc Size[_listViewItemLength];
 
@@ -215,20 +225,22 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
                 width = size.Width - deltaX;
             }
 
-            item.Render(position with {X = position.X + deltaX}, size with {Width = width});
+            item.Render(renderContext, position with {X = position.X + deltaX}, size with {Width = width});
             deltaX = nextDeltaX;
         }
+
+        return true;
     }
 
-    private void RenderVertical(Position position, Size size)
+    private bool RenderVertical(RenderContext renderContext, Position position, Size size)
     {
         //Note: only same height is supported
         var requestedItemSize = _requestedItemSize;
         if (requestedItemSize.Height == 0 || requestedItemSize.Width == 0)
-            return;
+            return false;
 
         var listViewItems = InstantiateItemViews();
-        if (listViewItems.Length == 0) return;
+        if (listViewItems.Length == 0) return false;
 
         var itemsToRender = listViewItems.Length;
         var heightNeeded = requestedItemSize.Height * listViewItems.Length;
@@ -264,7 +276,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         for (var i = renderStartIndex; i < lastItemIndex; i++)
         {
             var item = listViewItems[i];
-            item.Render(position with {Y = position.Y + deltaY}, requestedItemSize with {Width = size.Width});
+            item.Render(renderContext, position with {Y = position.Y + deltaY}, requestedItemSize with {Width = size.Width});
             deltaY += requestedItemSize.Height;
         }
 
@@ -276,6 +288,8 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
             driver.SetCursorPosition(position with {Y = position.Y + i});
             driver.Write(placeholder);
         }
+
+        return true;
     }
 
     private Span<ListViewItem<TItem>> InstantiateItemViews()
@@ -300,9 +314,14 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
             {
                 var dataContext = items[i];
                 var child = CreateChild<ListViewItem<TItem>, TItem>(_ => dataContext);
-                child.Content = ItemTemplate(child);
-                ItemTemplate(child);
+                var newContent = ItemTemplate(child);
+                child.Content = newContent;
                 newListViewItems[i] = child;
+            }
+
+            if (_listViewItems is not null)
+            {
+                ListViewItemPool.Return(_listViewItems);
             }
 
             _listViewItems = newListViewItems;
@@ -324,5 +343,5 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         return _listViewItems;
     }
 
-    private static IView? DefaultItemTemplate(ListViewItem<TItem> listViewItem) => null;
+    private static IView<TItem>? DefaultItemTemplate(ListViewItem<TItem> listViewItem) => null;
 }

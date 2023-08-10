@@ -3,25 +3,32 @@ using TerminalUI.Controls;
 
 namespace TerminalUI;
 
-public class DataContextMapper<T> : IDisposable
+public class DataContextMapper<TSource, TTarget> : IDisposable
 {
-    private readonly IView<T> _source;
-    private readonly Action<T?> _setter;
+    private readonly Func<TSource?, TTarget?> _mapper;
+    public IView<TSource> Source { get; }
+    public IView<TTarget> Target { get; }
 
-    public DataContextMapper(IView<T> source, Action<T?> setter)
+    public DataContextMapper(IView<TSource> source, IView<TTarget> target, Func<TSource?, TTarget?> mapper)
     {
+        _mapper = mapper;
         ArgumentNullException.ThrowIfNull(source);
 
-        _source = source;
-        _setter = setter;
+        Source = source;
+        Target = target;
         source.PropertyChanged += SourceOnPropertyChanged;
     }
 
     private void SourceOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName != nameof(IView<object>.DataContext)) return;
-        _setter(_source.DataContext);
+        Target.DataContext = _mapper(Source.DataContext);
     }
 
-    public void Dispose() => _source.PropertyChanged -= SourceOnPropertyChanged;
+    public void Dispose()
+    {
+        Source.PropertyChanged -= SourceOnPropertyChanged;
+        Source.RemoveDisposable(this);
+        Target.RemoveDisposable(this);
+    }
 }

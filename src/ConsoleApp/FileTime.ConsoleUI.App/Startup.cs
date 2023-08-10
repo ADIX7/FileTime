@@ -28,6 +28,7 @@ public static class Startup
         services.TryAddSingleton<ISystemClipboardService, ConsoleSystemClipboardService>();
         services.AddSingleton<CustomLoggerSink>();
         services.TryAddSingleton(new ApplicationConfiguration(true));
+        services.TryAddSingleton<IRootViewModel, RootViewModel>();
 
         services.Configure<ConsoleApplicationConfiguration>(configuration);
 

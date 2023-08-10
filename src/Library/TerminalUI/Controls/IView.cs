@@ -4,23 +4,29 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
+public delegate bool RenderMethod(RenderContext renderContext, Position position, Size size);
+
 public interface IView : INotifyPropertyChanged, IDisposableCollection
 {
     object? DataContext { get; set; }
     int? MinWidth { get; set; }
     int? MaxWidth { get; set; }
     int? Width { get; set; }
+    int ActualWidth { get; }
     int? MinHeight { get; set; }
     int? MaxHeight { get; set; }
     int? Height { get; set; }
+    int ActualHeight { get; }
+    Margin Margin { get; set; }
     bool Attached { get; set; }
-    Size GetRequestedSize();
+    string? Name { get; set; }
     IApplicationContext? ApplicationContext { get; set; }
     List<object> Extensions { get; }
-    
-    Action<Position, Size> RenderMethod { get; set; }
+    RenderMethod RenderMethod { get; set; }
     event Action<IView> Disposed;
-    void Render(Position position, Size size);
+
+    Size GetRequestedSize();
+    bool Render(RenderContext renderContext, Position position, Size size);
 }
 
 public interface IView<T> : IView
@@ -39,8 +45,10 @@ public interface IView<T> : IView
     TChild CreateChild<TChild, TDataContext>(Func<T?, TDataContext?> dataContextMapper)
         where TChild : IView<TDataContext>, new();
 
-    public TChild AddChild<TChild>(TChild child) where TChild : IView<T>;
+    TChild AddChild<TChild>(TChild child) where TChild : IView<T>;
 
-    public TChild AddChild<TChild, TDataContext>(TChild child, Func<T?, TDataContext?> dataContextMapper)
+    TChild AddChild<TChild, TDataContext>(TChild child, Func<T?, TDataContext?> dataContextMapper)
         where TChild : IView<TDataContext>;
+
+    void RemoveChild<TDataContext>(IView<TDataContext> child);
 }

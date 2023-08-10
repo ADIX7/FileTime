@@ -16,7 +16,6 @@ public interface IAppState
     IDeclarativeProperty<string?> RapidTravelTextDebounced { get; }
     IDeclarativeProperty<string?> ContainerStatus { get; }
     List<KeyConfig> PreviousKeys { get; }
-    List<CommandBindingConfiguration> PossibleCommands { get; set; }
     bool NoCommandFound { get; set; }
 
     void AddTab(ITabViewModel tabViewModel);

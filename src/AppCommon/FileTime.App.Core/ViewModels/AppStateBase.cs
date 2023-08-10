@@ -4,9 +4,7 @@ using System.Reactive.Subjects;
 using DeclarativeProperty;
 using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Models.Enums;
-using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.Core.Models.Extensions;
-using MvvmGen;
 using MoreLinq;
 using PropertyChanged.SourceGenerator;
 
@@ -31,7 +29,6 @@ public abstract partial class AppStateBase : IAppState
 
     public IDeclarativeProperty<string?> ContainerStatus { get; }
     [Notify] public List<KeyConfig> PreviousKeys { get; } = new();
-    [Notify] public List<CommandBindingConfiguration> PossibleCommands { get; set; } = new();
     [Notify] public bool NoCommandFound { get; set; }
 
     protected AppStateBase()

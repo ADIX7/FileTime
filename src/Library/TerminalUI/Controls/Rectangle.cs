@@ -6,19 +6,38 @@ namespace TerminalUI.Controls;
 
 public partial class Rectangle<T> : View<T>
 {
-    [Notify] private IColor? _fill;
-    public override Size GetRequestedSize() => new(Width ?? 0, Height ?? 0);
+    private record RenderState(
+        Position Position,
+        Size Size,
+        IColor? Fill);
 
-    protected override void DefaultRenderer(Position position, Size size)
+    private RenderState? _lastRenderState;
+
+    [Notify] private IColor? _fill;
+    protected override Size CalculateSize() => new(Width ?? 0, Height ?? 0);
+
+    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
     {
-        var s = new string('█', Width ?? size.Width);
-        ApplicationContext?.ConsoleDriver.SetBackgroundColor(Fill ?? new Color.ConsoleColor(System.ConsoleColor.Yellow, ColorType.Background));
-        ApplicationContext?.ConsoleDriver.SetForegroundColor(Fill ?? new Color.ConsoleColor(System.ConsoleColor.Yellow, ColorType.Foreground));
-        var height = Height ?? size.Height;
+        var renderState = new RenderState(position, size, Fill);
+        if (!NeedsRerender(renderState) || Fill is null) return false;
+        _lastRenderState = renderState;
+
+        var driver = renderContext.ConsoleDriver;
+
+        var s = new string('█', size.Width);
+        driver.SetBackgroundColor(Fill);
+        driver.SetForegroundColor(Fill);
+
+        var height = size.Height;
         for (var i = 0; i < height; i++)
         {
-            ApplicationContext?.ConsoleDriver.SetCursorPosition(position with {Y = position.Y + i});
-            ApplicationContext?.ConsoleDriver.Write(s);
+            driver.SetCursorPosition(position with {Y = position.Y + i});
+            driver.Write(s);
         }
+        
+        return true;
     }
+
+    private bool NeedsRerender(RenderState renderState)
+        => _lastRenderState is null || _lastRenderState != renderState;
 }

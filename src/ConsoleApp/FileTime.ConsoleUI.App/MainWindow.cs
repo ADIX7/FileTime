@@ -1,5 +1,4 @@
-﻿using DeclarativeProperty;
-using FileTime.App.Core.Models.Enums;
+﻿using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Enums;
 using TerminalUI;
@@ -8,69 +7,103 @@ using TerminalUI.Controls;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
 using TerminalUI.ViewExtensions;
-using ConsoleColor = TerminalUI.Color.ConsoleColor;
 
 namespace FileTime.ConsoleUI.App;
 
 public class MainWindow
 {
-    private readonly IConsoleAppState _consoleAppState;
+    private readonly IRootViewModel _rootViewModel;
     private readonly IApplicationContext _applicationContext;
     private readonly ITheme _theme;
 
     private IView _root;
 
     public MainWindow(
-        IConsoleAppState consoleAppState,
+        IRootViewModel rootViewModel,
         IApplicationContext applicationContext,
         ITheme theme)
     {
-        _consoleAppState = consoleAppState;
+        _rootViewModel = rootViewModel;
         _applicationContext = applicationContext;
         _theme = theme;
     }
 
     public void Initialize()
     {
-        var root = new Grid<IAppState>
+        var root = new Grid<IRootViewModel>
         {
-            DataContext = _consoleAppState,
+            DataContext = _rootViewModel,
             ApplicationContext = _applicationContext,
-            RowDefinitionsObject = "Auto *",
+            RowDefinitionsObject = "Auto * Auto",
             ChildInitializer =
             {
-                new Grid<IAppState>
+                new Grid<IRootViewModel>
                 {
-                    ColumnDefinitionsObject = "* Auto",
+                    ColumnDefinitionsObject = "Auto * Auto",
                     ChildInitializer =
                     {
-                        new TextBlock<IAppState>()
+                        new StackPanel<IRootViewModel>
+                        {
+                            Name = "username_panel",
+                            Orientation = Orientation.Horizontal,
+                            Margin = "0 0 1 0",
+                            ChildInitializer =
                             {
-                                Foreground = _theme.ContainerColor
+                                new TextBlock<IRootViewModel>()
+                                    .Setup(t => t.Bind(
+                                        t,
+                                        root => root.UserName,
+                                        tb => tb.Text
+                                    )),
+                                new TextBlock<IRootViewModel>()
+                                    .Setup(t => t.Bind(
+                                        t,
+                                        root => root.MachineName,
+                                        tb => tb.Text,
+                                        t => $"@{t}"
+                                    ))
                             }
-                            .Setup(t =>
-                                t.Bind(
-                                    t,
-                                    appState => appState.SelectedTab.Value.CurrentLocation.Value.FullName.Path,
-                                    tb => tb.Text,
-                                    value => value
-                                )
-                            ),
+                        },
+                        new TextBlock<IRootViewModel>
+                            {
+                                Foreground = _theme.ContainerColor,
+                                Extensions =
+                                {
+                                    new GridPositionExtension(1, 0)
+                                }
+                            }
+                            .Setup(t => t.Bind(
+                                t,
+                                root => root.AppState.SelectedTab.Value.CurrentLocation.Value.FullName.Path,
+                                tb => tb.Text
+                            )),
                         TabControl()
+                            .WithExtension(new GridPositionExtension(2, 0))
                     }
                 },
-                new Grid<IAppState>
+                new Grid<IRootViewModel>
                 {
                     ColumnDefinitionsObject = "* 4* 4*",
-                    ChildInitializer =
-                    {
-                        ParentsItemsView(),
-                        SelectedItemsView(),
-                        SelectedsItemsView(),
-                    },
                     Extensions =
                     {
                         new GridPositionExtension(0, 1)
+                    },
+                    ChildInitializer =
+                    {
+                        ParentsItemsView().WithExtension(new GridPositionExtension(0, 0)),
+                        SelectedItemsView().WithExtension(new GridPositionExtension(1, 0)),
+                        SelectedsItemsView().WithExtension(new GridPositionExtension(2, 0)),
+                    }
+                },
+                new Grid<IRootViewModel>
+                {
+                    Extensions =
+                    {
+                        new GridPositionExtension(0, 2)
+                    },
+                    ChildInitializer =
+                    {
+                        PossibleCommands()
                     }
                 }
             }
@@ -78,15 +111,58 @@ public class MainWindow
         _root = root;
     }
 
-    private IView<IAppState> TabControl()
+    private IView<IRootViewModel> PossibleCommands()
     {
-        var tabList = new ListView<IAppState, ITabViewModel>
+        //TODO: Create and use DataGrid
+        var commandBindings = new ListView<IRootViewModel, IPossibleCommandEntryViewModel>
+        {
+            ItemTemplate = _ =>
+            {
+                var grid = new Grid<IPossibleCommandEntryViewModel>
+                {
+                    ColumnDefinitionsObject = "10 *",
+                    ChildInitializer =
+                    {
+                        new TextBlock<IPossibleCommandEntryViewModel>()
+                            .Setup(t =>
+                                t.Bind(
+                                    t,
+                                    dc => dc.KeysText,
+                                    tb => tb.Text)
+                            ),
+                        new TextBlock<IPossibleCommandEntryViewModel>
+                        {
+                            Extensions =
+                            {
+                                new GridPositionExtension(1, 0)
+                            }
+                        }.Setup(t =>
+                            t.Bind(
+                                t,
+                                dc => dc.Title,
+                                tb => tb.Text)
+                        )
+                    }
+                };
+
+                return grid;
+            }
+        };
+
+        commandBindings.Bind(
+            commandBindings,
+            root => root.PossibleCommands.PossibleCommands,
+            v => v.ItemsSource,
+            d => d);
+
+        return commandBindings;
+    }
+
+    private IView<IRootViewModel> TabControl()
+    {
+        var tabList = new ListView<IRootViewModel, ITabViewModel>
         {
             Orientation = Orientation.Horizontal,
-            Extensions =
-            {
-                new GridPositionExtension(1, 0)
-            },
             ItemTemplate = item =>
             {
                 var textBlock = item.CreateChild<TextBlock<ITabViewModel>>();
@@ -96,6 +172,7 @@ public class MainWindow
                     textBlock,
                     dc => dc.TabNumber.ToString(),
                     tb => tb.Text,
+                    value => $" {value}",
                     fallbackValue: "?");
 
                 textBlock.Bind(
@@ -110,23 +187,17 @@ public class MainWindow
 
         tabList.Bind(
             tabList,
-            appState => appState == null ? null : appState.Tabs,
+            root => root.AppState.Tabs,
             v => v.ItemsSource);
 
         return tabList;
     }
 
-    private ListView<IAppState, IItemViewModel> SelectedItemsView()
+    private ListView<IRootViewModel, IItemViewModel> SelectedItemsView()
     {
-        var list = new ListView<IAppState, IItemViewModel>
+        var list = new ListView<IRootViewModel, IItemViewModel>
         {
-            DataContext = _consoleAppState,
-            ApplicationContext = _applicationContext,
-            ListPadding = 8,
-            Extensions =
-            {
-                new GridPositionExtension(1, 0)
-            }
+            ListPadding = 8
         };
 
         list.ItemTemplate = item =>
@@ -153,33 +224,22 @@ public class MainWindow
 
         list.Bind(
             list,
-            appState => appState == null ? null : appState.SelectedTab.Map(t => t == null ? null : t.CurrentItems).Switch(),
+            root => root.AppState.SelectedTab.Value.CurrentItems.Value,
             v => v.ItemsSource);
 
         list.Bind(
             list,
-            appState =>
-                appState == null
-                    ? null
-                    : appState.SelectedTab.Value == null
-                        ? null
-                        : appState.SelectedTab.Value.CurrentSelectedItem.Value,
+            root => root.AppState.SelectedTab.Value.CurrentSelectedItem.Value,
             v => v.SelectedItem);
 
         return list;
     }
 
-    private ListView<IAppState, IItemViewModel> SelectedsItemsView()
+    private ListView<IRootViewModel, IItemViewModel> SelectedsItemsView()
     {
-        var list = new ListView<IAppState, IItemViewModel>
+        var list = new ListView<IRootViewModel, IItemViewModel>
         {
-            DataContext = _consoleAppState,
-            ApplicationContext = _applicationContext,
-            ListPadding = 8,
-            Extensions =
-            {
-                new GridPositionExtension(2, 0)
-            }
+            ListPadding = 8
         };
 
         list.ItemTemplate = item =>
@@ -206,23 +266,17 @@ public class MainWindow
 
         list.Bind(
             list,
-            appState => appState == null ? null : appState.SelectedTab.Map(t => t == null ? null : t.SelectedsChildren).Switch(),
+            root => root.AppState.SelectedTab.Value.SelectedsChildren.Value,
             v => v.ItemsSource);
 
         return list;
     }
 
-    private ListView<IAppState, IItemViewModel> ParentsItemsView()
+    private ListView<IRootViewModel, IItemViewModel> ParentsItemsView()
     {
-        var list = new ListView<IAppState, IItemViewModel>
+        var list = new ListView<IRootViewModel, IItemViewModel>
         {
-            DataContext = _consoleAppState,
-            ApplicationContext = _applicationContext,
-            ListPadding = 8,
-            Extensions =
-            {
-                new GridPositionExtension(0, 0)
-            }
+            ListPadding = 8
         };
 
         list.ItemTemplate = item =>
@@ -249,65 +303,10 @@ public class MainWindow
 
         list.Bind(
             list,
-            appState => appState == null ? null : appState.SelectedTab.Map(t => t == null ? null : t.ParentsChildren).Switch(),
+            root => root.AppState.SelectedTab.Value.ParentsChildren.Value,
             v => v.ItemsSource);
 
         return list;
-    }
-
-    private void TestGrid()
-    {
-        var grid = new Grid<object>
-        {
-            ApplicationContext = _applicationContext,
-            ColumnDefinitionsObject = "Auto Auto",
-            RowDefinitionsObject = "Auto Auto",
-            ChildInitializer =
-            {
-                new Rectangle<object>
-                {
-                    Fill = new ConsoleColor(System.ConsoleColor.Blue, ColorType.Foreground),
-                    Extensions =
-                    {
-                        new GridPositionExtension(0, 0)
-                    },
-                    Width = 2,
-                    Height = 2,
-                },
-                new Rectangle<object>
-                {
-                    Fill = new ConsoleColor(System.ConsoleColor.Red, ColorType.Foreground),
-                    Extensions =
-                    {
-                        new GridPositionExtension(0, 1)
-                    },
-                    Width = 3,
-                    Height = 3,
-                },
-                new Rectangle<object>
-                {
-                    Fill = new ConsoleColor(System.ConsoleColor.Green, ColorType.Foreground),
-                    Extensions =
-                    {
-                        new GridPositionExtension(1, 0)
-                    },
-                    Width = 4,
-                    Height = 4,
-                },
-                new Rectangle<object>
-                {
-                    Fill = new ConsoleColor(System.ConsoleColor.Yellow, ColorType.Foreground),
-                    Extensions =
-                    {
-                        new GridPositionExtension(1, 1)
-                    },
-                    Width = 5,
-                    Height = 5,
-                }
-            }
-        };
-
-        //_grid = grid;
     }
 
     public IEnumerable<IView> RootViews() => new IView[]

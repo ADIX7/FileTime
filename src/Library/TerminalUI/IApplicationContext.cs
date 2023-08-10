@@ -9,4 +9,5 @@ public interface IApplicationContext
     bool IsRunning { get; set; }
     IConsoleDriver ConsoleDriver { get; init; }
     ILoggerFactory? LoggerFactory { get; init; }
+    char EmptyCharacter { get; init; }
 }

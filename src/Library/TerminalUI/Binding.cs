@@ -20,7 +20,7 @@ public class Binding<TDataContext, TExpressionResult, TResult> : IDisposable
 
     public Binding(
         IView<TDataContext> dataSourceView,
-        Expression<Func<TDataContext?, TExpressionResult>> dataContextExpression,
+        Expression<Func<TDataContext?, TExpressionResult>> dataSourceExpression,
         object? propertySource,
         PropertyInfo targetProperty,
         Func<TExpressionResult, TResult> converter,
@@ -28,18 +28,18 @@ public class Binding<TDataContext, TExpressionResult, TResult> : IDisposable
     )
     {
         ArgumentNullException.ThrowIfNull(dataSourceView);
-        ArgumentNullException.ThrowIfNull(dataContextExpression);
+        ArgumentNullException.ThrowIfNull(dataSourceExpression);
         ArgumentNullException.ThrowIfNull(targetProperty);
         ArgumentNullException.ThrowIfNull(converter);
 
         _dataSourceView = dataSourceView;
-        _dataContextMapper = dataContextExpression.Compile();
+        _dataContextMapper = dataSourceExpression.Compile();
         _propertySource = propertySource;
         _targetProperty = targetProperty;
         _converter = converter;
         _fallbackValue = fallbackValue;
 
-        InitTrackingTree(dataContextExpression);
+        InitTrackingTree(dataSourceExpression);
 
         UpdateTrackers();
 
@@ -55,8 +55,8 @@ public class Binding<TDataContext, TExpressionResult, TResult> : IDisposable
     {
         if (propertySource is IDisposableCollection propertySourceDisposableCollection)
         {
-            propertySourceDisposableCollection.AddDisposable(this);
             _propertySourceDisposableCollection = propertySourceDisposableCollection;
+            propertySourceDisposableCollection.AddDisposable(this);
         }
     }
 

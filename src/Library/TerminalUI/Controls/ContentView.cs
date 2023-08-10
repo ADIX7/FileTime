@@ -1,16 +1,65 @@
-﻿using TerminalUI.Models;
+﻿using PropertyChanged.SourceGenerator;
+using TerminalUI.Models;
 using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public abstract class ContentView<T>: View<T>, IContentRenderer
+public abstract partial class ContentView<T> : View<T>, IContentRenderer<T>
 {
+    private bool _placeholderRenderDone;
+    [Notify] private RenderMethod _contentRendererMethod;
+    private IView<T>? _content;
+
+    public IView<T>? Content
+    {
+        get => _content;
+        set
+        {
+            if (Equals(value, _content)) return;
+
+            if (_content is not null)
+            {
+                RemoveChild(_content);
+            }
+
+            _content = value;
+
+            if (_content is not null)
+            {
+                AddChild(_content);
+            }
+
+            OnPropertyChanged();
+        }
+    }
+
     protected ContentView()
     {
-        ContentRendererMethod = DefaultContentRender;
+        _contentRendererMethod = DefaultContentRender;
+        RerenderProperties.Add(nameof(Content));
+        RerenderProperties.Add(nameof(ContentRendererMethod));
     }
-    public IView? Content { get; set; }
-    public Action<Position, Size> ContentRendererMethod { get; set; }
 
-    private void DefaultContentRender(Position position, Size size) => Content?.Render(position, size);
+    protected override void AttachChildren()
+    {
+        base.AttachChildren();
+        if (Content is not null)
+        {
+            Content.Attached = true;
+        }
+    }
+
+    private bool DefaultContentRender(RenderContext renderContext, Position position, Size size)
+    {
+        if (Content is null)
+        {
+            if (_placeholderRenderDone) return false;
+            _placeholderRenderDone = true;
+            RenderEmpty(renderContext, position, size);
+            return true;
+        }
+
+        _placeholderRenderDone = false;
+        return Content.Render(renderContext, position, size);
+    }
 }

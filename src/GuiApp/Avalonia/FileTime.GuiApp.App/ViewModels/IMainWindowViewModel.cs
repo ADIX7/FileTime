@@ -19,5 +19,6 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     IAdminElevationManager AdminElevationManager { get; }
     IClipboardService ClipboardService { get; }
     ITimelineViewModel TimelineViewModel { get; }
+    IPossibleCommandsViewModel PossibleCommands { get; }
     Task RunOrOpenItem(IItemViewModel itemViewModel);
 }

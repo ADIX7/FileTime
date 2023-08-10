@@ -33,6 +33,9 @@ public static class Startup
         serviceCollection.TryAddSingleton<IDefaultModeKeyInputHandler, DefaultModeKeyInputHandler>();
         serviceCollection.TryAddSingleton<IRapidTravelModeKeyInputHandler, RapidTravelModeKeyInputHandler>();
         serviceCollection.TryAddSingleton<IKeyboardConfigurationService, KeyboardConfigurationService>();
+        serviceCollection.TryAddSingleton<ICommandKeysHelperService, CommandKeysHelperService>();
+        serviceCollection.TryAddSingleton<IPossibleCommandsService, PossibleCommandsService>();
+        serviceCollection.TryAddSingleton<IPossibleCommandsViewModel, PossibleCommandsViewModel>();
 
         return serviceCollection
             .AddCommandHandlers()

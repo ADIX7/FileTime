@@ -9,7 +9,7 @@ public static class Binding
     public static Binding<TDataContext, TResult, TResult> Bind<TView, TDataContext, TResult>(
         this TView targetView,
         IView<TDataContext> dataSourceView,
-        Expression<Func<TDataContext?, TResult>> dataContextExpression,
+        Expression<Func<TDataContext?, TResult>> dataSourceExpression,
         Expression<Func<TView, TResult>> propertyExpression,
         TResult? fallbackValue = default)
     {
@@ -18,7 +18,7 @@ public static class Binding
 
         return new Binding<TDataContext, TResult, TResult>(
             dataSourceView,
-            dataContextExpression,
+            dataSourceExpression,
             targetView,
             propertyInfo,
             value => value,
@@ -29,7 +29,7 @@ public static class Binding
     public static Binding<TDataContext, TExpressionResult, TResult> Bind<TView, TDataContext, TExpressionResult, TResult>(
         this TView targetView,
         IView<TDataContext> dataSourceView,
-        Expression<Func<TDataContext?, TExpressionResult>> dataContextExpression,
+        Expression<Func<TDataContext?, TExpressionResult>> dataSourceExpression,
         Expression<Func<TView, TResult>> propertyExpression,
         Func<TExpressionResult, TResult> converter,
         TResult? fallbackValue = default)
@@ -39,7 +39,7 @@ public static class Binding
 
         return new Binding<TDataContext, TExpressionResult, TResult>(
             dataSourceView,
-            dataContextExpression,
+            dataSourceExpression,
             targetView,
             propertyInfo,
             converter,

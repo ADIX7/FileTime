@@ -34,7 +34,6 @@
             <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.NotEqual}" x:Key="NotEqualsConverter" />
             <converters:CompareConverter ComparisonCondition="{x:Static converters:ComparisonCondition.GreaterThan}" x:Key="GreaterThanConverter" />
             <converters:ExceptionToStringConverter x:Key="ExceptionToStringConverter" />
-            <converters:CommandToCommandNameConverter x:Key="CommandToCommandNameConverter" />
             <converters:ItemToImageConverter x:Key="ItemToImageConverter" />
             <converters:StringReplaceConverter
                 NewValue="/"
