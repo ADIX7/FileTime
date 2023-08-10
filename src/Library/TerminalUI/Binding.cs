@@ -88,16 +88,19 @@ public class Binding<TDataContext, TExpressionResult, TResult> : IDisposable
         }
     }
 
-    private string? FindReactiveProperties(Expression expression, List<string> properties)
+    private string? FindReactiveProperties(Expression? expression, List<string> properties)
     {
+        if (expression is null) return "";
+        
         if (expression is LambdaExpression lambdaExpression)
         {
             SavePropertyPath(FindReactiveProperties(lambdaExpression.Body, properties));
         }
         else if (expression is ConditionalExpression conditionalExpression)
         {
-            SavePropertyPath(FindReactiveProperties(conditionalExpression.IfFalse, properties));
+            SavePropertyPath(FindReactiveProperties(conditionalExpression.Test, properties));
             SavePropertyPath(FindReactiveProperties(conditionalExpression.IfTrue, properties));
+            SavePropertyPath(FindReactiveProperties(conditionalExpression.IfFalse, properties));
         }
         else if (expression is MemberExpression memberExpression)
         {
