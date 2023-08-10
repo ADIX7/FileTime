@@ -8,7 +8,11 @@ public record Theme(
     IColor? DefaultBackgroundColor,
     IColor? ElementColor,
     IColor? ContainerColor,
-    IColor? MarkedItemColor,
+    IColor? MarkedItemForegroundColor,
+    IColor? MarkedItemBackgroundColor,
+    IColor? MarkedSelectedItemForegroundColor,
+    IColor? MarkedSelectedItemBackgroundColor,
+    IColor? SelectedItemColor,
     IColor? SelectedTabBackgroundColor,
     Type? ForegroundColors,
     Type? BackgroundColors) : ITheme, IColorSampleProvider;
@@ -20,7 +24,11 @@ public static class DefaultThemes
         DefaultBackgroundColor: null,
         ElementColor: Color256Colors.Foregrounds.Gray,
         ContainerColor: Color256Colors.Foregrounds.Blue,
-        MarkedItemColor: Color256Colors.Foregrounds.Black,
+        MarkedItemForegroundColor: Color256Colors.Foregrounds.Yellow,
+        MarkedItemBackgroundColor: null,
+        MarkedSelectedItemForegroundColor: Color256Colors.Foregrounds.Black,
+        MarkedSelectedItemBackgroundColor: Color256Colors.Foregrounds.Yellow,
+        SelectedItemColor: Color256Colors.Foregrounds.Black,
         SelectedTabBackgroundColor: Color256Colors.Backgrounds.Green,
         ForegroundColors: typeof(Color256Colors.Foregrounds),
         BackgroundColors: typeof(Color256Colors.Backgrounds)
@@ -28,10 +36,14 @@ public static class DefaultThemes
 
     public static Theme ConsoleColorTheme => new(
         DefaultForegroundColor: ConsoleColors.Foregrounds.Gray,
-        DefaultBackgroundColor: ConsoleColors.Backgrounds.Black,
+        DefaultBackgroundColor: null,
         ElementColor: ConsoleColors.Foregrounds.Gray,
         ContainerColor: ConsoleColors.Foregrounds.Blue,
-        MarkedItemColor: ConsoleColors.Foregrounds.Black,
+        MarkedItemForegroundColor: ConsoleColors.Foregrounds.Yellow,
+        MarkedItemBackgroundColor: null,
+        MarkedSelectedItemForegroundColor: ConsoleColors.Foregrounds.Black,
+        MarkedSelectedItemBackgroundColor: ConsoleColors.Foregrounds.Yellow,
+        SelectedItemColor: ConsoleColors.Foregrounds.Black,
         SelectedTabBackgroundColor: ConsoleColors.Backgrounds.Green,
         ForegroundColors: typeof(ConsoleColors.Foregrounds),
         BackgroundColors: typeof(ConsoleColors.Backgrounds)

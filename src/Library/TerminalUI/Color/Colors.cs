@@ -14,11 +14,11 @@ public static class Color256Colors
         public static readonly Color256 DarkMagenta = new(5, ColorType.Background);
         public static readonly Color256 DarkRed = new(1, ColorType.Background);
         public static readonly Color256 DarkYellow = new(3, ColorType.Background);
-        public static readonly Color256 Gray = new(15, ColorType.Background);
+        public static readonly Color256 Gray = new(7, ColorType.Background);
         public static readonly Color256 Green = new(10, ColorType.Background);
         public static readonly Color256 Magenta = new(13, ColorType.Background);
         public static readonly Color256 Red = new(9, ColorType.Background);
-        public static readonly Color256 White = new(7, ColorType.Background);
+        public static readonly Color256 White = new(15, ColorType.Background);
         public static readonly Color256 Yellow = new(11, ColorType.Background);
     }
     public static class Foregrounds
@@ -33,12 +33,12 @@ public static class Color256Colors
         public static readonly Color256 DarkMagenta = new(5, ColorType.Foreground);
         public static readonly Color256 DarkRed = new(1, ColorType.Foreground);
         public static readonly Color256 DarkYellow = new(3, ColorType.Foreground);
-        public static readonly Color256 Gray = new(15, ColorType.Foreground);
+        public static readonly Color256 Gray = new(7, ColorType.Foreground);
         public static readonly Color256 Green = new(10, ColorType.Foreground);
         public static readonly Color256 Magenta = new(13, ColorType.Foreground);
         public static readonly Color256 Red = new(9, ColorType.Foreground);
-        public static readonly Color256 White = new(7, ColorType.Foreground);
-        public static readonly Color256 Yellow = new(11, ColorType.Background);
+        public static readonly Color256 White = new(15, ColorType.Foreground);
+        public static readonly Color256 Yellow = new(11, ColorType.Foreground);
     }
 }
 

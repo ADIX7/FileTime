@@ -8,6 +8,10 @@ public interface ITheme
     IColor? DefaultBackgroundColor { get; }
     IColor? ElementColor { get; }
     IColor? ContainerColor { get; }
-    IColor? MarkedItemColor { get; }
+    IColor? MarkedItemForegroundColor { get; }
+    IColor? MarkedItemBackgroundColor { get; }
+    IColor? MarkedSelectedItemForegroundColor { get; }
+    IColor? MarkedSelectedItemBackgroundColor { get; }
+    IColor? SelectedItemColor { get; }
     IColor? SelectedTabBackgroundColor { get; }
 }

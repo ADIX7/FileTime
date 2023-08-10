@@ -79,7 +79,7 @@ public static class ColorSchema
             .OrderBy(v => v.Key)
             .ToDictionary(k => k.Key, v => v.Value);
 
-        consoleDriver.Write("Color theme for " + paletteName + Environment.NewLine);
+        consoleDriver.Write("Color palette for " + paletteName + Environment.NewLine);
 
         if (colors.Count == 0)
         {

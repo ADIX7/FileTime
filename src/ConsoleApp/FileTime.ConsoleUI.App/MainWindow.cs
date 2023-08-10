@@ -45,6 +45,9 @@ public class MainWindow
                     ChildInitializer =
                     {
                         new TextBlock<IAppState>()
+                            {
+                                Foreground = _theme.ContainerColor
+                            }
                             .Setup(t =>
                                 t.Bind(
                                     t,
@@ -88,13 +91,13 @@ public class MainWindow
             {
                 var textBlock = item.CreateChild<TextBlock<ITabViewModel>>();
                 textBlock.Foreground = _theme.DefaultForegroundColor;
-                
+
                 textBlock.Bind(
                     textBlock,
                     dc => dc.TabNumber.ToString(),
                     tb => tb.Text,
                     fallbackValue: "?");
-                
+
                 textBlock.Bind(
                     textBlock,
                     dc => dc.IsSelected.Value ? _theme.SelectedTabBackgroundColor : null,
@@ -319,10 +322,10 @@ public class MainWindow
             (ItemViewMode.Alternative, AbsolutePathType.Container) => _theme.ContainerColor,
             (ItemViewMode.Default, _) => _theme.ElementColor,
             (ItemViewMode.Alternative, _) => _theme.ElementColor,
-            (ItemViewMode.Selected, _) => ToBackgroundColor(ItemViewMode.Default, absolutePathType)?.AsForeground(),
-            (ItemViewMode.Marked, _) => _theme.MarkedItemColor,
-            (ItemViewMode.MarkedSelected, _) => ToBackgroundColor(ItemViewMode.Marked, absolutePathType)?.AsForeground(),
-            (ItemViewMode.MarkedAlternative, _) => _theme.MarkedItemColor,
+            (ItemViewMode.Selected, _) => _theme.SelectedItemColor,
+            (ItemViewMode.Marked, _) => _theme.MarkedItemForegroundColor,
+            (ItemViewMode.MarkedSelected, _) => _theme.SelectedItemColor,
+            (ItemViewMode.MarkedAlternative, _) => _theme.MarkedItemForegroundColor,
             _ => throw new NotImplementedException()
         };
 
@@ -332,9 +335,9 @@ public class MainWindow
             (ItemViewMode.Default, _) => _theme.DefaultBackgroundColor,
             (ItemViewMode.Alternative, _) => _theme.DefaultBackgroundColor,
             (ItemViewMode.Selected, _) => ToForegroundColor(ItemViewMode.Default, absolutePathType)?.AsBackground(),
-            (ItemViewMode.Marked, _) => _theme.MarkedItemColor,
+            (ItemViewMode.Marked, _) => _theme.MarkedItemBackgroundColor,
             (ItemViewMode.MarkedSelected, _) => ToForegroundColor(ItemViewMode.Marked, absolutePathType)?.AsBackground(),
-            (ItemViewMode.MarkedAlternative, _) => _theme.MarkedItemColor,
+            (ItemViewMode.MarkedAlternative, _) => _theme.MarkedItemBackgroundColor,
             _ => throw new NotImplementedException()
         };
 }
