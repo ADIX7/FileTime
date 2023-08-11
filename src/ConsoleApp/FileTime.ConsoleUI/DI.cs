@@ -22,6 +22,7 @@ public static class DI
         => ServiceProvider = DependencyInjection
             .RegisterDefaultServices(configuration: configuration)
             .AddConsoleServices(configuration)
+            .AddConsoleViews()
             .AddLocalProviderServices()
             .AddServerCoreServices()
             .AddFrequencyNavigation()

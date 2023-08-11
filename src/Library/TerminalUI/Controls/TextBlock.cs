@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
-using TerminalUI.ConsoleDrivers;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
+[DebuggerDisplay("Text = {Text}")]
 public partial class TextBlock<T> : View<T>
 {
     private record RenderState(
@@ -21,8 +22,6 @@ public partial class TextBlock<T> : View<T>
     private bool _placeholderRenderDone;
 
     [Notify] private string? _text = string.Empty;
-    [Notify] private IColor? _foreground;
-    [Notify] private IColor? _background;
     [Notify] private TextAlignment _textAlignment = TextAlignment.Left;
 
     public TextBlock()
@@ -34,8 +33,6 @@ public partial class TextBlock<T> : View<T>
         );
 
         RerenderProperties.Add(nameof(Text));
-        RerenderProperties.Add(nameof(Foreground));
-        RerenderProperties.Add(nameof(Background));
         RerenderProperties.Add(nameof(TextAlignment));
 
         ((INotifyPropertyChanged) this).PropertyChanged += (o, e) =>
@@ -53,9 +50,16 @@ public partial class TextBlock<T> : View<T>
     {
         if (size.Width == 0 || size.Height == 0) return false;
 
-        var driver = renderContext.ConsoleDriver;
-        var renderState = new RenderState(position, size, Text, _foreground, _background);
-        if (!NeedsRerender(renderState)) return false;
+        var foreground = Foreground ?? renderContext.Foreground;
+        var background = Background ?? renderContext.Background;
+        var renderState = new RenderState(
+            position,
+            size,
+            Text,
+            foreground,
+            background);
+        
+        if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
 
         _lastRenderState = renderState;
 
@@ -72,41 +76,29 @@ public partial class TextBlock<T> : View<T>
 
         _placeholderRenderDone = false;
 
+        var driver = renderContext.ConsoleDriver;
         driver.ResetColor();
-        if (Foreground is { } foreground)
+        if (foreground is not null)
         {
             driver.SetForegroundColor(foreground);
         }
 
-        if (Background is { } background)
+        if (background is not null)
         {
             driver.SetBackgroundColor(background);
         }
 
-        RenderText(_textLines, driver, position, size);
+        RenderText(_textLines, driver, position, size, TransformText);
 
         return true;
     }
 
-    private void RenderText(string[] textLines, IConsoleDriver driver, Position position, Size size)
-    {
-        for (var i = 0; i < textLines.Length; i++)
+    private string TransformText(string text, Position position, Size size)
+        => TextAlignment switch
         {
-            var text = textLines[i];
-            text = TextAlignment switch
-            {
-                TextAlignment.Right => string.Format($"{{0,{size.Width}}}", text),
-                _ => string.Format($"{{0,{-size.Width}}}", text)
-            };
-            if (text.Length > size.Width)
-            {
-                text = text[..size.Width];
-            }
-
-            driver.SetCursorPosition(position with {Y = position.Y + i});
-            driver.Write(text);
-        }
-    }
+            TextAlignment.Right => string.Format($"{{0,{size.Width}}}", text),
+            _ => string.Format($"{{0,{-size.Width}}}", text)
+        };
 
     private bool NeedsRerender(RenderState renderState)
         => _lastRenderState is null || _lastRenderState != renderState;

@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.Json;
+using DeclarativeProperty;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.FrequencyNavigation.Models;
@@ -22,10 +23,10 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
     private readonly IModalService _modalService;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
     private Dictionary<string, ContainerFrequencyData> _containerScores = new();
-    private readonly BehaviorSubject<bool> _showWindow = new(false);
+    private readonly DeclarativeProperty<bool> _showWindow = new(false);
     private readonly string _dbPath;
     [Notify] IFrequencyNavigationViewModel? _currentModal;
-    IObservable<bool> IFrequencyNavigationService.ShowWindow => _showWindow.AsObservable();
+    IDeclarativeProperty<bool> IFrequencyNavigationService.ShowWindow => _showWindow;
 
     public FrequencyNavigationService(
         ITabEvents tabEvents,
@@ -51,15 +52,15 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         }
     }
 
-    public void OpenNavigationWindow()
+    public async Task OpenNavigationWindow()
     {
-        _showWindow.OnNext(true);
+        await _showWindow.SetValue(true);
         CurrentModal = _modalService.OpenModal<IFrequencyNavigationViewModel>();
     }
 
     public void CloseNavigationWindow()
     {
-        _showWindow.OnNext(false);
+        _showWindow.SetValueSafe(false);
         if (_currentModal is not null)
         {
             _modalService.CloseModal(_currentModal);

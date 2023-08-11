@@ -19,7 +19,7 @@ public partial class Rectangle<T> : View<T>
     protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
     {
         var renderState = new RenderState(position, size, Fill);
-        if (!NeedsRerender(renderState) || Fill is null) return false;
+        if ((!renderContext.ForceRerender && !NeedsRerender(renderState)) || Fill is null) return false;
         _lastRenderState = renderState;
 
         var driver = renderContext.ConsoleDriver;
@@ -34,7 +34,7 @@ public partial class Rectangle<T> : View<T>
             driver.SetCursorPosition(position with {Y = position.Y + i});
             driver.Write(s);
         }
-        
+
         return true;
     }
 

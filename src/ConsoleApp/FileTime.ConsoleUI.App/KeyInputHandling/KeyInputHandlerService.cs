@@ -2,6 +2,7 @@
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
+using GeneralInputKey;
 
 namespace FileTime.ConsoleUI.App.KeyInputHandling;
 
@@ -23,13 +24,15 @@ public class KeyInputHandlerService : IKeyInputHandlerService
 
     public void HandleKeyInput(GeneralKeyEventArgs keyEvent, SpecialKeysStatus specialKeysStatus)
     {
+        if (keyEvent.Handled) return;
+
         if (_appState.ViewMode.Value == ViewMode.Default)
         {
-            Task.Run(async () => await _defaultModeKeyInputHandler.HandleInputKey(keyEvent, specialKeysStatus)).Wait();
+            Task.Run(async () => await _defaultModeKeyInputHandler.HandleInputKey(keyEvent)).Wait();
         }
         else
         {
-            Task.Run(async () => await _rapidTravelModeKeyInputHandler.HandleInputKey(keyEvent, specialKeysStatus)).Wait();
+            Task.Run(async () => await _rapidTravelModeKeyInputHandler.HandleInputKey(keyEvent)).Wait();
         }
     }
 }

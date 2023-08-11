@@ -1,10 +1,12 @@
-﻿namespace FileTime.App.Core.Models;
+﻿namespace GeneralInputKey;
 
 public class GeneralKeyEventArgs
 {
     private readonly Action<bool>? _handledChanged;
     private bool _handled;
     public required Keys Key { get; init; }
+    public required char KeyChar { get; init; }
+    public required SpecialKeysStatus SpecialKeysStatus { get; init; }
 
     public bool Handled
     {

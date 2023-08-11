@@ -9,12 +9,12 @@ namespace TerminalUI.Controls;
 
 public partial class ListView<TDataContext, TItem> : View<TDataContext>
 {
-    private static readonly ArrayPool<ListViewItem<TItem>> ListViewItemPool = ArrayPool<ListViewItem<TItem>>.Shared;
+    private static readonly ArrayPool<ListViewItem<TItem, TDataContext>> ListViewItemPool = ArrayPool<ListViewItem<TItem, TDataContext>>.Shared;
 
     private readonly List<IDisposable> _itemsDisposables = new();
     private Func<IEnumerable<TItem>?>? _getItems;
     private object? _itemsSource;
-    private ListViewItem<TItem>[]? _listViewItems;
+    private ListViewItem<TItem, TDataContext>[]? _listViewItems;
     private int _listViewItemLength;
     private int _selectedIndex = 0;
     private int _renderStartIndex = 0;
@@ -30,6 +30,14 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
             if (_selectedIndex != value)
             {
                 _selectedIndex = value;
+                if (_listViewItems is not null)
+                {
+                    for (var i = 0; i < _listViewItemLength; i++)
+                    {
+                        _listViewItems[i].IsSelected = i == value;
+                    }
+                }
+
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(SelectedItem));
             }
@@ -124,7 +132,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         }
     }
 
-    public Func<ListViewItem<TItem>, IView<TItem>?> ItemTemplate { get; set; } = DefaultItemTemplate;
+    public Func<ListViewItem<TItem, TDataContext>, IView<TItem>?> ItemTemplate { get; set; } = DefaultItemTemplate;
 
     public ListView()
     {
@@ -292,7 +300,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         return true;
     }
 
-    private Span<ListViewItem<TItem>> InstantiateItemViews()
+    private ReadOnlySpan<ListViewItem<TItem, TDataContext>> InstantiateItemViews()
     {
         var items = _getItems?.Invoke()?.ToList();
         if (items is null)
@@ -305,7 +313,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
             return _listViewItems;
         }
 
-        Span<ListViewItem<TItem>> listViewItems;
+        ReadOnlySpan<ListViewItem<TItem, TDataContext>> listViewItems;
 
         if (_listViewItems is null || _listViewItemLength != items.Count)
         {
@@ -313,7 +321,8 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
             for (var i = 0; i < items.Count; i++)
             {
                 var dataContext = items[i];
-                var child = CreateChild<ListViewItem<TItem>, TItem>(_ => dataContext);
+                var child = new ListViewItem<TItem, TDataContext>(this);
+                AddChild(child, _ => dataContext);
                 var newContent = ItemTemplate(child);
                 child.Content = newContent;
                 newListViewItems[i] = child;
@@ -336,12 +345,12 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         return listViewItems;
     }
 
-    private Span<ListViewItem<TItem>> InstantiateEmptyItemViews()
+    private ReadOnlySpan<ListViewItem<TItem, TDataContext>> InstantiateEmptyItemViews()
     {
         _listViewItems = ListViewItemPool.Rent(0);
         _listViewItemLength = 0;
         return _listViewItems;
     }
 
-    private static IView<TItem>? DefaultItemTemplate(ListViewItem<TItem> listViewItem) => null;
+    private static IView<TItem>? DefaultItemTemplate(ListViewItem<TItem, TDataContext> listViewItem) => null;
 }

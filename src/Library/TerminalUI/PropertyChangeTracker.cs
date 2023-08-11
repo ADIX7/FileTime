@@ -2,14 +2,24 @@
 
 namespace TerminalUI;
 
-internal interface IPropertyChangeTracker : IDisposable
+public interface IPropertyChangeTracker : IDisposable
 {
+    string Name { get; }
+    string Path { get; }
     Dictionary<string, IPropertyChangeTracker> Children { get; }
 }
 
-internal abstract class PropertyChangeTrackerBase : IPropertyChangeTracker
+public abstract class PropertyChangeTrackerBase : IPropertyChangeTracker
 {
+    public string Name { get; }
+    public string Path { get; }
     public Dictionary<string, IPropertyChangeTracker> Children { get; } = new();
+
+    protected PropertyChangeTrackerBase(string name, string path)
+    {
+        Name = name;
+        Path = path;
+    }
 
     public virtual void Dispose()
     {
@@ -20,18 +30,20 @@ internal abstract class PropertyChangeTrackerBase : IPropertyChangeTracker
     }
 }
 
-internal class PropertyChangeTracker : PropertyChangeTrackerBase
+public class PropertyChangeTracker : PropertyChangeTrackerBase
 {
     private readonly PropertyTrackTreeItem _propertyTrackTreeItem;
     private readonly INotifyPropertyChanged _target;
     private readonly IEnumerable<string> _propertiesToListen;
-    private readonly Action _updateBinding;
+    private readonly Action<string> _updateBinding;
 
     public PropertyChangeTracker(
+        string name,
+        string path,
         PropertyTrackTreeItem propertyTrackTreeItem,
         INotifyPropertyChanged target,
         IEnumerable<string> propertiesToListen,
-        Action updateBinding)
+        Action<string> updateBinding) : base(name, path)
     {
         _propertyTrackTreeItem = propertyTrackTreeItem;
         _target = target;
@@ -48,10 +60,10 @@ internal class PropertyChangeTracker : PropertyChangeTrackerBase
             return;
         }
 
-        _updateBinding();
         Children.Remove(propertyName);
-        
-        var newChild = PropertyChangeHelper.TraverseDataContext(
+
+        var newChild = PropertyChangeHelper.CreatePropertyTracker(
+            Path,
             _propertyTrackTreeItem.Children[propertyName],
             _target.GetType().GetProperty(propertyName)?.GetValue(_target),
             _updateBinding
@@ -61,6 +73,8 @@ internal class PropertyChangeTracker : PropertyChangeTrackerBase
         {
             Children.Add(propertyName, newChild);
         }
+
+        _updateBinding(propertyName);
     }
 
     public override void Dispose()
@@ -71,32 +85,54 @@ internal class PropertyChangeTracker : PropertyChangeTrackerBase
     }
 }
 
-internal class NonSubscriberPropertyChangeTracker : PropertyChangeTrackerBase
+public class NonSubscriberPropertyChangeTracker : PropertyChangeTrackerBase
 {
+    public NonSubscriberPropertyChangeTracker(string name, string path) : base(name, path)
+    {
+    }
 }
 
-internal class PropertyTrackTreeItem
+public class PropertyTrackTreeItem
 {
+    public string Name { get; }
     public Dictionary<string, PropertyTrackTreeItem> Children { get; } = new();
+
+    public PropertyTrackTreeItem(string name)
+    {
+        Name = name;
+    }
 }
 
-internal static class PropertyChangeHelper
+public static class PropertyChangeHelper
 {
-    internal static IPropertyChangeTracker? TraverseDataContext(
+    internal static IPropertyChangeTracker? CreatePropertyTracker(
+        string? path,
         PropertyTrackTreeItem propertyTrackTreeItem,
         object? obj,
-        Action updateBinding
+        Action<string> updateBinding
     )
     {
         if (obj is null) return null;
 
+        path = path is null ? propertyTrackTreeItem.Name : path + "." + propertyTrackTreeItem.Name;
+
         IPropertyChangeTracker tracker = obj is INotifyPropertyChanged notifyPropertyChanged
-            ? new PropertyChangeTracker(propertyTrackTreeItem, notifyPropertyChanged, propertyTrackTreeItem.Children.Keys, updateBinding)
-            : new NonSubscriberPropertyChangeTracker();
+            ? new PropertyChangeTracker(
+                propertyTrackTreeItem.Name,
+                path,
+                propertyTrackTreeItem,
+                notifyPropertyChanged,
+                propertyTrackTreeItem.Children.Keys,
+                updateBinding
+            )
+            : new NonSubscriberPropertyChangeTracker(
+                propertyTrackTreeItem.Name,
+                path);
 
         foreach (var (propertyName, trackerTreeItem) in propertyTrackTreeItem.Children)
         {
-            var childTracker = TraverseDataContext(
+            var childTracker = CreatePropertyTracker(
+                path,
                 trackerTreeItem,
                 obj.GetType().GetProperty(propertyName)?.GetValue(obj),
                 updateBinding

@@ -3,6 +3,7 @@ using FileTime.App.Core;
 using FileTime.App.Core.Configuration;
 using FileTime.ConsoleUI;
 using FileTime.ConsoleUI.App;
+using FileTime.ConsoleUI.App.Styling;
 using FileTime.ConsoleUI.InfoProviders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,8 +1,9 @@
 using FileTime.App.Core.Models;
+using GeneralInputKey;
 
 namespace FileTime.App.Core.Services;
 
 public interface IKeyInputHandler
 {
-    Task HandleInputKey(GeneralKeyEventArgs e, SpecialKeysStatus specialKeysStatus);
+    Task HandleInputKey(GeneralKeyEventArgs e);
 }

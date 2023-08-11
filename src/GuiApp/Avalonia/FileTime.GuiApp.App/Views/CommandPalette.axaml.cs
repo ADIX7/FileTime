@@ -39,7 +39,7 @@ public partial class CommandPalette : UserControl
         }
         else
         {
-            if (e.ToGeneralKeyEventArgs(_appKeyService.Value) is not { } eventArgs) return;
+            if (e.ToGeneralKeyEventArgs(_appKeyService.Value, e.KeyModifiers) is not { } eventArgs) return;
             
             viewModel.HandleKeyDown(eventArgs);
         }
@@ -50,7 +50,7 @@ public partial class CommandPalette : UserControl
         if (e.Handled
             || DataContext is not ICommandPaletteViewModel viewModel) return;
         
-        if (e.ToGeneralKeyEventArgs(_appKeyService.Value) is not { } eventArgs) return;
+        if (e.ToGeneralKeyEventArgs(_appKeyService.Value, e.KeyModifiers) is not { } eventArgs) return;
         viewModel.HandleKeyUp(eventArgs);
     }
 }

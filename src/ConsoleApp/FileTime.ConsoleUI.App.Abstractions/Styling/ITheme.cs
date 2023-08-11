@@ -1,6 +1,6 @@
 ﻿using TerminalUI.Color;
 
-namespace FileTime.ConsoleUI.App;
+namespace FileTime.ConsoleUI.App.Styling;
 
 public interface ITheme
 {
@@ -14,4 +14,5 @@ public interface ITheme
     IColor? MarkedSelectedItemBackgroundColor { get; }
     IColor? SelectedItemColor { get; }
     IColor? SelectedTabBackgroundColor { get; }
+    ListViewItemTheme ListViewItemTheme { get; }
 }

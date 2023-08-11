@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
+using DeclarativeProperty;
 using FileTime.App.Core.Models;
+using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
 
 namespace FileTime.App.FuzzyPanel;
@@ -9,7 +11,7 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
     private readonly Func<TItem, TItem, bool> _itemEquality;
     private string _searchText = String.Empty;
 
-    [Notify(set: Setter.Protected)] private IObservable<bool> _showWindow;
+    [Notify(set: Setter.Protected)] private IDeclarativeProperty<bool> _showWindow;
     [Notify(set: Setter.Protected)] private List<TItem> _filteredMatches;
     [Notify(set: Setter.Protected)] private TItem? _selectedItem;
 

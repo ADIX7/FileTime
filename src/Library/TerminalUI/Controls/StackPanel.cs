@@ -17,6 +17,8 @@ public partial class StackPanel<T> : ChildContainerView<T>
 
         foreach (var child in Children)
         {
+            if (!child.IsVisible) continue;
+
             var childSize = child.GetRequestedSize();
             _requestedSizes.Add(child, childSize);
 
@@ -41,6 +43,8 @@ public partial class StackPanel<T> : ChildContainerView<T>
         var neededRerender = false;
         foreach (var child in Children)
         {
+            if (!child.IsVisible) continue;
+
             if (!_requestedSizes.TryGetValue(child, out var childSize)) throw new Exception("Child size not found");
 
             var childPosition = Orientation == Orientation.Vertical
@@ -49,12 +53,13 @@ public partial class StackPanel<T> : ChildContainerView<T>
 
             var endX = position.X + size.Width;
             var endY = position.Y + size.Height;
-            
+
             if (childPosition.X > endX || childPosition.Y > endY) break;
             if (childPosition.X + childSize.Width > endX)
             {
                 childSize = childSize with {Width = endX - childPosition.X};
             }
+
             if (childPosition.Y + childSize.Height > endY)
             {
                 childSize = childSize with {Height = endY - childPosition.Y};

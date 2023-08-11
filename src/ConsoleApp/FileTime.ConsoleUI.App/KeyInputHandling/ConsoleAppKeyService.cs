@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
+using GeneralInputKey;
 
 namespace FileTime.ConsoleUI.App.KeyInputHandling;
 
@@ -70,6 +71,7 @@ public class ConsoleAppKeyService : IAppKeyService<ConsoleKey>
             {ConsoleKey.Enter, Keys.Enter},
             {ConsoleKey.Escape, Keys.Escape},
             {ConsoleKey.Backspace, Keys.Backspace},
+            {ConsoleKey.Delete, Keys.Delete},
             {ConsoleKey.Spacebar, Keys.Space},
             {ConsoleKey.PageUp, Keys.PageUp},
             {ConsoleKey.PageDown, Keys.PageDown},

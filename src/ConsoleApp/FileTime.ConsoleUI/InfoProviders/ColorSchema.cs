@@ -1,4 +1,5 @@
 ﻿using FileTime.ConsoleUI.App;
+using FileTime.ConsoleUI.App.Styling;
 using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
 using TerminalUI.Models;

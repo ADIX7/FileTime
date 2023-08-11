@@ -5,6 +5,7 @@ using FileTime.App.Core.Services;
 using FileTime.GuiApp.App.Extensions;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;
+using GeneralInputKey;
 
 namespace FileTime.GuiApp.App.Services;
 
@@ -50,9 +51,9 @@ public class KeyInputHandlerService : IKeyInputHandlerService
 
         //_appState.NoCommandFound = false;
 
-        var isAltPressed = (e.KeyModifiers & KeyModifiers.Alt) == KeyModifiers.Alt;
-        var isShiftPressed = (e.KeyModifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
-        var isCtrlPressed = (e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control;
+        var isAltPressed = (e.KeyModifiers & KeyModifiers.Alt) != 0;
+        var isShiftPressed = (e.KeyModifiers & KeyModifiers.Shift) != 0;
+        var isCtrlPressed = (e.KeyModifiers & KeyModifiers.Control) != 0;
 
         if (isCtrlPressed
             && e.Key is Key.Left or Key.Right or Key.Up or Key.Down
@@ -69,16 +70,16 @@ public class KeyInputHandlerService : IKeyInputHandlerService
         {
             if (_appState.ViewMode.Value == ViewMode.Default)
             {
-                if (e.ToGeneralKeyEventArgs(_appKeyService) is { } args)
+                if (e.ToGeneralKeyEventArgs(_appKeyService, specialKeyStatus) is { } args)
                 {
-                    await _defaultModeKeyInputHandler.HandleInputKey(args, specialKeyStatus);
+                    await _defaultModeKeyInputHandler.HandleInputKey(args);
                 }
             }
             else
             {
-                if (e.ToGeneralKeyEventArgs(_appKeyService) is { } args)
+                if (e.ToGeneralKeyEventArgs(_appKeyService, specialKeyStatus) is { } args)
                 {
-                    await _rapidTravelModeKeyInputHandler.HandleInputKey(args, specialKeyStatus);
+                    await _rapidTravelModeKeyInputHandler.HandleInputKey(args);
                 }
             }
         }

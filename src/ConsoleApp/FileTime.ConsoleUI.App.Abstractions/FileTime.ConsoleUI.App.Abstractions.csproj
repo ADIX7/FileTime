@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\AppCommon\FileTime.App.CommandPalette.Abstractions\FileTime.App.CommandPalette.Abstractions.csproj" />
     <ProjectReference Include="..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\Library\TerminalUI\TerminalUI.csproj" />
   </ItemGroup>

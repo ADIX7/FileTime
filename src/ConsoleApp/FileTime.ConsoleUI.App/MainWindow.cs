@@ -1,5 +1,7 @@
 ﻿using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
+using FileTime.ConsoleUI.App.Controls;
+using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Enums;
 using TerminalUI;
 using TerminalUI.Color;
@@ -15,25 +17,47 @@ public class MainWindow
     private readonly IRootViewModel _rootViewModel;
     private readonly IApplicationContext _applicationContext;
     private readonly ITheme _theme;
+    private readonly CommandPalette _commandPalette;
 
-    private IView _root;
+    private readonly Lazy<IView> _root;
 
     public MainWindow(
         IRootViewModel rootViewModel,
         IApplicationContext applicationContext,
-        ITheme theme)
+        ITheme theme,
+        CommandPalette commandPalette)
     {
         _rootViewModel = rootViewModel;
         _applicationContext = applicationContext;
         _theme = theme;
+        _commandPalette = commandPalette;
+        _root = new Lazy<IView>(Initialize);
     }
 
-    public void Initialize()
+    public IEnumerable<IView> RootViews() => new[]
+    {
+        _root.Value
+    };
+
+    public Grid<IRootViewModel> Initialize()
     {
         var root = new Grid<IRootViewModel>
         {
+            Name = "root",
             DataContext = _rootViewModel,
             ApplicationContext = _applicationContext,
+            ChildInitializer =
+            {
+                MainContent(),
+                _commandPalette.View()
+            }
+        };
+        return root;
+    }
+
+    private Grid<IRootViewModel> MainContent() =>
+        new()
+        {
             RowDefinitionsObject = "Auto * Auto",
             ChildInitializer =
             {
@@ -108,8 +132,6 @@ public class MainWindow
                 }
             }
         };
-        _root = root;
-    }
 
     private IView<IRootViewModel> PossibleCommands()
     {
@@ -308,11 +330,6 @@ public class MainWindow
 
         return list;
     }
-
-    public IEnumerable<IView> RootViews() => new IView[]
-    {
-        _root
-    };
 
     private IColor? ToForegroundColor(ItemViewMode viewMode, AbsolutePathType absolutePathType) =>
         (viewMode, absolutePathType) switch

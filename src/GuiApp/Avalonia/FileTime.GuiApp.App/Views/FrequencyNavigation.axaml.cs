@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.FrequencyNavigation.ViewModels;
 using FileTime.GuiApp.App.Extensions;
@@ -39,7 +40,7 @@ public partial class FrequencyNavigation : UserControl
         }
         else
         {
-            if (e.ToGeneralKeyEventArgs(_appKeyService.Value) is not { } eventArgs) return;
+            if (e.ToGeneralKeyEventArgs(_appKeyService.Value, e.KeyModifiers) is not { } eventArgs) return;
             
             viewModel.HandleKeyDown(eventArgs);
         }
@@ -50,7 +51,7 @@ public partial class FrequencyNavigation : UserControl
         if (e.Handled
             || DataContext is not IFrequencyNavigationViewModel viewModel) return;
 
-        if (e.ToGeneralKeyEventArgs(_appKeyService.Value) is not { } eventArgs) return;
+        if (e.ToGeneralKeyEventArgs(_appKeyService.Value, e.KeyModifiers) is not { } eventArgs) return;
         viewModel.HandleKeyUp(eventArgs);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TerminalUI.Color;
 using TerminalUI.Models;
 using TerminalUI.Traits;
 
@@ -17,9 +18,12 @@ public interface IView : INotifyPropertyChanged, IDisposableCollection
     int? MaxHeight { get; set; }
     int? Height { get; set; }
     int ActualHeight { get; }
-    Margin Margin { get; set; }
+    Thickness Margin { get; set; }
+    bool IsVisible { get; set; }
     bool Attached { get; set; }
     string? Name { get; set; }
+    IColor? Foreground { get; set; }
+    IColor? Background { get; set; }
     IApplicationContext? ApplicationContext { get; set; }
     List<object> Extensions { get; }
     RenderMethod RenderMethod { get; set; }

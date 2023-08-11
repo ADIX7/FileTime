@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\Library\GeneralInputKey\GeneralInputKey.csproj" />
   </ItemGroup>
 
 </Project>

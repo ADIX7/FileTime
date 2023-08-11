@@ -140,10 +140,9 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         return Task.CompletedTask;
     }
 
-    private Task GoByFrequency()
+    private async Task GoByFrequency()
     {
-        _frequencyNavigationService.OpenNavigationWindow();
-        return Task.CompletedTask;
+        await _frequencyNavigationService.OpenNavigationWindow();
     }
 
     private async Task GoToPath()

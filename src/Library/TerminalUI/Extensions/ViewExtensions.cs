@@ -1,4 +1,5 @@
-﻿using TerminalUI.Controls;
+﻿using System.Linq.Expressions;
+using TerminalUI.Controls;
 
 namespace TerminalUI.Extensions;
 
@@ -6,7 +7,7 @@ public static class ViewExtensions
 {
     public static T? GetExtension<T>(this IView view)
         => (T?) view.Extensions.FirstOrDefault(e => e is T);
-    
+
     public static IView<TDataContext> WithExtension<TDataContext>(this IView<TDataContext> view, object extension)
     {
         view.Extensions.Add(extension);
@@ -22,5 +23,20 @@ public static class ViewExtensions
     {
         action(view);
         return view;
+    }
+
+    public static TItem WithPropertyChangedHandler<TItem, TExpressionResult>(
+        this TItem dataSource,
+        Expression<Func<TItem, TExpressionResult>> dataSourceExpression,
+        Action<string, bool, TExpressionResult> handler)
+    {
+        new PropertyChangedHandler<TItem, TExpressionResult>
+        (
+            dataSource,
+            dataSourceExpression,
+            handler
+        );
+
+        return dataSource;
     }
 }

@@ -1,10 +1,9 @@
-﻿using System.Text;
-using FileTime.App.CommandPalette.Services;
-using FileTime.App.Core.Configuration;
+﻿using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FuzzyPanel;
+using GeneralInputKey;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.CommandPalette.ViewModels;

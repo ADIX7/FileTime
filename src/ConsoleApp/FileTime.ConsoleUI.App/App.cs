@@ -3,6 +3,7 @@ using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.KeyInputHandling;
+using GeneralInputKey;
 using TerminalUI;
 using TerminalUI.ConsoleDrivers;
 
@@ -54,7 +55,6 @@ public class App : IApplication
                 _applicationContext.IsRunning = false;
         };
 
-        _mainWindow.Initialize();
         foreach (var rootView in _mainWindow.RootViews())
         {
             _applicationContext.EventLoop.AddViewToRender(rootView);
@@ -62,6 +62,8 @@ public class App : IApplication
 
         _applicationContext.IsRunning = true;
         _renderThread.Start();
+
+        var focusManager = _applicationContext.FocusManager;
 
         while (_applicationContext.IsRunning)
         {
@@ -76,13 +78,22 @@ public class App : IApplication
                         (key.Modifiers & ConsoleModifiers.Shift) != 0,
                         (key.Modifiers & ConsoleModifiers.Control) != 0
                     );
-                    
+
                     var keyEventArgs = new GeneralKeyEventArgs
                     {
-                        Key = mappedKey
+                        Key = mappedKey,
+                        KeyChar = key.KeyChar,
+                        SpecialKeysStatus = specialKeysStatus
                     };
-                    
-                    _keyInputHandlerService.HandleKeyInput(keyEventArgs, specialKeysStatus);
+
+                    if (focusManager.Focused is { } focused)
+                    {
+                        focused.HandleKeyInput(keyEventArgs);
+                    }
+                    else
+                    {
+                        _keyInputHandlerService.HandleKeyInput(keyEventArgs, specialKeysStatus);
+                    }
                 }
             }
 

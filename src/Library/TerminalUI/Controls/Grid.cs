@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
@@ -13,9 +12,9 @@ public class Grid<T> : ChildContainerView<T>
     private List<ColumnDefinition> _columnDefinitions = new() {ColumnDefinition.Star(1)};
     private ILogger<Grid<T>>? Logger => ApplicationContext?.LoggerFactory?.CreateLogger<Grid<T>>();
 
-    private delegate void WithSizes(RenderContext renderContext, Span<int> widths, Span<int> heights);
+    private delegate void WithSizes(RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
 
-    private delegate TResult WithSizes<TResult>(RenderContext renderContext, Span<int> widths, Span<int> heights);
+    private delegate TResult WithSizes<TResult>(RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
 
     private const int ToBeCalculated = -1;
 
@@ -132,14 +131,14 @@ public class Grid<T> : ChildContainerView<T>
                 var width = 0;
                 var height = 0;
 
-                for (var i = 0; i < columnWidths.Length; i++)
+                foreach (var t in columnWidths)
                 {
-                    width += columnWidths[i];
+                    width += t;
                 }
 
-                for (var i = 0; i < rowHeights.Length; i++)
+                foreach (var t in rowHeights)
                 {
-                    height += rowHeights[i];
+                    height += t;
                 }
 
                 return new Size(width, height);
@@ -151,49 +150,122 @@ public class Grid<T> : ChildContainerView<T>
             new Option<Size>(size, true),
             (context, columnWidths, rowHeights) =>
             {
-                foreach (var child in Children)
+                context = new RenderContext(
+                    context.ConsoleDriver,
+                    context.ForceRerender,
+                    Foreground ?? context.Foreground,
+                    Background ?? context.Background
+                );
+                var viewsByPosition = GroupViewsByPosition(columnWidths.Length, rowHeights.Length);
+
+                for (var column = 0; column < columnWidths.Length; column++)
                 {
-                    var (x, y) = GetViewColumnAndRow(child, columnWidths.Length, rowHeights.Length);
-
-                    var width = columnWidths[x];
-                    var height = rowHeights[y];
-
-                    var left = position.X;
-                    var top = position.Y;
-
-                    for (var i = 0; i < x; i++)
+                    for (var row = 0; row < rowHeights.Length; row++)
                     {
-                        left += columnWidths[i];
+                        RenderViewsByPosition(
+                            context,
+                            position,
+                            columnWidths,
+                            rowHeights,
+                            viewsByPosition,
+                            column,
+                            row
+                        );
                     }
-
-                    for (var i = 0; i < y; i++)
-                    {
-                        top += rowHeights[i];
-                    }
-
-                    child.Render(context, new Position(left, top), new Size(width, height));
                 }
 
                 return true;
-
-                /*var viewsByPosition = GroupViewsByPosition(columnWidths, rowHeights);
-                CleanUnusedArea(viewsByPosition, columnWidths, rowHeights);*/
             });
 
-    /*private void CleanUnusedArea(Dictionary<(int, int),List<IView>> viewsByPosition, Span<int> columnWidths, Span<int> rowHeights)
+    private void RenderViewsByPosition(
+        RenderContext context,
+        Position gridPosition,
+        ReadOnlySpan<int> columnWidths,
+        ReadOnlySpan<int> rowHeights,
+        IReadOnlyDictionary<(int, int), List<IView>> viewsByPosition,
+        int column,
+        int row)
     {
-        for (var x = 0; x < columnWidths.Length; x++)
+        if (!viewsByPosition.TryGetValue((column, row), out var children)) return;
+
+        var anyChangedVisibility = false;
+
+        foreach (var child in children)
         {
-            for (var y = 0; y < rowHeights.Length; y++)
+            var lastVisibility = GetLastVisibility(child);
+            if (lastVisibility is { } b && b != child.IsVisible)
             {
-                if (!viewsByPosition.TryGetValue((x, y), out var list)) continue;
-                
-                
+                anyChangedVisibility = true;
+                break;
             }
         }
-    }*/
 
-    /*private Dictionary<(int, int), List<IView>> GroupViewsByPosition(int columns, int rows)
+        var width = columnWidths[column];
+        var height = rowHeights[row];
+        var renderSize = new Size(width, height);
+
+        var renderPosition = GetRenderPosition(
+            gridPosition,
+            columnWidths,
+            rowHeights,
+            column,
+            row
+        );
+
+        var needsRerender = anyChangedVisibility;
+        if (needsRerender)
+        {
+            context = new RenderContext(
+                context.ConsoleDriver,
+                true,
+                context.Foreground,
+                context.Background
+            );
+            RenderEmpty(context, renderPosition, renderSize);
+        }
+
+        //This implies that children further back in the list will be rendered on top of children placed before in the list.
+        foreach (var child in children.Where(child => child.IsVisible))
+        {
+            var rendered = child.Render(context, renderPosition, renderSize);
+            if (rendered && !needsRerender)
+            {
+                needsRerender = true;
+                context = new RenderContext(
+                    context.ConsoleDriver, 
+                    true,
+                    context.Foreground,
+                    context.Background
+                );
+            }
+        }
+
+        static Position GetRenderPosition(
+            Position gridPosition,
+            ReadOnlySpan<int> columnWidths,
+            ReadOnlySpan<int> rowHeights,
+            int column,
+            int row
+        )
+        {
+            var left = gridPosition.X;
+            var top = gridPosition.Y;
+
+            for (var i = 0; i < column; i++)
+            {
+                left += columnWidths[i];
+            }
+
+            for (var i = 0; i < row; i++)
+            {
+                top += rowHeights[i];
+            }
+
+            return new Position(left, top);
+        }
+    }
+
+    private Dictionary<(int, int), List<IView>> GroupViewsByPosition(int columns, int rows)
     {
         Dictionary<ValueTuple<int, int>, List<IView>> viewsByPosition = new();
         foreach (var child in Children)
@@ -210,7 +282,7 @@ public class Grid<T> : ChildContainerView<T>
         }
 
         return viewsByPosition;
-    }*/
+    }
 
     private ValueTuple<int, int> GetViewColumnAndRow(IView view, int columns, int rows)
     {
@@ -237,7 +309,7 @@ public class Grid<T> : ChildContainerView<T>
     {
         WithCalculatedSize(renderContext, size, Helper);
 
-        object? Helper(RenderContext renderContext1, Span<int> widths, Span<int> heights)
+        object? Helper(RenderContext renderContext1, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights)
         {
             actionWithSizes(renderContext1, widths, heights);
             return null;

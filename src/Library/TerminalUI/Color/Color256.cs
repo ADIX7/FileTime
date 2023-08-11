@@ -2,7 +2,7 @@
 
 namespace TerminalUI.Color;
 
-public record struct Color256(byte Color, ColorType Type) : IColor
+public readonly record struct Color256(byte Color, ColorType Type) : IColor
 {
     public string ToConsoleColor()
         => Type switch

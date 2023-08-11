@@ -1,4 +1,5 @@
-﻿using FileTime.App.Core.ViewModels;
+﻿using FileTime.App.CommandPalette.ViewModels;
+using FileTime.App.Core.ViewModels;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -8,4 +9,5 @@ public interface IRootViewModel
     IPossibleCommandsViewModel PossibleCommands { get; }
     string UserName { get; }
     string MachineName { get; }
+    ICommandPaletteViewModel CommandPalette { get; }
 }

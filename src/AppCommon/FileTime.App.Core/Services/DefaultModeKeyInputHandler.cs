@@ -7,6 +7,7 @@ using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
+using GeneralInputKey;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.Core.Services;
@@ -57,9 +58,14 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         _keysToSkip.Add(new[] {new KeyConfig(Keys.RWin)});
     }
 
-    public async Task HandleInputKey(GeneralKeyEventArgs args, SpecialKeysStatus specialKeysStatus)
+    public async Task HandleInputKey(GeneralKeyEventArgs args)
     {
-        var keyWithModifiers = new KeyConfig(args.Key, shift: specialKeysStatus.IsShiftPressed, alt: specialKeysStatus.IsAltPressed, ctrl: specialKeysStatus.IsCtrlPressed);
+        var keyWithModifiers = new KeyConfig(
+            args.Key, 
+            shift: args.SpecialKeysStatus.IsShiftPressed, 
+            alt: args.SpecialKeysStatus.IsAltPressed, 
+            ctrl: args.SpecialKeysStatus.IsCtrlPressed);
+        
         _appState.PreviousKeys.Add(keyWithModifiers);
 
         var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));

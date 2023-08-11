@@ -9,6 +9,7 @@ public class EventLoop : IEventLoop
     private readonly object _lock = new();
     private readonly List<IView> _viewsToRender = new();
     private bool _rerenderRequested;
+    private bool _lastCursorVisible;
 
     public EventLoop(IApplicationContext applicationContext)
     {
@@ -44,13 +45,34 @@ public class EventLoop : IEventLoop
             viewsToRender = _viewsToRender.ToList();
         }
 
-        var size = _applicationContext.ConsoleDriver.GetWindowSize();
-        var renderContext = new RenderContext(_applicationContext.ConsoleDriver);
+        var driver = _applicationContext.ConsoleDriver;
+        var size = driver.GetWindowSize();
+        var renderContext = new RenderContext(
+            driver,
+            false,
+            null,
+            null
+        );
         foreach (var view in viewsToRender)
         {
             view.Attached = true;
             view.GetRequestedSize();
             view.Render(renderContext, new Position(0, 0), size);
+        }
+
+        if (_applicationContext.FocusManager.Focused is { } focused)
+        {
+            focused.SetCursorPosition(driver);
+            if (!_lastCursorVisible)
+            {
+                driver.SetCursorVisible(true);
+                _lastCursorVisible = true;
+            }
+        }
+        else if (_lastCursorVisible)
+        {
+            driver.SetCursorVisible(false);
+            _lastCursorVisible = false;
         }
     }
 

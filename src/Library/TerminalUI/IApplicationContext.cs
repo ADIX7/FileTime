@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FileTime.App.Core.Models;
+using Microsoft.Extensions.Logging;
 using TerminalUI.ConsoleDrivers;
 
 namespace TerminalUI;
@@ -10,4 +11,5 @@ public interface IApplicationContext
     IConsoleDriver ConsoleDriver { get; init; }
     ILoggerFactory? LoggerFactory { get; init; }
     char EmptyCharacter { get; init; }
+    IFocusManager FocusManager { get; init; }
 }

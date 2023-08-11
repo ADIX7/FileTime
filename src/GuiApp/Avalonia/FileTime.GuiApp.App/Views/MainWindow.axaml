@@ -972,7 +972,7 @@
                 Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 DataContext="{Binding FrequencyNavigationService.CurrentModal}"
                 HorizontalAlignment="Stretch"
-                IsVisible="{Binding ShowWindow^, FallbackValue=False}"
+                IsVisible="{Binding ShowWindow.Value, FallbackValue=False}"
                 VerticalAlignment="Stretch">
                 <Grid Background="{DynamicResource ContainerBackgroundColor}" Margin="100">
                     <local:FrequencyNavigation IsVisible="{Binding ShowWindow^, FallbackValue=False}" />
@@ -983,7 +983,7 @@
                 Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 DataContext="{Binding CommandPaletteService.CurrentModal}"
                 HorizontalAlignment="Stretch"
-                IsVisible="{Binding ShowWindow^, FallbackValue=False}"
+                IsVisible="{Binding ShowWindow.Value, FallbackValue=False}"
                 VerticalAlignment="Stretch">
                 <Grid Background="{DynamicResource ContainerBackgroundColor}" Margin="100">
                     <local:CommandPalette IsVisible="{Binding ShowWindow^, FallbackValue=False}" />

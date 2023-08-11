@@ -6,6 +6,7 @@ using FileTime.App.FrequencyNavigation.Services;
 using FileTime.App.FuzzyPanel;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using GeneralInputKey;
 
 namespace FileTime.App.FrequencyNavigation.ViewModels;
 

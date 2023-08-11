@@ -2,6 +2,7 @@
 using Avalonia.Input;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
+using GeneralInputKey;
 
 namespace FileTime.GuiApp.App.Services;
 
@@ -71,6 +72,7 @@ public sealed class GuiAppKeyService : IAppKeyService<Key>
             {Key.Enter, Keys.Enter},
             {Key.Escape, Keys.Escape},
             {Key.Back, Keys.Backspace},
+            {Key.Delete, Keys.Delete},
             {Key.Space, Keys.Space},
             {Key.PageUp, Keys.PageUp},
             {Key.PageDown, Keys.PageDown},

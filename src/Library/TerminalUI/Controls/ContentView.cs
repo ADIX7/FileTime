@@ -40,18 +40,9 @@ public abstract partial class ContentView<T> : View<T>, IContentRenderer<T>
         RerenderProperties.Add(nameof(ContentRendererMethod));
     }
 
-    protected override void AttachChildren()
-    {
-        base.AttachChildren();
-        if (Content is not null)
-        {
-            Content.Attached = true;
-        }
-    }
-
     private bool DefaultContentRender(RenderContext renderContext, Position position, Size size)
     {
-        if (Content is null)
+        if (Content is null || !Content.IsVisible)
         {
             if (_placeholderRenderDone) return false;
             _placeholderRenderDone = true;

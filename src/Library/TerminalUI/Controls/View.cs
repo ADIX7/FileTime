@@ -1,10 +1,15 @@
 ﻿using System.Buffers;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using PropertyChanged.SourceGenerator;
+using TerminalUI.Color;
+using TerminalUI.ConsoleDrivers;
 using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
+
+public delegate string TextTransformer(string text, Position position, Size size);
 
 public abstract partial class View<T> : IView<T>
 {
@@ -18,24 +23,15 @@ public abstract partial class View<T> : IView<T>
     [Notify] private int? _maxHeight;
     [Notify] private int? _height;
     [Notify] private int _actualHeight;
-    [Notify] private Margin _margin = new Margin(0, 0, 0, 0);
+    [Notify] private bool _isVisible = true;
+    [Notify] private Thickness _margin = 0;
+    [Notify] private IColor? _foreground;
+    [Notify] private IColor? _background;
     [Notify] private string? _name;
     [Notify] private IApplicationContext? _applicationContext;
-    private bool _attached;
-
-    public bool Attached
-    {
-        get => _attached;
-        set
-        {
-            if (_attached == value) return;
-            _attached = value;
-            if (value)
-            {
-                AttachChildren();
-            }
-        }
-    }
+    [Notify] private bool _attached;
+    
+    protected ObservableCollection<IView> VisualChildren { get; } = new();
 
     public List<object> Extensions { get; } = new();
     public RenderMethod RenderMethod { get; set; }
@@ -46,11 +42,16 @@ public abstract partial class View<T> : IView<T>
     {
         RenderMethod = DefaultRenderer;
 
+        RerenderProperties.Add(nameof(Width));
         RerenderProperties.Add(nameof(MinWidth));
         RerenderProperties.Add(nameof(MaxWidth));
+        RerenderProperties.Add(nameof(Height));
         RerenderProperties.Add(nameof(MinHeight));
         RerenderProperties.Add(nameof(MaxHeight));
+        RerenderProperties.Add(nameof(IsVisible));
         RerenderProperties.Add(nameof(Margin));
+        RerenderProperties.Add(nameof(Foreground));
+        RerenderProperties.Add(nameof(Background));
 
         ((INotifyPropertyChanged) this).PropertyChanged += Handle_PropertyChanged;
     }
@@ -80,11 +81,6 @@ public abstract partial class View<T> : IView<T>
 
     protected abstract Size CalculateSize();
 
-
-    protected virtual void AttachChildren()
-    {
-    }
-
     private void Handle_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (Attached
@@ -96,6 +92,21 @@ public abstract partial class View<T> : IView<T>
         {
             ApplicationContext?.EventLoop.RequestRerender();
         }
+
+        if (e.PropertyName == nameof(Attached))
+        {
+            foreach (var visualChild in VisualChildren)
+            {
+                visualChild.Attached = Attached;
+            }
+        }
+        else if(e.PropertyName == nameof(ApplicationContext))
+        {
+            foreach (var visualChild in VisualChildren)
+            {
+                visualChild.ApplicationContext = ApplicationContext;
+            }
+        }
     }
 
     protected abstract bool DefaultRenderer(RenderContext renderContext, Position position, Size size);
@@ -104,6 +115,8 @@ public abstract partial class View<T> : IView<T>
     {
         if (!Attached)
             throw new InvalidOperationException("Cannot render unattached view");
+
+        if (!IsVisible) return false;
 
         ActualWidth = size.Width;
         ActualHeight = size.Height;
@@ -137,11 +150,101 @@ public abstract partial class View<T> : IView<T>
     protected void RenderEmpty(RenderContext renderContext, Position position, Size size)
     {
         var driver = renderContext.ConsoleDriver;
+        driver.ResetColor();
+
         var placeHolder = new string(ApplicationContext!.EmptyCharacter, size.Width);
         for (var i = 0; i < size.Height; i++)
         {
             driver.SetCursorPosition(position with {Y = position.Y + i});
             driver.Write(placeHolder);
+        }
+    }
+
+    protected void RenderText(
+        IList<string> textLines,
+        IConsoleDriver driver,
+        Position position,
+        Size size,
+        TextTransformer? textTransformer = null)
+    {
+        for (var i = 0; i < textLines.Count; i++)
+        {
+            var currentPosition = position with {Y = position.Y + i};
+            var text = textLines[i];
+
+            if (textTransformer is not null)
+            {
+                text = textTransformer(text, currentPosition, size);
+            }
+
+            if (text.Length > size.Width)
+            {
+                text = text[..size.Width];
+            }
+
+            driver.SetCursorPosition(currentPosition);
+            driver.Write(text);
+        }
+    }
+
+    protected void RenderText(
+        string text,
+        IConsoleDriver driver,
+        Position position,
+        Size size,
+        TextTransformer? textTransformer = null)
+    {
+        for (var i = 0; i < size.Height; i++)
+        {
+            var currentPosition = position with {Y = position.Y + i};
+            var finalText = text;
+
+            if (textTransformer is not null)
+            {
+                finalText = textTransformer(finalText, currentPosition, size);
+            }
+
+            if (finalText.Length > size.Width)
+            {
+                finalText = finalText[..size.Width];
+            }
+
+            driver.SetCursorPosition(currentPosition);
+            driver.Write(finalText);
+        }
+    }
+
+    protected void RenderText(
+        char content,
+        IConsoleDriver driver,
+        Position position,
+        Size size)
+    {
+        var contentString = new string(content, size.Width);
+        
+        for (var i = 0; i < size.Height; i++)
+        {
+            var currentPosition = position with {Y = position.Y + i};
+
+            driver.SetCursorPosition(currentPosition);
+            driver.Write(contentString);
+        }
+    }
+
+    protected void SetColorsForDriver(RenderContext renderContext)
+    {
+        var driver = renderContext.ConsoleDriver;
+            
+        var foreground = Foreground ?? renderContext.Foreground;
+        var background = Background ?? renderContext.Background;
+        if (foreground is not null)
+        {
+            driver.SetForegroundColor(foreground);
+        }
+
+        if (background is not null)
+        {
+            driver.SetBackgroundColor(background);
         }
     }
 
@@ -162,6 +265,7 @@ public abstract partial class View<T> : IView<T>
     {
         child.DataContext = DataContext;
         CopyCommonPropertiesToNewChild(child);
+        VisualChildren.Add(child);
 
         var mapper = new DataContextMapper<T, T>(this, child, d => d);
         AddDisposable(mapper);
@@ -175,6 +279,7 @@ public abstract partial class View<T> : IView<T>
     {
         child.DataContext = dataContextMapper(DataContext);
         CopyCommonPropertiesToNewChild(child);
+        VisualChildren.Add(child);
 
         var mapper = new DataContextMapper<T, TDataContext>(this, child, dataContextMapper);
         AddDisposable(mapper);

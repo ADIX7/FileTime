@@ -5,6 +5,7 @@ using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Extensions;
 using FileTime.Core.Models;
+using GeneralInputKey;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 
@@ -54,7 +55,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         });
     }
 
-    public async Task HandleInputKey(GeneralKeyEventArgs args, SpecialKeysStatus specialKeysStatus)
+    public async Task HandleInputKey(GeneralKeyEventArgs args)
     {
         var keyString = args.Key.Humanize();
 

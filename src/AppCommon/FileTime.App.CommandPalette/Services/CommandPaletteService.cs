@@ -1,5 +1,4 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using DeclarativeProperty;
 using FileTime.App.CommandPalette.Models;
 using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.Services;
@@ -11,8 +10,8 @@ public partial class CommandPaletteService : ICommandPaletteService
 {
     private readonly IModalService _modalService;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
-    private readonly BehaviorSubject<bool> _showWindow = new(false);
-    IObservable<bool> ICommandPaletteService.ShowWindow => _showWindow.AsObservable();
+    private readonly DeclarativeProperty<bool> _showWindow = new(false);
+    IDeclarativeProperty<bool> ICommandPaletteService.ShowWindow => _showWindow;
     [Notify] ICommandPaletteViewModel? _currentModal;
 
     public CommandPaletteService(
@@ -24,13 +23,13 @@ public partial class CommandPaletteService : ICommandPaletteService
     }
     public void OpenCommandPalette()
     {
-        _showWindow.OnNext(true);
+        _showWindow.SetValueSafe(true);
         CurrentModal = _modalService.OpenModal<ICommandPaletteViewModel>();
     }
 
     public void CloseCommandPalette()
     {
-        _showWindow.OnNext(false);
+        _showWindow.SetValueSafe(false);
         if (_currentModal is not null)
         {
             _modalService.CloseModal(_currentModal);

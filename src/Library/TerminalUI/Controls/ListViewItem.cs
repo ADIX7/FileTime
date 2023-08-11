@@ -1,12 +1,23 @@
-﻿using TerminalUI.Models;
+﻿using PropertyChanged.SourceGenerator;
+using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
-public class ListViewItem<T> : ContentView<T>
+public partial class ListViewItem<T, TParentDataContext> : ContentView<T>
 {
+    public ListView<TParentDataContext, T> Parent { get; }
+    [Notify] private bool _isSelected;
+
+    public ListViewItem(ListView<TParentDataContext, T> parent)
+    {
+        Parent = parent;
+        
+        RerenderProperties.Add(nameof(IsSelected));
+    }
+
     protected override Size CalculateSize()
     {
-        if (Content is null) return new Size(0, 0);
+        if (Content is null || !Content.IsVisible) return new Size(0, 0);
         return Content.GetRequestedSize();
     }
 
