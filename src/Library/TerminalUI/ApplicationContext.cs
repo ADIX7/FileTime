@@ -1,4 +1,5 @@
 ﻿using FileTime.App.Core.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TerminalUI.ConsoleDrivers;
 
@@ -6,15 +7,23 @@ namespace TerminalUI;
 
 public class ApplicationContext : IApplicationContext
 {
-    public required IConsoleDriver ConsoleDriver { get; init; }
-    public required IFocusManager FocusManager { get; init; }
-    public ILoggerFactory? LoggerFactory { get; init; }
-    public IEventLoop EventLoop { get; init; }
+    private readonly Lazy<IConsoleDriver> _consoleDriver;
+    private readonly Lazy<IFocusManager> _focusManager;
+    private readonly Lazy<ILoggerFactory?> _loggerFactory;
+    private readonly Lazy<IRenderEngine> _renderEngine;
+
+    public IConsoleDriver ConsoleDriver => _consoleDriver.Value;
+    public IFocusManager FocusManager => _focusManager.Value;
+    public ILoggerFactory? LoggerFactory => _loggerFactory.Value;
+    public IRenderEngine RenderEngine => _renderEngine.Value;
     public bool IsRunning { get; set; }
     public char EmptyCharacter { get; init; } = ' ';
 
-    public ApplicationContext()
+    public ApplicationContext(IServiceProvider serviceProvider)
     {
-        EventLoop = new EventLoop(this);
+        _consoleDriver = new Lazy<IConsoleDriver>(serviceProvider.GetRequiredService<IConsoleDriver>);
+        _focusManager = new Lazy<IFocusManager>(serviceProvider.GetRequiredService<IFocusManager>);
+        _loggerFactory = new Lazy<ILoggerFactory?>(serviceProvider.GetService<ILoggerFactory?>);
+        _renderEngine = new Lazy<IRenderEngine>(serviceProvider.GetRequiredService<IRenderEngine>);
     }
 }

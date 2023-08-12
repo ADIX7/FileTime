@@ -124,7 +124,7 @@ public partial class TextBox<T> : View<T>, IFocusable
         HandleKeyInputInternal(keyEventArgs);
         if (keyEventArgs.Handled)
         {
-            ApplicationContext?.EventLoop.RequestRerender();
+            ApplicationContext?.RenderEngine.RequestRerender(this);
         }
     }
 

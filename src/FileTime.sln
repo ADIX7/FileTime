@@ -127,6 +127,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObservableComputations.Exte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralInputKey", "Library\GeneralInputKey\GeneralInputKey.csproj", "{91AE5B64-042B-4660-A8E8-D247E6E14A1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalUI.DependencyInjection", "Library\TerminalUI.DependencyInjection\TerminalUI.DependencyInjection.csproj", "{E72F6430-0E6E-4818-BD5F-114893ACB18E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -345,6 +347,10 @@ Global
 		{91AE5B64-042B-4660-A8E8-D247E6E14A1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91AE5B64-042B-4660-A8E8-D247E6E14A1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91AE5B64-042B-4660-A8E8-D247E6E14A1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E72F6430-0E6E-4818-BD5F-114893ACB18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E72F6430-0E6E-4818-BD5F-114893ACB18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E72F6430-0E6E-4818-BD5F-114893ACB18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E72F6430-0E6E-4818-BD5F-114893ACB18E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -404,6 +410,7 @@ Global
 		{CCB6F86A-7E80-448E-B543-DF9DB337C42A} = {CAEEAD3C-41EB-405C-ACA9-BA1E4C352549}
 		{6C3C3151-9341-4792-9B0B-A11C0658524E} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 		{91AE5B64-042B-4660-A8E8-D247E6E14A1E} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
+		{E72F6430-0E6E-4818-BD5F-114893ACB18E} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

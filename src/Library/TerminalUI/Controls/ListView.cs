@@ -102,14 +102,14 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
             if (_itemsSource is ObservableCollection<TItem> observableDeclarative)
             {
                 ((INotifyCollectionChanged) observableDeclarative).CollectionChanged +=
-                    (_, _) => ApplicationContext?.EventLoop.RequestRerender();
+                    (_, _) => ApplicationContext?.RenderEngine.RequestRerender(this);
 
                 _getItems = () => observableDeclarative;
             }
             else if (_itemsSource is ReadOnlyObservableCollection<TItem> readOnlyObservableDeclarative)
             {
                 ((INotifyCollectionChanged) readOnlyObservableDeclarative).CollectionChanged +=
-                    (_, _) => ApplicationContext?.EventLoop.RequestRerender();
+                    (_, _) => ApplicationContext?.RenderEngine.RequestRerender(this);
 
                 _getItems = () => readOnlyObservableDeclarative;
             }

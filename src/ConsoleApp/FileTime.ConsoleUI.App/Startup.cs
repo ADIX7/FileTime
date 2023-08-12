@@ -1,5 +1,4 @@
 ﻿using FileTime.App.Core.Configuration;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Configuration;
@@ -10,9 +9,6 @@ using FileTime.Core.Interactions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using TerminalUI;
-using TerminalUI.ConsoleDrivers;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -30,18 +26,8 @@ public static class Startup
         services.AddSingleton<CustomLoggerSink>();
         services.TryAddSingleton(new ApplicationConfiguration(true));
         services.TryAddSingleton<IRootViewModel, RootViewModel>();
-        services.TryAddSingleton<IFocusManager, FocusManager>();
 
         services.Configure<ConsoleApplicationConfiguration>(configuration);
-
-        services.TryAddSingleton<IApplicationContext>(sp
-            => new ApplicationContext
-            {
-                ConsoleDriver = sp.GetRequiredService<IConsoleDriver>(),
-                LoggerFactory = sp.GetRequiredService<ILoggerFactory>(),
-                FocusManager = sp.GetRequiredService<IFocusManager>(),
-            }
-        );
         return services;
     }
 

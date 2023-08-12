@@ -6,10 +6,10 @@ namespace TerminalUI;
 
 public interface IApplicationContext
 {
-    IEventLoop EventLoop { get; init; }
+    IRenderEngine RenderEngine { get; }
     bool IsRunning { get; set; }
-    IConsoleDriver ConsoleDriver { get; init; }
-    ILoggerFactory? LoggerFactory { get; init; }
-    char EmptyCharacter { get; init; }
-    IFocusManager FocusManager { get; init; }
+    IConsoleDriver ConsoleDriver { get; }
+    ILoggerFactory? LoggerFactory { get; }
+    char EmptyCharacter { get; }
+    IFocusManager FocusManager { get; }
 }

@@ -2,14 +2,17 @@
 using Microsoft.Extensions.Logging;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
+using TerminalUI.Traits;
 using TerminalUI.ViewExtensions;
 
 namespace TerminalUI.Controls;
 
-public class Grid<T> : ChildContainerView<T>
+public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
 {
     private List<RowDefinition> _rowDefinitions = new() {RowDefinition.Star(1)};
     private List<ColumnDefinition> _columnDefinitions = new() {ColumnDefinition.Star(1)};
+    private List<IView> _forceRerenderChildren = new();
+    private readonly object _forceRerenderChildrenLock = new();
     private ILogger<Grid<T>>? Logger => ApplicationContext?.LoggerFactory?.CreateLogger<Grid<T>>();
 
     private delegate void WithSizes(RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
@@ -150,6 +153,13 @@ public class Grid<T> : ChildContainerView<T>
             new Option<Size>(size, true),
             (context, columnWidths, rowHeights) =>
             {
+                IReadOnlyList<IView> forceRerenderChildren;
+                lock (_forceRerenderChildrenLock)
+                {
+                    forceRerenderChildren = _forceRerenderChildren;
+                    _forceRerenderChildren.Clear();
+                }
+
                 context = new RenderContext(
                     context.ConsoleDriver,
                     context.ForceRerender,
@@ -169,7 +179,8 @@ public class Grid<T> : ChildContainerView<T>
                             rowHeights,
                             viewsByPosition,
                             column,
-                            row
+                            row,
+                            forceRerenderChildren
                         );
                     }
                 }
@@ -177,28 +188,16 @@ public class Grid<T> : ChildContainerView<T>
                 return true;
             });
 
-    private void RenderViewsByPosition(
-        RenderContext context,
+    private void RenderViewsByPosition(RenderContext context,
         Position gridPosition,
         ReadOnlySpan<int> columnWidths,
         ReadOnlySpan<int> rowHeights,
         IReadOnlyDictionary<(int, int), List<IView>> viewsByPosition,
         int column,
-        int row)
+        int row,
+        IReadOnlyList<IView> forceRerenderChildren)
     {
         if (!viewsByPosition.TryGetValue((column, row), out var children)) return;
-
-        var anyChangedVisibility = false;
-
-        foreach (var child in children)
-        {
-            var lastVisibility = GetLastVisibility(child);
-            if (lastVisibility is { } b && b != child.IsVisible)
-            {
-                anyChangedVisibility = true;
-                break;
-            }
-        }
 
         var width = columnWidths[column];
         var height = rowHeights[row];
@@ -212,7 +211,7 @@ public class Grid<T> : ChildContainerView<T>
             row
         );
 
-        var needsRerender = anyChangedVisibility;
+        var needsRerender = children.Any(forceRerenderChildren.Contains);
         if (needsRerender)
         {
             context = new RenderContext(
@@ -232,7 +231,7 @@ public class Grid<T> : ChildContainerView<T>
             {
                 needsRerender = true;
                 context = new RenderContext(
-                    context.ConsoleDriver, 
+                    context.ConsoleDriver,
                     true,
                     context.Foreground,
                     context.Background
@@ -482,5 +481,21 @@ public class Grid<T> : ChildContainerView<T>
         }
 
         ColumnDefinitions = columnDefinitions;
+    }
+
+    public void ChildVisibilityChanged(IView child)
+    {
+        var viewToForceRerender = child;
+        while (viewToForceRerender.VisualParent != null && viewToForceRerender.VisualParent != this)
+        {
+            viewToForceRerender = viewToForceRerender.VisualParent;
+        }
+
+        if (viewToForceRerender.VisualParent != this) return;
+
+        lock (_forceRerenderChildrenLock)
+        {
+            _forceRerenderChildren.Add(viewToForceRerender);
+        }
     }
 }

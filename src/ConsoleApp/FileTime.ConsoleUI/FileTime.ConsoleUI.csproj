@@ -15,6 +15,7 @@
     <ProjectReference Include="..\..\AppCommon\FileTime.App.ContainerSizeScanner\FileTime.App.ContainerSizeScanner.csproj" />
     <ProjectReference Include="..\..\AppCommon\FileTime.App.DependencyInjection\FileTime.App.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\AppCommon\FileTime.App.FrequencyNavigation\FileTime.App.FrequencyNavigation.csproj" />
+    <ProjectReference Include="..\..\Library\TerminalUI.DependencyInjection\TerminalUI.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools.Compression\FileTime.Tools.Compression.csproj" />
     <ProjectReference Include="..\FileTime.ConsoleUI.App\FileTime.ConsoleUI.App.csproj" />
     <ProjectReference Include="..\FileTime.ConsoleUI.Styles\FileTime.ConsoleUI.Styles.csproj" />

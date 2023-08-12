@@ -1,11 +1,7 @@
-﻿using TerminalUI.Controls;
-
-namespace TerminalUI;
+﻿namespace TerminalUI;
 
 public interface IEventLoop
 {
-    void Render();
-    void AddViewToRender(IView view);
     void Run();
-    void RequestRerender();
+    void AddToPermanentQueue(Action action);
 }

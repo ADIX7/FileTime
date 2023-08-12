@@ -7,7 +7,6 @@ namespace TerminalUI.Controls;
 public abstract class ChildContainerView<T> : View<T>, IChildContainer<T>
 {
     private readonly ObservableCollection<IView> _children = new();
-    private readonly Dictionary<IView, bool> _visibilities = new();
     public ReadOnlyObservableCollection<IView> Children { get; }
     public ChildInitializer<T> ChildInitializer { get; }
 
@@ -27,7 +26,7 @@ public abstract class ChildContainerView<T> : View<T>, IChildContainer<T>
                     }
                 }
 
-                ApplicationContext?.EventLoop.RequestRerender();
+                ApplicationContext?.RenderEngine.RequestRerender(this);
             }
         };
 
@@ -42,18 +41,6 @@ public abstract class ChildContainerView<T> : View<T>, IChildContainer<T>
             }
         };
     }
-
-    protected void SaveVisibilities()
-    {
-        _visibilities.Clear();
-        foreach (var child in _children)
-        {
-            _visibilities[child] = child.IsVisible;
-        }
-    }
-
-    protected bool? GetLastVisibility(IView view) 
-        => _visibilities.TryGetValue(view, out var visibility) ? visibility : null;
 
     public override TChild AddChild<TChild>(TChild child)
     {

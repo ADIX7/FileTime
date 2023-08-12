@@ -27,6 +27,7 @@ public interface IView : INotifyPropertyChanged, IDisposableCollection
     IApplicationContext? ApplicationContext { get; set; }
     List<object> Extensions { get; }
     RenderMethod RenderMethod { get; set; }
+    IView? VisualParent { get; set; }
     event Action<IView> Disposed;
 
     Size GetRequestedSize();

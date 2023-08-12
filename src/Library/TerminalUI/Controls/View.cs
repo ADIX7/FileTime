@@ -30,7 +30,8 @@ public abstract partial class View<T> : IView<T>
     [Notify] private string? _name;
     [Notify] private IApplicationContext? _applicationContext;
     [Notify] private bool _attached;
-    
+    [Notify] private IView? _visualParent;
+
     protected ObservableCollection<IView> VisualChildren { get; } = new();
 
     public List<object> Extensions { get; } = new();
@@ -90,7 +91,7 @@ public abstract partial class View<T> : IView<T>
             )
            )
         {
-            ApplicationContext?.EventLoop.RequestRerender();
+            ApplicationContext?.RenderEngine.RequestRerender(this);
         }
 
         if (e.PropertyName == nameof(Attached))
@@ -100,12 +101,16 @@ public abstract partial class View<T> : IView<T>
                 visualChild.Attached = Attached;
             }
         }
-        else if(e.PropertyName == nameof(ApplicationContext))
+        else if (e.PropertyName == nameof(ApplicationContext))
         {
             foreach (var visualChild in VisualChildren)
             {
                 visualChild.ApplicationContext = ApplicationContext;
             }
+        }
+        else if (e.PropertyName == nameof(IsVisible))
+        {
+            ApplicationContext?.RenderEngine.VisibilityChanged(this);
         }
     }
 
@@ -221,7 +226,7 @@ public abstract partial class View<T> : IView<T>
         Size size)
     {
         var contentString = new string(content, size.Width);
-        
+
         for (var i = 0; i < size.Height; i++)
         {
             var currentPosition = position with {Y = position.Y + i};
@@ -234,7 +239,7 @@ public abstract partial class View<T> : IView<T>
     protected void SetColorsForDriver(RenderContext renderContext)
     {
         var driver = renderContext.ConsoleDriver;
-            
+
         var foreground = Foreground ?? renderContext.Foreground;
         var background = Background ?? renderContext.Background;
         if (foreground is not null)
@@ -264,12 +269,8 @@ public abstract partial class View<T> : IView<T>
     public virtual TChild AddChild<TChild>(TChild child) where TChild : IView<T>
     {
         child.DataContext = DataContext;
-        CopyCommonPropertiesToNewChild(child);
-        VisualChildren.Add(child);
-
         var mapper = new DataContextMapper<T, T>(this, child, d => d);
-        AddDisposable(mapper);
-        child.AddDisposable(mapper);
+        SetupNewChild(child, mapper);
 
         return child;
     }
@@ -278,20 +279,21 @@ public abstract partial class View<T> : IView<T>
         where TChild : IView<TDataContext>
     {
         child.DataContext = dataContextMapper(DataContext);
-        CopyCommonPropertiesToNewChild(child);
-        VisualChildren.Add(child);
-
         var mapper = new DataContextMapper<T, TDataContext>(this, child, dataContextMapper);
-        AddDisposable(mapper);
-        child.AddDisposable(mapper);
+        SetupNewChild(child, mapper);
 
         return child;
     }
 
-    private void CopyCommonPropertiesToNewChild(IView child)
+    private void SetupNewChild(IView child, IDisposable dataContextmapper)
     {
         child.ApplicationContext = ApplicationContext;
         child.Attached = Attached;
+        child.VisualParent = this;
+        VisualChildren.Add(child);
+
+        AddDisposable(dataContextmapper);
+        child.AddDisposable(dataContextmapper);
     }
 
     public virtual void RemoveChild<TDataContext>(IView<TDataContext> child)

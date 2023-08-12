@@ -57,7 +57,7 @@ public class App : IApplication
 
         foreach (var rootView in _mainWindow.RootViews())
         {
-            _applicationContext.EventLoop.AddViewToRender(rootView);
+            _applicationContext.RenderEngine.AddViewToPermanentRenderGroup(rootView);
         }
 
         _applicationContext.IsRunning = true;
@@ -101,5 +101,5 @@ public class App : IApplication
         }
     }
 
-    private void Render() => _applicationContext.EventLoop.Run();
+    private void Render() => _applicationContext.RenderEngine.Run();
 }

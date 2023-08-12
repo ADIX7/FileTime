@@ -11,6 +11,7 @@ using FileTime.Tools.Compression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using TerminalUI.DependencyInjection;
 
 namespace FileTime.ConsoleUI;
 
@@ -23,6 +24,7 @@ public static class DI
             .RegisterDefaultServices(configuration: configuration)
             .AddConsoleServices(configuration)
             .AddConsoleViews()
+            .AddTerminalUi()
             .AddLocalProviderServices()
             .AddServerCoreServices()
             .AddFrequencyNavigation()
