@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
@@ -46,7 +46,7 @@ public partial class TextBlock<T> : View<T>
 
     protected override Size CalculateSize() => new(_textLines?.Max(l => l.Length) ?? 0, _textLines?.Length ?? 0);
 
-    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
         if (size.Width == 0 || size.Height == 0) return false;
 

@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -114,9 +114,9 @@ public abstract partial class View<T> : IView<T>
         }
     }
 
-    protected abstract bool DefaultRenderer(RenderContext renderContext, Position position, Size size);
+    protected abstract bool DefaultRenderer(in RenderContext renderContext, Position position, Size size);
 
-    public bool Render(RenderContext renderContext, Position position, Size size)
+    public bool Render(in RenderContext renderContext, Position position, Size size)
     {
         if (!Attached)
             throw new InvalidOperationException("Cannot render unattached view");
@@ -152,7 +152,7 @@ public abstract partial class View<T> : IView<T>
         return RenderMethod(renderContext, position, size);
     }
 
-    protected void RenderEmpty(RenderContext renderContext, Position position, Size size)
+    protected void RenderEmpty(in RenderContext renderContext, Position position, Size size)
     {
         var driver = renderContext.ConsoleDriver;
         driver.ResetColor();
@@ -236,7 +236,7 @@ public abstract partial class View<T> : IView<T>
         }
     }
 
-    protected void SetColorsForDriver(RenderContext renderContext)
+    protected void SetColorsForDriver(in RenderContext renderContext)
     {
         var driver = renderContext.ConsoleDriver;
 
@@ -316,7 +316,7 @@ public abstract partial class View<T> : IView<T>
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     public void Dispose()

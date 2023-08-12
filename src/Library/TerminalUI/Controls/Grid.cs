@@ -15,9 +15,9 @@ public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
     private List<ColumnDefinition> _columnDefinitions = new() {ColumnDefinition.Star(1)};
     private ILogger<Grid<T>>? Logger => ApplicationContext?.LoggerFactory?.CreateLogger<Grid<T>>();
 
-    private delegate void WithSizes(RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
+    private delegate void WithSizes(in RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
 
-    private delegate TResult WithSizes<TResult>(RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
+    private delegate TResult WithSizes<out TResult>(in RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
 
     private const int ToBeCalculated = -1;
 
@@ -126,67 +126,77 @@ public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
     }
 
     protected override Size CalculateSize()
-        => WithCalculatedSize(
+    {
+        return WithCalculatedSize(
             RenderContext.Empty,
             new Option<Size>(new Size(0, 0), false),
-            (_, columnWidths, rowHeights) =>
+            CalculateSizeInternal);
+
+        Size CalculateSizeInternal(in RenderContext _, ReadOnlySpan<int> columnWidths, ReadOnlySpan<int> rowHeights)
+        {
+            var width = 0;
+            var height = 0;
+
+            foreach (var t in columnWidths)
             {
-                var width = 0;
-                var height = 0;
+                width += t;
+            }
 
-                foreach (var t in columnWidths)
-                {
-                    width += t;
-                }
+            foreach (var t in rowHeights)
+            {
+                height += t;
+            }
 
-                foreach (var t in rowHeights)
-                {
-                    height += t;
-                }
+            return new Size(width, height);
+        }
+    }
 
-                return new Size(width, height);
-            });
-
-    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
-        => WithCalculatedSize(
+    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
+    {
+        return WithCalculatedSize(
             renderContext,
             new Option<Size>(size, true),
-            (context, columnWidths, rowHeights) =>
+            DefaultRendererInternal
+        );
+
+        bool DefaultRendererInternal(in RenderContext context, ReadOnlySpan<int> columnWidths, ReadOnlySpan<int> rowHeights)
+        {
+            IReadOnlyList<IView> forceRerenderChildren;
+            lock (_forceRerenderChildrenLock)
             {
-                IReadOnlyList<IView> forceRerenderChildren;
-                lock (_forceRerenderChildrenLock)
+                forceRerenderChildren = _forceRerenderChildren.ToList();
+                _forceRerenderChildren.Clear();
+            }
+
+            var childContext = new RenderContext(
+                context.ConsoleDriver,
+                context.ForceRerender,
+                Foreground ?? context.Foreground,
+                Background ?? context.Background,
+                context.Statistics
+            );
+            var viewsByPosition = GroupViewsByPosition(columnWidths.Length, rowHeights.Length);
+
+            for (var column = 0; column < columnWidths.Length; column++)
+            {
+                for (var row = 0; row < rowHeights.Length; row++)
                 {
-                    forceRerenderChildren = _forceRerenderChildren.ToList();
-                    _forceRerenderChildren.Clear();
+                    RenderViewsByPosition(
+                        childContext,
+                        position,
+                        columnWidths,
+                        rowHeights,
+                        viewsByPosition,
+                        column,
+                        row,
+                        forceRerenderChildren
+                    );
                 }
+            }
 
-                context = new RenderContext(
-                    context.ConsoleDriver,
-                    context.ForceRerender,
-                    Foreground ?? context.Foreground,
-                    Background ?? context.Background
-                );
-                var viewsByPosition = GroupViewsByPosition(columnWidths.Length, rowHeights.Length);
-
-                for (var column = 0; column < columnWidths.Length; column++)
-                {
-                    for (var row = 0; row < rowHeights.Length; row++)
-                    {
-                        RenderViewsByPosition(
-                            context,
-                            position,
-                            columnWidths,
-                            rowHeights,
-                            viewsByPosition,
-                            column,
-                            row,
-                            forceRerenderChildren
-                        );
-                    }
-                }
-
-                return true;
-            });
+            return true;
+        }
+    }
 
     private void RenderViewsByPosition(RenderContext context,
         Position gridPosition,
@@ -218,7 +228,8 @@ public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
                 context.ConsoleDriver,
                 true,
                 context.Foreground,
-                context.Background
+                context.Background,
+                context.Statistics
             );
             RenderEmpty(context, renderPosition, renderSize);
         }
@@ -234,7 +245,8 @@ public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
                     context.ConsoleDriver,
                     true,
                     context.Foreground,
-                    context.Background
+                    context.Background,
+                    context.Statistics
                 );
             }
         }
@@ -304,18 +316,18 @@ public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
         return (x, y);
     }
 
-    private void WithCalculatedSize(RenderContext renderContext, Option<Size> size, WithSizes actionWithSizes)
+    private void WithCalculatedSize(in RenderContext renderContext, Option<Size> size, WithSizes actionWithSizes)
     {
         WithCalculatedSize(renderContext, size, Helper);
 
-        object? Helper(RenderContext renderContext1, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights)
+        object? Helper(in RenderContext renderContext1, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights)
         {
             actionWithSizes(renderContext1, widths, heights);
             return null;
         }
     }
 
-    private TResult WithCalculatedSize<TResult>(RenderContext renderContext, Option<Size> size, WithSizes<TResult> actionWithSizes)
+    private TResult WithCalculatedSize<TResult>(in RenderContext renderContext, Option<Size> size, WithSizes<TResult> actionWithSizes)
     {
         //TODO: Optimize it, dont calculate all of these, only if there is Auto value(s)
         var columns = ColumnDefinitions.Count;

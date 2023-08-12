@@ -21,7 +21,7 @@ public partial class ListViewItem<T, TParentDataContext> : ContentView<T>
         return Content.GetRequestedSize();
     }
 
-    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
         if (ContentRendererMethod is null)
         {

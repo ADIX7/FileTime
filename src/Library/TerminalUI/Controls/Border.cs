@@ -1,4 +1,4 @@
-﻿using PropertyChanged.SourceGenerator;
+using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
@@ -38,7 +38,7 @@ public partial class Border<T> : ContentView<T>
         return new Size(contentSize.Width + size.Width, contentSize.Height + size.Height);
     }
 
-    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
         if (ContentRendererMethod is null)
         {
@@ -89,35 +89,35 @@ public partial class Border<T> : ContentView<T>
         return contentRendered;
     }
 
-    private void RenderTopBorder(RenderContext renderContext, Position position, Size size)
+    private void RenderTopBorder(in RenderContext renderContext, Position position, Size size)
     {
         position = position with {X = position.X + _borderThickness.Left};
         size = new Size(Width: size.Width - _borderThickness.Left - _borderThickness.Right, Height: _borderThickness.Top);
         RenderText(_topChar, renderContext.ConsoleDriver, position, size);
     }
 
-    private void RenderBottomBorder(RenderContext renderContext, Position position, Size size)
+    private void RenderBottomBorder(in RenderContext renderContext, Position position, Size size)
     {
         position = new Position(X: position.X + _borderThickness.Left, Y: position.Y + size.Height - _borderThickness.Bottom);
         size = new Size(Width: size.Width - _borderThickness.Left - _borderThickness.Right, Height: _borderThickness.Bottom);
         RenderText(_bottomChar, renderContext.ConsoleDriver, position, size);
     }
 
-    private void RenderLeftBorder(RenderContext renderContext, Position position, Size size)
+    private void RenderLeftBorder(in RenderContext renderContext, Position position, Size size)
     {
         position = position with {Y = position.Y + _borderThickness.Top};
         size = new Size(Width: _borderThickness.Left, Height: size.Height - _borderThickness.Top - _borderThickness.Bottom);
         RenderText(_leftChar, renderContext.ConsoleDriver, position, size);
     }
 
-    private void RenderRightBorder(RenderContext renderContext, Position position, Size size)
+    private void RenderRightBorder(in RenderContext renderContext, Position position, Size size)
     {
         position = new Position(X: position.X + size.Width - _borderThickness.Right, Y: position.Y + _borderThickness.Top);
         size = new Size(Width: _borderThickness.Right, Height: size.Height - _borderThickness.Top - _borderThickness.Bottom);
         RenderText(_rightChar, renderContext.ConsoleDriver, position, size);
     }
 
-    private void RenderTopLeftCorner(RenderContext renderContext, Position position)
+    private void RenderTopLeftCorner(in RenderContext renderContext, Position position)
     {
         if (_borderThickness.Left == 0 || _borderThickness.Top == 0) return;
 
@@ -125,7 +125,7 @@ public partial class Border<T> : ContentView<T>
         RenderText(_topLeftChar, renderContext.ConsoleDriver, position, size);
     }
 
-    private void RenderTopRightCorner(RenderContext renderContext, Position position, Size size)
+    private void RenderTopRightCorner(in RenderContext renderContext, Position position, Size size)
     {
         if (_borderThickness.Right == 0 || _borderThickness.Top == 0) return;
 
@@ -134,7 +134,7 @@ public partial class Border<T> : ContentView<T>
         RenderText(_topRightChar, renderContext.ConsoleDriver, position, size);
     }
 
-    private void RenderBottomLeftCorner(RenderContext renderContext, Position position, Size size)
+    private void RenderBottomLeftCorner(in RenderContext renderContext, Position position, Size size)
     {
         if (_borderThickness.Left == 0 || _borderThickness.Bottom == 0) return;
 
@@ -143,7 +143,7 @@ public partial class Border<T> : ContentView<T>
         RenderText(_bottomLeftChar, renderContext.ConsoleDriver, position, size);
     }
 
-    private void RenderBottomRightCorner(RenderContext renderContext, Position position, Size size)
+    private void RenderBottomRightCorner(in RenderContext renderContext, Position position, Size size)
     {
         if (_borderThickness.Right == 0 || _borderThickness.Bottom == 0) return;
 

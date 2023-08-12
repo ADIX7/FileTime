@@ -40,7 +40,7 @@ public abstract partial class ContentView<T> : View<T>, IContentRenderer<T>
         RerenderProperties.Add(nameof(ContentRendererMethod));
     }
 
-    private bool DefaultContentRender(RenderContext renderContext, Position position, Size size)
+    private bool DefaultContentRender(in RenderContext renderContext, Position position, Size size)
     {
         if (Content is null || !Content.IsVisible)
         {

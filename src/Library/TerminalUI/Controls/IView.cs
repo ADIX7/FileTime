@@ -5,7 +5,7 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public delegate bool RenderMethod(RenderContext renderContext, Position position, Size size);
+public delegate bool RenderMethod(in RenderContext renderContext, Position position, Size size);
 
 public interface IView : INotifyPropertyChanged, IDisposableCollection
 {
@@ -31,7 +31,7 @@ public interface IView : INotifyPropertyChanged, IDisposableCollection
     event Action<IView> Disposed;
 
     Size GetRequestedSize();
-    bool Render(RenderContext renderContext, Position position, Size size);
+    bool Render(in RenderContext renderContext, Position position, Size size);
 }
 
 public interface IView<T> : IView

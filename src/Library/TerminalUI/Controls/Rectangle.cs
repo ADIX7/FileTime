@@ -16,7 +16,7 @@ public partial class Rectangle<T> : View<T>
     [Notify] private IColor? _fill;
     protected override Size CalculateSize() => new(Width ?? 0, Height ?? 0);
 
-    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
         var renderState = new RenderState(position, size, Fill);
         if ((!renderContext.ForceRerender && !NeedsRerender(renderState)) || Fill is null) return false;

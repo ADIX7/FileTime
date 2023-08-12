@@ -1,4 +1,4 @@
-﻿using TerminalUI.Controls;
+using TerminalUI.Controls;
 using TerminalUI.Models;
 using TerminalUI.Traits;
 
@@ -114,7 +114,7 @@ public class RenderEngine : IRenderEngine
         }
     }
 
-    private void RenderViews(List<IView> views, RenderContext renderContext, Position position, Size size)
+    private void RenderViews(List<IView> views, in RenderContext renderContext, Position position, Size size)
     {
         foreach (var view in views)
         {

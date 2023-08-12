@@ -1,4 +1,4 @@
-﻿using GeneralInputKey;
+using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
@@ -71,7 +71,7 @@ public partial class TextBox<T> : View<T>, IFocusable
 
     protected override Size CalculateSize() => new(Width ?? 10, Height ?? 1);
 
-    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
         var foreground = Foreground ?? renderContext.Foreground;
         var background = Background ?? renderContext.Background;

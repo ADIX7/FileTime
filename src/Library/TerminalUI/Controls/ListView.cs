@@ -162,12 +162,12 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         }
     }
 
-    protected override bool DefaultRenderer(RenderContext renderContext, Position position, Size size)
+    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
         => Orientation == Orientation.Vertical
             ? RenderVertical(renderContext, position, size)
             : RenderHorizontal(renderContext, position, size);
 
-    private bool RenderHorizontal(RenderContext renderContext, Position position, Size size)
+    private bool RenderHorizontal(in RenderContext renderContext, Position position, Size size)
     {
         //Note: no support for same width elements
         var listViewItems = InstantiateItemViews();
@@ -236,7 +236,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         return true;
     }
 
-    private bool RenderVertical(RenderContext renderContext, Position position, Size size)
+    private bool RenderVertical(in RenderContext renderContext, Position position, Size size)
     {
         //Note: only same height is supported
         var requestedItemSize = _requestedItemSize;
