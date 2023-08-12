@@ -9,10 +9,10 @@ namespace TerminalUI.Controls;
 
 public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
 {
+    private readonly List<IView> _forceRerenderChildren = new();
+    private readonly object _forceRerenderChildrenLock = new();
     private List<RowDefinition> _rowDefinitions = new() {RowDefinition.Star(1)};
     private List<ColumnDefinition> _columnDefinitions = new() {ColumnDefinition.Star(1)};
-    private List<IView> _forceRerenderChildren = new();
-    private readonly object _forceRerenderChildrenLock = new();
     private ILogger<Grid<T>>? Logger => ApplicationContext?.LoggerFactory?.CreateLogger<Grid<T>>();
 
     private delegate void WithSizes(RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
@@ -156,7 +156,7 @@ public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
                 IReadOnlyList<IView> forceRerenderChildren;
                 lock (_forceRerenderChildrenLock)
                 {
-                    forceRerenderChildren = _forceRerenderChildren;
+                    forceRerenderChildren = _forceRerenderChildren.ToList();
                     _forceRerenderChildren.Clear();
                 }
 

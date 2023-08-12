@@ -1,11 +1,13 @@
-﻿using System.Collections.ObjectModel;
-using PropertyChanged.SourceGenerator;
+﻿using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
+using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public partial class StackPanel<T> : ChildContainerView<T>
+public partial class StackPanel<T> : ChildContainerView<T>, IVisibilityChangeHandler
 {
+    private readonly List<IView> _forceRerenderChildren = new();
+    private readonly object _forceRerenderChildrenLock = new();
     private readonly Dictionary<IView, Size> _requestedSizes = new();
     [Notify] private Orientation _orientation = Orientation.Vertical;
 
@@ -41,11 +43,28 @@ public partial class StackPanel<T> : ChildContainerView<T>
     {
         var delta = 0;
         var neededRerender = false;
+        IReadOnlyList<IView> forceRerenderChildren;
+        lock (_forceRerenderChildrenLock)
+        {
+            forceRerenderChildren = _forceRerenderChildren.ToList();
+            _forceRerenderChildren.Clear();
+        }
+
         foreach (var child in Children)
         {
             if (!child.IsVisible) continue;
 
             if (!_requestedSizes.TryGetValue(child, out var childSize)) throw new Exception("Child size not found");
+
+            if (forceRerenderChildren.Contains(child))
+            {
+                renderContext = new RenderContext(
+                    renderContext.ConsoleDriver,
+                    true,
+                    renderContext.Foreground,
+                    renderContext.Background
+                );
+            }
 
             var childPosition = Orientation == Orientation.Vertical
                 ? position with {Y = position.Y + delta}
@@ -73,5 +92,21 @@ public partial class StackPanel<T> : ChildContainerView<T>
         }
 
         return neededRerender;
+    }
+
+    public void ChildVisibilityChanged(IView child)
+    {
+        var viewToForceRerender = child;
+        while (viewToForceRerender.VisualParent != null && viewToForceRerender.VisualParent != this)
+        {
+            viewToForceRerender = viewToForceRerender.VisualParent;
+        }
+
+        if (viewToForceRerender.VisualParent != this) return;
+
+        lock (_forceRerenderChildrenLock)
+        {
+            _forceRerenderChildren.Add(viewToForceRerender);
+        }
     }
 }
