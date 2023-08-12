@@ -1,10 +1,11 @@
 ﻿using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
 using TerminalUI.Models;
+using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public partial class Rectangle<T> : View<T>
+public partial class Rectangle<T> : View<T>, IDisplayView
 {
     private record RenderState(
         Position Position,

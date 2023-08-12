@@ -1,14 +1,15 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
+using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
 [DebuggerDisplay("Text = {Text}")]
-public partial class TextBlock<T> : View<T>
+public partial class TextBlock<T> : View<T>, IDisplayView
 {
     private record RenderState(
         Position Position,

@@ -1,9 +1,10 @@
-using PropertyChanged.SourceGenerator;
+﻿using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
+using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public partial class Border<T> : ContentView<T>
+public partial class Border<T> : ContentView<T>, IDisplayView
 {
     [Notify] private Thickness _borderThickness = 1;
     [Notify] private Thickness _padding = 0;

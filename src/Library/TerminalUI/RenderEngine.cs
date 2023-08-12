@@ -1,4 +1,4 @@
-using TerminalUI.Controls;
+﻿using TerminalUI.Controls;
 using TerminalUI.Models;
 using TerminalUI.Traits;
 
@@ -82,7 +82,8 @@ public class RenderEngine : IRenderEngine
                 driver,
                 true,
                 null,
-                null
+                null,
+                new RenderStatistics()
             ),
             initialPosition,
             size);
@@ -93,7 +94,8 @@ public class RenderEngine : IRenderEngine
                 driver,
                 false,
                 null,
-                null
+                null,
+                new RenderStatistics()
             ),
             initialPosition,
             size);

@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
@@ -7,7 +8,8 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public partial class TextBox<T> : View<T>, IFocusable
+[DebuggerDisplay("Text = {Text}")]
+public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
 {
     private record RenderState(
         string? Text,

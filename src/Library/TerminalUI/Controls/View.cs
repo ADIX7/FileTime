@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -6,6 +6,7 @@ using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
 using TerminalUI.Models;
+using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
@@ -118,6 +119,7 @@ public abstract partial class View<T> : IView<T>
 
     public bool Render(in RenderContext renderContext, Position position, Size size)
     {
+        renderContext.Statistics.ProcessedViews++;
         if (!Attached)
             throw new InvalidOperationException("Cannot render unattached view");
 
@@ -149,7 +151,16 @@ public abstract partial class View<T> : IView<T>
             );
         }
 
-        return RenderMethod(renderContext, position, size);
+        var renderResult = RenderMethod(renderContext, position, size);
+        if (renderResult)
+        {
+            renderContext.Statistics.RenderedViews++;
+
+            if (this is IDisplayView)
+                renderContext.Statistics.RenderedDisplayViews++;
+        }
+
+        return renderResult;
     }
 
     protected void RenderEmpty(in RenderContext renderContext, Position position, Size size)
