@@ -1,7 +1,6 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using DeclarativeProperty;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
 
@@ -16,10 +15,10 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
     private object? _itemsSource;
     private ListViewItem<TItem, TDataContext>[]? _listViewItems;
     private int _listViewItemLength;
-    private int _selectedIndex = 0;
-    private int _renderStartIndex = 0;
+    private int _selectedIndex;
+    private int _renderStartIndex;
     private Size _requestedItemSize = new(0, 0);
-    [Notify] private int _listPadding = 0;
+    [Notify] private int _listPadding;
     [Notify] private Orientation _orientation = Orientation.Vertical;
 
     public int SelectedIndex
@@ -86,19 +85,6 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
 
             _itemsDisposables.Clear();
 
-            if (_itemsSource is IDeclarativeProperty<ObservableCollection<TItem>> observableDeclarativeProperty)
-            {
-                throw new NotSupportedException();
-            }
-            else if (_itemsSource is IDeclarativeProperty<ReadOnlyObservableCollection<TItem>> readOnlyObservableDeclarativeProperty)
-            {
-                throw new NotSupportedException();
-            }
-            else if (_itemsSource is IDeclarativeProperty<IEnumerable<TItem>> enumerableDeclarativeProperty)
-            {
-                throw new NotSupportedException();
-            }
-
             if (_itemsSource is ObservableCollection<TItem> observableDeclarative)
             {
                 ((INotifyCollectionChanged) observableDeclarative).CollectionChanged +=
@@ -119,6 +105,14 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
                 _getItems = () => array;
             else if (_itemsSource is IEnumerable<TItem> enumerable)
                 _getItems = () => enumerable.ToArray();
+            else if (value is null)
+            {
+                _getItems = null;
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
 
             if (_listViewItems is not null)
             {
@@ -193,6 +187,8 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         }
 
         var renderStartIndex = _renderStartIndex;
+        
+        //TODO: This MUST be calculated and used
         var lastItemIndex = _listViewItemLength;
 
         if (totalRequestedWidth > size.Width)
