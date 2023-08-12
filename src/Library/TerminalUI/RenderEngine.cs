@@ -69,6 +69,7 @@ public class RenderEngine : IRenderEngine
             _rerenderRequested = false;
             permanentViewsToRender = _permanentViewsToRender.ToList();
             forcedTemporaryViewsToRender = _forcedTemporaryViewsToRender.ToList();
+            _forcedTemporaryViewsToRender.Clear();
         }
 
         var driver = _applicationContext.ConsoleDriver;
