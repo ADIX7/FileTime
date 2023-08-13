@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
@@ -19,7 +20,8 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
         IColor? BackgroundColor
     );
 
-    private readonly List<Action<GeneralKeyEventArgs>> _keyHandlers = new();
+    private readonly List<Action<TextBox<T>, GeneralKeyEventArgs>> _keyHandlers = new();
+    private readonly List<Action<TextBox<T>, string>> _textHandlers = new();
 
     private RenderState? _lastRenderState;
     private string _text = string.Empty;
@@ -53,6 +55,19 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
         _textLines = _text.Split(Environment.NewLine).ToList();
         RerenderProperties.Add(nameof(Text));
         RerenderProperties.Add(nameof(MultiLine));
+
+        ((INotifyPropertyChanged) this).PropertyChanged += OnPropertyChangedEventHandler;
+    }
+
+    private void OnPropertyChangedEventHandler(object sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(Text))
+        {
+            foreach (var textHandler in _textHandlers)
+            {
+                textHandler(this, Text);
+            }
+        }
     }
 
     private void UpdateTextField()
@@ -283,16 +298,28 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
     {
         foreach (var keyHandler in _keyHandlers)
         {
-            keyHandler(keyEventArgs);
+            keyHandler(this, keyEventArgs);
             if (keyEventArgs.Handled) return true;
         }
 
         return false;
     }
 
-    public TextBox<T> WithKeyHandler(Action<GeneralKeyEventArgs> keyHandler)
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        _keyHandlers.Clear();
+    }
+
+    public TextBox<T> WithKeyHandler(Action<TextBox<T>, GeneralKeyEventArgs> keyHandler)
     {
         _keyHandlers.Add(keyHandler);
+        return this;
+    }
+
+    public TextBox<T> WithTextHandler(Action<TextBox<T>, string> textChanged)
+    {
+        _textHandlers.Add(textChanged);
         return this;
     }
 }

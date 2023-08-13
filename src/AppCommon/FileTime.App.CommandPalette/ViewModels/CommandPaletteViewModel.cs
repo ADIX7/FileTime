@@ -83,6 +83,7 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
 
             keyEventArgs.Handled = true;
             Close();
+            SearchText = string.Empty;
 
             try
             {

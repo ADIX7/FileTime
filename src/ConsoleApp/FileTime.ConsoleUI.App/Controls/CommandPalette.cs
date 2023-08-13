@@ -19,14 +19,37 @@ public class CommandPalette
         _theme = theme;
         _commandPaletteService = commandPaletteService;
     }
+
     public Border<IRootViewModel> View()
     {
         var inputTextBox = new TextBox<IRootViewModel>()
-            .WithKeyHandler(k =>
+            .WithKeyHandler((sender, k) =>
             {
                 if (k.Key == Keys.Escape)
                 {
                     _commandPaletteService.CloseCommandPalette();
+                }
+
+                if (!k.Handled)
+                {
+                    sender.DataContext?.CommandPalette.HandleKeyDown(k);
+                }
+
+                if (!k.Handled)
+                {
+                    sender.DataContext?.CommandPalette.HandleKeyUp(k);
+                }
+
+                if (k.Key == Keys.Enter)
+                {
+                    sender.Text = String.Empty;
+                }
+            })
+            .WithTextHandler((sender, text) =>
+            {
+                if (sender.DataContext is not null)
+                {
+                    sender.DataContext.CommandPalette.SearchText = text;
                 }
             });
 
@@ -79,14 +102,16 @@ public class CommandPalette
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem == item ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
-                                    t => t.Background
+                                    d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
+                                    t => t.Background,
+                                    v => v
                                 );
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem == item ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
-                                    t => t.Foreground
+                                    d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
+                                    t => t.Foreground,
+                                    v => v
                                 );
 
                                 return root;

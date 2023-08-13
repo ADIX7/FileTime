@@ -151,7 +151,22 @@ public abstract partial class View<T> : IView<T>
             );
         }
 
-        var renderResult = RenderMethod(renderContext, position, size);
+        bool renderResult;
+        if (Background != null || Foreground != null)
+        {
+            var newRenderContext = new RenderContext(
+                renderContext.ConsoleDriver,
+                renderContext.ForceRerender,
+                Foreground ?? renderContext.Foreground,
+                Background ?? renderContext.Background,
+                renderContext.Statistics);
+            renderResult = RenderMethod(newRenderContext, position, size);
+        }
+        else
+        {
+            renderResult = RenderMethod(renderContext, position, size);
+        }
+
         if (renderResult)
         {
             renderContext.Statistics.RenderedViews++;
