@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
@@ -12,9 +13,10 @@ namespace TerminalUI.Controls;
 
 public delegate string TextTransformer(string text, Position position, Size size);
 
-public abstract partial class View<T> : IView<T>
+public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : View<TConcrete, T>
 {
     private readonly List<IDisposable> _disposables = new();
+    private readonly ReadOnlyObservableCollection<IView> _readOnlyVisualChildren;
     [Notify] private T? _dataContext;
     [Notify] private int? _minWidth;
     [Notify] private int? _maxWidth;
@@ -33,7 +35,9 @@ public abstract partial class View<T> : IView<T>
     [Notify] private bool _attached;
     [Notify] private IView? _visualParent;
 
+    protected List<Action<TConcrete, GeneralKeyEventArgs>> KeyHandlers { get; } = new();
     protected ObservableCollection<IView> VisualChildren { get; } = new();
+    ReadOnlyObservableCollection<IView> IView.VisualChildren => _readOnlyVisualChildren;
 
     public List<object> Extensions { get; } = new();
     public RenderMethod RenderMethod { get; set; }
@@ -43,6 +47,7 @@ public abstract partial class View<T> : IView<T>
     protected View()
     {
         RenderMethod = DefaultRenderer;
+        _readOnlyVisualChildren = new ReadOnlyObservableCollection<IView>(VisualChildren);
 
         RerenderProperties.Add(nameof(Width));
         RerenderProperties.Add(nameof(MinWidth));
@@ -246,6 +251,27 @@ public abstract partial class View<T> : IView<T>
     }
 
     protected void RenderText(
+        in ReadOnlySpan<char> text,
+        IConsoleDriver driver,
+        Position position,
+        Size size)
+    {
+        for (var i = 0; i < size.Height; i++)
+        {
+            var currentPosition = position with {Y = position.Y + i};
+            var finalText = text;
+
+            if (finalText.Length > size.Width)
+            {
+                finalText = finalText[..size.Width];
+            }
+
+            driver.SetCursorPosition(currentPosition);
+            driver.Write(finalText);
+        }
+    }
+
+    protected void RenderText(
         char content,
         IConsoleDriver driver,
         Position position,
@@ -367,7 +393,39 @@ public abstract partial class View<T> : IView<T>
             arrayPool.Return(disposables, true);
 
             _disposables.Clear();
+            KeyHandlers.Clear();
+            
             Disposed?.Invoke(this);
         }
+    }
+
+    public virtual void HandleKeyInput(GeneralKeyEventArgs keyEventArgs)
+    {
+        ProcessKeyHandlers(keyEventArgs);
+        ProcessParentKeyHandlers(keyEventArgs);
+    }
+
+
+    protected void ProcessKeyHandlers(GeneralKeyEventArgs keyEventArgs)
+    {
+        foreach (var keyHandler in KeyHandlers)
+        {
+            keyHandler((TConcrete)this, keyEventArgs);
+            if (keyEventArgs.Handled) return;
+        }
+    }
+
+    protected void ProcessParentKeyHandlers(GeneralKeyEventArgs keyEventArgs)
+    {
+        if (VisualParent is { } parent)
+        {
+            parent.HandleKeyInput(keyEventArgs);
+        }
+    }
+
+    public TConcrete WithKeyHandler(Action<TConcrete, GeneralKeyEventArgs> keyHandler)
+    {
+        KeyHandlers.Add(keyHandler);
+        return (TConcrete)this;
     }
 }

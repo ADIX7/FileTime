@@ -28,11 +28,11 @@ public class KeyInputHandlerService : IKeyInputHandlerService
 
         if (_appState.ViewMode.Value == ViewMode.Default)
         {
-            Task.Run(async () => await _defaultModeKeyInputHandler.HandleInputKey(keyEvent)).Wait();
+            Task.Run(async () => await _defaultModeKeyInputHandler.HandleInputKey(keyEvent));
         }
         else
         {
-            Task.Run(async () => await _rapidTravelModeKeyInputHandler.HandleInputKey(keyEvent)).Wait();
+            Task.Run(async () => await _rapidTravelModeKeyInputHandler.HandleInputKey(keyEvent));
         }
     }
 }

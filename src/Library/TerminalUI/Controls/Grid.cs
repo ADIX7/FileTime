@@ -7,7 +7,7 @@ using TerminalUI.ViewExtensions;
 
 namespace TerminalUI.Controls;
 
-public class Grid<T> : ChildContainerView<T>, IVisibilityChangeHandler
+public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeHandler
 {
     private readonly List<IView> _forceRerenderChildren = new();
     private readonly object _forceRerenderChildrenLock = new();

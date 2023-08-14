@@ -6,11 +6,18 @@ using FileTime.ConsoleUI.App.KeyInputHandling;
 using GeneralInputKey;
 using TerminalUI;
 using TerminalUI.ConsoleDrivers;
+using TerminalUI.Traits;
 
 namespace FileTime.ConsoleUI.App;
 
 public class App : IApplication
 {
+    private static readonly List<Keys> KeysToFurtherProcess = new()
+    {
+        Keys.Enter,
+        Keys.Escape
+    };
+
     private readonly ILifecycleService _lifecycleService;
 
     private readonly IConsoleAppState _consoleAppState;
@@ -86,11 +93,13 @@ public class App : IApplication
                         SpecialKeysStatus = specialKeysStatus
                     };
 
-                    if (focusManager.Focused is { } focused)
+                    var focused = focusManager.Focused;
+                    if (focused is { })
                     {
                         focused.HandleKeyInput(keyEventArgs);
                     }
-                    else
+
+                    if (focused is null || (!keyEventArgs.Handled && KeysToFurtherProcess.Contains(keyEventArgs.Key)))
                     {
                         _keyInputHandlerService.HandleKeyInput(keyEventArgs, specialKeysStatus);
                     }

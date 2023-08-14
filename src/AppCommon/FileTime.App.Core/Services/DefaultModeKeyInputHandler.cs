@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using DeclarativeProperty;
 using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Extensions;
@@ -23,7 +24,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
     private readonly IPossibleCommandsService _possibleCommandsService;
-    private readonly BindedCollection<IModalViewModel> _openModals;
+    private readonly ReadOnlyObservableCollection<IModalViewModel> _openModals;
 
     public DefaultModeKeyInputHandler(
         IAppState appState,
@@ -46,7 +47,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             .Map(t => t?.CurrentLocation)
             .Switch();
 
-        _openModals = modalService.OpenModals.ToBindedCollection();
+        _openModals = modalService.OpenModals;
 
         _keysToSkip.Add(new[] {new KeyConfig(Keys.Up)});
         _keysToSkip.Add(new[] {new KeyConfig(Keys.Down)});
@@ -75,9 +76,9 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         {
             var doGeneralReset = _appState.PreviousKeys.Count > 1;
 
-            if ((_openModals.Collection?.Count ?? 0) > 0)
+            if (_openModals.Count > 0)
             {
-                _modalService.CloseModal(_openModals.Collection!.Last());
+                _modalService.CloseModal(_openModals.Last());
             }
             else if (_currentLocation.Value?.GetExtension<EscHandlerContainerExtension>() is { } escHandler)
             {

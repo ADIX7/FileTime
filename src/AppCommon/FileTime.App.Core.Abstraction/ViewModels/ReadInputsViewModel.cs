@@ -1,8 +1,7 @@
 using System.Collections.ObjectModel;
-using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
 
-namespace FileTime.GuiApp.App.ViewModels;
+namespace FileTime.App.Core.ViewModels;
 
 public class ReadInputsViewModel : IModalViewModel
 {

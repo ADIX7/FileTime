@@ -3,7 +3,7 @@ using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
-public partial class ListViewItem<T, TParentDataContext> : ContentView<T>
+public sealed partial class ListViewItem<T, TParentDataContext> : ContentView<ListViewItem<T, TParentDataContext>, T>
 {
     public ListView<TParentDataContext, T> Parent { get; }
     [Notify] private bool _isSelected;
@@ -11,7 +11,7 @@ public partial class ListViewItem<T, TParentDataContext> : ContentView<T>
     public ListViewItem(ListView<TParentDataContext, T> parent)
     {
         Parent = parent;
-        
+
         RerenderProperties.Add(nameof(IsSelected));
     }
 

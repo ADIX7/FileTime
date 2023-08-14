@@ -1,23 +1,87 @@
-﻿using PropertyChanged.SourceGenerator;
+﻿using System.Collections.ObjectModel;
+using ObservableComputations;
+using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
 using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>, IVisibilityChangeHandler
+public sealed partial class ItemsControl<TDataContext, TItem> 
+    : View<ItemsControl<TDataContext, TItem>, TDataContext>, IVisibilityChangeHandler
 {
     private readonly List<IView> _forceRerenderChildren = new();
     private readonly object _forceRerenderChildrenLock = new();
+    private readonly List<IDisposable> _itemsDisposables = new();
     private readonly Dictionary<IView, Size> _requestedSizes = new();
+    private IList<IView<TItem>> _children = new List<IView<TItem>>();
+    private object? _itemsSource;
     [Notify] private Orientation _orientation = Orientation.Vertical;
+
+    public Func<IView<TItem>?> ItemTemplate { get; set; } = DefaultItemTemplate;
+
+    public IReadOnlyList<IView<TItem>> Children => _children.AsReadOnly();
+
+    public object? ItemsSource
+    {
+        get => _itemsSource;
+        set
+        {
+            if (_itemsSource == value) return;
+            _itemsSource = value;
+
+            foreach (var disposable in _itemsDisposables)
+            {
+                disposable.Dispose();
+            }
+
+            _itemsDisposables.Clear();
+
+            if (_itemsSource is ObservableCollection<TItem> observableDeclarative)
+            {
+                _children = observableDeclarative
+                    .Selecting(i => CreateItem(i))
+                    .OfTypeComputing<IView<TItem>>();
+            }
+            else if (_itemsSource is ReadOnlyObservableCollection<TItem> readOnlyObservableDeclarative)
+            {
+                _children = readOnlyObservableDeclarative
+                    .Selecting(i => CreateItem(i))
+                    .OfTypeComputing<IView<TItem>>();
+            }
+            else if (_itemsSource is ICollection<TItem> collection)
+                _children = collection.Select(CreateItem).OfType<IView<TItem>>().ToList();
+            else if (_itemsSource is TItem[] array)
+                _children = array.Select(CreateItem).OfType<IView<TItem>>().ToList();
+            else if (_itemsSource is IEnumerable<TItem> enumerable)
+                _children = enumerable.Select(CreateItem).OfType<IView<TItem>>().ToList();
+            else if (value is null)
+            {
+                _children = new List<IView<TItem>>();
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(Children));
+        }
+    }
+
+    public ItemsControl()
+    {
+        RerenderProperties.Add(nameof(ItemsSource));
+        RerenderProperties.Add(nameof(Orientation));
+    }
+
 
     protected override Size CalculateSize()
     {
         _requestedSizes.Clear();
-        var width = 0;
-        var height = 0;
+        double width = 0;
+        double height = 0;
 
-        foreach (var child in Children)
+        foreach (var child in _children)
         {
             if (!child.IsVisible) continue;
 
@@ -36,7 +100,7 @@ public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>
             }
         }
 
-        return new Size(width, height);
+        return new Size((int) width, (int) height);
     }
 
     protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
@@ -50,11 +114,12 @@ public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>
         }
 
         var delta = 0;
-        foreach (var child in Children)
+        foreach (var child in _children)
         {
             if (!child.IsVisible) continue;
 
             if (!_requestedSizes.TryGetValue(child, out var childSize)) throw new Exception("Child size not found");
+
 
             var childPosition = Orientation == Orientation.Vertical
                 ? position with {Y = position.Y + delta}
@@ -101,6 +166,15 @@ public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>
 
         return neededRerender;
     }
+
+    private IView<TItem>? CreateItem(TItem dataContext)
+    {
+        var newItem = ItemTemplate();
+        AddChild(newItem, _ => dataContext);
+        return newItem;
+    }
+
+    private static IView<TItem>? DefaultItemTemplate() => null;
 
     public void ChildVisibilityChanged(IView child)
     {

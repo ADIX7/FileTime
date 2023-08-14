@@ -11,6 +11,7 @@ public interface IConsoleDriver
     void ResetColor();
     Position GetCursorPosition();
     void Write(string text);
+    void Write(ReadOnlySpan<char> text);
     void Write(char text);
     bool CanRead();
     ConsoleKeyInfo ReadKey();

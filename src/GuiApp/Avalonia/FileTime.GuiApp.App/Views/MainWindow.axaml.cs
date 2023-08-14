@@ -20,9 +20,6 @@ public partial class MainWindow : Window, IUiAccessor
     private readonly Action? _initializer;
     private ILogger<MainWindow>? _logger;
     private IModalService? _modalService;
-    private IReadOnlyCollection<IModalViewModel>? _openModals;
-    private ReadInputsViewModel? _inputViewModel;
-    private IDisposable? _inputViewModelSubscription;
     private bool _isShuttingDown;
     private bool _shutdownCompleted;
     private readonly object _isClosingLock = new();
@@ -61,19 +58,9 @@ public partial class MainWindow : Window, IUiAccessor
 
             _logger = DI.ServiceProvider.GetService<ILogger<MainWindow>>();
             _modalService = DI.ServiceProvider.GetRequiredService<IModalService>();
-            _modalService.OpenModals.ToCollection().Subscribe(m => _openModals = m);
-            DI.ServiceProvider.GetRequiredService<Services.SystemClipboardService>().UiAccessor = this;
+            DI.ServiceProvider.GetRequiredService<SystemClipboardService>().UiAccessor = this;
 
             ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
-            DataContextChanged += (_, _) =>
-            {
-                if (DataContext is not MainWindowViewModel mainWindowViewModel) return;
-
-                _inputViewModelSubscription?.Dispose();
-                _inputViewModelSubscription = mainWindowViewModel.DialogService.ReadInput.Subscribe(
-                    inputViewModel => _inputViewModel = inputViewModel
-                );
-            };
 
             _logger?.LogInformation(
                 $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
@@ -99,7 +86,7 @@ public partial class MainWindow : Window, IUiAccessor
 
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
-        if ((_openModals?.Count ?? 0) > 0) return;
+        if (_modalService!.OpenModals.Count > 0) return;
         ViewModel?.ProcessKeyDown(e);
     }
 
@@ -177,15 +164,14 @@ public partial class MainWindow : Window, IUiAccessor
 
     private void InputList_OnKeyUp(object? sender, KeyEventArgs e)
     {
+        var inputViewModel = ViewModel!.DialogService.ReadInput.Value;
         if (e.Key == Key.Escape)
         {
-            _inputViewModel?.Cancel();
-            _inputViewModel = null;
+            inputViewModel?.Cancel();
         }
         else if (e.Key == Key.Enter)
         {
-            _inputViewModel?.Process();
-            _inputViewModel = null;
+            inputViewModel?.Process();
         }
     }
 

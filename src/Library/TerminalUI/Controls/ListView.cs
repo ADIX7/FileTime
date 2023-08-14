@@ -6,7 +6,7 @@ using TerminalUI.Models;
 
 namespace TerminalUI.Controls;
 
-public partial class ListView<TDataContext, TItem> : View<TDataContext>
+public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataContext, TItem>, TDataContext>
 {
     private static readonly ArrayPool<ListViewItem<TItem, TDataContext>> ListViewItemPool = ArrayPool<ListViewItem<TItem, TDataContext>>.Shared;
 
@@ -187,7 +187,7 @@ public partial class ListView<TDataContext, TItem> : View<TDataContext>
         }
 
         var renderStartIndex = _renderStartIndex;
-        
+
         //TODO: This MUST be calculated and used
         var lastItemIndex = _listViewItemLength;
 

@@ -4,7 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TerminalUI.Controls;
 
-public abstract class ChildContainerView<T> : View<T>, IChildContainer<T>
+public abstract class ChildContainerView<TConcrete, T>
+    : View<TConcrete, T>, IChildContainer<T>
+    where TConcrete : View<TConcrete, T>
 {
     private readonly ObservableCollection<IView> _children = new();
     public ReadOnlyObservableCollection<IView> Children { get; }

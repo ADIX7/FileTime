@@ -10,7 +10,7 @@ using TerminalUI.Traits;
 namespace TerminalUI.Controls;
 
 [DebuggerDisplay("Text = {Text}")]
-public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
+public sealed partial class TextBox<T> : View<TextBox<T>, T>, IFocusable, IDisplayView
 {
     private record RenderState(
         string? Text,
@@ -20,7 +20,6 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
         IColor? BackgroundColor
     );
 
-    private readonly List<Action<TextBox<T>, GeneralKeyEventArgs>> _keyHandlers = new();
     private readonly List<Action<TextBox<T>, string>> _textHandlers = new();
 
     private RenderState? _lastRenderState;
@@ -31,6 +30,7 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
     private Position _relativeCursorPosition = new(0, 0);
 
     [Notify] private bool _multiLine;
+    [Notify] private char? _passwordChar;
     public bool SetKeyHandledIfKnown { get; set; }
 
     public string Text
@@ -55,6 +55,7 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
         _textLines = _text.Split(Environment.NewLine).ToList();
         RerenderProperties.Add(nameof(Text));
         RerenderProperties.Add(nameof(MultiLine));
+        RerenderProperties.Add(nameof(PasswordChar));
 
         ((INotifyPropertyChanged) this).PropertyChanged += OnPropertyChangedEventHandler;
     }
@@ -115,10 +116,39 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
         }
 
         RenderEmpty(renderContext, position, size);
-        RenderText(_textLines, driver, position, size);
+
+        if (PasswordChar is { } passwordChar && !char.IsControl(passwordChar))
+        {
+            for (var i = 0; i < _textLines.Count; i++)
+            {
+                var pos = position with {Y = position.Y + i};
+                RenderPasswordTextLine(_textLines[i], passwordChar, driver, pos, size);
+            }
+        }
+        else
+        {
+            RenderText(_textLines, driver, position, size);
+        }
+
         _cursorPosition = position + _relativeCursorPosition;
 
         return true;
+    }
+
+    private void RenderPasswordTextLine(
+        string sourceText,
+        char passwordChar,
+        IConsoleDriver driver,
+        Position position,
+        Size size)
+    {
+        Span<char> text = stackalloc char[sourceText.Length];
+        for (var j = 0; j < text.Length; j++)
+        {
+            text[j] = passwordChar;
+        }
+
+        RenderText(text, driver, position, size);
     }
 
     private bool NeedsRerender(RenderState renderState)
@@ -136,12 +166,21 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
         consoleDriver.SetCursorPosition(_cursorPosition.Value);
     }
 
-    public void HandleKeyInput(GeneralKeyEventArgs keyEventArgs)
+    public override void HandleKeyInput(GeneralKeyEventArgs keyEventArgs)
     {
         HandleKeyInputInternal(keyEventArgs);
         if (keyEventArgs.Handled)
         {
             ApplicationContext?.RenderEngine.RequestRerender(this);
+        }
+        else
+        {
+            var view = VisualParent;
+            while (view != null && !keyEventArgs.Handled)
+            {
+                view.HandleKeyInput(keyEventArgs);
+                view = view.VisualParent;
+            }
         }
     }
 
@@ -158,11 +197,14 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
         if (!known && HandleNavigation(keyEventArgs, out known))
             return;
 
-        if (!known && ProcessKeyHandlers(keyEventArgs))
-            return;
+        if (!known)
+        {
+            ProcessKeyHandlers(keyEventArgs);
+            if (keyEventArgs.Handled) return;
+        }
 
         if (!known
-            && keyEventArgs.KeyChar != '\0'
+            && !char.IsControl(keyEventArgs.KeyChar)
             && keyEventArgs.KeyChar.ToString() is {Length: 1} keyString)
         {
             var y = _relativeCursorPosition.Y;
@@ -172,6 +214,12 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
 
             keyEventArgs.Handled = true;
             UpdateTextField();
+            return;
+        }
+
+        if (!known)
+        {
+            ProcessParentKeyHandlers(keyEventArgs);
         }
     }
 
@@ -292,29 +340,6 @@ public partial class TextBox<T> : View<T>, IFocusable, IDisplayView
 
         known = false;
         return false;
-    }
-
-    private bool ProcessKeyHandlers(GeneralKeyEventArgs keyEventArgs)
-    {
-        foreach (var keyHandler in _keyHandlers)
-        {
-            keyHandler(this, keyEventArgs);
-            if (keyEventArgs.Handled) return true;
-        }
-
-        return false;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-        _keyHandlers.Clear();
-    }
-
-    public TextBox<T> WithKeyHandler(Action<TextBox<T>, GeneralKeyEventArgs> keyHandler)
-    {
-        _keyHandlers.Add(keyHandler);
-        return this;
     }
 
     public TextBox<T> WithTextHandler(Action<TextBox<T>, string> textChanged)

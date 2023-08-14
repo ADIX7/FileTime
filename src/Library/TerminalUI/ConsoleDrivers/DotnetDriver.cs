@@ -22,9 +22,10 @@ public class DotnetDriver : IConsoleDriver
         return new(x, y);
     }
     
-    public void Write(string text) => Console.Write(text);
+    public void Write(string text) => Console.Out.Write(text);
+    public void Write(ReadOnlySpan<char> text) => Console.Out.Write(text);
 
-    public void Write(char text) => Console.Write(text);
+    public void Write(char text) => Console.Out.Write(text);
 
     public virtual void Dispose() => Console.Clear();
 

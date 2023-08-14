@@ -4,7 +4,9 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public abstract partial class ContentView<T> : View<T>, IContentRenderer<T>
+public abstract partial class ContentView<TConcrete, T>
+    : View<TConcrete, T>, IContentRenderer<T>
+    where TConcrete : View<TConcrete, T>
 {
     private bool _placeholderRenderDone;
     [Notify] private RenderMethod _contentRendererMethod;

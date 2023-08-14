@@ -1,5 +1,7 @@
 ﻿using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.ViewModels;
+using FileTime.ConsoleUI.App.Services;
+using FileTime.Core.Interactions;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -10,4 +12,6 @@ public interface IRootViewModel
     string UserName { get; }
     string MachineName { get; }
     ICommandPaletteViewModel CommandPalette { get; }
+    IDialogService DialogService { get; }
+    event Action<IInputElement>? FocusReadInputElement;
 }

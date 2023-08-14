@@ -22,8 +22,6 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
     xmlns:appInteractions="using:FileTime.App.Core.Interactions"
-    xmlns:config="using:FileTime.GuiApp.App.Configuration"
-    xmlns:configuration="clr-namespace:FileTime.App.Core.Configuration;assembly=FileTime.App.Core.Abstraction"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
@@ -787,7 +785,7 @@
             <Border
                 Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 HorizontalAlignment="Stretch"
-                IsVisible="{Binding DialogService.ReadInput^, Converter={x:Static ObjectConverters.IsNotNull}}"
+                IsVisible="{Binding DialogService.ReadInput.Value, Converter={x:Static ObjectConverters.IsNotNull}}"
                 VerticalAlignment="Stretch"
                 x:Name="ReadInputContainer">
                 <Border
@@ -798,7 +796,7 @@
                     <Grid RowDefinitions="Auto,Auto,Auto">
 
                         <ItemsControl
-                            ItemsSource="{Binding DialogService.ReadInput^.Inputs}"
+                            ItemsSource="{Binding DialogService.ReadInput.Value.Inputs}"
                             KeyUp="InputList_OnKeyUp"
                             x:Name="InputList">
                             <ItemsControl.ItemTemplate>
@@ -839,7 +837,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl Grid.Row="1" ItemsSource="{Binding DialogService.ReadInput^.Previews}">
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding DialogService.ReadInput.Value.Previews}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>
@@ -913,7 +911,7 @@
                         </ItemsControl>
 
                         <StackPanel
-                            DataContext="{Binding DialogService.ReadInput^}"
+                            DataContext="{Binding DialogService.ReadInput.Value}"
                             Grid.Row="2"
                             Margin="0,10,0,0"
                             Orientation="Horizontal">
@@ -935,7 +933,7 @@
 
             <Border
                 Background="{DynamicResource BarelyTransparentBackgroundColor}"
-                DataContext="{Binding DialogService.LastMessageBox^}"
+                DataContext="{Binding DialogService.LastMessageBox.Value}"
                 HorizontalAlignment="Stretch"
                 IsVisible="{Binding Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
                 VerticalAlignment="Stretch">
@@ -952,12 +950,12 @@
                             Margin="0,10,0,0"
                             Orientation="Horizontal">
                             <Button
-                                Command="{Binding OkCommand}"
+                                Command="{Binding Ok}"
                                 Content="{Binding OkText}"
                                 HorizontalContentAlignment="Center"
                                 Width="80" />
                             <Button
-                                Command="{Binding CancelCommand}"
+                                Command="{Binding Cancel}"
                                 Content="{Binding CancelText}"
                                 HorizontalContentAlignment="Center"
                                 IsVisible="{Binding ShowCancel}"

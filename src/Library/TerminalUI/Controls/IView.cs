@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using GeneralInputKey;
 using TerminalUI.Color;
 using TerminalUI.Models;
 using TerminalUI.Traits;
@@ -28,10 +30,12 @@ public interface IView : INotifyPropertyChanged, IDisposableCollection
     List<object> Extensions { get; }
     RenderMethod RenderMethod { get; set; }
     IView? VisualParent { get; set; }
+    ReadOnlyObservableCollection<IView> VisualChildren { get; }
     event Action<IView> Disposed;
 
     Size GetRequestedSize();
     bool Render(in RenderContext renderContext, Position position, Size size);
+    void HandleKeyInput(GeneralKeyEventArgs keyEventArgs);
 }
 
 public interface IView<T> : IView

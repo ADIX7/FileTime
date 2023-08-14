@@ -21,7 +21,6 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
     private readonly IUserCommandHandlerService _userCommandHandlerService;
     private readonly ILogger<RapidTravelModeKeyInputHandler> _logger;
     private readonly IIdentifiableUserCommandService _identifiableUserCommandService;
-    private readonly BindedCollection<IModalViewModel> _openModals;
     private ITabViewModel? _selectedTab;
 
     public RapidTravelModeKeyInputHandler(
@@ -40,8 +39,6 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         _identifiableUserCommandService = identifiableUserCommandService;
 
         _appState.SelectedTab.Subscribe(t => _selectedTab = t);
-
-        _openModals = modalService.OpenModals.ToBindedCollection();
 
         _appState.RapidTravelTextDebounced.Subscribe((v, _) =>
         {
@@ -62,9 +59,9 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         if (args.Key == Keys.Escape)
         {
             args.Handled = true;
-            if ((_openModals.Collection?.Count ?? 0) > 0)
+            if (_modalService.OpenModals.Count > 0)
             {
-                _modalService.CloseModal(_openModals.Collection!.Last());
+                _modalService.CloseModal(_modalService.OpenModals.Last());
             }
             else
             {

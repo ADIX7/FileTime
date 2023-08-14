@@ -10,9 +10,20 @@ public class FocusManager : IFocusManager
     {
         get
         {
-            if (_focused is not null && !_focused.IsVisible)
+            if (_focused is not null)
             {
-                _focused = null;
+                var visible = _focused.IsVisible;
+                var parent = _focused.VisualParent;
+                while (parent != null)
+                {
+                    visible &= parent.IsVisible;
+                    parent = parent.VisualParent;
+                }
+
+                if (!visible)
+                {
+                    _focused = null;
+                }
             }
 
             return _focused;

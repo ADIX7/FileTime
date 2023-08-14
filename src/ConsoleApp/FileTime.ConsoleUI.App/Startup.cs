@@ -19,13 +19,14 @@ public static class Startup
         services.TryAddSingleton<IApplication, App>();
         services.TryAddSingleton<IConsoleAppState, ConsoleAppState>();
         services.TryAddSingleton<IAppState>(sp => sp.GetRequiredService<IConsoleAppState>());
-        services.TryAddSingleton<IUserCommunicationService, ConsoleUserCommunicationService>();
         services.TryAddSingleton<IKeyInputHandlerService, KeyInputHandlerService>();
         services.TryAddSingleton<IAppKeyService<ConsoleKey>, ConsoleAppKeyService>();
         services.TryAddSingleton<ISystemClipboardService, ConsoleSystemClipboardService>();
         services.AddSingleton<CustomLoggerSink>();
         services.TryAddSingleton(new ApplicationConfiguration(true));
         services.TryAddSingleton<IRootViewModel, RootViewModel>();
+        services.TryAddSingleton<IDialogService, DialogService>();
+        services.TryAddSingleton<IUserCommunicationService>(sp => sp.GetRequiredService<IDialogService>());
 
         services.Configure<ConsoleApplicationConfiguration>(configuration);
         return services;

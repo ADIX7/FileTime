@@ -9,7 +9,7 @@ using TerminalUI.Traits;
 namespace TerminalUI.Controls;
 
 [DebuggerDisplay("Text = {Text}")]
-public partial class TextBlock<T> : View<T>, IDisplayView
+public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 {
     private record RenderState(
         Position Position,
@@ -59,7 +59,7 @@ public partial class TextBlock<T> : View<T>, IDisplayView
             Text,
             foreground,
             background);
-        
+
         if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
 
         _lastRenderState = renderState;

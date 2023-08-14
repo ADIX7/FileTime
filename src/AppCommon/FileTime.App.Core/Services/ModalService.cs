@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using DynamicData;
 using FileTime.App.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,14 +8,14 @@ namespace FileTime.App.Core.Services;
 public class ModalService : IModalService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly SourceList<IModalViewModel> _openModals = new();
-    public IObservable<IChangeSet<IModalViewModel>> OpenModals { get; }
+    private readonly ObservableCollection<IModalViewModel> _openModals = new();
+    public ReadOnlyObservableCollection<IModalViewModel> OpenModals { get; }
     public event EventHandler? AllModalClosed;
 
     public ModalService(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        OpenModals = _openModals.Connect().StartWithEmpty();
+        OpenModals = new ReadOnlyObservableCollection<IModalViewModel>(_openModals);
     }
 
     public void OpenModal(IModalViewModel modalToOpen) => _openModals.Add(modalToOpen);

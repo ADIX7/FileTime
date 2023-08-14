@@ -65,7 +65,7 @@ public class CommandPalette
                 {
                     new Border<IRootViewModel>
                     {
-                        Margin = new Thickness(0, 0, 0, 2),
+                        Margin = new Thickness(0, 0, 0, 1),
                         Content = inputTextBox
                     },
                     new ListView<IRootViewModel, ICommandPaletteEntryViewModel>
@@ -103,15 +103,13 @@ public class CommandPalette
                                 item.Bind(
                                     item.Parent,
                                     d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
-                                    t => t.Background,
-                                    v => v
+                                    t => t.Background
                                 );
 
                                 item.Bind(
                                     item.Parent,
                                     d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
-                                    t => t.Foreground,
-                                    v => v
+                                    t => t.Foreground
                                 );
 
                                 return root;

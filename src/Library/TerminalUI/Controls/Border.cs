@@ -4,7 +4,7 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public partial class Border<T> : ContentView<T>, IDisplayView
+public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
 {
     [Notify] private Thickness _borderThickness = 1;
     [Notify] private Thickness _padding = 0;

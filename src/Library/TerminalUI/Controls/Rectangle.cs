@@ -5,7 +5,7 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public partial class Rectangle<T> : View<T>, IDisplayView
+public sealed partial class Rectangle<T> : View<Rectangle<T>, T>, IDisplayView
 {
     private record RenderState(
         Position Position,

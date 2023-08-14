@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\DeclarativeProperty\DeclarativeProperty.csproj" />
+    <ProjectReference Include="..\ObservableComputations.Extensions\ObservableComputations.Extensions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

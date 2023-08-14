@@ -1,10 +1,7 @@
-using FileTime.Core.Interactions;
-using FileTime.GuiApp.App.ViewModels;
+using FileTime.App.Core.Services;
 
 namespace FileTime.GuiApp.App.Services;
 
-public interface IDialogService : IUserCommunicationService
+public interface IDialogService : IDialogServiceBase
 {
-    IObservable<ReadInputsViewModel?> ReadInput { get; }
-    IObservable<MessageBoxViewModel?> LastMessageBox { get; }
 }
