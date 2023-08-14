@@ -17,7 +17,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private readonly List<OperationProgress> _operationProgresses = new();
-    private readonly BehaviorSubject<OperationProgress?> _currentOperationProgress = new(null);
+    private readonly DeclarativeProperty<OperationProgress?> _currentOperationProgress = new();
 
     private long _recentTotalSum;
     private readonly DeclarativeProperty<long> _recentTotalProcessed = new();
@@ -41,22 +41,21 @@ public class CopyCommand : CommandBase, ITransportationCommand
         ArgumentNullException.ThrowIfNull(sources);
         ArgumentNullException.ThrowIfNull(mode);
         ArgumentNullException.ThrowIfNull(targetFullName);
-        
+
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
         _logger = logger;
         _currentOperationProgress
-            .Select(p =>
+            .Map(p =>
             {
-                if (p is null) return Observable.Never<int>();
-                return p.Progress.Select(currentProgress =>
+                return p?.Progress.Map(currentProgress =>
                     p.TotalCount == 0
                         ? 0
                         : (int) (currentProgress * 100 / p.TotalCount)
                 );
             })
             .Switch()
-            .Subscribe(SetCurrentProgress);
+            .Subscribe(async (p, _) => await SetCurrentProgress(p));
 
         Sources = new List<FullName>(sources).AsReadOnly();
         TransportMode = mode;
@@ -75,7 +74,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
         recentSpeed
             .Debounce(TimeSpan.FromMilliseconds(500))
-            .Subscribe(SetDisplayDetailLabel);
+            .Subscribe(async (l, _) => await SetDisplayDetailLabel(l));
     }
 
     public override Task<CanCommandRun> CanRun(PointInTime currentTime)
@@ -145,20 +144,21 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
         if (Sources.Count == 1)
         {
-            SetDisplayLabel($"Copy - {Sources[0].GetName()}");
+            await SetDisplayLabelAsync($"Copy - {Sources[0].GetName()}");
         }
         else
         {
             _operationProgresses
                 .Select(o => o.IsDone)
-                .CombineLatest()
-                .Subscribe(statuses =>
+                .CombineAll(statuses =>
                 {
-                    var done = statuses.Count(s => s) + 1;
-                    if (done > statuses.Count) done = statuses.Count;
+                    var statusList = statuses.ToList();
+                    var done = statusList.Count(s => s) + 1;
+                    if (done > statusList.Count) done = statusList.Count;
 
-                    SetDisplayLabel($"Copy - {done} / {statuses.Count}");
-                });
+                    return Task.FromResult($"Copy - {done} / {statusList.Count}");
+                })
+                .Subscribe(async (v, _) => await SetDisplayLabelAsync(v));
         }
     }
 
@@ -196,7 +196,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 var newElementPath = target.GetChild(newElementName, AbsolutePathType.Element);
 
                 var currentProgress = _operationProgresses.Find(o => o.Key == element.FullName!.Path);
-                _currentOperationProgress.OnNext(currentProgress);
+                await _currentOperationProgress.SetValue(currentProgress);
 
                 await copyOperation.CopyAsync(new AbsolutePath(_timelessContentProvider, element), newElementPath, new CopyCommandContext(UpdateProgress, currentProgress, _cancellationTokenSource.Token));
             }

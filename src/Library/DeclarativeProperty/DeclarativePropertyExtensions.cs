@@ -93,4 +93,10 @@ public static class DeclarativePropertyExtensions
 
     public static IDeclarativeProperty<T> Switch<T>(this IDeclarativeProperty<IDeclarativeProperty<T>?> from)
         => new SwitchProperty<T>(from);
+    
+    public static IDeclarativeProperty<TResult?> CombineAll<T, TResult>(
+        this IEnumerable<IDeclarativeProperty<T>> sources,
+        Func<IEnumerable<T>, Task<TResult>> combiner,
+        Action<TResult?>? setValueHook = null)
+        => new CombineAllProperty<T,TResult?>(sources, combiner, setValueHook);
 }

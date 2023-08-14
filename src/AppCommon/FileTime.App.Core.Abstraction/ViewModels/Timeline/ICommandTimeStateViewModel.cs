@@ -1,11 +1,13 @@
+using DeclarativeProperty;
+
 namespace FileTime.App.Core.ViewModels.Timeline;
 
 public interface ICommandTimeStateViewModel
 {
-    IObservable<int> TotalProgress { get; }
-    IObservable<int> CurrentProgress { get; }
-    IObservable<string> DisplayLabel { get; }
-    IObservable<string> DisplayDetailLabel { get; }
-    IObservable<bool> IsSelected { get; }
+    IDeclarativeProperty<int> TotalProgress { get; }
+    IDeclarativeProperty<int> CurrentProgress { get; }
+    IDeclarativeProperty<string> DisplayLabel { get; }
+    IDeclarativeProperty<string> DisplayDetailLabel { get; }
+    IDeclarativeProperty<bool> IsSelected { get; }
     void Cancel();
 }

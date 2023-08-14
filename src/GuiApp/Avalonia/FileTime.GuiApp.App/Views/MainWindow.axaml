@@ -21,7 +21,6 @@
     x:DataType="vm:IMainWindowViewModelBase"
     xmlns="https://github.com/avaloniaui"
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
-    xmlns:appInteractions="using:FileTime.App.Core.Interactions"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
@@ -346,7 +345,7 @@
                                                             VerticalAlignment="Top">
                                                             <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
                                                                 <Grid ColumnDefinitions="*, Auto" Grid.ColumnSpan="2">
-                                                                    <TextBlock Text="{Binding DisplayLabel^}" />
+                                                                    <TextBlock Text="{Binding DisplayLabel.Value}" />
 
                                                                     <Button Command="{Binding Cancel}" Grid.Column="1">
                                                                         <Image
@@ -362,25 +361,25 @@
                                                                     Grid.Column="0"
                                                                     Grid.Row="1"
                                                                     Margin="0,5,5,5">
-                                                                    <TextBlock Text="{Binding DisplayDetailLabel^}" TextAlignment="Right" />
+                                                                    <TextBlock Text="{Binding DisplayDetailLabel.Value}" TextAlignment="Right" />
 
                                                                     <ProgressBar
                                                                         Margin="0,5,0,0"
                                                                         Maximum="100"
                                                                         MinWidth="50"
-                                                                        Value="{Binding CurrentProgress^}" />
+                                                                        Value="{Binding CurrentProgress.Value}" />
                                                                 </StackPanel>
                                                                 <StackPanel
                                                                     Grid.Column="1"
                                                                     Grid.Row="1"
                                                                     Margin="5,5,0,5">
-                                                                    <TextBlock Text="{Binding TotalProgress^, StringFormat={}{0}%}" TextAlignment="Right" />
+                                                                    <TextBlock Text="{Binding TotalProgress.Value, StringFormat={}{0}%}" TextAlignment="Right" />
 
                                                                     <ProgressBar
                                                                         Margin="0,5,0,0"
                                                                         Maximum="100"
                                                                         MinWidth="50"
-                                                                        Value="{Binding TotalProgress^}" />
+                                                                        Value="{Binding TotalProgress.Value}" />
                                                                 </StackPanel>
                                                             </Grid>
                                                         </Border>

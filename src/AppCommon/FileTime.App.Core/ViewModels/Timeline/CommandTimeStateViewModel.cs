@@ -1,4 +1,5 @@
 using System.Reactive.Subjects;
+using DeclarativeProperty;
 using FileTime.Core.Timeline;
 
 namespace FileTime.App.Core.ViewModels.Timeline;
@@ -6,13 +7,13 @@ namespace FileTime.App.Core.ViewModels.Timeline;
 public class CommandTimeStateViewModel : ICommandTimeStateViewModel
 {
     private readonly CommandTimeState _commandTimeState;
-    public IObservable<int> TotalProgress { get; }
-    public IObservable<int> CurrentProgress { get; }
+    public IDeclarativeProperty<int> TotalProgress { get; }
+    public IDeclarativeProperty<int> CurrentProgress { get; }
 
-    public IObservable<string> DisplayLabel { get; }
-    public IObservable<string> DisplayDetailLabel { get; }
+    public IDeclarativeProperty<string> DisplayLabel { get; }
+    public IDeclarativeProperty<string> DisplayDetailLabel { get; }
 
-    public IObservable<bool> IsSelected { get; }
+    public IDeclarativeProperty<bool> IsSelected { get; }
 
     public CommandTimeStateViewModel(CommandTimeState commandTimeState)
     {
@@ -22,7 +23,7 @@ public class CommandTimeStateViewModel : ICommandTimeStateViewModel
         TotalProgress = commandTimeState.Command.TotalProgress;
         CurrentProgress = commandTimeState.Command.CurrentProgress;
         //TODO
-        IsSelected = new BehaviorSubject<bool>(false);
+        IsSelected = new DeclarativeProperty<bool>(false);
     }
 
     public void Cancel()
