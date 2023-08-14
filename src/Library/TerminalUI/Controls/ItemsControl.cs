@@ -6,7 +6,7 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public sealed partial class ItemsControl<TDataContext, TItem> 
+public sealed partial class ItemsControl<TDataContext, TItem>
     : View<ItemsControl<TDataContext, TItem>, TDataContext>, IVisibilityChangeHandler
 {
     private readonly List<IView> _forceRerenderChildren = new();
@@ -17,7 +17,7 @@ public sealed partial class ItemsControl<TDataContext, TItem>
     private object? _itemsSource;
     [Notify] private Orientation _orientation = Orientation.Vertical;
 
-    public Func<IView<TItem>?> ItemTemplate { get; set; } = DefaultItemTemplate;
+    public Func<IView<TItem>> ItemTemplate { get; set; } = DefaultItemTemplate;
 
     public IReadOnlyList<IView<TItem>> Children => _children.AsReadOnly();
 
@@ -41,7 +41,6 @@ public sealed partial class ItemsControl<TDataContext, TItem>
                 var consumer = new OcConsumer();
                 _children = observableDeclarative
                     .Selecting(i => CreateItem(i))
-                    .OfTypeComputing<IView<TItem>>()
                     .For(consumer);
                 _itemsDisposables.Add(consumer);
             }
@@ -50,16 +49,15 @@ public sealed partial class ItemsControl<TDataContext, TItem>
                 var consumer = new OcConsumer();
                 _children = readOnlyObservableDeclarative
                     .Selecting(i => CreateItem(i))
-                    .OfTypeComputing<IView<TItem>>()
                     .For(consumer);
                 _itemsDisposables.Add(consumer);
             }
             else if (_itemsSource is ICollection<TItem> collection)
-                _children = collection.Select(CreateItem).OfType<IView<TItem>>().ToList();
+                _children = collection.Select(CreateItem).ToList();
             else if (_itemsSource is TItem[] array)
-                _children = array.Select(CreateItem).OfType<IView<TItem>>().ToList();
+                _children = array.Select(CreateItem).ToList();
             else if (_itemsSource is IEnumerable<TItem> enumerable)
-                _children = enumerable.Select(CreateItem).OfType<IView<TItem>>().ToList();
+                _children = enumerable.Select(CreateItem).ToList();
             else if (value is null)
             {
                 _children = new List<IView<TItem>>();
@@ -173,14 +171,14 @@ public sealed partial class ItemsControl<TDataContext, TItem>
         return neededRerender;
     }
 
-    private IView<TItem>? CreateItem(TItem dataContext)
+    private IView<TItem> CreateItem(TItem dataContext)
     {
         var newItem = ItemTemplate();
         AddChild(newItem, _ => dataContext);
         return newItem;
     }
 
-    private static IView<TItem>? DefaultItemTemplate() => null;
+    private static IView<TItem> DefaultItemTemplate() => new TextBlock<TItem> {Text = typeof(TItem).ToString()};
 
     public void ChildVisibilityChanged(IView child)
     {

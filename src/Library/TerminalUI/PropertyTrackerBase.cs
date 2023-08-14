@@ -101,7 +101,7 @@ public abstract class PropertyTrackerBase<TSource, TExpressionResult> : IDisposa
         }
         else if (expression is UnaryExpression unaryExpression)
         {
-            SavePropertyPath(FindReactiveProperties(unaryExpression.Operand, properties));
+            return FindReactiveProperties(unaryExpression.Operand, properties);
         }
         else if (expression is ParameterExpression parameterExpression)
         {

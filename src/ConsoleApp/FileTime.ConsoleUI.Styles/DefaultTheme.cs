@@ -6,6 +6,7 @@ namespace FileTime.ConsoleUI.Styles;
 
 public record Theme(
     IColor? DefaultForegroundColor,
+    IColor? DefaultForegroundAccentColor,
     IColor? DefaultBackgroundColor,
     IColor? ElementColor,
     IColor? ContainerColor,
@@ -23,6 +24,7 @@ public static class DefaultThemes
 {
     public static Theme Color256Theme => new(
         DefaultForegroundColor: Color256Colors.Foregrounds.Gray,
+        DefaultForegroundAccentColor: Color256Colors.Foregrounds.Red,
         DefaultBackgroundColor: null,
         ElementColor: Color256Colors.Foregrounds.Gray,
         ContainerColor: Color256Colors.Foregrounds.Blue,
@@ -42,6 +44,7 @@ public static class DefaultThemes
 
     public static Theme ConsoleColorTheme => new(
         DefaultForegroundColor: ConsoleColors.Foregrounds.Gray,
+        DefaultForegroundAccentColor: ConsoleColors.Foregrounds.Red,
         DefaultBackgroundColor: null,
         ElementColor: ConsoleColors.Foregrounds.Gray,
         ContainerColor: ConsoleColors.Foregrounds.Blue,

@@ -36,6 +36,7 @@ public static class Startup
     {
         services.TryAddSingleton<MainWindow>();
         services.TryAddSingleton<CommandPalette>();
+        services.TryAddSingleton<Dialogs>();
         return services;
     }
 }

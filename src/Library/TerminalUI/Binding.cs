@@ -78,7 +78,13 @@ public sealed class Binding<TDataContext, TExpressionResult, TResult> : Property
             value = _fallbackValue;
         }
 
-        _targetProperty.SetValue(_propertySource, value);
+        try
+        {
+            _targetProperty.SetValue(_propertySource, value);
+        }
+        catch
+        {
+        }
     }
 
     public override void Dispose()

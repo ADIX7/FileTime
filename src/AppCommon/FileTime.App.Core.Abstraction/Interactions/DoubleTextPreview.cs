@@ -1,14 +1,15 @@
 ﻿using System.Reactive.Subjects;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
+using PropertyChanged.SourceGenerator;
 
 namespace FileTime.App.Core.Interactions;
 
-public class DoubleTextPreview : IPreviewElement
+public partial class DoubleTextPreview : IPreviewElement
 {
-    public IObservable<List<ItemNamePart>> Text1 { get; init; } = new BehaviorSubject<List<ItemNamePart>>(new());
-    public IObservable<List<ItemNamePart>> Text2 { get; init; } = new BehaviorSubject<List<ItemNamePart>>(new());
-    
-    public PreviewType PreviewType => PreviewType.DoubleTextList;
+    [Notify] private string _text1;
+    [Notify] private string _text2;
+
+    public PreviewType PreviewType => PreviewType.DoubleText;
     object IPreviewElement.PreviewType => PreviewType;
 }

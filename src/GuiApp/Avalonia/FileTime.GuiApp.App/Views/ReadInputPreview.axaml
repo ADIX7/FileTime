@@ -1,0 +1,62 @@
+﻿<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="FileTime.GuiApp.App.Views.ReadInputPreview"
+    x:CompileBindings="True"
+    x:DataType="interactionsCore:IPreviewElement"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactions="clr-namespace:FileTime.App.Core.Interactions;assembly=FileTime.App.Core.Abstraction"
+    xmlns:interactionsCore="clr-namespace:FileTime.Core.Interactions;assembly=FileTime.Core.Abstraction"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="clr-namespace:FileTime.GuiApp.App.Views"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid IsVisible="{Binding PreviewType, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:PreviewType.PreviewList}}">
+            <ItemsControl ItemsSource="{Binding Items}" x:DataType="interactions:PreviewList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <views:ReadInputPreview />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+        <Grid IsVisible="{Binding PreviewType, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:PreviewType.DoubleItemNamePartList}}">
+            <Grid ColumnDefinitions="*,*" x:DataType="interactions:DoubleTextPreview">
+                <TextBlock Text="{Binding Text1}" />
+                <TextBlock Grid.Column="1" Text="{Binding Text2}" />
+            </Grid>
+        </Grid>
+        <Grid IsVisible="{Binding PreviewType, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:PreviewType.DoubleItemNamePartList}}">
+            <Grid ColumnDefinitions="*,*" x:DataType="interactions:DoubleItemNamePartListPreview">
+                <ItemsControl ItemsSource="{Binding ItemNameParts1}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Text}" TextDecorations="{Binding IsSpecial, Converter={StaticResource TextDecorationConverter}}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding ItemNameParts2}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Text}" TextDecorations="{Binding IsSpecial, Converter={StaticResource TextDecorationConverter}}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

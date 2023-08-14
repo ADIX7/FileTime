@@ -9,6 +9,7 @@ public class FocusManager : IFocusManager
 {
     private readonly IRenderEngine _renderEngine;
     private IFocusable? _focused;
+    private DateTime _focusLostCandidateTime = DateTime.MinValue;
 
     public IFocusable? Focused
     {
@@ -18,15 +19,30 @@ public class FocusManager : IFocusManager
             {
                 var visible = _focused.IsVisible;
                 var parent = _focused.VisualParent;
-                while (parent != null)
+                while (parent != null && visible)
                 {
-                    visible &= parent.IsVisible;
+                    visible = parent.IsVisible && visible;
                     parent = parent.VisualParent;
                 }
 
                 if (!visible)
                 {
-                    _focused = null;
+                    if (_focusLostCandidateTime != DateTime.MinValue)
+                    {
+                        if (DateTime.Now - _focusLostCandidateTime > TimeSpan.FromMilliseconds(10))
+                        {
+                            _focused = null;
+                            _focusLostCandidateTime = DateTime.MinValue;
+                        }
+                    }
+                    else
+                    {
+                        _focusLostCandidateTime = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    _focusLostCandidateTime = DateTime.MinValue;
                 }
             }
 
@@ -53,52 +69,66 @@ public class FocusManager : IFocusManager
     {
         if (keyEventArgs.Handled || Focused is null) return;
 
-        if (keyEventArgs.Key == Keys.Tab && keyEventArgs.SpecialKeysStatus.IsShiftPressed)
+        if (keyEventArgs is {Key: Keys.Tab, SpecialKeysStatus.IsShiftPressed: true})
         {
-            FocusElement(
-                (views, from) => views.TakeWhile(x => x != from).Reverse(),
-                c => c.Reverse()
-            );
+            FocusLastElement(Focused);
             keyEventArgs.Handled = true;
         }
         else if (keyEventArgs.Key == Keys.Tab)
         {
-            FocusElement(
-                (views, from) => views.SkipWhile(x => x != from).Skip(1),
-                c => c
-            );
+            FocusFirstElement(Focused);
             keyEventArgs.Handled = true;
         }
     }
 
+    public void FocusFirstElement(IView view, IView? from = null) =>
+        FocusElement(
+            view,
+            (views, fromView) => views.SkipWhile(x => x != fromView).Skip(1),
+            c => c.Reverse(),
+            from
+        );
+
+    public void FocusLastElement(IView view, IView? from = null) =>
+        FocusElement(
+            view,
+            (views, fromView) => views.TakeWhile(x => x != fromView).Reverse(),
+            c => c,
+            from
+        );
+
 
     private void FocusElement(
+        IView view,
         Func<IEnumerable<IView>, IView, IEnumerable<IView>> fromChildSelector,
-        Func<IEnumerable<IView>, IEnumerable<IView>> childSelector
+        Func<IEnumerable<IView>, IEnumerable<IView>> childSelector,
+        IView? from = null
     )
     {
         if (Focused is null) return;
 
-        var element = FindElement(Focused,
-            Focused,
-            fromChildSelector
+        var element = FindElement(view,
+            view,
+            fromChildSelector,
+            from: from
         );
 
         if (element is null)
         {
-            var topParent = FindLastFocusParent(Focused);
+            var topParent = FindLastFocusParent(view);
             element = FindElement(
                 topParent,
-                Focused,
+                view,
                 fromChildSelector,
-                childSelector
+                childSelector,
+                from
             );
         }
 
         if (element is null) return;
 
         _renderEngine.RequestRerender(element);
-        _renderEngine.RequestRerender(Focused);
+        _renderEngine.RequestRerender(view);
         Focused = element;
     }
 

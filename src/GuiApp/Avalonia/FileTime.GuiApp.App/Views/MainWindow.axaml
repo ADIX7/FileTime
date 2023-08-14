@@ -840,72 +840,7 @@
                         <ItemsControl Grid.Row="1" ItemsSource="{Binding DialogService.ReadInput.Value.Previews}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid>
-                                        <Grid IsVisible="{Binding PreviewType, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appInteractions:PreviewType.DoubleTextList}}">
-                                            <ItemsControl ItemsSource="{Binding Items}" x:DataType="appInteractions:DoubleTextListPreview">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Grid ColumnDefinitions="*,*">
-                                                            <ItemsControl ItemsSource="{Binding Text1^}">
-                                                                <ItemsControl.ItemsPanel>
-                                                                    <ItemsPanelTemplate>
-                                                                        <StackPanel Orientation="Horizontal" />
-                                                                    </ItemsPanelTemplate>
-                                                                </ItemsControl.ItemsPanel>
-                                                                <ItemsControl.ItemTemplate>
-                                                                    <DataTemplate>
-                                                                        <TextBlock Text="{Binding Text}" TextDecorations="{Binding IsSpecial, Converter={StaticResource TextDecorationConverter}}" />
-                                                                    </DataTemplate>
-                                                                </ItemsControl.ItemTemplate>
-                                                            </ItemsControl>
-                                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding Text2^}">
-                                                                <ItemsControl.ItemsPanel>
-                                                                    <ItemsPanelTemplate>
-                                                                        <StackPanel Orientation="Horizontal" />
-                                                                    </ItemsPanelTemplate>
-                                                                </ItemsControl.ItemsPanel>
-                                                                <ItemsControl.ItemTemplate>
-                                                                    <DataTemplate>
-                                                                        <TextBlock Text="{Binding Text}" TextDecorations="{Binding IsSpecial, Converter={StaticResource TextDecorationConverter}}" />
-                                                                    </DataTemplate>
-                                                                </ItemsControl.ItemTemplate>
-                                                            </ItemsControl>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                            <!--DataGrid ItemsSource="{Binding Items}" x:DataType="appInteractions:DoubleTextListPreview">
-                                                <DataGrid.Columns>
-                                                    <DataGridTemplateColumn>
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <ItemsControl
-                                                                    HorizontalAlignment="Stretch"
-                                                                    ItemsSource="{Binding Text1^}"
-                                                                    Margin="5,0,0,0"
-                                                                    VerticalAlignment="Center">
-                                                                    <ItemsControl.ItemsPanel>
-                                                                        <ItemsPanelTemplate>
-                                                                            <StackPanel Orientation="Horizontal" />
-                                                                        </ItemsPanelTemplate>
-                                                                    </ItemsControl.ItemsPanel>
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate x:DataType="x:String">
-                                                                            <Grid>
-                                                                                <TextBlock Text="{Binding}" />
-                                                                            </Grid>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-                                                </DataGrid.Columns>
-                                            </DataGrid-->
-                                        </Grid>
-
-
-                                    </Grid>
+                                    <local:ReadInputPreview />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

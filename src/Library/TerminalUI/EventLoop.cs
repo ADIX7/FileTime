@@ -1,13 +1,19 @@
-﻿namespace TerminalUI;
+﻿using Microsoft.Extensions.Logging;
+
+namespace TerminalUI;
 
 public class EventLoop : IEventLoop
 {
     private readonly IApplicationContext _applicationContext;
+    private readonly ILogger<EventLoop> _logger;
     private readonly List<Action> _permanentQueue = new();
 
-    public EventLoop(IApplicationContext applicationContext)
+    public EventLoop(
+        IApplicationContext applicationContext,
+        ILogger<EventLoop> logger)
     {
         _applicationContext = applicationContext;
+        _logger = logger;
     }
 
     public void AddToPermanentQueue(Action action) => _permanentQueue.Add(action);
@@ -26,7 +32,14 @@ public class EventLoop : IEventLoop
     {
         foreach (var action in _permanentQueue)
         {
-            action();
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while processing action in permanent queue");
+            }
         }
     }
 }

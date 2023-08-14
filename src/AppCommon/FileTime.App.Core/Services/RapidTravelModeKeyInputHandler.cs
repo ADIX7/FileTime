@@ -54,9 +54,10 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
 
     public async Task HandleInputKey(GeneralKeyEventArgs args)
     {
-        var keyString = args.Key.Humanize();
+        if (args.Key is not { } key) return;
+        var keyString = key.Humanize();
 
-        if (args.Key == Keys.Escape)
+        if (key == Keys.Escape)
         {
             args.Handled = true;
             if (_modalService.OpenModals.Count > 0)
@@ -68,7 +69,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
                 await CallCommandAsync(ExitRapidTravelCommand.Instance);
             }
         }
-        else if (args.Key == Keys.Backspace)
+        else if (key == Keys.Backspace)
         {
             if (_appState.RapidTravelText.Value!.Length > 0)
             {
@@ -87,7 +88,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
         }
         else
         {
-            var currentKeyAsList = new List<KeyConfig> {new(args.Key)};
+            var currentKeyAsList = new List<KeyConfig> {new(key)};
             var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(currentKeyAsList));
             if (selectedCommandBinding != null)
             {

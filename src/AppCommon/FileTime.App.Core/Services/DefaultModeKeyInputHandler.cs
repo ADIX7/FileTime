@@ -61,8 +61,9 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
 
     public async Task HandleInputKey(GeneralKeyEventArgs args)
     {
+        if (args.Key is not { } key) return;
         var keyWithModifiers = new KeyConfig(
-            args.Key, 
+            key, 
             shift: args.SpecialKeysStatus.IsShiftPressed, 
             alt: args.SpecialKeysStatus.IsAltPressed, 
             ctrl: args.SpecialKeysStatus.IsCtrlPressed);
@@ -72,7 +73,7 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
         var selectedCommandBinding = _keyboardConfigurationService.UniversalCommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
         selectedCommandBinding ??= _keyboardConfigurationService.CommandBindings.FirstOrDefault(c => c.Keys.AreKeysEqual(_appState.PreviousKeys));
 
-        if (args.Key == Keys.Escape)
+        if (key == Keys.Escape)
         {
             var doGeneralReset = _appState.PreviousKeys.Count > 1;
 

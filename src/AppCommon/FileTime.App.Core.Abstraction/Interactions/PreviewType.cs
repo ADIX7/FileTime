@@ -3,5 +3,6 @@
 public enum PreviewType
 {
     DoubleText,
-    DoubleTextList
+    PreviewList,
+    DoubleItemNamePartList
 }

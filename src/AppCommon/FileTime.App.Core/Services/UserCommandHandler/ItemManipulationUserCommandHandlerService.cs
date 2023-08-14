@@ -83,7 +83,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         {
             list.AddRange(_markedItems.Value!);
         }
-        else if(_currentSelectedItem?.Value?.BaseItem?.FullName is { } selectedItemName)
+        else if (_currentSelectedItem?.Value?.BaseItem?.FullName is { } selectedItemName)
         {
             list.Add(selectedItemName);
         }
@@ -217,12 +217,15 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         {
             BehaviorSubject<string> templateRegexValue = new(string.Empty);
             BehaviorSubject<string> newNameSchemaValue = new(string.Empty);
+            List<IDisposable> subscriptions = new();
 
             var itemsToRename = new List<FullName>(_markedItems.Value!);
 
             var itemPreviews = itemsToRename
                 .Select(item =>
                     {
+                        var preview = new DoubleItemNamePartListPreview();
+
                         var originalName = item.GetName();
 
                         var decoratedOriginalName = templateRegexValue.Select(templateRegex =>
@@ -284,17 +287,19 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
                             }
                         );
 
-                        var preview = new DoubleTextPreview
-                        {
-                            Text1 = decoratedOriginalName,
-                            Text2 = text2
-                        };
+                        subscriptions.Add(decoratedOriginalName.Subscribe(
+                            n => preview.ItemNameParts1 = n
+                        ));
+                        subscriptions.Add(text2.Subscribe(
+                            n => preview.ItemNameParts2 = n
+                        ));
+
                         return preview;
                     }
                 );
 
-            DoubleTextListPreview doubleTextListPreview = new();
-            doubleTextListPreview.Items.AddRange(itemPreviews);
+            PreviewList previewList = new();
+            previewList.Items.AddRange(itemPreviews);
 
             var templateRegex = new TextInputElement("Template regex", string.Empty,
                 s => templateRegexValue.OnNext(s!));
@@ -303,7 +308,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
             var success = await _userCommunicationService.ReadInputs(
                 new[] {templateRegex, newNameSchema},
-                new[] {doubleTextListPreview}
+                new[] {previewList}
             );
 
             if (success)
@@ -338,6 +343,8 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
                     itemsToMove.AddRange(itemsToMoveWithPath);
                 }
             }
+
+            subscriptions.ForEach(s => s.Dispose());
         }
         else
         {
@@ -460,6 +467,6 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
         _selectedTab?.ClearMarkedItems();
     }
 
-    private async Task AddCommandAsync(ICommand command) 
+    private async Task AddCommandAsync(ICommand command)
         => await _commandScheduler.AddCommand(command);
 }

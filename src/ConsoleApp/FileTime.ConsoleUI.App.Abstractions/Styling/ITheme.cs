@@ -5,6 +5,7 @@ namespace FileTime.ConsoleUI.App.Styling;
 public interface ITheme
 {
     IColor? DefaultForegroundColor { get; }
+    IColor? DefaultForegroundAccentColor { get; }
     IColor? DefaultBackgroundColor { get; }
     IColor? ElementColor { get; }
     IColor? ContainerColor { get; }

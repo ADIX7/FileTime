@@ -6,7 +6,6 @@ using FileTime.ConsoleUI.App.Controls;
 using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Enums;
 using FileTime.Core.Interactions;
-using GeneralInputKey;
 using TerminalUI;
 using TerminalUI.Color;
 using TerminalUI.Controls;
@@ -23,57 +22,23 @@ public class MainWindow
     private readonly IApplicationContext _applicationContext;
     private readonly ITheme _theme;
     private readonly CommandPalette _commandPalette;
+    private readonly Dialogs _dialogs;
     private readonly Lazy<IView> _root;
 
-    private ItemsControl<IRootViewModel, IInputElement> _readInputs = null!;
-    private IInputElement? _inputElementToFocus;
-    private Action? _readInputChildHandlerUnsubscriber;
 
     public MainWindow(
         IRootViewModel rootViewModel,
         IApplicationContext applicationContext,
         ITheme theme,
-        CommandPalette commandPalette)
+        CommandPalette commandPalette,
+        Dialogs dialogs)
     {
         _rootViewModel = rootViewModel;
         _applicationContext = applicationContext;
         _theme = theme;
         _commandPalette = commandPalette;
+        _dialogs = dialogs;
         _root = new Lazy<IView>(Initialize);
-
-        rootViewModel.FocusReadInputElement += element =>
-        {
-            _inputElementToFocus = element;
-            UpdateReadInputsFocus();
-        };
-    }
-
-    private void UpdateReadInputsFocus()
-    {
-        foreach (var readInputsChild in _readInputs.Children)
-        {
-            if (readInputsChild.DataContext == _inputElementToFocus)
-            {
-                if (FindFocusable(readInputsChild) is { } focusable)
-                {
-                    focusable.Focus();
-                    _inputElementToFocus = null;
-                    break;
-                }
-            }
-        }
-
-        IFocusable? FindFocusable(IView view)
-        {
-            if (view is IFocusable focusable) return focusable;
-            foreach (var viewVisualChild in view.VisualChildren)
-            {
-                if (FindFocusable(viewVisualChild) is { } focusableChild)
-                    return focusableChild;
-            }
-
-            return null;
-        }
     }
 
     public IEnumerable<IView> RootViews() => new[]
@@ -93,28 +58,7 @@ public class MainWindow
             {
                 MainContent(),
                 _commandPalette.View(),
-                Dialogs(),
-            }
-        };
-
-        ((INotifyPropertyChanged) _readInputs).PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(ItemsControl<object, object>.Children))
-            {
-                _readInputChildHandlerUnsubscriber?.Invoke();
-                UpdateReadInputsFocus();
-                if (_readInputs.Children is INotifyCollectionChanged notifyCollectionChanged)
-                {
-                    notifyCollectionChanged.CollectionChanged += NotifyCollectionChangedEventHandler;
-                    _readInputChildHandlerUnsubscriber = () => { notifyCollectionChanged.CollectionChanged -= NotifyCollectionChangedEventHandler; };
-                }
-
-                void NotifyCollectionChangedEventHandler(
-                    object? sender,
-                    NotifyCollectionChangedEventArgs e)
-                {
-                    UpdateReadInputsFocus();
-                }
+                _dialogs.View(),
             }
         };
         return root;
@@ -441,146 +385,4 @@ public class MainWindow
             (ItemViewMode.MarkedAlternative, _) => _theme.MarkedItemBackgroundColor,
             _ => throw new NotImplementedException()
         };
-
-    private IView<IRootViewModel> Dialogs()
-    {
-        var root = new Border<IRootViewModel>()
-        {
-            Margin = 5,
-            BorderThickness = 1,
-            Content = new Grid<IRootViewModel>()
-            {
-                ChildInitializer =
-                {
-                    ReadInputs()
-                }
-            }
-        };
-
-        root.Bind(
-            root,
-            d => d.DialogService.ReadInput.Value != null,
-            v => v.IsVisible);
-        return root;
-    }
-
-    private ItemsControl<IRootViewModel, IInputElement> ReadInputs()
-    {
-        var readInputs = new ItemsControl<IRootViewModel, IInputElement>
-            {
-                IsFocusBoundary = true,
-                ItemTemplate = () =>
-                {
-                    var root = new Grid<IInputElement>
-                    {
-                        ColumnDefinitionsObject = "* *",
-                        ChildInitializer =
-                        {
-                            new TextBlock<IInputElement>()
-                                .Setup(t => t.Bind(
-                                    t,
-                                    c => c.Label,
-                                    tb => tb.Text
-                                )),
-                            new Grid<IInputElement>()
-                            {
-                                Extensions =
-                                {
-                                    new GridPositionExtension(1, 0)
-                                },
-                                ChildInitializer =
-                                {
-                                    new Border<IInputElement>
-                                        {
-                                            Content =
-                                                new TextBox<IInputElement>()
-                                                    .Setup(t => t.Bind(
-                                                        t,
-                                                        d => ((TextInputElement) d).Value,
-                                                        tb => tb.Text,
-                                                        v => v ?? string.Empty,
-                                                        fallbackValue: string.Empty
-                                                    ))
-                                                    .Setup(t => t.Bind(
-                                                        t,
-                                                        d => ((TextInputElement) d).Label,
-                                                        tb => tb.Name))
-                                                    .WithTextHandler((tb, t) =>
-                                                    {
-                                                        if (tb.DataContext is TextInputElement textInputElement)
-                                                            textInputElement.Value = t;
-                                                    })
-                                        }
-                                        .Setup(t => t.Bind(
-                                            t,
-                                            d => d.Type == InputType.Text,
-                                            tb => tb.IsVisible
-                                        )),
-                                    new Border<IInputElement>
-                                        {
-                                            Content =
-                                                new TextBox<IInputElement>
-                                                    {
-                                                        PasswordChar = '*'
-                                                    }
-                                                    .Setup(t => t.Bind(
-                                                        t,
-                                                        d => ((PasswordInputElement) d).Value,
-                                                        tb => tb.Text,
-                                                        v => v ?? string.Empty,
-                                                        fallbackValue: string.Empty
-                                                    ))
-                                                    .Setup(t => t.Bind(
-                                                        t,
-                                                        d => ((PasswordInputElement) d).Label,
-                                                        tb => tb.Name))
-                                                    .WithTextHandler((tb, t) =>
-                                                    {
-                                                        if (tb.DataContext is PasswordInputElement textInputElement)
-                                                            textInputElement.Value = t;
-                                                    })
-                                        }
-                                        .Setup(t => t.Bind(
-                                            t,
-                                            d => d.Type == InputType.Password,
-                                            tb => tb.IsVisible
-                                        ))
-                                    //TODO: OptionInputElement
-                                }
-                            }
-                        }
-                    };
-
-                    return root;
-                }
-            }
-            .Setup(t => t.Bind(
-                t,
-                d => d.DialogService.ReadInput.Value.Inputs,
-                c => c.ItemsSource,
-                v => v
-            ));
-
-        readInputs.WithKeyHandler((_, e) =>
-        {
-            if (e.Key == Keys.Enter)
-            {
-                if (_rootViewModel.DialogService.ReadInput.Value is { } readInputsViewModel)
-                    readInputsViewModel.Process();
-
-                e.Handled = true;
-            }
-            else if (e.Key == Keys.Escape)
-            {
-                if (_rootViewModel.DialogService.ReadInput.Value is { } readInputsViewModel)
-                    readInputsViewModel.Cancel();
-
-                e.Handled = true;
-            }
-        });
-
-        _readInputs = readInputs;
-
-        return readInputs;
-    }
 }

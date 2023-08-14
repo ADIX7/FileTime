@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
@@ -321,6 +322,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
     public virtual TChild AddChild<TChild>(TChild child) where TChild : IView<T>
     {
+        Debug.Assert(child != null);
         child.DataContext = DataContext;
         var mapper = new DataContextMapper<T, T>(this, child, d => d);
         SetupNewChild(child, mapper);
@@ -331,6 +333,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
     public virtual TChild AddChild<TChild, TDataContext>(TChild child, Func<T?, TDataContext?> dataContextMapper)
         where TChild : IView<TDataContext>
     {
+        Debug.Assert(child != null);
         child.DataContext = dataContextMapper(DataContext);
         var mapper = new DataContextMapper<T, TDataContext>(this, child, dataContextMapper);
         SetupNewChild(child, mapper);
@@ -395,7 +398,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
             _disposables.Clear();
             KeyHandlers.Clear();
-            
+
             Disposed?.Invoke(this);
         }
     }
@@ -411,7 +414,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
     {
         foreach (var keyHandler in KeyHandlers)
         {
-            keyHandler((TConcrete)this, keyEventArgs);
+            keyHandler((TConcrete) this, keyEventArgs);
             if (keyEventArgs.Handled) return;
         }
     }
@@ -427,6 +430,6 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
     public TConcrete WithKeyHandler(Action<TConcrete, GeneralKeyEventArgs> keyHandler)
     {
         KeyHandlers.Add(keyHandler);
-        return (TConcrete)this;
+        return (TConcrete) this;
     }
 }

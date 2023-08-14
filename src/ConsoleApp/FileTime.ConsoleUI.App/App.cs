@@ -1,12 +1,11 @@
 ﻿using System.Collections.Specialized;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.KeyInputHandling;
 using GeneralInputKey;
+using Microsoft.Extensions.Logging;
 using TerminalUI;
 using TerminalUI.ConsoleDrivers;
-using TerminalUI.Traits;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -27,6 +26,7 @@ public class App : IApplication
     private readonly IApplicationContext _applicationContext;
     private readonly IConsoleDriver _consoleDriver;
     private readonly IAppState _appState;
+    private readonly ILogger<App> _logger;
     private readonly IKeyInputHandlerService _keyInputHandlerService;
     private readonly Thread _renderThread;
 
@@ -38,7 +38,8 @@ public class App : IApplication
         MainWindow mainWindow,
         IApplicationContext applicationContext,
         IConsoleDriver consoleDriver,
-        IAppState appState)
+        IAppState appState,
+        ILogger<App> logger)
     {
         _lifecycleService = lifecycleService;
         _keyInputHandlerService = keyInputHandlerService;
@@ -48,6 +49,7 @@ public class App : IApplication
         _applicationContext = applicationContext;
         _consoleDriver = consoleDriver;
         _appState = appState;
+        _logger = logger;
 
         _renderThread = new Thread(Render);
     }
@@ -74,12 +76,13 @@ public class App : IApplication
 
         while (_applicationContext.IsRunning)
         {
-            if (_consoleDriver.CanRead())
+            try
             {
-                var key = _consoleDriver.ReadKey();
-
-                if (_appKeyService.MapKey(key.Key) is { } mappedKey)
+                if (_consoleDriver.CanRead())
                 {
+                    var key = _consoleDriver.ReadKey();
+
+                    var mappedKey = _appKeyService.MapKey(key.Key);
                     SpecialKeysStatus specialKeysStatus = new(
                         (key.Modifiers & ConsoleModifiers.Alt) != 0,
                         (key.Modifiers & ConsoleModifiers.Shift) != 0,
@@ -100,11 +103,15 @@ public class App : IApplication
                         _applicationContext.FocusManager.HandleKeyInput(keyEventArgs);
                     }
 
-                    if (focused is null || (!keyEventArgs.Handled && KeysToFurtherProcess.Contains(keyEventArgs.Key)))
+                    if (focused is null || (keyEventArgs is {Handled: false, Key: { } k} && KeysToFurtherProcess.Contains(k)))
                     {
                         _keyInputHandlerService.HandleKeyInput(keyEventArgs, specialKeysStatus);
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while handling key input");
             }
 
             Thread.Sleep(10);
