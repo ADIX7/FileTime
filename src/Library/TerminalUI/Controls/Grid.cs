@@ -301,13 +301,15 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
         var x = positionExtension?.Column ?? 0;
         var y = positionExtension?.Row ?? 0;
 
-        if (x > columns)
+        Debug.Assert(x < columns, "Child requests column outside of grid");
+        if (x >= columns)
         {
             Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", view, x, y);
             x = 0;
         }
 
-        if (y > rows)
+        Debug.Assert(y < rows, "Child requests row outside of grid");
+        if (y >= rows)
         {
             Logger?.LogWarning("Child {Child} is out of bounds, x: {X}, y: {Y}", view, x, y);
             y = 0;
@@ -339,15 +341,27 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
         Span<int> allWidth = stackalloc int[columns * rows];
         Span<int> allHeight = stackalloc int[columns * rows];
 
+        //Store the largest width and height for a cell
         foreach (var child in Children)
         {
             var childSize = child.GetRequestedSize();
             var (x, y) = GetViewColumnAndRow(child, columns, rows);
 
-            allWidth.SetToMatrix(childSize.Width, x, y, columns);
-            allHeight.SetToMatrix(childSize.Height, x, y, columns);
+            var currentWidth = allWidth.GetFromMatrix(x, y, columns);
+            var currentHeight = allHeight.GetFromMatrix(x, y, columns);
+
+            if (currentWidth < childSize.Width)
+            {
+                allWidth.SetToMatrix(childSize.Width, x, y, columns);
+            }
+
+            if (currentHeight < childSize.Height)
+            {
+                allHeight.SetToMatrix(childSize.Height, x, y, columns);
+            }
         }
 
+        //Calculate the width and height for each column and row
         Span<int> columnWidths = stackalloc int[columns];
         Span<int> rowHeights = stackalloc int[rows];
 
@@ -407,6 +421,7 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
                 usedHeight += rowHeights[i];
         }
 
+        //Calculate the width and height for each column and row with star value if size of the current grid is given
         if (size.IsSome)
         {
             var widthLeft = size.Value.Width - usedWidth;

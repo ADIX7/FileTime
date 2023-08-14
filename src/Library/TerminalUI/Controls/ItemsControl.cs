@@ -38,15 +38,21 @@ public sealed partial class ItemsControl<TDataContext, TItem>
 
             if (_itemsSource is ObservableCollection<TItem> observableDeclarative)
             {
+                var consumer = new OcConsumer();
                 _children = observableDeclarative
                     .Selecting(i => CreateItem(i))
-                    .OfTypeComputing<IView<TItem>>();
+                    .OfTypeComputing<IView<TItem>>()
+                    .For(consumer);
+                _itemsDisposables.Add(consumer);
             }
             else if (_itemsSource is ReadOnlyObservableCollection<TItem> readOnlyObservableDeclarative)
             {
+                var consumer = new OcConsumer();
                 _children = readOnlyObservableDeclarative
                     .Selecting(i => CreateItem(i))
-                    .OfTypeComputing<IView<TItem>>();
+                    .OfTypeComputing<IView<TItem>>()
+                    .For(consumer);
+                _itemsDisposables.Add(consumer);
             }
             else if (_itemsSource is ICollection<TItem> collection)
                 _children = collection.Select(CreateItem).OfType<IView<TItem>>().ToList();

@@ -97,6 +97,7 @@ public class App : IApplication
                     if (focused is { })
                     {
                         focused.HandleKeyInput(keyEventArgs);
+                        _applicationContext.FocusManager.HandleKeyInput(keyEventArgs);
                     }
 
                     if (focused is null || (!keyEventArgs.Handled && KeysToFurtherProcess.Contains(keyEventArgs.Key)))

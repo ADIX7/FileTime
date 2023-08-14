@@ -34,6 +34,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
     [Notify] private IApplicationContext? _applicationContext;
     [Notify] private bool _attached;
     [Notify] private IView? _visualParent;
+    [Notify] private bool _isFocusBoundary;
 
     protected List<Action<TConcrete, GeneralKeyEventArgs>> KeyHandlers { get; } = new();
     protected ObservableCollection<IView> VisualChildren { get; } = new();

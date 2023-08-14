@@ -123,7 +123,7 @@ public class MainWindow
     private Grid<IRootViewModel> MainContent() =>
         new()
         {
-            RowDefinitionsObject = "Auto * Auto",
+            RowDefinitionsObject = "Auto * Auto Auto",
             ChildInitializer =
             {
                 new Grid<IRootViewModel>
@@ -194,7 +194,28 @@ public class MainWindow
                     {
                         PossibleCommands()
                     }
-                }
+                },
+                new ItemsControl<IRootViewModel, string>
+                    {
+                        MaxHeight = 5,
+                        Extensions =
+                        {
+                            new GridPositionExtension(0, 3)
+                        },
+                        ItemTemplate = () =>
+                        {
+                            return new TextBlock<string>()
+                                .Setup(t => t.Bind(
+                                    t,
+                                    dc => dc,
+                                    t => t.Text));
+                        }
+                    }
+                    .Setup(i => i.Bind(
+                        i,
+                        root => root.AppState.PopupTexts,
+                        c => c.ItemsSource
+                    ))
             }
         };
 
@@ -447,6 +468,7 @@ public class MainWindow
     {
         var readInputs = new ItemsControl<IRootViewModel, IInputElement>
             {
+                IsFocusBoundary = true,
                 ItemTemplate = () =>
                 {
                     var root = new Grid<IInputElement>
@@ -479,6 +501,10 @@ public class MainWindow
                                                         v => v ?? string.Empty,
                                                         fallbackValue: string.Empty
                                                     ))
+                                                    .Setup(t => t.Bind(
+                                                        t,
+                                                        d => ((TextInputElement) d).Label,
+                                                        tb => tb.Name))
                                                     .WithTextHandler((tb, t) =>
                                                     {
                                                         if (tb.DataContext is TextInputElement textInputElement)
@@ -504,6 +530,10 @@ public class MainWindow
                                                         v => v ?? string.Empty,
                                                         fallbackValue: string.Empty
                                                     ))
+                                                    .Setup(t => t.Bind(
+                                                        t,
+                                                        d => ((PasswordInputElement) d).Label,
+                                                        tb => tb.Name))
                                                     .WithTextHandler((tb, t) =>
                                                     {
                                                         if (tb.DataContext is PasswordInputElement textInputElement)
@@ -537,14 +567,14 @@ public class MainWindow
             {
                 if (_rootViewModel.DialogService.ReadInput.Value is { } readInputsViewModel)
                     readInputsViewModel.Process();
-                
+
                 e.Handled = true;
             }
             else if (e.Key == Keys.Escape)
             {
                 if (_rootViewModel.DialogService.ReadInput.Value is { } readInputsViewModel)
                     readInputsViewModel.Cancel();
-                
+
                 e.Handled = true;
             }
         });

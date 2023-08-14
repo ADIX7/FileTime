@@ -31,6 +31,7 @@ public interface IView : INotifyPropertyChanged, IDisposableCollection
     RenderMethod RenderMethod { get; set; }
     IView? VisualParent { get; set; }
     ReadOnlyObservableCollection<IView> VisualChildren { get; }
+    bool IsFocusBoundary { get; set; }
     event Action<IView> Disposed;
 
     Size GetRequestedSize();

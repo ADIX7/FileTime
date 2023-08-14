@@ -9,8 +9,7 @@ public class ToastMessageSink : ILogEventSink
 {
     private readonly Lazy<IDialogService> _dialogService;
 
-    public ToastMessageSink(
-        IServiceProvider serviceProvider)
+    public ToastMessageSink(IServiceProvider serviceProvider)
     {
         _dialogService = new Lazy<IDialogService>(() => serviceProvider.GetRequiredService<IDialogService>());
     }
