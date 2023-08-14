@@ -1,4 +1,4 @@
-using DynamicData;
+using System.Collections.ObjectModel;
 using FileTime.Core.Command;
 using FileTime.Core.Models;
 
@@ -8,7 +8,7 @@ public interface ICommandScheduler
 {
     Task AddCommand(ICommand command, int? batchId = null, bool toNewBatch = false);
     IObservable<FullName> ContainerToRefresh { get; }
-    IObservable<IChangeSet<ParallelCommands>> CommandsToRun { get; }
+    ReadOnlyObservableCollection<ParallelCommands> CommandsToRun { get; }
     bool IsRunningEnabled { get; }
     void RefreshContainer(FullName container);
     Task SetRunningEnabledAsync(bool value);

@@ -1,20 +1,22 @@
-using DynamicData.Alias;
-using FileTime.Core.Extensions;
-using FileTime.Core.Models;
+using System.Collections.ObjectModel;
 using FileTime.Core.Timeline;
+using ObservableComputations;
 
 namespace FileTime.App.Core.ViewModels.Timeline;
 
-public class TimelineViewModel : ITimelineViewModel
+public class TimelineViewModel : ITimelineViewModel, IDisposable
 {
-    public BindedCollection<IParallelCommandsViewModel> ParallelCommandsGroups { get; }
+    private readonly OcConsumer _ocConsumer = new();
+    public ObservableCollection<IParallelCommandsViewModel> ParallelCommandsGroups { get; }
 
     public TimelineViewModel(ICommandScheduler commandScheduler)
     {
         ParallelCommandsGroups =
             commandScheduler
                 .CommandsToRun
-                .Select(p => new ParallelCommandsViewModel(p) as IParallelCommandsViewModel)
-                .ToBindedCollection();
+                .Selecting(p => new ParallelCommandsViewModel(p) as IParallelCommandsViewModel)
+                .For(_ocConsumer);
     }
+
+    public void Dispose() => _ocConsumer.Dispose();
 }

@@ -15,5 +15,7 @@ public interface ITheme
     IColor? MarkedSelectedItemBackgroundColor { get; }
     IColor? SelectedItemColor { get; }
     IColor? SelectedTabBackgroundColor { get; }
+    IColor? WarningForegroundColor { get; }
+    IColor? ErrorForegroundColor { get; }
     ListViewItemTheme ListViewItemTheme { get; }
 }

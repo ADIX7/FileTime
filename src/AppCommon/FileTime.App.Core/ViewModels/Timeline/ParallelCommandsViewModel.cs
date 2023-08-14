@@ -1,19 +1,21 @@
-using DynamicData.Alias;
-using FileTime.Core.Extensions;
-using FileTime.Core.Models;
+using System.Collections.ObjectModel;
 using FileTime.Core.Timeline;
+using ObservableComputations;
 
 namespace FileTime.App.Core.ViewModels.Timeline;
 
-public class ParallelCommandsViewModel : IParallelCommandsViewModel
+public class ParallelCommandsViewModel : IParallelCommandsViewModel, IDisposable
 {
-    public BindedCollection<ICommandTimeStateViewModel> Commands { get; }
+    private readonly OcConsumer _ocConsumer = new();
+    public ObservableCollection<ICommandTimeStateViewModel> Commands { get; }
 
     public ParallelCommandsViewModel(ParallelCommands parallelCommands)
     {
         Commands = parallelCommands
             .Commands
-            .Select(c => new CommandTimeStateViewModel(c) as ICommandTimeStateViewModel)
-            .ToBindedCollection();
+            .Selecting(c => new CommandTimeStateViewModel(c) as ICommandTimeStateViewModel)
+            .For(_ocConsumer);
     }
+
+    public void Dispose() => _ocConsumer.Dispose();
 }

@@ -321,7 +321,7 @@
                             </ia:DataTriggerBehavior>
                         </i:Interaction.Behaviors>
                         <ItemsControl
-                            ItemsSource="{Binding TimelineViewModel.ParallelCommandsGroups.Collection}"
+                            ItemsSource="{Binding TimelineViewModel.ParallelCommandsGroups}"
                             VerticalAlignment="Stretch"
                             x:Name="CommandGroups">
                             <ItemsControl.ItemsPanel>
@@ -333,7 +333,7 @@
                                 <DataTemplate>
                                     <Grid ColumnDefinitions="300,10" VerticalAlignment="Stretch">
                                         <ScrollViewer>
-                                            <ItemsControl ItemsSource="{Binding Commands.Collection}">
+                                            <ItemsControl ItemsSource="{Binding Commands}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border

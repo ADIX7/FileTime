@@ -1,8 +1,8 @@
-using FileTime.Core.Models;
+using System.Collections.ObjectModel;
 
 namespace FileTime.App.Core.ViewModels.Timeline;
 
 public interface IParallelCommandsViewModel
 {
-    BindedCollection<ICommandTimeStateViewModel> Commands { get; }
+    ObservableCollection<ICommandTimeStateViewModel> Commands { get; }
 }

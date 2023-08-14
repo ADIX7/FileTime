@@ -1,21 +1,17 @@
-using DynamicData;
+using System.Collections.ObjectModel;
 using FileTime.Core.Command;
-using FileTime.Core.Extensions;
-using FileTime.Core.Models;
 
 namespace FileTime.Core.Timeline;
 
-public class ParallelCommands : IDisposable
+public class ParallelCommands
 {
     private static ushort _idCounter;
-    private readonly SourceList<CommandTimeState> _commands;
+    private readonly ObservableCollection<CommandTimeState> _commands;
     private PointInTime? _startTime;
 
     public ushort Id { get; }
 
-    public IObservable<IChangeSet<CommandTimeState>> Commands { get; }
-
-    public BindedCollection<CommandTimeState> CommandsCollection { get; }
+    public ReadOnlyObservableCollection<CommandTimeState> Commands { get; }
     public int CommandCount => _commands.Count;
 
     public PointInTime? Result { get; private set; }
@@ -37,10 +33,8 @@ public class ParallelCommands : IDisposable
     {
         Id = _idCounter++;
 
-        _commands = new SourceList<CommandTimeState>();
-        _commands.Edit((innerList) => innerList.AddRange(commands));
-        Commands = _commands.Connect();
-        CommandsCollection = Commands.ToBindedCollection();
+        _commands = new ObservableCollection<CommandTimeState>(commands);
+        Commands = new(_commands);
 
         Result = result;
     }
@@ -85,7 +79,7 @@ public class ParallelCommands : IDisposable
 
     public async Task RemoveCommand(ICommand command)
     {
-        var commandTimeState = _commands.Items.First(c => c.Command == command);
+        var commandTimeState = _commands.First(c => c.Command == command);
         _commands.Remove(commandTimeState);
         await RefreshResult();
     }
@@ -93,7 +87,7 @@ public class ParallelCommands : IDisposable
     public async Task<PointInTime?> RefreshResult()
     {
         var result = StartTime;
-        foreach (var commandTimeState in _commands.Items)
+        foreach (var commandTimeState in _commands)
         {
             await commandTimeState.UpdateStateAsync(result);
             if (result != null)
@@ -112,10 +106,5 @@ public class ParallelCommands : IDisposable
 
         Result = result;
         return Result;
-    }
-
-    public void Dispose()
-    {
-        CommandsCollection.Dispose();
     }
 }

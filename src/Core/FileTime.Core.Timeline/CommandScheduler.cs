@@ -1,6 +1,6 @@
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using DynamicData;
 using FileTime.Core.Command;
 using FileTime.Core.Models;
 
@@ -8,7 +8,7 @@ namespace FileTime.Core.Timeline;
 
 public class CommandScheduler : ICommandScheduler
 {
-    private readonly SourceList<ParallelCommands> _commandsToRun = new();
+    private readonly ObservableCollection<ParallelCommands> _commandsToRun = new();
     private readonly List<ICommandExecutor> _commandExecutors = new();
     private readonly Subject<FullName> _containerToRefresh = new();
 
@@ -29,11 +29,11 @@ public class CommandScheduler : ICommandScheduler
         }
     }
 
-    public IObservable<IChangeSet<ParallelCommands>> CommandsToRun { get; }
+    public ReadOnlyObservableCollection<ParallelCommands> CommandsToRun { get; }
 
     public CommandScheduler(ILocalCommandExecutor localExecutor)
     {
-        CommandsToRun = _commandsToRun.Connect();
+        CommandsToRun = new(_commandsToRun);
 
         ContainerToRefresh = _containerToRefresh.AsObservable();
 
@@ -55,16 +55,16 @@ public class CommandScheduler : ICommandScheduler
             }
             else if (toNewBatch)
             {
-                batchToAdd = new ParallelCommands(_commandsToRun.Items.Last().Result);
+                batchToAdd = new ParallelCommands(_commandsToRun.Last().Result);
                 _commandsToRun.Add(batchToAdd);
             }
-            else if (batchId != null && _commandsToRun.Items.First(b => b.Id == batchId) is { } parallelCommands)
+            else if (batchId != null && _commandsToRun.First(b => b.Id == batchId) is { } parallelCommands)
             {
                 batchToAdd = parallelCommands;
             }
             else
             {
-                batchToAdd = _commandsToRun.Items.First();
+                batchToAdd = _commandsToRun.First();
             }
 
             await batchToAdd.AddCommand(command);
@@ -88,13 +88,13 @@ public class CommandScheduler : ICommandScheduler
     {
         if (!_isRunningEnabled) return;
 
-        var commandsToExecute = _commandsToRun.Items.FirstOrDefault()?.CommandsCollection.Collection;
+        var commandsToExecute = _commandsToRun.FirstOrDefault()?.Commands;
         if (commandsToExecute is null || commandsToExecute.All(c => c.ExecutionState != ExecutionState.Initializing && c.ExecutionState != ExecutionState.Waiting)) return;
 
         foreach (var commandToExecute in commandsToExecute)
         {
             if (commandToExecute.ExecutionState != ExecutionState.Waiting
-                && commandToExecute.ExecutionState != ExecutionState.Initializing )
+                && commandToExecute.ExecutionState != ExecutionState.Initializing)
             {
                 continue;
             }
@@ -113,17 +113,14 @@ public class CommandScheduler : ICommandScheduler
         return _commandExecutors[0];
     }
 
-    private async void ExecutorOnCommandFinished(object? sender, ICommand command)
-    {
+    private async void ExecutorOnCommandFinished(object? sender, ICommand command) =>
         await RunWithLockAsync(async () =>
         {
             var firstCommandBlock = _commandsToRun
-                .Items
                 .FirstOrDefault();
             var state = firstCommandBlock
-                ?.CommandsCollection
-                .Collection
-                ?.FirstOrDefault(c => c.Command == command);
+                ?.Commands
+                .FirstOrDefault(c => c.Command == command);
 
             if (state is null) return;
 
@@ -137,13 +134,12 @@ public class CommandScheduler : ICommandScheduler
                 }
             }
         });
-    }
 
     private async Task RefreshCommands()
     {
         var currentTime = PointInTime.CreateEmpty();
 
-        foreach (var batch in _commandsToRun.Items)
+        foreach (var batch in _commandsToRun)
         {
             currentTime = await batch.SetStartTimeAsync(currentTime);
         }
