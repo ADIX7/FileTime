@@ -1,13 +1,11 @@
 ﻿using System.Collections.Specialized;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
+using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.KeyInputHandling;
-using FileTime.Core.Command.CreateContainer;
-using FileTime.Core.Models;
-using FileTime.Core.Timeline;
 using GeneralInputKey;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TerminalUI;
 using TerminalUI.ConsoleDrivers;
 
@@ -23,40 +21,36 @@ public class App : IApplication
 
     private readonly ILifecycleService _lifecycleService;
 
-    private readonly IConsoleAppState _consoleAppState;
-
     private readonly IAppKeyService<ConsoleKey> _appKeyService;
     private readonly MainWindow _mainWindow;
     private readonly IApplicationContext _applicationContext;
     private readonly IConsoleDriver _consoleDriver;
     private readonly IAppState _appState;
     private readonly ILogger<App> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly IKeyInputHandlerService _keyInputHandlerService;
     private readonly Thread _renderThread;
 
     public App(
         ILifecycleService lifecycleService,
         IKeyInputHandlerService keyInputHandlerService,
-        IConsoleAppState consoleAppState,
         IAppKeyService<ConsoleKey> appKeyService,
         MainWindow mainWindow,
         IApplicationContext applicationContext,
         IConsoleDriver consoleDriver,
         IAppState appState,
-        ILogger<App> logger,
-        IServiceProvider serviceProvider)
+        IOptions<ConsoleApplicationConfiguration> consoleApplicationConfiguration,
+        ILogger<App> logger)
     {
         _lifecycleService = lifecycleService;
         _keyInputHandlerService = keyInputHandlerService;
-        _consoleAppState = consoleAppState;
         _appKeyService = appKeyService;
         _mainWindow = mainWindow;
         _applicationContext = applicationContext;
         _consoleDriver = consoleDriver;
         _appState = appState;
         _logger = logger;
-        _serviceProvider = serviceProvider;
+        
+        _applicationContext.SupportUtf8Output = !consoleApplicationConfiguration.Value.DisableUtf8;
 
         _renderThread = new Thread(Render);
     }
@@ -80,12 +74,6 @@ public class App : IApplication
         _renderThread.Start();
 
         var focusManager = _applicationContext.FocusManager;
-
-        var command = _serviceProvider.GetRequiredService<CreateContainerCommand>();
-        command.Init(new FullName("local/C:/Test3"), "container1");
-        var scheduler = _serviceProvider.GetRequiredService<ICommandScheduler>();
-
-        scheduler.AddCommand(command);
 
         while (_applicationContext.IsRunning)
         {

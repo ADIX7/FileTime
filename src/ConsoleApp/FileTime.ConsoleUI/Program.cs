@@ -9,8 +9,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Debugging;
+using TerminalUI;
+using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
+using TerminalUI.Styling;
+using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
 
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 IConsoleDriver? driver = null;
 
 (AppDataRoot, EnvironmentName) = Init.InitDevelopment();
@@ -27,6 +32,11 @@ try
     Log.Logger.Debug("Using driver {Driver}", driver.GetType().Name);
     
     driver.SetCursorVisible(false);
+    
+    var applicationContext = serviceProvider.GetRequiredService<IApplicationContext>();
+    var theme = serviceProvider.GetRequiredService<ITheme>();
+
+    applicationContext.Theme = theme.ConsoleTheme;
 
     var app = serviceProvider.GetRequiredService<IApplication>();
     app.Run();

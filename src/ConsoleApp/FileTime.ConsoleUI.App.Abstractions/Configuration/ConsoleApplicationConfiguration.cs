@@ -3,4 +3,5 @@
 public class ConsoleApplicationConfiguration
 {
     public string? ConsoleDriver { get; set; }
+    public bool DisableUtf8 { get; set; }
 }

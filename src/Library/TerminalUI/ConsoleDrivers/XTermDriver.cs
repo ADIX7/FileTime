@@ -7,6 +7,7 @@ namespace TerminalUI.ConsoleDrivers;
 public sealed class XTermDriver : DotnetDriver
 {
     private Position _initialCursorPosition;
+
     public override bool Init()
     {
         _initialCursorPosition = GetCursorPosition();

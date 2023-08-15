@@ -153,6 +153,8 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
 
     protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
+        if (size.Width == 0 || size.Height == 0) return false;
+
         return WithCalculatedSize(
             renderContext,
             new Option<Size>(size, true),
@@ -177,29 +179,34 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
             );
             var viewsByPosition = GroupViewsByPosition(columnWidths.Length, rowHeights.Length);
 
+            var anyRendered = false;
             for (var column = 0; column < columnWidths.Length; column++)
             {
                 for (var row = 0; row < rowHeights.Length; row++)
                 {
-                    RenderViewsByPosition(
-                        childContext,
-                        position,
-                        columnWidths,
-                        rowHeights,
-                        viewsByPosition,
-                        column,
-                        row,
-                        forceRerenderChildren
-                    );
+                    anyRendered =
+                        RenderViewsByPosition(
+                            childContext,
+                            position,
+                            size,
+                            columnWidths,
+                            rowHeights,
+                            viewsByPosition,
+                            column,
+                            row,
+                            forceRerenderChildren
+                        )
+                        || anyRendered;
                 }
             }
 
-            return true;
+            return anyRendered;
         }
     }
 
-    private void RenderViewsByPosition(RenderContext context,
+    private bool RenderViewsByPosition(RenderContext context,
         Position gridPosition,
+        Size gridSize,
         ReadOnlySpan<int> columnWidths,
         ReadOnlySpan<int> rowHeights,
         IReadOnlyDictionary<(int, int), List<IView>> viewsByPosition,
@@ -207,7 +214,7 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
         int row,
         IReadOnlyList<IView> forceRerenderChildren)
     {
-        if (!viewsByPosition.TryGetValue((column, row), out var children)) return;
+        if (!viewsByPosition.TryGetValue((column, row), out var children)) return false;
 
         var width = columnWidths[column];
         var height = rowHeights[row];
@@ -220,6 +227,18 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
             column,
             row
         );
+
+        if (renderPosition.X + width > gridPosition.X + gridSize.Width)
+        {
+            renderSize = renderSize with {Width = gridPosition.X + gridSize.Width - renderPosition.X};
+        }
+
+        if (renderPosition.Y + height > gridPosition.Y + gridSize.Height)
+        {
+            renderSize = renderSize with {Height = gridPosition.Y + gridSize.Height - renderPosition.Y};
+        }
+
+        if (renderSize.Width == 0 || renderSize.Height == 0) return false;
 
         var needsRerender = children.Any(forceRerenderChildren.Contains);
         if (needsRerender)
@@ -250,6 +269,8 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
                 );
             }
         }
+
+        return true;
 
         static Position GetRenderPosition(
             Position gridPosition,

@@ -67,7 +67,21 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
     public virtual Size GetRequestedSize()
     {
-        var size = CalculateSize();
+        Size size;
+        if (Width.HasValue && Height.HasValue)
+        {
+            size = new Size(Width.Value, Height.Value);
+        }
+        else
+        {
+            size = CalculateSize();
+
+            if (Width.HasValue)
+                size = size with {Width = Width.Value};
+
+            if (Height.HasValue)
+                size = size with {Height = Height.Value};
+        }
 
         if (MinWidth.HasValue && size.Width < MinWidth.Value)
             size = size with {Width = MinWidth.Value};
@@ -220,8 +234,14 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
                 text = text[..size.Width];
             }
 
-            driver.SetCursorPosition(currentPosition);
-            driver.Write(text);
+            try
+            {
+                driver.SetCursorPosition(currentPosition);
+                driver.Write(text);
+            }
+            catch
+            {
+            }
         }
     }
 
@@ -289,6 +309,18 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
             driver.Write(contentString);
         }
     }
+    protected void SetColor(IConsoleDriver driver, IColor? foreground, IColor? background)
+    {
+        driver.ResetColor();
+        if (foreground is not null)
+        {
+            driver.SetForegroundColor(foreground);
+        }
+        if(background is not null)
+        {
+            driver.SetBackgroundColor(background);
+        }
+    }
 
     protected void SetColorsForDriver(in RenderContext renderContext)
     {
@@ -296,15 +328,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
         var foreground = Foreground ?? renderContext.Foreground;
         var background = Background ?? renderContext.Background;
-        if (foreground is not null)
-        {
-            driver.SetForegroundColor(foreground);
-        }
-
-        if (background is not null)
-        {
-            driver.SetBackgroundColor(background);
-        }
+        SetColor(driver, foreground, background);
     }
 
     public TChild CreateChild<TChild>() where TChild : IView<T>, new()

@@ -1,6 +1,6 @@
-﻿using FileTime.App.Core.Models;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using TerminalUI.ConsoleDrivers;
+using TerminalUI.Styling;
 
 namespace TerminalUI;
 
@@ -12,4 +12,6 @@ public interface IApplicationContext
     ILoggerFactory? LoggerFactory { get; }
     char EmptyCharacter { get; }
     IFocusManager FocusManager { get; }
+    bool SupportUtf8Output { get; set; }
+    ITheme? Theme { get; set; }
 }

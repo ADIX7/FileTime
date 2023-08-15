@@ -131,6 +131,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalUI.DependencyInject
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalUI.Tests", "Library\TerminalUI.Tests\TerminalUI.Tests.csproj", "{30B6E288-F314-494B-8550-1329BFF664D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalUI.Examples", "Library\TerminalUI.Examples\TerminalUI.Examples.csproj", "{14AC0667-A660-4CFC-960E-77E5E5B46D15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -357,6 +359,10 @@ Global
 		{30B6E288-F314-494B-8550-1329BFF664D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30B6E288-F314-494B-8550-1329BFF664D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30B6E288-F314-494B-8550-1329BFF664D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14AC0667-A660-4CFC-960E-77E5E5B46D15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14AC0667-A660-4CFC-960E-77E5E5B46D15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14AC0667-A660-4CFC-960E-77E5E5B46D15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14AC0667-A660-4CFC-960E-77E5E5B46D15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -418,6 +424,7 @@ Global
 		{91AE5B64-042B-4660-A8E8-D247E6E14A1E} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 		{E72F6430-0E6E-4818-BD5F-114893ACB18E} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 		{30B6E288-F314-494B-8550-1329BFF664D2} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
+		{14AC0667-A660-4CFC-960E-77E5E5B46D15} = {07CA18AA-B85D-4DEE-BB86-F569F6029853}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

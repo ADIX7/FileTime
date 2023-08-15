@@ -78,16 +78,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
         _placeholderRenderDone = false;
 
         var driver = renderContext.ConsoleDriver;
-        driver.ResetColor();
-        if (foreground is not null)
-        {
-            driver.SetForegroundColor(foreground);
-        }
-
-        if (background is not null)
-        {
-            driver.SetBackgroundColor(background);
-        }
+        SetColor(driver, foreground, background);
 
         RenderText(_textLines, driver, position, size, TransformText);
 

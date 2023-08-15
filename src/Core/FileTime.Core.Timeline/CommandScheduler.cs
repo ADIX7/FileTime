@@ -13,7 +13,7 @@ public class CommandScheduler : ICommandScheduler
     private readonly Subject<FullName> _containerToRefresh = new();
 
     private readonly object _guard = new();
-    private bool _isRunningEnabled = /*true*/ false;
+    private bool _isRunningEnabled = true;
     private bool _resourceIsInUse;
 
     public IObservable<FullName> ContainerToRefresh { get; }

@@ -1,7 +1,7 @@
-﻿using FileTime.App.Core.Models;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TerminalUI.ConsoleDrivers;
+using TerminalUI.Styling;
 
 namespace TerminalUI;
 
@@ -16,8 +16,10 @@ public class ApplicationContext : IApplicationContext
     public IFocusManager FocusManager => _focusManager.Value;
     public ILoggerFactory? LoggerFactory => _loggerFactory.Value;
     public IRenderEngine RenderEngine => _renderEngine.Value;
+    public ITheme? Theme { get; set; }
     public bool IsRunning { get; set; }
     public char EmptyCharacter { get; init; } = ' ';
+    public bool SupportUtf8Output { get; set; } = true;
 
     public ApplicationContext(IServiceProvider serviceProvider)
     {

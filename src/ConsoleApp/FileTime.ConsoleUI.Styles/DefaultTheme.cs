@@ -1,8 +1,14 @@
 ﻿using FileTime.ConsoleUI.App;
 using FileTime.ConsoleUI.App.Styling;
 using TerminalUI.Color;
+using TerminalUI.Styling;
+using TerminalUI.Styling.Controls;
+using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
 
 namespace FileTime.ConsoleUI.Styles;
+
+using IConsoleTheme = TerminalUI.Styling.ITheme;
+using ConsoleTheme = TerminalUI.Styling.Theme;
 
 public record Theme(
     IColor? DefaultForegroundColor,
@@ -19,6 +25,7 @@ public record Theme(
     IColor? WarningForegroundColor,
     IColor? ErrorForegroundColor,
     ListViewItemTheme ListViewItemTheme,
+    IConsoleTheme? ConsoleTheme,
     Type? ForegroundColors,
     Type? BackgroundColors) : ITheme, IColorSampleProvider;
 
@@ -42,6 +49,19 @@ public static class DefaultThemes
             SelectedBackgroundColor: Color256Colors.Backgrounds.Gray,
             SelectedForegroundColor: Color256Colors.Foregrounds.Black
         ),
+        ConsoleTheme: new ConsoleTheme
+        {
+            ControlThemes = new ControlThemes
+            {
+                ProgressBar = new ProgressBarTheme
+                {
+                    ForegroundColor = Color256Colors.Foregrounds.Blue,
+                    BackgroundColor = Color256Colors.Backgrounds.Gray,
+                    UnfilledForeground = Color256Colors.Foregrounds.Gray,
+                    UnfilledBackground = Color256Colors.Backgrounds.Gray,
+                }
+            }
+        },
         ForegroundColors: typeof(Color256Colors.Foregrounds),
         BackgroundColors: typeof(Color256Colors.Backgrounds)
     );
@@ -64,6 +84,19 @@ public static class DefaultThemes
             SelectedBackgroundColor: ConsoleColors.Backgrounds.Gray,
             SelectedForegroundColor: ConsoleColors.Foregrounds.Black
         ),
+        ConsoleTheme: new ConsoleTheme
+        {
+            ControlThemes = new ControlThemes
+            {
+                ProgressBar = new ProgressBarTheme
+                {
+                    ForegroundColor = ConsoleColors.Foregrounds.Blue,
+                    BackgroundColor = ConsoleColors.Backgrounds.Gray,
+                    UnfilledForeground = ConsoleColors.Foregrounds.Gray,
+                    UnfilledBackground = ConsoleColors.Backgrounds.Gray
+                }
+            }
+        },
         ForegroundColors: typeof(ConsoleColors.Foregrounds),
         BackgroundColors: typeof(ConsoleColors.Backgrounds)
     );

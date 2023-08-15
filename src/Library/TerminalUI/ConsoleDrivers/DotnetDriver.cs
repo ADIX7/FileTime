@@ -21,7 +21,7 @@ public class DotnetDriver : IConsoleDriver
         var (x, y) = Console.GetCursorPosition();
         return new(x, y);
     }
-    
+
     public void Write(string text) => Console.Out.Write(text);
     public void Write(ReadOnlySpan<char> text) => Console.Out.Write(text);
 
@@ -33,6 +33,7 @@ public class DotnetDriver : IConsoleDriver
     public ConsoleKeyInfo ReadKey() => Console.ReadKey(true);
 
     public void SetCursorVisible(bool cursorVisible) => Console.CursorVisible = cursorVisible;
+
     public virtual void SetForegroundColor(IColor foreground)
     {
         if (foreground is not ConsoleColor consoleColor) throw new NotSupportedException();
