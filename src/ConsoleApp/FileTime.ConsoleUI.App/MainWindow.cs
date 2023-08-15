@@ -1,17 +1,13 @@
-﻿using System.Collections.Specialized;
-using System.ComponentModel;
-using FileTime.App.Core.Models.Enums;
+﻿using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Controls;
 using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Enums;
-using FileTime.Core.Interactions;
 using TerminalUI;
 using TerminalUI.Color;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
-using TerminalUI.Traits;
 using TerminalUI.ViewExtensions;
 
 namespace FileTime.ConsoleUI.App;
@@ -23,6 +19,7 @@ public class MainWindow
     private readonly ITheme _theme;
     private readonly CommandPalette _commandPalette;
     private readonly Dialogs _dialogs;
+    private readonly Timeline _timeline;
     private readonly Lazy<IView> _root;
 
 
@@ -31,13 +28,15 @@ public class MainWindow
         IApplicationContext applicationContext,
         ITheme theme,
         CommandPalette commandPalette,
-        Dialogs dialogs)
+        Dialogs dialogs,
+        Timeline timeline)
     {
         _rootViewModel = rootViewModel;
         _applicationContext = applicationContext;
         _theme = theme;
         _commandPalette = commandPalette;
         _dialogs = dialogs;
+        _timeline = timeline;
         _root = new Lazy<IView>(Initialize);
     }
 
@@ -67,7 +66,7 @@ public class MainWindow
     private Grid<IRootViewModel> MainContent() =>
         new()
         {
-            RowDefinitionsObject = "Auto * Auto Auto",
+            RowDefinitionsObject = "Auto * Auto Auto Auto",
             ChildInitializer =
             {
                 new Grid<IRootViewModel>
@@ -128,27 +127,19 @@ public class MainWindow
                         SelectedsItemsView().WithExtension(new GridPositionExtension(2, 0)),
                     }
                 },
-                new Grid<IRootViewModel>
-                {
-                    Extensions =
-                    {
-                        new GridPositionExtension(0, 2)
-                    },
-                    ChildInitializer =
-                    {
-                        PossibleCommands()
-                    }
-                },
                 new ItemsControl<IRootViewModel, string>
                     {
                         MaxHeight = 5,
                         Extensions =
                         {
-                            new GridPositionExtension(0, 3)
+                            new GridPositionExtension(0, 2)
                         },
                         ItemTemplate = () =>
                         {
-                            return new TextBlock<string>()
+                            return new TextBlock<string>
+                                {
+                                    Foreground = _theme.WarningForegroundColor
+                                }
                                 .Setup(t => t.Bind(
                                     t,
                                     dc => dc,
@@ -159,7 +150,19 @@ public class MainWindow
                         i,
                         root => root.AppState.PopupTexts,
                         c => c.ItemsSource
-                    ))
+                    )),
+                new Grid<IRootViewModel>
+                {
+                    Extensions =
+                    {
+                        new GridPositionExtension(0, 3)
+                    },
+                    ChildInitializer =
+                    {
+                        PossibleCommands()
+                    }
+                },
+                _timeline.View().WithExtension(new GridPositionExtension(0, 4)),
             }
         };
 
@@ -341,7 +344,8 @@ public class MainWindow
             textBlock.Bind(
                 textBlock,
                 dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
-                tb => tb.Foreground
+                tb => tb.Foreground,
+                v => v
             );
             textBlock.Bind(
                 textBlock,

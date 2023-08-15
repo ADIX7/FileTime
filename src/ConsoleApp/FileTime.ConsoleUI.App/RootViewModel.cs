@@ -1,5 +1,6 @@
 ﻿using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.ViewModels;
+using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 
@@ -13,18 +14,21 @@ public class RootViewModel : IRootViewModel
     public IConsoleAppState AppState { get; }
     public ICommandPaletteViewModel CommandPalette { get; }
     public IDialogService DialogService { get; }
+    public ITimelineViewModel TimelineViewModel { get; }
     public event Action<IInputElement>? FocusReadInputElement;
 
     public RootViewModel(
         IConsoleAppState appState,
         IPossibleCommandsViewModel possibleCommands,
         ICommandPaletteViewModel commandPalette,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        ITimelineViewModel timelineViewModel)
     {
         AppState = appState;
         PossibleCommands = possibleCommands;
         CommandPalette = commandPalette;
         DialogService = dialogService;
+        TimelineViewModel = timelineViewModel;
 
         DialogService.ReadInput.PropertyChanged += (o, e) =>
         {

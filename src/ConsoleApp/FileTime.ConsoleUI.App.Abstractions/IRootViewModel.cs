@@ -1,5 +1,6 @@
 ﻿using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.ViewModels;
+using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 
@@ -13,5 +14,6 @@ public interface IRootViewModel
     string MachineName { get; }
     ICommandPaletteViewModel CommandPalette { get; }
     IDialogService DialogService { get; }
+    ITimelineViewModel TimelineViewModel { get; }
     event Action<IInputElement>? FocusReadInputElement;
 }

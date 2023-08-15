@@ -2,11 +2,12 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using TerminalUI.Controls;
+using TerminalUI.ExpressionTrackers;
 using TerminalUI.Traits;
 
 namespace TerminalUI;
 
-public sealed class Binding<TDataContext, TExpressionResult, TResult> : PropertyTrackerBase<TDataContext, TExpressionResult>
+public sealed class Binding<TDataContext, TExpressionResult, TResult> : PropertyTrackerBase<TDataContext, TExpressionResult>, IDisposable
 {
     private readonly Func<TDataContext, TExpressionResult> _dataContextMapper;
     private IView<TDataContext> _dataSourceView;
@@ -15,6 +16,7 @@ public sealed class Binding<TDataContext, TExpressionResult, TResult> : Property
     private readonly Func<TExpressionResult, TResult> _converter;
     private readonly TResult? _fallbackValue;
     private IDisposableCollection? _propertySourceDisposableCollection;
+    private readonly string _parameterName;
 
     public Binding(
         IView<TDataContext> dataSourceView,
@@ -23,7 +25,7 @@ public sealed class Binding<TDataContext, TExpressionResult, TResult> : Property
         PropertyInfo targetProperty,
         Func<TExpressionResult, TResult> converter,
         TResult? fallbackValue = default
-    ) : base(() => dataSourceView.DataContext, dataSourceExpression)
+    ) : base(dataSourceExpression)
     {
         ArgumentNullException.ThrowIfNull(dataSourceView);
         ArgumentNullException.ThrowIfNull(dataSourceExpression);
@@ -37,14 +39,14 @@ public sealed class Binding<TDataContext, TExpressionResult, TResult> : Property
         _converter = converter;
         _fallbackValue = fallbackValue;
 
-        UpdateTrackers();
+        _parameterName = dataSourceExpression.Parameters[0].Name!;
+        Parameters.SetValue(_parameterName, dataSourceView.DataContext);
+
 
         dataSourceView.PropertyChanged += View_PropertyChanged;
-        UpdateTargetProperty();
+        Update(true);
 
         AddToSourceDisposables(propertySource);
-
-        dataSourceView.AddDisposable(this);
     }
 
     private void AddToSourceDisposables(object? propertySource)
@@ -60,18 +62,23 @@ public sealed class Binding<TDataContext, TExpressionResult, TResult> : Property
     {
         if (e.PropertyName != nameof(IView<TDataContext>.DataContext)) return;
 
-        UpdateTrackers();
-        UpdateTargetProperty();
+        Parameters.SetValue(_parameterName, _dataSourceView.DataContext);
+        Update(true);
     }
 
-    protected override void Update(string propertyPath) => UpdateTargetProperty();
-
-    private void UpdateTargetProperty()
+    protected override void Update(bool couldCompute)
     {
-        TResult value;
+        TResult? value;
         try
         {
-            value = _converter(_dataContextMapper(_dataSourceView.DataContext));
+            if (couldCompute)
+            {
+                value = _converter(_dataContextMapper(_dataSourceView.DataContext));
+            }
+            else
+            {
+                value = _fallbackValue;
+            }
         }
         catch
         {
@@ -87,9 +94,9 @@ public sealed class Binding<TDataContext, TExpressionResult, TResult> : Property
         }
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
-        base.Dispose();
+        //base.Dispose();
         _propertySourceDisposableCollection?.RemoveDisposable(this);
         _dataSourceView.RemoveDisposable(this);
         _dataSourceView.PropertyChanged -= View_PropertyChanged;

@@ -28,7 +28,7 @@ public static class ViewExtensions
     public static TItem WithPropertyChangedHandler<TItem, TExpressionResult>(
         this TItem dataSource,
         Expression<Func<TItem, TExpressionResult>> dataSourceExpression,
-        Action<string, bool, TExpressionResult> handler)
+        Action<bool, TExpressionResult> handler)
     {
         new PropertyChangedHandler<TItem, TExpressionResult>
         (

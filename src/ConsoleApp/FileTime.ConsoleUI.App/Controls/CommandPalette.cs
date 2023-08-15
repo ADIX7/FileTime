@@ -129,7 +129,7 @@ public class CommandPalette
         };
 
         root.WithPropertyChangedHandler(r => r.IsVisible,
-            (_, _, isVisible) =>
+            (_, isVisible) =>
             {
                 if (isVisible)
                 {

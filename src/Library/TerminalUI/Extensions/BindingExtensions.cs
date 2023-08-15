@@ -4,7 +4,7 @@ using TerminalUI.Controls;
 
 namespace TerminalUI.Extensions;
 
-public static class Binding
+public static class BindingExtensions
 {
     public static Binding<TDataContext, TResult, TResult> Bind<TView, TDataContext, TResult>(
         this TView targetView,

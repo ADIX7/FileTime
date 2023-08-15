@@ -2,44 +2,48 @@
 
 namespace TerminalUI;
 
-public sealed class PropertyChangedHandler<TItem, TExpressionResult> : PropertyTrackerBase<TItem, TExpressionResult>, IDisposable
+public sealed class PropertyChangedHandler<TItem, TExpressionResult> : PropertyTrackerBase<TItem, TExpressionResult>
 {
     private readonly TItem _dataSource;
-    private readonly Action<string, bool, TExpressionResult?> _handler;
-    private readonly PropertyTrackTreeItem? _propertyTrackTreeItem;
+    private readonly Action<bool, TExpressionResult?> _handler;
     private readonly Func<TItem, TExpressionResult> _propertyValueGenerator;
 
     public PropertyChangedHandler(
         TItem dataSource,
         Expression<Func<TItem, TExpressionResult>> dataSourceExpression,
-        Action<string, bool, TExpressionResult?> handler
-    ) : base(() => dataSource, dataSourceExpression)
+        Action<bool, TExpressionResult?> handler
+    ) : base(dataSourceExpression!)
     {
-        _dataSource = dataSource;
-        _handler = handler;
         ArgumentNullException.ThrowIfNull(dataSource);
         ArgumentNullException.ThrowIfNull(dataSourceExpression);
         ArgumentNullException.ThrowIfNull(handler);
+        
+        _dataSource = dataSource;
+        _handler = handler;
+        
+        Parameters.SetValue(dataSourceExpression.Parameters[0].Name!, dataSource);
 
-        _propertyTrackTreeItem = CreateTrackingTree(dataSourceExpression);
         _propertyValueGenerator = dataSourceExpression.Compile();
-        UpdateTrackers();
+        Update(true);
     }
 
-    protected override void Update(string propertyPath)
+    protected override void Update(bool couldCompute)
     {
         TExpressionResult? value = default;
         var parsed = false;
 
         try
         {
-            value = _propertyValueGenerator(_dataSource);
-            parsed = true;
+            if (couldCompute)
+            {
+                value = _propertyValueGenerator(_dataSource);
+                parsed = true;
+            }
         }
         catch
         {
         }
 
-        _handler(propertyPath, parsed, value);
+        _handler(parsed, value);
     }
 }

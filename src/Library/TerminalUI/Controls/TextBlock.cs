@@ -27,11 +27,11 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
     public TextBlock()
     {
-        this.Bind(
+        /*this.Bind(
             this,
             dc => dc == null ? string.Empty : dc.ToString(),
             tb => tb.Text
-        );
+        );*/
 
         RerenderProperties.Add(nameof(Text));
         RerenderProperties.Add(nameof(TextAlignment));

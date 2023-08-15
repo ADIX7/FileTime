@@ -16,6 +16,8 @@ public record Theme(
     IColor? MarkedSelectedItemBackgroundColor,
     IColor? SelectedItemColor,
     IColor? SelectedTabBackgroundColor,
+    IColor? WarningForegroundColor,
+    IColor? ErrorForegroundColor,
     ListViewItemTheme ListViewItemTheme,
     Type? ForegroundColors,
     Type? BackgroundColors) : ITheme, IColorSampleProvider;
@@ -34,6 +36,8 @@ public static class DefaultThemes
         MarkedSelectedItemBackgroundColor: Color256Colors.Foregrounds.Yellow,
         SelectedItemColor: Color256Colors.Foregrounds.Black,
         SelectedTabBackgroundColor: Color256Colors.Backgrounds.Green,
+        WarningForegroundColor: Color256Colors.Foregrounds.Yellow,
+        ErrorForegroundColor: Color256Colors.Foregrounds.Red,
         ListViewItemTheme: new(
             SelectedBackgroundColor: Color256Colors.Backgrounds.Gray,
             SelectedForegroundColor: Color256Colors.Foregrounds.Black
@@ -54,6 +58,8 @@ public static class DefaultThemes
         MarkedSelectedItemBackgroundColor: ConsoleColors.Foregrounds.Yellow,
         SelectedItemColor: ConsoleColors.Foregrounds.Black,
         SelectedTabBackgroundColor: ConsoleColors.Backgrounds.Green,
+        WarningForegroundColor: ConsoleColors.Foregrounds.Yellow,
+        ErrorForegroundColor: ConsoleColors.Foregrounds.Red,
         ListViewItemTheme: new(
             SelectedBackgroundColor: ConsoleColors.Backgrounds.Gray,
             SelectedForegroundColor: ConsoleColors.Foregrounds.Black
