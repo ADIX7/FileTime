@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using FileTime.App.Core.ViewModels;
 using FileTime.GuiApp.App.Models;
+using FileTime.Providers.Local;
 
 namespace FileTime.GuiApp.App.ViewModels;
 

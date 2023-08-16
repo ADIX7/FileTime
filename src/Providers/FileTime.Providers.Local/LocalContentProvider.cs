@@ -6,6 +6,7 @@ using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FileTime.Providers.Local;
 
@@ -13,12 +14,17 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly bool _isCaseInsensitive;
+    private readonly Lazy<ObservableCollection<RootDriveInfo>> _rootDriveInfos;
 
-    public LocalContentProvider(ITimelessContentProvider timelessContentProvider)
+    public LocalContentProvider(
+        ITimelessContentProvider timelessContentProvider,
+        IServiceProvider serviceProvider)
         : base(LocalContentProviderConstants.ContentProviderId, timelessContentProvider)
     {
         _timelessContentProvider = timelessContentProvider;
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        _rootDriveInfos = new Lazy<ObservableCollection<RootDriveInfo>>(() => serviceProvider.GetRequiredService<IRootDriveInfoService>().RootDriveInfos);
 
         SupportsContentStreams = true;
 
@@ -61,6 +67,16 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             );
 
         return rootDrive is not null;
+    }
+
+    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path)
+    {
+        var rootDriveInfos = _rootDriveInfos.Value;
+        var rootDriveInfo = rootDriveInfos.FirstOrDefault(d => path.Path.StartsWith(d.Path.Path));
+        
+        if(rootDriveInfo is null) return null;
+
+        return new VolumeSizeInfo(rootDriveInfo.Size, rootDriveInfo.Free);
     }
 
     public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath,

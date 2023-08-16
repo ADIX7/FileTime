@@ -1,21 +1,20 @@
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using FileTime.App.Core.Services;
 using FileTime.Core.Models;
-using FileTime.GuiApp.App.ViewModels;
-using FileTime.Providers.Local;
 using ObservableComputations;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.Providers.Local;
 
-public class RootDriveInfoService : IExitHandler
+public class RootDriveInfoService : IRootDriveInfoService, IExitHandler
 {
     private readonly ILocalContentProvider _localContentProvider;
     private readonly List<DriveInfo> _rootDrives = new();
     private readonly OcConsumer _rootDriveInfosConsumer = new();
 
-    public RootDriveInfoService(
-        IGuiAppState guiAppState,
-        ILocalContentProvider localContentProvider)
+    public ObservableCollection<RootDriveInfo> RootDriveInfos { get; set; }
+
+    public RootDriveInfoService(ILocalContentProvider localContentProvider)
     {
         _localContentProvider = localContentProvider;
         InitRootDrives();
@@ -31,11 +30,10 @@ public class RootDriveInfoService : IExitHandler
 
         rootDriveInfos.For(_rootDriveInfosConsumer);
 
-        guiAppState.RootDriveInfos = rootDriveInfos;
+        RootDriveInfos = rootDriveInfos;
 
         void InitRootDrives()
         {
-            var driveInfos = new List<RootDriveInfo>();
             var drives = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed)
                 : DriveInfo.GetDrives().Where(d =>

@@ -3,7 +3,7 @@ using FileTime.GuiApp.App.Models;
 
 namespace FileTime.GuiApp.App.ViewModels;
 
-public class PlaceInfo : IHaveFullPath
+public class PlaceInfo
 {
     public IContainer Container { get; }
     public string DisplayName { get; }

@@ -10,6 +10,7 @@ using FileTime.Core.Models;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.Services;
 using FileTime.GuiApp.App.ViewModels;
+using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -117,13 +118,17 @@ public partial class MainWindow : Window, IUiAccessor
             && sender is StyledElement control)
         {
             FullName? path = null;
-            if (control.DataContext is IHaveFullPath {Path: { }} hasFullPath)
-            {
-                path = hasFullPath.Path;
-            }
-            else if (control.DataContext is FullName p)
+            if (control.DataContext is FullName p)
             {
                 path = p;
+            }
+            else if (control.DataContext is RootDriveInfo {Path: { } rootDriveInfoPath})
+            {
+                path = rootDriveInfoPath;
+            }
+            else if (control.DataContext is PlaceInfo {Path: { } placeInfoPath})
+            {
+                path = placeInfoPath;
             }
             /*else if (control.DataContext is IElement element && element.GetParent() is IContainer parentContainer)
             {

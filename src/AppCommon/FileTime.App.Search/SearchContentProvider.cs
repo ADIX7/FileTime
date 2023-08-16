@@ -77,6 +77,7 @@ public class SearchContentProvider : ContentProviderBase, ISearchContentProvider
         => Task.FromResult(null as byte[]);
 
     public override bool CanHandlePath(NativePath path) => path.Path.StartsWith(ContentProviderName);
+    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
 
     public async Task<ISearchTask> StartSearchAsync(ISearchMatcher matcher, IContainer searchIn)
     {

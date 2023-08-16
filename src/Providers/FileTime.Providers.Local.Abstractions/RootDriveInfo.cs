@@ -1,13 +1,13 @@
 using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using FileTime.Core.Models;
-using FileTime.GuiApp.App.Models;
 using PropertyChanged.SourceGenerator;
 using IContainer = FileTime.Core.Models.IContainer;
 
-namespace FileTime.GuiApp.App.ViewModels;
+namespace FileTime.Providers.Local;
 
-public partial class RootDriveInfo : IHaveFullPath, INotifyPropertyChanged
+public partial class RootDriveInfo
 {
     private readonly DriveInfo _driveInfo;
 

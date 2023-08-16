@@ -25,4 +25,5 @@ public class RemoteContentProvider : ContentProviderBase, IRemoteContentProvider
     public override Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     public override bool CanHandlePath(NativePath path) => throw new NotImplementedException();
+    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => throw new NotImplementedException();
 }

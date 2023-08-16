@@ -79,7 +79,7 @@ public class MainWindow
     private Grid<IRootViewModel> MainContent() =>
         new()
         {
-            RowDefinitionsObject = "Auto * Auto Auto Auto",
+            RowDefinitionsObject = "Auto * Auto Auto Auto Auto",
             ChildInitializer =
             {
                 new Grid<IRootViewModel>
@@ -176,6 +176,38 @@ public class MainWindow
                     }
                 },
                 _timeline.View().WithExtension(new GridPositionExtension(0, 4)),
+                new Grid<IRootViewModel>
+                {
+                    ColumnDefinitionsObject = "* Auto",
+                    Extensions =
+                    {
+                        new GridPositionExtension(0, 5)
+                    },
+                    ChildInitializer =
+                    {
+                        new TextBlock<IRootViewModel>
+                            {
+                                Extensions = {new GridPositionExtension(1, 0)}
+                            }
+                            .Setup(t =>
+                            {
+                                t.Bind(
+                                    t,
+                                    dc => dc.VolumeSizeInfo.Value,
+                                    t => t.IsVisible,
+                                    v => v is null ? false : v.HasValue
+                                );
+                                t.Bind(
+                                    t,
+                                    dc => dc.VolumeSizeInfo.Value,
+                                    tb => tb.Text,
+                                    v => v.HasValue
+                                        ? $"{ByteSize.FromBytes(v.Value.FreeSize)} / {ByteSize.FromBytes(v.Value.TotalSize)} free"
+                                        : string.Empty
+                                );
+                            })
+                    }
+                },
             }
         };
 

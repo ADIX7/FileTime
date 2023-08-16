@@ -28,4 +28,5 @@ public interface IContentProvider : IContainer, IOnContainerEnter
     Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default);
     bool CanHandlePath(NativePath path);
     bool CanHandlePath(FullName path);
+    VolumeSizeInfo? GetVolumeSizeInfo(FullName path);
 }

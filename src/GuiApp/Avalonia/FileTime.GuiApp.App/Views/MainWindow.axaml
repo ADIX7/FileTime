@@ -28,6 +28,7 @@
     xmlns:interactions="using:FileTime.Core.Interactions"
     xmlns:itemPreview="clr-namespace:FileTime.App.Core.ViewModels.ItemPreview;assembly=FileTime.App.Core"
     xmlns:local="using:FileTime.GuiApp.App.Views"
+    xmlns:local1="clr-namespace:FileTime.Providers.Local;assembly=FileTime.Providers.Local.Abstractions"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sizePreview="clr-namespace:FileTime.App.ContainerSizeScanner;assembly=FileTime.App.ContainerSizeScanner"
     xmlns:vm="using:FileTime.GuiApp.App.ViewModels"
@@ -108,7 +109,7 @@
 
                             <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.RootDriveInfos}">
                                 <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:RootDriveInfo">
+                                    <DataTemplate x:DataType="local1:RootDriveInfo">
                                         <Grid
                                             Classes="SidebarContainerPresenter"
                                             Cursor="Hand"

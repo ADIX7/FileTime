@@ -20,6 +20,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IContentReaderFactory<LocalContentProvider>>(sp => sp.GetRequiredService<IContentReaderFactory<ILocalContentProvider>>());
         serviceCollection.TryAddSingleton<IContentWriterFactory<ILocalContentProvider>, LocalContentWriterFactory>();
         serviceCollection.TryAddSingleton<IContentWriterFactory<LocalContentProvider>>(sp => sp.GetRequiredService<IContentWriterFactory<ILocalContentProvider>>());
+        serviceCollection.TryAddSingleton<IRootDriveInfoService, RootDriveInfoService>();
         return serviceCollection;
     }
 }

@@ -57,6 +57,9 @@ public class TabPersistenceService : ITabPersistenceService
         };
     }
 
+    public async Task InitAsync()
+        => await LoadStatesAsync();
+
     public Task ExitAsync(CancellationToken token = default)
     {
         SaveStates(token);
@@ -90,7 +93,20 @@ public class TabPersistenceService : ITabPersistenceService
 
         async Task CreateEmptyTab()
         {
-            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(_localContentProvider)
+            IContainer? currentDirectory = null;
+            try
+            {
+                currentDirectory = await _localContentProvider.GetItemByNativePathAsync(
+                    new NativePath(Environment.CurrentDirectory),
+                    PointInTime.Present
+                ) as IContainer;
+            }
+            catch
+            {
+                // ignored
+            }
+
+            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(currentDirectory ?? _localContentProvider)
                 .GetRequiredServiceAsync<ITab>();
             var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
 
@@ -218,7 +234,4 @@ public class TabPersistenceService : ITabPersistenceService
             _appState.SelectedTab.Value?.TabNumber
         );
     }
-
-    public async Task InitAsync()
-        => await LoadStatesAsync();
 }

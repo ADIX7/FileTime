@@ -1,8 +1,10 @@
-﻿using FileTime.App.CommandPalette.ViewModels;
+﻿using DeclarativeProperty;
+using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
+using FileTime.Core.Models;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -15,6 +17,8 @@ public class RootViewModel : IRootViewModel
     public ICommandPaletteViewModel CommandPalette { get; }
     public IDialogService DialogService { get; }
     public ITimelineViewModel TimelineViewModel { get; }
+    public IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get;}
+    
     public event Action<IInputElement>? FocusReadInputElement;
 
     public RootViewModel(
@@ -40,5 +44,10 @@ public class RootViewModel : IRootViewModel
                 }
             }
         };
+
+        VolumeSizeInfo = appState.SelectedTab
+            .Map(t => t?.CurrentLocation)
+            .Switch()
+            .Map(l => l?.Provider.GetVolumeSizeInfo(l.FullName!));
     }
 }

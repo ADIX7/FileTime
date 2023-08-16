@@ -32,7 +32,7 @@ public record Theme(
 public static class DefaultThemes
 {
     public static Theme Color256Theme => new(
-        DefaultForegroundColor: Color256Colors.Foregrounds.Gray,
+        DefaultForegroundColor: null,
         DefaultForegroundAccentColor: Color256Colors.Foregrounds.Red,
         DefaultBackgroundColor: null,
         ElementColor: Color256Colors.Foregrounds.Gray,
@@ -67,7 +67,7 @@ public static class DefaultThemes
     );
 
     public static Theme ConsoleColorTheme => new(
-        DefaultForegroundColor: ConsoleColors.Foregrounds.Gray,
+        DefaultForegroundColor: null,
         DefaultForegroundAccentColor: ConsoleColors.Foregrounds.Red,
         DefaultBackgroundColor: null,
         ElementColor: ConsoleColors.Foregrounds.Gray,

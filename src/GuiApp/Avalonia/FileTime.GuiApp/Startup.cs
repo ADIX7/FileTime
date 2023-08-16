@@ -11,6 +11,7 @@ using FileTime.GuiApp.App.IconProviders;
 using FileTime.GuiApp.App.Logging;
 using FileTime.GuiApp.App.Services;
 using FileTime.GuiApp.App.ViewModels;
+using FileTime.Providers.Local;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

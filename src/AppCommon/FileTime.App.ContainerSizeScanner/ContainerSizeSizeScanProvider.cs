@@ -98,6 +98,8 @@ public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSize
     public override bool CanHandlePath(NativePath path)
         => path.Path.StartsWith(ContentProviderName);
 
+    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
+
     public ISizeScanTask StartSizeScan(IContainer scanSizeOf)
     {
         var searchTask = _serviceProvider
