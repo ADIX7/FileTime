@@ -2,6 +2,7 @@
 using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
+using FileTime.App.FrequencyNavigation.ViewModels;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
@@ -15,6 +16,7 @@ public class RootViewModel : IRootViewModel
     public IPossibleCommandsViewModel PossibleCommands { get; }
     public IConsoleAppState AppState { get; }
     public ICommandPaletteViewModel CommandPalette { get; }
+    public IFrequencyNavigationViewModel FrequencyNavigation { get; }
     public IDialogService DialogService { get; }
     public ITimelineViewModel TimelineViewModel { get; }
     public IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get;}
@@ -26,13 +28,15 @@ public class RootViewModel : IRootViewModel
         IPossibleCommandsViewModel possibleCommands,
         ICommandPaletteViewModel commandPalette,
         IDialogService dialogService,
-        ITimelineViewModel timelineViewModel)
+        ITimelineViewModel timelineViewModel,
+        IFrequencyNavigationViewModel frequencyNavigation)
     {
         AppState = appState;
         PossibleCommands = possibleCommands;
         CommandPalette = commandPalette;
         DialogService = dialogService;
         TimelineViewModel = timelineViewModel;
+        FrequencyNavigation = frequencyNavigation;
 
         DialogService.ReadInput.PropertyChanged += (o, e) =>
         {

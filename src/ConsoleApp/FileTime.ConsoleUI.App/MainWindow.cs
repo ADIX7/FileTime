@@ -31,6 +31,7 @@ public class MainWindow
     private readonly IApplicationContext _applicationContext;
     private readonly ITheme _theme;
     private readonly CommandPalette _commandPalette;
+    private readonly FrequencyNavigation _frequencyNavigation;
     private readonly Dialogs _dialogs;
     private readonly Timeline _timeline;
     private readonly Lazy<IView> _root;
@@ -41,6 +42,7 @@ public class MainWindow
         IApplicationContext applicationContext,
         ITheme theme,
         CommandPalette commandPalette,
+        FrequencyNavigation frequencyNavigation,
         Dialogs dialogs,
         Timeline timeline)
     {
@@ -48,6 +50,7 @@ public class MainWindow
         _applicationContext = applicationContext;
         _theme = theme;
         _commandPalette = commandPalette;
+        _frequencyNavigation = frequencyNavigation;
         _dialogs = dialogs;
         _timeline = timeline;
         _root = new Lazy<IView>(Initialize);
@@ -70,6 +73,7 @@ public class MainWindow
             {
                 MainContent(),
                 _commandPalette.View(),
+                _frequencyNavigation.View(),
                 _dialogs.View(),
             }
         };

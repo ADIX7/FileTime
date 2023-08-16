@@ -38,6 +38,7 @@ public static class Startup
         services.TryAddSingleton<CommandPalette>();
         services.TryAddSingleton<Dialogs>();
         services.TryAddSingleton<Timeline>();
+        services.TryAddSingleton<FrequencyNavigation>();
         return services;
     }
 }

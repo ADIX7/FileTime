@@ -1,5 +1,4 @@
-﻿using FileTime.App.CommandPalette.Services;
-using FileTime.App.CommandPalette.ViewModels;
+﻿using FileTime.App.FrequencyNavigation.Services;
 using FileTime.ConsoleUI.App.Styling;
 using GeneralInputKey;
 using TerminalUI.Controls;
@@ -9,36 +8,36 @@ using TerminalUI.ViewExtensions;
 
 namespace FileTime.ConsoleUI.App.Controls;
 
-public class CommandPalette
+public class FrequencyNavigation
 {
     private readonly ITheme _theme;
-    private readonly ICommandPaletteService _commandPaletteService;
+    private readonly IFrequencyNavigationService _frequencyNavigationService;
 
-    public CommandPalette(ITheme theme, ICommandPaletteService commandPaletteService)
+    public FrequencyNavigation(ITheme theme, IFrequencyNavigationService frequencyNavigationService)
     {
         _theme = theme;
-        _commandPaletteService = commandPaletteService;
+        _frequencyNavigationService = frequencyNavigationService;
     }
-
-    public Border<IRootViewModel> View()
+    
+    public IView<IRootViewModel> View()
     {
         var inputTextBox = new TextBox<IRootViewModel>()
             .WithKeyHandler((sender, k) =>
             {
                 if (k.Key == Keys.Escape)
                 {
-                    _commandPaletteService.CloseCommandPalette();
+                    _frequencyNavigationService.CloseNavigationWindow();
                     sender.Text = String.Empty;
                 }
 
                 if (!k.Handled)
                 {
-                    sender.DataContext?.CommandPalette.HandleKeyDown(k);
+                    sender.DataContext?.FrequencyNavigation.HandleKeyDown(k);
                 }
 
                 if (!k.Handled)
                 {
-                    sender.DataContext?.CommandPalette.HandleKeyUp(k);
+                    sender.DataContext?.FrequencyNavigation.HandleKeyUp(k);
                 }
 
                 if (k.Key == Keys.Enter)
@@ -50,10 +49,10 @@ public class CommandPalette
             {
                 if (sender.DataContext is not null)
                 {
-                    sender.DataContext.CommandPalette.SearchText = text;
+                    sender.DataContext.FrequencyNavigation.SearchText = text;
                 }
-            });
-
+            });;
+        
         var root = new Border<IRootViewModel>
         {
             Margin = 5,
@@ -69,7 +68,7 @@ public class CommandPalette
                         Margin = new Thickness(0, 0, 0, 1),
                         Content = inputTextBox
                     },
-                    new ListView<IRootViewModel, ICommandPaletteEntryViewModel>
+                    new ListView<IRootViewModel, string>
                         {
                             Extensions =
                             {
@@ -77,39 +76,27 @@ public class CommandPalette
                             },
                             ItemTemplate = item =>
                             {
-                                var root = new Grid<ICommandPaletteEntryViewModel>
+                                var root = new Grid<string>
                                 {
-                                    ColumnDefinitionsObject = "* Auto",
                                     ChildInitializer =
                                     {
-                                        new TextBlock<ICommandPaletteEntryViewModel>()
+                                        new TextBlock<string>()
                                             .Setup(t => t.Bind(
                                                 t,
-                                                d => d.Title,
+                                                d => d,
                                                 t => t.Text)),
-                                        new TextBlock<ICommandPaletteEntryViewModel>
-                                            {
-                                                Extensions =
-                                                {
-                                                    new GridPositionExtension(1, 0)
-                                                }
-                                            }
-                                            .Setup(t => t.Bind(
-                                                t,
-                                                d => d.Shortcuts,
-                                                t => t.Text))
                                     }
                                 };
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
+                                    d => d.FrequencyNavigation.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
                                     t => t.Background
                                 );
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
+                                    d => d.FrequencyNavigation.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
                                     t => t.Foreground
                                 );
 
@@ -117,12 +104,12 @@ public class CommandPalette
                             }
                         }.Setup(t => t.Bind(
                             t,
-                            d => d.CommandPalette.FilteredMatches,
+                            d => d.FrequencyNavigation.FilteredMatches,
                             t => t.ItemsSource
                         ))
                         .Setup(t => t.Bind(
                             t,
-                            d => d.CommandPalette.SelectedItem,
+                            d => d.FrequencyNavigation.SelectedItem,
                             t => t.SelectedItem
                         ))
                 }
@@ -144,7 +131,7 @@ public class CommandPalette
 
         root.Bind(
             root,
-            d => d.CommandPalette.ShowWindow.Value,
+            d => d.FrequencyNavigation.ShowWindow.Value,
             t => t.IsVisible,
             r => r);
 
