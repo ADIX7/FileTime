@@ -28,7 +28,7 @@ public sealed partial class Rectangle<T> : View<Rectangle<T>, T>, IDisplayView
         driver.ResetColor();
         if (color is not null)
         {
-            driver.SetForegroundColor(color);
+            driver.SetBackgroundColor(color);
         }
 
         var height = size.Height;
