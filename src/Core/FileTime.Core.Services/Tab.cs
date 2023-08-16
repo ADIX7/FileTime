@@ -1,12 +1,14 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CircularBuffer;
 using DeclarativeProperty;
 using DynamicData;
-using FileTime.App.Core.Services;
+using FileTime.App.Core.Models;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using ObservableComputations;
+using IContainer = FileTime.Core.Models.IContainer;
 
 namespace FileTime.Core.Services;
 
@@ -14,9 +16,9 @@ public class Tab : ITab
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ITabEvents _tabEvents;
-    private readonly DeclarativeProperty<IContainer?> _currentLocation = new(null);
-    private readonly DeclarativeProperty<IContainer?> _currentLocationForced = new(null);
-    private readonly DeclarativeProperty<AbsolutePath?> _currentRequestItem = new(null);
+    private readonly DeclarativeProperty<IContainer?> _currentLocation = new();
+    private readonly DeclarativeProperty<IContainer?> _currentLocationForced = new();
+    private readonly DeclarativeProperty<AbsolutePath?> _currentRequestItem = new();
     private readonly ObservableCollection<ItemFilter> _itemFilters = new();
     private readonly CircularBuffer<FullName> _history = new(20);
     private readonly CircularBuffer<FullName> _future = new(20);
@@ -28,11 +30,11 @@ public class Tab : ITab
     public IDeclarativeProperty<ObservableCollection<IItem>?> CurrentItems { get; }
     public IDeclarativeProperty<AbsolutePath?> CurrentSelectedItem { get; }
     public FullName? LastDeepestSelectedPath { get; private set; }
+    public DeclarativeProperty<ItemOrdering?> Ordering { get; } = new(ItemOrdering.Name);
 
     public Tab(
         ITimelessContentProvider timelessContentProvider,
-        ITabEvents tabEvents,
-        IRefreshSmoothnessCalculator refreshSmoothnessCalculator)
+        ITabEvents tabEvents)
     {
         _timelessContentProvider = timelessContentProvider;
         _tabEvents = tabEvents;
@@ -47,7 +49,7 @@ public class Tab : ITab
             _currentLocationForced
         );
 
-        CurrentLocation.Subscribe((c, _) =>
+        CurrentLocation.Subscribe((_, _) =>
         {
             if (_currentSelectedItemCached is not null)
             {
@@ -78,6 +80,39 @@ public class Tab : ITab
 
                 return Task.FromResult(items);
             }
+        ).CombineLatest(
+            Ordering,
+            (items, ordering) =>
+            {
+                if (items is null) return Task.FromResult<ObservableCollection<IItem>?>(null);
+
+                ObservableCollection<IItem>? orderedItems = ordering switch
+                {
+                    ItemOrdering.Name =>
+                        items
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => i.DisplayName),
+                    ItemOrdering.NameDesc =>
+                        items
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => i.DisplayName, ListSortDirection.Descending),
+                    ItemOrdering.CreationDate =>
+                        items
+                            .Ordering(i => i.CreatedAt),
+                    ItemOrdering.CreationDateDesc =>
+                        items
+                            .Ordering(i => i.CreatedAt, ListSortDirection.Descending),
+                    ItemOrdering.LastModifyDate =>
+                        items
+                            .Ordering(i => i.ModifiedAt),
+                    ItemOrdering.LastModifyDateDesc =>
+                        items
+                            .Ordering(i => i.ModifiedAt, ListSortDirection.Descending),
+                    _ => throw new NotImplementedException()
+                };
+
+                return Task.FromResult(orderedItems);
+            }
         );
 
 
@@ -91,12 +126,6 @@ public class Tab : ITab
 
                 return Task.FromResult(GetSelectedItemByItems(items));
             }).DistinctUntilChanged();
-
-        CurrentSelectedItem.Subscribe((v) =>
-        {
-            refreshSmoothnessCalculator.RegisterChange();
-            refreshSmoothnessCalculator.RecalculateSmoothness();
-        });
 
         CurrentSelectedItem.Subscribe(async (s, _) =>
         {

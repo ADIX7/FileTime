@@ -13,10 +13,10 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
         int Minimum,
         int Maximum,
         int Value,
-        char? LeftCap,
-        char? RightCap,
-        char? Fill,
-        char? Unfilled,
+        SelectiveChar? LeftCap,
+        SelectiveChar? RightCap,
+        SelectiveChar? Fill,
+        SelectiveChar? Unfilled,
         IColor? UnfilledForeground,
         IColor? UnfilledBackground);
 
@@ -49,10 +49,10 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
         var background = Background ?? (_theme ?? theme)?.BackgroundColor ?? renderContext.Background;
         var unfilledForeground = (_theme ?? theme)?.UnfilledForeground ?? renderContext.Foreground;
         var unfilledBackground = (_theme ?? theme)?.UnfilledBackground ?? renderContext.Background;
-        var unfilledCharacter = (_theme ?? theme)?.UnfilledCharacter ?? ApplicationContext?.EmptyCharacter ?? ' ';
-        var fillCharacter = (_theme ?? theme)?.FilledCharacter ?? '█';
-        var leftCap = (_theme ?? theme)?.LeftCap;
-        var rightCap = (_theme ?? theme)?.RightCap;
+        var unfilledCharacterS = (_theme ?? theme)?.UnfilledCharacter ?? new SelectiveChar(ApplicationContext?.EmptyCharacter ?? ' ');
+        var fillCharacterS = (_theme ?? theme)?.FilledCharacter ?? new SelectiveChar('█');
+        var leftCapS = (_theme ?? theme)?.LeftCap;
+        var rightCapS = (_theme ?? theme)?.RightCap;
 
         var renderState = new RenderState(
             position,
@@ -60,14 +60,20 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
             Minimum,
             Maximum,
             Value,
-            leftCap,
-            rightCap,
-            fillCharacter,
-            unfilledCharacter,
+            leftCapS,
+            rightCapS,
+            fillCharacterS,
+            unfilledCharacterS,
             unfilledForeground,
             unfilledBackground);
 
         if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
+
+        var utf8Support = ApplicationContext!.SupportUtf8Output;
+        var unfilledCharacter = unfilledCharacterS.GetChar(utf8Support);
+        var fillCharacter = fillCharacterS.GetChar(utf8Support);
+        var leftCap = leftCapS?.GetChar(utf8Support);
+        var rightCap = rightCapS?.GetChar(utf8Support);
 
         _lastRenderState = renderState;
         var driver = renderContext.ConsoleDriver;
@@ -90,17 +96,18 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
         if (ApplicationContext!.SupportUtf8Output)
         {
             var remained = progressWidth - progressQuotientWidth;
+            var t = _theme ?? theme;
             transientChar = remained switch
             {
                 < 0.125 => unfilledCharacter,
-                < 0.250 => (_theme ?? theme)?.Fraction1Per8Character ?? '\u258F',
-                < 0.375 => (_theme ?? theme)?.Fraction2Per8Character ?? '\u258E',
-                < 0.500 => (_theme ?? theme)?.Fraction3Per8Character ?? '\u258D',
-                < 0.675 => (_theme ?? theme)?.Fraction4Per8Character ?? '\u258C',
-                < 0.750 => (_theme ?? theme)?.Fraction5Per8Character ?? '\u258B',
-                < 0.875 => (_theme ?? theme)?.Fraction6Per8Character ?? '\u258A',
-                < 0_001 => (_theme ?? theme)?.Fraction7Per8Character ?? '\u2589',
-                _ => (_theme ?? theme)?.FractionFull ?? '\u2588',
+                < 0.250 => (t?.Fraction1Per8Character ?? new SelectiveChar('\u258F', ' ')).GetChar(utf8Support),
+                < 0.375 => (t?.Fraction2Per8Character ?? new SelectiveChar('\u258E', ' ')).GetChar(utf8Support),
+                < 0.500 => (t?.Fraction3Per8Character ?? new SelectiveChar('\u258D', ' ')).GetChar(utf8Support),
+                < 0.675 => (t?.Fraction4Per8Character ?? new SelectiveChar('\u258C', ' ')).GetChar(utf8Support),
+                < 0.750 => (t?.Fraction5Per8Character ?? new SelectiveChar('\u258B', ' ')).GetChar(utf8Support),
+                < 0.875 => (t?.Fraction6Per8Character ?? new SelectiveChar('\u258A', ' ')).GetChar(utf8Support),
+                < 0_001 => (t?.Fraction7Per8Character ?? new SelectiveChar('\u2589', ' ')).GetChar(utf8Support),
+                _ => (t?.FractionFull ?? new SelectiveChar('\u2588', ' ')).GetChar(utf8Support),
             };
         }
 

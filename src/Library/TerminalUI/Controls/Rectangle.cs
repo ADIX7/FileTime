@@ -10,24 +10,26 @@ public sealed partial class Rectangle<T> : View<Rectangle<T>, T>, IDisplayView
     private record RenderState(
         Position Position,
         Size Size,
-        IColor? Fill);
+        IColor? Color);
 
     private RenderState? _lastRenderState;
-
-    [Notify] private IColor? _fill;
     protected override Size CalculateSize() => new(Width ?? 0, Height ?? 0);
 
     protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
-        var renderState = new RenderState(position, size, Fill);
-        if ((!renderContext.ForceRerender && !NeedsRerender(renderState)) || Fill is null) return false;
+        var color = Background ?? renderContext.Background;
+        var renderState = new RenderState(position, size, color);
+        if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
         _lastRenderState = renderState;
 
         var driver = renderContext.ConsoleDriver;
 
-        var s = new string('█', size.Width);
-        driver.SetBackgroundColor(Fill);
-        driver.SetForegroundColor(Fill);
+        var s = new string(' ', size.Width);
+        driver.ResetColor();
+        if (color is not null)
+        {
+            driver.SetForegroundColor(color);
+        }
 
         var height = size.Height;
         for (var i = 0; i < height; i++)

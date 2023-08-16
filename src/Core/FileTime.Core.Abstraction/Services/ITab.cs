@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using DeclarativeProperty;
+using FileTime.App.Core.Models;
 using FileTime.Core.Models;
 using InitableService;
 
@@ -7,10 +8,11 @@ namespace FileTime.Core.Services;
 
 public interface ITab : IAsyncInitable<IContainer>, IDisposable
 {
-    public IDeclarativeProperty<IContainer?> CurrentLocation { get; }
-    public IDeclarativeProperty<ObservableCollection<IItem>?> CurrentItems { get; }
-    public IDeclarativeProperty<AbsolutePath?> CurrentSelectedItem { get; }
+    IDeclarativeProperty<IContainer?> CurrentLocation { get; }
+    IDeclarativeProperty<ObservableCollection<IItem>?> CurrentItems { get; }
+    IDeclarativeProperty<AbsolutePath?> CurrentSelectedItem { get; }
     FullName? LastDeepestSelectedPath { get; }
+    DeclarativeProperty<ItemOrdering?> Ordering { get; }
 
     Task SetCurrentLocation(IContainer newLocation);
     void AddItemFilter(ItemFilter filter);

@@ -73,7 +73,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     {
         if (_currentSelectedTab is null) return;
 
-        await _currentSelectedTab.Ordering.SetValue(sortItemsCommand.Ordering);
+        await _currentSelectedTab.Tab.Ordering.SetValue(sortItemsCommand.Ordering);
     }
 
     private async Task CopyBase64()

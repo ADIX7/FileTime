@@ -1,6 +1,6 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
-using ByteSizeLib;
+using Humanizer.Bytes;
 
 namespace FileTime.GuiApp.App.Converters;
 

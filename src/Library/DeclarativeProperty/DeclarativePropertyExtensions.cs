@@ -87,7 +87,7 @@ public static class DeclarativePropertyExtensions
     public static IDeclarativeProperty<TResult?> CombineLatest<T1, T2, TResult>(
         this IDeclarativeProperty<T1> prop1,
         IDeclarativeProperty<T2> prop2,
-        Func<T1, T2, Task<TResult>> func,
+        Func<T1, T2, Task<TResult?>> func,
         Action<TResult?>? setValueHook = null)
         => new CombineLatestProperty<T1,T2,TResult?>(prop1, prop2, func, setValueHook);
 
@@ -96,7 +96,7 @@ public static class DeclarativePropertyExtensions
     
     public static IDeclarativeProperty<TResult?> CombineAll<T, TResult>(
         this IEnumerable<IDeclarativeProperty<T>> sources,
-        Func<IEnumerable<T>, Task<TResult>> combiner,
+        Func<IEnumerable<T>, Task<TResult?>> combiner,
         Action<TResult?>? setValueHook = null)
         => new CombineAllProperty<T,TResult?>(sources, combiner, setValueHook);
 }

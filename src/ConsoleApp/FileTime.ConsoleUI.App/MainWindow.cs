@@ -1,8 +1,11 @@
-﻿using FileTime.App.Core.Models.Enums;
+﻿using System.Globalization;
+using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Controls;
 using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Enums;
+using FileTime.Core.Models;
+using Humanizer.Bytes;
 using TerminalUI;
 using TerminalUI.Color;
 using TerminalUI.Controls;
@@ -14,6 +17,16 @@ namespace FileTime.ConsoleUI.App;
 
 public class MainWindow
 {
+    private readonly struct ItemViewRenderOptions
+    {
+        public readonly bool ShowAttributes;
+
+        public ItemViewRenderOptions(bool showAttributes = false)
+        {
+            ShowAttributes = showAttributes;
+        }
+    }
+
     private readonly IRootViewModel _rootViewModel;
     private readonly IApplicationContext _applicationContext;
     private readonly ITheme _theme;
@@ -251,30 +264,11 @@ public class MainWindow
     {
         var list = new ListView<IRootViewModel, IItemViewModel>
         {
-            ListPadding = 8
+            ListPadding = 8,
+            Margin = "1 0 1 0"
         };
 
-        list.ItemTemplate = item =>
-        {
-            var textBlock = item.CreateChild<TextBlock<IItemViewModel>>();
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? string.Empty : dc.DisplayNameText,
-                tb => tb.Text
-            );
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
-                tb => tb.Foreground
-            );
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
-                tb => tb.Background
-            );
-
-            return textBlock;
-        };
+        list.ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions(true));
 
         list.Bind(
             list,
@@ -296,27 +290,7 @@ public class MainWindow
             ListPadding = 8
         };
 
-        list.ItemTemplate = item =>
-        {
-            var textBlock = item.CreateChild<TextBlock<IItemViewModel>>();
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? string.Empty : dc.DisplayNameText,
-                tb => tb.Text
-            );
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
-                tb => tb.Foreground
-            );
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
-                tb => tb.Background
-            );
-
-            return textBlock;
-        };
+        list.ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions());
 
         list.Bind(
             list,
@@ -333,28 +307,7 @@ public class MainWindow
             ListPadding = 8
         };
 
-        list.ItemTemplate = item =>
-        {
-            var textBlock = item.CreateChild<TextBlock<IItemViewModel>>();
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? string.Empty : dc.DisplayNameText,
-                tb => tb.Text
-            );
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
-                tb => tb.Foreground,
-                v => v
-            );
-            textBlock.Bind(
-                textBlock,
-                dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
-                tb => tb.Background
-            );
-
-            return textBlock;
-        };
+        list.ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions());
 
         list.Bind(
             list,
@@ -362,6 +315,98 @@ public class MainWindow
             v => v.ItemsSource);
 
         return list;
+    }
+
+    private IView<IItemViewModel> ItemItemTemplate(
+        ListViewItem<IItemViewModel, IRootViewModel> item,
+        ItemViewRenderOptions options
+    )
+    {
+        var root = new Grid<IItemViewModel>
+        {
+            ChildInitializer =
+            {
+                new Rectangle<IItemViewModel>(),
+                new Grid<IItemViewModel>
+                {
+                    Margin = "1 0 1 0",
+                    ColumnDefinitionsObject = "* Auto",
+                    ChildInitializer =
+                    {
+                        new TextBlock<IItemViewModel>()
+                            .Setup(t =>
+                            {
+                                t.Bind(
+                                    t,
+                                    dc => dc == null ? string.Empty : dc.DisplayNameText,
+                                    tb => tb.Text
+                                );
+                            }),
+                        new StackPanel<IItemViewModel>
+                            {
+                                Extensions = {new GridPositionExtension(1, 0)},
+                                ChildInitializer =
+                                {
+                                    new TextBlock<IItemViewModel>()
+                                        .Setup(t =>
+                                        {
+                                            if (!options.ShowAttributes) return;
+                                            t.Bind(
+                                                t,
+                                                dc => ((IContainer) dc.BaseItem).Items.Count,
+                                                tb => tb.Text,
+                                                t => $" {t}");
+                                        })
+                                }
+                            }
+                            .Setup(s => s.Bind(
+                                s,
+                                dc => dc.BaseItem.Type == AbsolutePathType.Container,
+                                s => s.IsVisible)),
+                        new StackPanel<IItemViewModel>
+                            {
+                                Extensions = {new GridPositionExtension(1, 0)},
+                                ChildInitializer =
+                                {
+                                    new TextBlock<IItemViewModel>()
+                                        .Setup(t =>
+                                        {
+                                            if (!options.ShowAttributes) return;
+                                            t.Bind(
+                                                t,
+                                                dc => ((IElementViewModel) dc).Size.Value,
+                                                tb => tb.Text,
+                                                v =>
+                                                {
+                                                    var b = ByteSize.FromBytes(v);
+
+                                                    return $"{b.LargestWholeNumberValue:0.#} " + b.GetLargestWholeNumberSymbol(NumberFormatInfo.CurrentInfo).First();
+                                                });
+                                        })
+                                }
+                            }
+                            .Setup(s => s.Bind(
+                                s,
+                                dc => dc.BaseItem.Type == AbsolutePathType.Element,
+                                s => s.IsVisible))
+                    }
+                }
+            }
+        };
+
+        root.Bind(
+            root,
+            dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+            tb => tb.Foreground
+        );
+
+        root.Bind(
+            root,
+            dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+            tb => tb.Background
+        );
+
+        return root;
     }
 
     private IColor? ToForegroundColor(ItemViewMode viewMode, AbsolutePathType absolutePathType) =>

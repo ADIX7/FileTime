@@ -20,7 +20,6 @@ public interface ITabViewModel : IInitable<ITab, int>, IDisposable
     IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> SelectedsChildren { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> ParentsChildren { get; }
-    DeclarativeProperty<ItemOrdering?> Ordering { get; }
 
     void ClearMarkedItems();
     void RemoveMarkedItem(FullName fullName);

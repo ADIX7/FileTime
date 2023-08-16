@@ -1,10 +1,8 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using ByteSizeLib;
 using DeclarativeProperty;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using Humanizer.Bytes;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.Core.Command.Copy;

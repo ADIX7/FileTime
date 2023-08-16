@@ -36,12 +36,16 @@ public class DotnetDriver : IConsoleDriver
 
     public virtual void SetForegroundColor(IColor foreground)
     {
+        if (foreground == SpecialColor.None) return;
+        
         if (foreground is not ConsoleColor consoleColor) throw new NotSupportedException();
         Console.ForegroundColor = consoleColor.Color;
     }
 
     public virtual void SetBackgroundColor(IColor background)
     {
+        if (background == SpecialColor.None) return;
+        
         if (background is not ConsoleColor consoleColor) throw new NotSupportedException();
         Console.BackgroundColor = consoleColor.Color;
     }

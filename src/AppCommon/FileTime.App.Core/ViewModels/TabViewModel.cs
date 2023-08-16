@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Reactive.Linq;
 using DeclarativeProperty;
 using DynamicData;
 using DynamicData.Binding;
@@ -47,7 +46,6 @@ public partial class TabViewModel : ITabViewModel
     public IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> SelectedsChildren { get; private set; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> ParentsChildren { get; private set; }
-    public DeclarativeProperty<ItemOrdering?> Ordering { get; } = new(ItemOrdering.Name);
 
 
     public TabViewModel(
@@ -82,39 +80,6 @@ public partial class TabViewModel : ITabViewModel
                             i => MapItemToViewModel(i, ItemViewModelType.Main)
                         )
                     )
-                ).CombineLatest(
-                    Ordering,
-                    (items, ordering) =>
-                    {
-                        if (items is null) return Task.FromResult<ObservableCollection<IItemViewModel>?>(null);
-
-                        ObservableCollection<IItemViewModel>? orderedItems = ordering switch
-                        {
-                            ItemOrdering.Name =>
-                                items
-                                    .Ordering(i => i.BaseItem!.Type)
-                                    .ThenOrdering(i => i.DisplayNameText),
-                            ItemOrdering.NameDesc =>
-                                items
-                                    .Ordering(i => i.BaseItem!.Type)
-                                    .ThenOrdering(i => i.DisplayNameText, ListSortDirection.Descending),
-                            ItemOrdering.CreationDate =>
-                                items
-                                    .Ordering(i => i.CreatedAt),
-                            ItemOrdering.CreationDateDesc =>
-                                items
-                                    .Ordering(i => i.CreatedAt, ListSortDirection.Descending),
-                            ItemOrdering.LastModifyDate =>
-                                items
-                                    .Ordering(i => i.ModifiedAt),
-                            ItemOrdering.LastModifyDateDesc =>
-                                items
-                                    .Ordering(i => i.ModifiedAt, ListSortDirection.Descending),
-                            _ => throw new NotImplementedException()
-                        };
-
-                        return Task.FromResult(orderedItems);
-                    }
                 );
 
         using var _ = Defer(
@@ -134,6 +99,12 @@ public partial class TabViewModel : ITabViewModel
                 tab.SetSelectedItem(new AbsolutePath(_timelessContentProvider, baseItem));
             }
         );
+
+        CurrentSelectedItem.Subscribe((v) =>
+        {
+            _refreshSmoothnessCalculator.RegisterChange();
+            _refreshSmoothnessCalculator.RecalculateSmoothness();
+        });
 
         CurrentSelectedItemAsContainer = CurrentSelectedItem.Map(i => i as IContainerViewModel);
 

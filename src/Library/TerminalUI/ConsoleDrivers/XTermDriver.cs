@@ -29,6 +29,8 @@ public sealed class XTermDriver : DotnetDriver
 
     public override void SetBackgroundColor(IColor background)
     {
+        if (background == SpecialColor.None) return;
+
         if (background is ConsoleColor consoleColor)
         {
             Console.BackgroundColor = consoleColor.Color;
@@ -41,6 +43,8 @@ public sealed class XTermDriver : DotnetDriver
 
     public override void SetForegroundColor(IColor foreground)
     {
+        if (foreground == SpecialColor.None) return;
+
         if (foreground is ConsoleColor consoleColor)
         {
             Console.ForegroundColor = consoleColor.Color;

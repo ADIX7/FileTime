@@ -1,4 +1,5 @@
 ﻿using TerminalUI.Color;
+using TerminalUI.Models;
 
 namespace TerminalUI.Styling.Controls;
 
@@ -28,16 +29,16 @@ public class ProgressBarTheme : IProgressBarTheme
     public IColor? BackgroundColor { get; init; }
     public IColor? UnfilledForeground { get; init; }
     public IColor? UnfilledBackground { get; init; }
-    public char? FilledCharacter { get; init; }
-    public char? UnfilledCharacter { get; init; }
-    public char? Fraction1Per8Character { get; init; }
-    public char? Fraction2Per8Character { get; init; }
-    public char? Fraction3Per8Character { get; init; }
-    public char? Fraction4Per8Character { get; init; }
-    public char? Fraction5Per8Character { get; init; }
-    public char? Fraction6Per8Character { get; init; }
-    public char? Fraction7Per8Character { get; init; }
-    public char? FractionFull { get; init; }
-    public char? LeftCap { get; init; }
-    public char? RightCap { get; init; }
+    public SelectiveChar? FilledCharacter { get; init; }
+    public SelectiveChar? UnfilledCharacter { get; init; }
+    public SelectiveChar? Fraction1Per8Character { get; init; }
+    public SelectiveChar? Fraction2Per8Character { get; init; }
+    public SelectiveChar? Fraction3Per8Character { get; init; }
+    public SelectiveChar? Fraction4Per8Character { get; init; }
+    public SelectiveChar? Fraction5Per8Character { get; init; }
+    public SelectiveChar? Fraction6Per8Character { get; init; }
+    public SelectiveChar? Fraction7Per8Character { get; init; }
+    public SelectiveChar? FractionFull { get; init; }
+    public SelectiveChar? LeftCap { get; init; }
+    public SelectiveChar? RightCap { get; init; }
 }
