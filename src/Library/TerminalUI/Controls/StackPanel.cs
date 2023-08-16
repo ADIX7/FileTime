@@ -80,13 +80,7 @@ public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>
 
             if (forceRerenderChildren.Contains(child))
             {
-                var rerenderContext = new RenderContext(
-                    renderContext.ConsoleDriver,
-                    true,
-                    renderContext.Foreground,
-                    renderContext.Background,
-                    renderContext.Statistics
-                );
+                var rerenderContext = renderContext with {ForceRerender = true};
                 neededRerender = child.Render(rerenderContext, childPosition, childSize) || neededRerender;
             }
             else

@@ -23,7 +23,7 @@ public class UnaryTracker : ExpressionTrackerBase
             _ => throw new NotSupportedException($"Unary expression of type {unaryExpression.NodeType} is not supported.")
         };
 
-        SubscribeToTracker(operandTracker);
+        SubscribeToTracker(operandTracker, true);
 
         UpdateValueAndChangeTrackers();
     }

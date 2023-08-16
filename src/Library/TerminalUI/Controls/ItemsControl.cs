@@ -85,7 +85,8 @@ public sealed partial class ItemsControl<TDataContext, TItem>
         double width = 0;
         double height = 0;
 
-        foreach (var child in _children)
+        var children = _children.ToList();
+        foreach (var child in children)
         {
             if (!child.IsVisible) continue;
 
@@ -149,13 +150,7 @@ public sealed partial class ItemsControl<TDataContext, TItem>
 
             if (forceRerenderChildren.Contains(child))
             {
-                var rerenderContext = new RenderContext(
-                    renderContext.ConsoleDriver,
-                    true,
-                    renderContext.Foreground,
-                    renderContext.Background,
-                    renderContext.Statistics
-                );
+                var rerenderContext = renderContext with {ForceRerender = true};
                 neededRerender = child.Render(rerenderContext, childPosition, childSize) || neededRerender;
             }
             else

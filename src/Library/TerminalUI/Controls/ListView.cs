@@ -286,7 +286,7 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
 
         var driver = ApplicationContext!.ConsoleDriver;
         var placeholder = new string(' ', size.Width);
-        driver.ResetColor();
+        driver.ResetStyle();
         for (var i = deltaY; i < size.Height; i++)
         {
             driver.SetCursorPosition(position with {Y = position.Y + i});

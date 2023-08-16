@@ -8,6 +8,7 @@ using GeneralInputKey;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
+using TerminalUI.TextFormat;
 using TerminalUI.Traits;
 using TerminalUI.ViewExtensions;
 
@@ -22,10 +23,25 @@ public class Dialogs
 
     private Action? _readInputChildHandlerUnSubscriber;
 
+
+    private readonly ITextFormat _specialItemNamePartFormat;
+
     public Dialogs(IRootViewModel rootViewModel, ITheme theme)
     {
         _rootViewModel = rootViewModel;
         _theme = theme;
+
+        _specialItemNamePartFormat = new OrFormat
+        {
+            Format1 = new AnsiFormat
+            {
+                IsUnderline = true
+            },
+            Format2 = new SimpleFormat
+            {
+                Foreground = _theme.DefaultForegroundAccentColor
+            }
+        };
 
         rootViewModel.FocusReadInputElement += element =>
         {
@@ -185,16 +201,15 @@ public class Dialogs
                     ColumnDefinitionsObject = "* *",
                     ChildInitializer =
                     {
-                        new ItemsControl<IPreviewElement, ItemNamePart>()
+                        new ItemsControl<IPreviewElement, ItemNamePart>
                         {
                             Orientation = Orientation.Horizontal,
                             ItemTemplate = ItemNamePartItemTemplate
                         }.Setup(i => i.Bind(
                             i,
                             dc => ((DoubleItemNamePartListPreview) dc).ItemNameParts1,
-                            c => c.ItemsSource,
-                            v => v)),
-                        new ItemsControl<IPreviewElement, ItemNamePart>()
+                            c => c.ItemsSource)),
+                        new ItemsControl<IPreviewElement, ItemNamePart>
                         {
                             Orientation = Orientation.Horizontal,
                             Extensions =
@@ -226,8 +241,8 @@ public class Dialogs
             );
             textBlock.Bind(
                 textBlock,
-                dc => dc.IsSpecial ? _theme.DefaultForegroundAccentColor : null,
-                tb => tb.Foreground
+                dc => dc.IsSpecial ? _specialItemNamePartFormat : null,
+                tb => tb.TextFormat
             );
 
             return textBlock;
@@ -327,8 +342,7 @@ public class Dialogs
             .Setup(t => t.Bind(
                 t,
                 d => d.DialogService.ReadInput.Value.Inputs,
-                c => c.ItemsSource,
-                v => v
+                c => c.ItemsSource
             ));
 
         readInputs.WithKeyHandler((_, e) =>

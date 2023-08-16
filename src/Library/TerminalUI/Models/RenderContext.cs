@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
+using TerminalUI.TextFormat;
 
 namespace TerminalUI.Models;
 
@@ -8,19 +9,21 @@ namespace TerminalUI.Models;
 public readonly ref struct RenderContext
 {
     private static int _renderId;
-    public readonly int RenderId;
-    public readonly IConsoleDriver ConsoleDriver;
-    public readonly bool ForceRerender;
-    public readonly IColor? Foreground;
-    public readonly IColor? Background;
-    public readonly RenderStatistics Statistics;
+    public int RenderId { get; init; }
+    public IConsoleDriver ConsoleDriver { get; init; }
+    public bool ForceRerender { get; init; }
+    public IColor? Foreground { get; init; }
+    public IColor? Background { get; init; }
+    public RenderStatistics Statistics { get; init; }
+    public TextFormatContext TextFormat { get; init; }
 
     public RenderContext(
         IConsoleDriver consoleDriver,
         bool forceRerender,
         IColor? foreground,
         IColor? background,
-        RenderStatistics statistics)
+        RenderStatistics statistics,
+        TextFormatContext textFormat)
     {
         RenderId = _renderId++;
 
@@ -29,6 +32,7 @@ public readonly ref struct RenderContext
         Foreground = foreground;
         Background = background;
         Statistics = statistics;
+        TextFormat = textFormat;
     }
 
     public static RenderContext Empty =>
@@ -37,6 +41,7 @@ public readonly ref struct RenderContext
             false,
             null,
             null,
-            new RenderStatistics()
+            new RenderStatistics(),
+            new TextFormatContext(false)
         );
 }

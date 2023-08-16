@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
-using TerminalUI.Extensions;
 using TerminalUI.Models;
+using TerminalUI.TextFormat;
 using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
@@ -16,7 +16,8 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
         Size Size,
         string? Text,
         IColor? Foreground,
-        IColor? Background);
+        IColor? Background,
+        ITextFormat? TextFormat);
 
     private RenderState? _lastRenderState;
     private string[]? _textLines;
@@ -24,17 +25,13 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
     [Notify] private string? _text = string.Empty;
     [Notify] private TextAlignment _textAlignment = TextAlignment.Left;
+    [Notify] private ITextFormat? _textFormat;
 
     public TextBlock()
     {
-        /*this.Bind(
-            this,
-            dc => dc == null ? string.Empty : dc.ToString(),
-            tb => tb.Text
-        );*/
-
         RerenderProperties.Add(nameof(Text));
         RerenderProperties.Add(nameof(TextAlignment));
+        RerenderProperties.Add(nameof(TextFormat));
 
         ((INotifyPropertyChanged) this).PropertyChanged += (o, e) =>
         {
@@ -58,7 +55,8 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
             size,
             Text,
             foreground,
-            background);
+            background,
+            _textFormat);
 
         if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
 
@@ -78,7 +76,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
         _placeholderRenderDone = false;
 
         var driver = renderContext.ConsoleDriver;
-        SetColor(driver, foreground, background);
+        SetStyleColor(renderContext, foreground, background, _textFormat);
 
         RenderText(_textLines, driver, position, size, TransformText);
 

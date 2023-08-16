@@ -91,8 +91,7 @@ public class Timeline
                     .Setup(i => i.Bind(
                         i,
                         dc => dc.TimelineViewModel.ParallelCommandsGroups[0].Commands,
-                        i => i.ItemsSource,
-                        v => v))
+                        i => i.ItemsSource))
             }
         };
 

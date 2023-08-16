@@ -25,7 +25,7 @@ public sealed partial class Rectangle<T> : View<Rectangle<T>, T>, IDisplayView
         var driver = renderContext.ConsoleDriver;
 
         var s = new string(' ', size.Width);
-        driver.ResetColor();
+        driver.ResetStyle();
         if (color is not null)
         {
             driver.SetBackgroundColor(color);

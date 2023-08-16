@@ -28,7 +28,7 @@ public sealed class MemberTracker : ExpressionTrackerBase
         if (memberExpression.Member is PropertyInfo propertyInfo)
         {
             _memberName = propertyInfo.Name;
-            parentTracker?.TrackedPropertyNames.Add(propertyInfo.Name);
+            parentTracker?.TrackProperty(propertyInfo.Name);
 
             if (propertyInfo.GetMethod is { } getMethod)
             {
@@ -44,7 +44,7 @@ public sealed class MemberTracker : ExpressionTrackerBase
         else if (memberExpression.Member is FieldInfo fieldInfo)
         {
             _memberName = fieldInfo.Name;
-            parentTracker?.TrackedPropertyNames.Add(fieldInfo.Name);
+            parentTracker?.TrackProperty(fieldInfo.Name);
 
             _valueProvider = () => CallFieldInfo(fieldInfo);
         }
@@ -61,15 +61,15 @@ public sealed class MemberTracker : ExpressionTrackerBase
     {
         var obj = _parentTracker?.GetValue();
         if (obj is null && !propertyInfo.GetMethod!.IsStatic) return null;
-        
+
         return propertyInfo.GetValue(_parentTracker?.GetValue());
     }
-    
+
     private object? CallFieldInfo(FieldInfo fieldInfo)
     {
         var obj = _parentTracker?.GetValue();
         if (obj is null && !fieldInfo.IsStatic) return null;
-        
+
         return fieldInfo.GetValue(_parentTracker?.GetValue());
     }
 

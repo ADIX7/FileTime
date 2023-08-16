@@ -6,7 +6,8 @@ namespace TerminalUI.ExpressionTrackers;
 public abstract class ExpressionTrackerBase : IExpressionTracker
 {
     private object? _currentValue;
-    public List<string> TrackedPropertyNames { get; } = new();
+    private readonly List<IExpressionTracker> _propertyProxyTrackers = new();
+    private readonly List<string> _trackedPropertyNames = new();
 
     protected bool SubscribeToValueChanges { get; set; } = true;
 
@@ -15,10 +16,22 @@ public abstract class ExpressionTrackerBase : IExpressionTracker
     public object? GetValue() => _currentValue;
     protected abstract object? ComputeValue();
 
-    protected void SubscribeToTracker(IExpressionTracker? expressionTracker)
+    protected void SubscribeToTracker(IExpressionTracker? expressionTracker, bool proxyPropertyChanged = false)
     {
         if (expressionTracker is null) return;
+
         expressionTracker.Update += UpdateValueAndChangeTrackers;
+
+        if (proxyPropertyChanged)
+        {
+            expressionTracker.PropertyChanged += OnPropertyChanged;
+            _propertyProxyTrackers.Add(expressionTracker);
+
+            foreach (var propertyName in _trackedPropertyNames)
+            {
+                expressionTracker.TrackProperty(propertyName);
+            }
+        }
     }
 
     protected void UpdateValueAndChangeTrackers() => UpdateValueAndChangeTrackers(true);
@@ -67,16 +80,31 @@ public abstract class ExpressionTrackerBase : IExpressionTracker
         }
     }
 
-    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) 
+    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         => UpdateValueAndChangeTrackers();
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is null) return;
 
-        if (TrackedPropertyNames.Contains(e.PropertyName))
+        if (_trackedPropertyNames.Contains(e.PropertyName))
         {
             PropertyChanged?.Invoke(e.PropertyName);
+        }
+    }
+
+    protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(propertyName);
+
+    public void TrackProperty(string propertyName)
+    {
+        if (!_trackedPropertyNames.Contains(propertyName))
+        {
+            _trackedPropertyNames.Add(propertyName);
+        }
+
+        foreach (var propertyProxyTracker in _propertyProxyTrackers)
+        {
+            propertyProxyTracker.TrackProperty(propertyName);
         }
     }
 }

@@ -71,7 +71,7 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
         if (contentRendered)
         {
             var driver = renderContext.ConsoleDriver;
-            driver.ResetColor();
+            driver.ResetStyle();
             SetColorsForDriver(renderContext);
 
             RenderTopBorder(renderContext, position, size);

@@ -8,6 +8,7 @@ using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
 using TerminalUI.Models;
+using TerminalUI.TextFormat;
 using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
@@ -175,12 +176,12 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         bool renderResult;
         if (Background != null || Foreground != null)
         {
-            var newRenderContext = new RenderContext(
-                renderContext.ConsoleDriver,
-                renderContext.ForceRerender,
-                Foreground ?? renderContext.Foreground,
-                Background ?? renderContext.Background,
-                renderContext.Statistics);
+            var newRenderContext = renderContext with
+            {
+                Foreground = Foreground ?? renderContext.Foreground,
+                Background = Background ?? renderContext.Background
+            };
+
             renderResult = RenderMethod(newRenderContext, position, size);
         }
         else
@@ -202,7 +203,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
     protected void RenderEmpty(in RenderContext renderContext, Position position, Size size)
     {
         var driver = renderContext.ConsoleDriver;
-        driver.ResetColor();
+        driver.ResetStyle();
 
         var placeHolder = new string(ApplicationContext!.EmptyCharacter, size.Width);
         for (var i = 0; i < size.Height; i++)
@@ -309,14 +310,25 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
             driver.Write(contentString);
         }
     }
-    protected void SetColor(IConsoleDriver driver, IColor? foreground, IColor? background)
+
+    protected void SetStyleColor(
+        in RenderContext renderContext,
+        IColor? foreground = null,
+        IColor? background = null,
+        ITextFormat? textFormat = null)
     {
+        var driver = renderContext.ConsoleDriver;
         driver.ResetColor();
+        if (textFormat is { } t)
+        {
+            t.ApplyFormat(driver, renderContext.TextFormat);
+        }
         if (foreground is not null)
         {
             driver.SetForegroundColor(foreground);
         }
-        if(background is not null)
+
+        if (background is not null)
         {
             driver.SetBackgroundColor(background);
         }
@@ -324,11 +336,9 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
     protected void SetColorsForDriver(in RenderContext renderContext)
     {
-        var driver = renderContext.ConsoleDriver;
-
         var foreground = Foreground ?? renderContext.Foreground;
         var background = Background ?? renderContext.Background;
-        SetColor(driver, foreground, background);
+        SetStyleColor(renderContext, foreground, background);
     }
 
     public TChild CreateChild<TChild>() where TChild : IView<T>, new()

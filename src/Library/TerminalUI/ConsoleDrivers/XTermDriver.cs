@@ -8,6 +8,11 @@ public sealed class XTermDriver : DotnetDriver
 {
     private Position _initialCursorPosition;
 
+    public XTermDriver()
+    {
+        SupportsAnsiEscapeSequence = true;
+    }
+
     public override bool Init()
     {
         _initialCursorPosition = GetCursorPosition();
@@ -25,6 +30,11 @@ public sealed class XTermDriver : DotnetDriver
     {
         Write("\x1b[?1047l");
         SetCursorPosition(_initialCursorPosition);
+    }
+
+    public override void ResetStyle()
+    {
+        Write("\x1b[0m");
     }
 
     public override void SetBackgroundColor(IColor background)

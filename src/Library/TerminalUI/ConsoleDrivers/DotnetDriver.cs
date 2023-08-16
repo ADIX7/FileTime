@@ -6,6 +6,8 @@ namespace TerminalUI.ConsoleDrivers;
 
 public class DotnetDriver : IConsoleDriver
 {
+    public bool SupportsAnsiEscapeSequence { get; protected set; }
+
     public virtual bool Init()
     {
         Console.Clear();
@@ -14,7 +16,8 @@ public class DotnetDriver : IConsoleDriver
 
     public void SetCursorPosition(Position position) => Console.SetCursorPosition(position.X, position.Y);
 
-    public void ResetColor() => Console.ResetColor();
+    public virtual void ResetColor() => Console.ResetColor();
+    public virtual void ResetStyle() => Console.ResetColor();
 
     public Position GetCursorPosition()
     {

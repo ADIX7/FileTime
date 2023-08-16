@@ -185,6 +185,30 @@ public class MainWindow
                     },
                     ChildInitializer =
                     {
+                        new StackPanel<IRootViewModel>
+                        {
+                            Orientation = Orientation.Horizontal,
+                            ChildInitializer =
+                            {
+                                new TextBlock<IRootViewModel>
+                                    {
+                                        Margin = "0 0 1 0",
+                                    }
+                                    .Setup(t => t.Bind(
+                                        t,
+                                        dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.Attributes,
+                                        tb => tb.Text)),
+                                new TextBlock<IRootViewModel>
+                                    {
+                                        Margin = "0 0 1 0",
+                                    }
+                                    .Setup(t => t.Bind(
+                                        t,
+                                        dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.ModifiedAt,
+                                        tb => tb.Text,
+                                        v => v.ToString()))
+                            }
+                        },
                         new TextBlock<IRootViewModel>
                             {
                                 Extensions = {new GridPositionExtension(1, 0)}

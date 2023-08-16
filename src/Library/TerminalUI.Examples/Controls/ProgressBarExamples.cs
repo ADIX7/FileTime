@@ -2,6 +2,7 @@
 using TerminalUI.ConsoleDrivers;
 using TerminalUI.Controls;
 using TerminalUI.Models;
+using TerminalUI.TextFormat;
 
 namespace TerminalUI.Examples.Controls;
 
@@ -56,7 +57,8 @@ public class ProgressBarExamples
             true,
             null,
             null,
-            new()
+            new(),
+            new TextFormatContext(true)
         );
         progressBar.Render(renderContext, position, new Size(10, 1));
     }

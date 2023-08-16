@@ -111,7 +111,7 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
             };
         }
 
-        SetColor(driver, foreground, background);
+        SetStyleColor(renderContext, foreground, background);
 
         // Left border
         var textStartPosition = position;
@@ -132,7 +132,7 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
         // Transient character
         if (progressQuotientWidth < progressAvailableSpace)
         {
-            SetColor(driver, foreground, unfilledBackground);
+            SetStyleColor(renderContext, foreground, unfilledBackground);
             RenderText(
                 transientChar,
                 driver,
@@ -147,7 +147,7 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
             Span<char> unfilledText = stackalloc char[progressRemainderWidth];
             unfilledText.Fill(unfilledCharacter);
 
-            SetColor(driver, unfilledForeground, unfilledBackground);
+            SetStyleColor(renderContext, unfilledForeground, unfilledBackground);
             RenderText(
                 unfilledText,
                 driver,
@@ -159,7 +159,7 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
         // Right border
         if (rightCap.HasValue)
         {
-            SetColor(driver, foreground, background);
+            SetStyleColor(renderContext, foreground, background);
             RenderText(
                 rightCap.Value,
                 driver,

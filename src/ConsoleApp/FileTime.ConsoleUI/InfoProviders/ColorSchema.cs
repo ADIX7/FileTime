@@ -13,7 +13,7 @@ public static class ColorSchema
     public static void PrintColorSchema(ITheme theme, IConsoleDriver consoleDriver)
     {
         consoleDriver.Dispose();
-        consoleDriver.ResetColor();
+        consoleDriver.ResetStyle();
         PrintThemeColors(theme, consoleDriver);
 
         if (theme is IColorSampleProvider colorSampleProvider)
@@ -46,7 +46,7 @@ public static class ColorSchema
             PrintColor(consoleDriver, colorProperty.Name, color, colorTextStartX);
         }
 
-        consoleDriver.ResetColor();
+        consoleDriver.ResetStyle();
         consoleDriver.Write(Environment.NewLine);
     }
 
@@ -95,13 +95,13 @@ public static class ColorSchema
             PrintColor(consoleDriver, key, value, colorTextStartX);
         }
         
-        consoleDriver.ResetColor();
+        consoleDriver.ResetStyle();
         consoleDriver.Write(Environment.NewLine);
     }
 
     private static void PrintColor(IConsoleDriver consoleDriver, string name, IColor? color, int colorTextStartX)
     {
-        consoleDriver.ResetColor();
+        consoleDriver.ResetStyle();
         consoleDriver.Write(name + ":");
         var y = consoleDriver.GetCursorPosition().Y;
         consoleDriver.SetCursorPosition(new Position(colorTextStartX, y));
@@ -124,7 +124,7 @@ public static class ColorSchema
             consoleDriver.Write("Sample text");
         }
 
-        consoleDriver.ResetColor();
+        consoleDriver.ResetStyle();
         consoleDriver.Write(Environment.NewLine);
     }
 }

@@ -104,7 +104,7 @@ public sealed partial class TextBox<T> : View<TextBox<T>, T>, IFocusable, IDispl
         _lastRenderState = renderStatus;
 
         var driver = renderContext.ConsoleDriver;
-        SetColor(driver, foreground, background);
+        SetStyleColor(renderContext, foreground, background);
 
         RenderEmpty(renderContext, position, size);
 

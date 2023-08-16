@@ -170,13 +170,11 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
                 _forceRerenderChildren.Clear();
             }
 
-            var childContext = new RenderContext(
-                context.ConsoleDriver,
-                context.ForceRerender,
-                Foreground ?? context.Foreground,
-                Background ?? context.Background,
-                context.Statistics
-            );
+            var childContext = context with
+            {
+                Foreground = Foreground ?? context.Foreground,
+                Background = Background ?? context.Background,
+            };
             var viewsByPosition = GroupViewsByPosition(columnWidths.Length, rowHeights.Length);
 
             var anyRendered = false;
@@ -214,7 +212,6 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
         int row,
         IReadOnlyList<IView> forceRerenderChildren)
     {
-
         var width = columnWidths[column];
         var height = rowHeights[row];
         var renderSize = new Size(width, height);
@@ -238,7 +235,7 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
         }
 
         if (renderSize.Width == 0 || renderSize.Height == 0) return false;
-        
+
         if (!viewsByPosition.TryGetValue((column, row), out var children))
         {
             RenderEmpty(context, renderPosition, renderSize);
@@ -253,7 +250,8 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
                 true,
                 context.Foreground,
                 context.Background,
-                context.Statistics
+                context.Statistics,
+                context.TextFormat
             );
             RenderEmpty(context, renderPosition, renderSize);
         }
@@ -270,7 +268,8 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
                     true,
                     context.Foreground,
                     context.Background,
-                    context.Statistics
+                    context.Statistics,
+                    context.TextFormat
                 );
             }
         }

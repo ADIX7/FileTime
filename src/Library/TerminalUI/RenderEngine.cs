@@ -1,5 +1,6 @@
 ﻿using TerminalUI.Controls;
 using TerminalUI.Models;
+using TerminalUI.TextFormat;
 using TerminalUI.Traits;
 
 namespace TerminalUI;
@@ -83,7 +84,8 @@ public class RenderEngine : IRenderEngine
                 true,
                 null,
                 null,
-                new RenderStatistics()
+                new RenderStatistics(),
+                new TextFormatContext(driver.SupportsAnsiEscapeSequence)
             ),
             initialPosition,
             size);
@@ -95,7 +97,8 @@ public class RenderEngine : IRenderEngine
                 false,
                 null,
                 null,
-                new RenderStatistics()
+                new RenderStatistics(),
+                new TextFormatContext(driver.SupportsAnsiEscapeSequence)
             ),
             initialPosition,
             size);
