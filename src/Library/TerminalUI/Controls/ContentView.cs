@@ -44,11 +44,10 @@ public abstract partial class ContentView<TConcrete, T>
 
     private bool DefaultContentRender(in RenderContext renderContext, Position position, Size size)
     {
-        if (Content is null || !Content.IsVisible)
+        if (Content is null)
         {
             if (_placeholderRenderDone) return false;
             _placeholderRenderDone = true;
-            RenderEmpty(renderContext, position, size, false);
             return true;
         }
 

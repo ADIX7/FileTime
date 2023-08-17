@@ -64,10 +64,11 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
         if (_textLines is null)
         {
-            if (_placeholderRenderDone)
+            if (!_placeholderRenderDone)
             {
                 _placeholderRenderDone = true;
                 RenderEmpty(renderContext, position, size, skipRender);
+                return true;
             }
 
             return false;

@@ -146,7 +146,13 @@ public class RenderEngine : IRenderEngine
         }
 
         driver.ResetStyle();
-        Array2DHelper.RenderEmpty(driver, _updatedCells, _filledCells, _applicationContext.EmptyCharacter, initialPosition, size);
+        Array2DHelper.RenderEmpty(
+            driver,
+            _updatedCells,
+            _filledCells,
+            _applicationContext.EmptyCharacter,
+            initialPosition,
+            size);
 
         (_lastFilledCells, _filledCells) = (_filledCells, _lastFilledCells);
 

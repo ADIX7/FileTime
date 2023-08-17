@@ -218,6 +218,7 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
         }
 
         var deltaX = 0;
+        var anyRendered = false;
         for (var i = renderStartIndex; i < _listViewItemLength; i++)
         {
             var item = listViewItems[i];
@@ -229,13 +230,13 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
                 width = size.Width - deltaX;
             }
 
-            item.Render(renderContext, position with {X = position.X + deltaX}, size with {Width = width});
+            anyRendered =
+                item.Render(renderContext, position with {X = position.X + deltaX}, size with {Width = width})
+                || anyRendered;
             deltaX = nextDeltaX;
         }
-        
-        //TODO: render empty to remaining space
 
-        return true;
+        return anyRendered;
     }
 
     private bool RenderVertical(in RenderContext renderContext, Position position, Size size)
@@ -283,14 +284,11 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
         for (var i = renderStartIndex; i < lastItemIndex; i++)
         {
             var item = listViewItems[i];
-            anyRendered = 
-                item.Render(renderContext, position with {Y = position.Y + deltaY}, requestedItemSize with {Width = size.Width}) 
+            anyRendered =
+                item.Render(renderContext, position with {Y = position.Y + deltaY}, requestedItemSize with {Width = size.Width})
                 || anyRendered;
             deltaY += requestedItemSize.Height;
         }
-
-        // TODO: this should only render if deltaY is changed compared to last render or if last render was a horizontal
-        RenderEmpty(renderContext, position with {Y = position.Y + deltaY}, size with {Height = size.Height - deltaY}, false);
 
         return anyRendered;
     }

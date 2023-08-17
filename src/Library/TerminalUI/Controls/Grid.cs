@@ -239,8 +239,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
 
         if (!viewsByPosition.TryGetValue((column, row), out var children))
         {
-            RenderEmpty(context, renderPosition, renderSize, false);
-            return true;
+            return false;
         }
 
         var needsRerender = children.Any(forceRerenderChildren.Contains);
@@ -248,7 +247,6 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
         if (needsRerender)
         {
             updatedContext = context with {ForceRerender = true};
-            RenderEmpty(updatedContext, renderPosition, renderSize, false);
         }
 
         //This implies that children further back in the list will be rendered on top of children placed before in the list.

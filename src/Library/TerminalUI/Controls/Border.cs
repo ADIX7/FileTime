@@ -7,6 +7,24 @@ namespace TerminalUI.Controls;
 
 public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
 {
+    private record struct RenderState(
+        Position Position,
+        Size Size,
+        Thickness BorderThickness,
+        Thickness Padding,
+        char TopChar,
+        char LeftChar,
+        char RightChar,
+        char BottomChar,
+        char TopLeftChar,
+        char TopRightChar,
+        char BottomLeftChar,
+        char BottomRightChar,
+        IColor? Fill
+    );
+    
+    private RenderState _lastRenderState;
+    
     [Notify] private Thickness _borderThickness = 1;
     [Notify] private Thickness _padding = 0;
     [Notify] private char _topChar = '─';
@@ -59,6 +77,27 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
         var backgroundColor = Background ?? renderContext.Background;
         var foregroundColor = Foreground ?? renderContext.Foreground;
         var fillColor = Fill ?? Background ?? renderContext.Background;
+        
+        var renderState = new RenderState(
+            position,
+            size,
+            _borderThickness,
+            _padding,
+            _topChar,
+            _leftChar,
+            _rightChar,
+            _bottomChar,
+            _topLeftChar,
+            _topRightChar,
+            _bottomLeftChar,
+            _bottomRightChar,
+            fillColor
+        );
+        var skipBorderRender = !renderContext.ForceRerender && !NeedsRerender(renderState);
+        if (!skipBorderRender)
+        {
+            _lastRenderState = renderState;
+        }
 
         var childPosition = new Position(X: position.X + _borderThickness.Left, Y: position.Y + _borderThickness.Top);
         var childSize = new Size(
@@ -96,7 +135,7 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
             SetStyleColor(renderContext, foregroundColor, backgroundColor);
         }
 
-        var updateCellsOnly = !contentRendered;
+        var updateCellsOnly = !contentRendered || skipBorderRender;
         RenderTopBorder(renderContext, position, size, updateCellsOnly);
         RenderBottomBorder(renderContext, position, size, updateCellsOnly);
         RenderLeftBorder(renderContext, position, size, updateCellsOnly);
@@ -110,7 +149,7 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
         if (fillColor != null)
         {
             SetStyleColor(renderContext, foregroundColor, fillColor);
-            
+
             // Use the same array that children use. Also use that area, so we working only inside the border 
             Array2DHelper.RenderEmpty(
                 renderContext.ConsoleDriver,
@@ -120,19 +159,21 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
                 childPositionWithoutPadding,
                 childSizeWithoutPadding
             );
-
-            //Write back the changes to the original array
-            Array2DHelper.CombineArray2Ds(
-                renderContext.UpdatedCells,
-                borderChildUpdatedCells,
-                new Position(0, 0),
-                renderContext.UpdatedCells,
-                (a, b) => (a ?? false) || (b ?? false)
-            );
         }
+
+        //Write back the changes to the original array
+        Array2DHelper.CombineArray2Ds(
+            renderContext.UpdatedCells,
+            borderChildUpdatedCells,
+            new Position(0, 0),
+            renderContext.UpdatedCells,
+            (a, b) => (a ?? false) || (b ?? false)
+        );
 
         return contentRendered;
     }
+
+    private bool NeedsRerender(RenderState renderState) => renderState != _lastRenderState;
 
     private void RenderTopBorder(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
