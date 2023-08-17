@@ -11,5 +11,5 @@ public class CompressUserCommand : IIdentifiableUserCommand
     }
 
     public string UserCommandID => CommandName;
-    public string Title => "Compress";
+    public string Title => "Select for compression";
 }

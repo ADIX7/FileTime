@@ -1,4 +1,4 @@
-﻿namespace FileTime.App.Core.Models;
+﻿namespace FileTime.Core.Models;
 
 public enum ItemOrdering
 {
@@ -8,4 +8,6 @@ public enum ItemOrdering
     CreationDateDesc,
     LastModifyDate,
     LastModifyDateDesc,
+    Size,
+    SizeDesc
 }

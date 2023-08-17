@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using DeclarativeProperty;
-using FileTime.App.Core.Models;
 using FileTime.Core.Models;
 using InitableService;
 

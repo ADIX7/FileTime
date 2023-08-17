@@ -17,6 +17,7 @@ public class CompressCommand : CommandBase, IExecutableCommand, ITransportationC
     private readonly IUserCommunicationService _userCommunicationService;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IContentAccessorFactory _contentAccessorFactory;
+    private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
     private readonly OptionsInputElement<CompressionType> _compressionType;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly TextInputElement _targetFileName;
@@ -29,6 +30,7 @@ public class CompressCommand : CommandBase, IExecutableCommand, ITransportationC
         IUserCommunicationService userCommunicationService,
         ITimelessContentProvider timelessContentProvider,
         IContentAccessorFactory contentAccessorFactory,
+        ICommandSchedulerNotifier commandSchedulerNotifier,
         IReadOnlyCollection<FullName> sources,
         TransportMode mode,
         FullName targetFullName)
@@ -36,6 +38,7 @@ public class CompressCommand : CommandBase, IExecutableCommand, ITransportationC
         _userCommunicationService = userCommunicationService;
         _timelessContentProvider = timelessContentProvider;
         _contentAccessorFactory = contentAccessorFactory;
+        _commandSchedulerNotifier = commandSchedulerNotifier;
         ArgumentNullException.ThrowIfNull(sources);
         ArgumentNullException.ThrowIfNull(mode);
         ArgumentNullException.ThrowIfNull(targetFullName);
@@ -49,7 +52,10 @@ public class CompressCommand : CommandBase, IExecutableCommand, ITransportationC
             "CompressionMethod",
             Enum.GetValues<CompressionType>()
                 .Select(t => new OptionElement<CompressionType>(t.ToString(), t))
-        );
+        )
+        {
+            Value = CompressionType.Zip
+        };
 
         _inputs = new List<IInputElement>
         {
@@ -121,6 +127,8 @@ public class CompressCommand : CommandBase, IExecutableCommand, ITransportationC
                 disposable.Dispose();
             }
         }
+        
+        await _commandSchedulerNotifier.RefreshContainer(Target);
     }
 
     private async Task<IEnumerable<IDisposable>> TraverseTree(

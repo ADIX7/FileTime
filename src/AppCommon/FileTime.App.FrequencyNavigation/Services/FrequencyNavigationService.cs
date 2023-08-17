@@ -153,7 +153,11 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         try
         {
             return _containerScores
-                .Where(c => c.Key.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                .Where(c =>
+                {
+                    var searchTerms = searchText.Split(' ');
+                    return searchTerms.All(s => c.Key.Contains(s, StringComparison.OrdinalIgnoreCase));
+                })
                 .OrderByDescending(c => GetWeightedScore(c.Value.Score, c.Value.LastAccessed))
                 .Select(c => c.Key)
                 .ToList();

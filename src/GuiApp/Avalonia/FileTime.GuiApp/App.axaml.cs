@@ -32,6 +32,7 @@ public class Application : Avalonia.Application
             .ConfigureFont(configuration)
             .RegisterLogging()
             .RegisterServices()
+            .AddSettings()
             .AddViewModels()
             .BuildServiceProvider();
 

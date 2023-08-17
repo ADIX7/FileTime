@@ -1,6 +1,7 @@
 ﻿using FileTime.App.FrequencyNavigation.Services;
 using FileTime.ConsoleUI.App.Styling;
 using GeneralInputKey;
+using TerminalUI.Color;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
@@ -58,6 +59,7 @@ public class FrequencyNavigation
             Margin = 5,
             Padding = 1,
             MaxWidth = 50,
+            Fill = SpecialColor.None,
             Content = new Grid<IRootViewModel>
             {
                 RowDefinitionsObject = "Auto *",

@@ -11,15 +11,18 @@ public class CompressCommandFactory : ITransportationCommandFactory<CompressComm
     private readonly IUserCommunicationService _userCommunicationService;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IContentAccessorFactory _contentAccessorFactory;
+    private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
 
     public CompressCommandFactory(
         IUserCommunicationService userCommunicationService,
         ITimelessContentProvider timelessContentProvider,
-        IContentAccessorFactory contentAccessorFactory)
+        IContentAccessorFactory contentAccessorFactory,
+        ICommandSchedulerNotifier commandSchedulerNotifier)
     {
         _userCommunicationService = userCommunicationService;
         _timelessContentProvider = timelessContentProvider;
         _contentAccessorFactory = contentAccessorFactory;
+        _commandSchedulerNotifier = commandSchedulerNotifier;
     }
 
     public CompressCommand GenerateCommand(IReadOnlyCollection<FullName> sources, TransportMode mode, FullName targetFullName)
@@ -27,6 +30,7 @@ public class CompressCommandFactory : ITransportationCommandFactory<CompressComm
             _userCommunicationService,
             _timelessContentProvider,
             _contentAccessorFactory,
+            _commandSchedulerNotifier,
             sources,
             mode,
             targetFullName

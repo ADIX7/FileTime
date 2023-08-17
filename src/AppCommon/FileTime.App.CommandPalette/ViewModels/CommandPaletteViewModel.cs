@@ -42,9 +42,14 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
         FilteredMatches = _commandPaletteService
             .GetCommands()
             .Where(c =>
-                c.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
-                || c.Identifier.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
-            )
+            {
+                var searchTerms = SearchText.Split(' ');
+                return searchTerms
+                    .All(s =>
+                        c.Title.Contains(s, StringComparison.OrdinalIgnoreCase)
+                        || c.Identifier.Contains(s, StringComparison.OrdinalIgnoreCase)
+                    );
+            })
             .Select(c =>
                 (ICommandPaletteEntryViewModel) new CommandPaletteEntryViewModel(c.Identifier, c.Title, _commandKeysHelperService.GetKeyConfigsString(c.Identifier))
             )

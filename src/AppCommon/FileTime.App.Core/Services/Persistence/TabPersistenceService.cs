@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
@@ -34,6 +35,7 @@ public class TabPersistenceService : ITabPersistenceService
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILocalContentProvider _localContentProvider;
+    private readonly TabPersistenceSettings _tabPersistenceSettings;
 
     public TabPersistenceService(
         IApplicationSettings applicationSettings,
@@ -41,6 +43,7 @@ public class TabPersistenceService : ITabPersistenceService
         ITimelessContentProvider timelessContentProvider,
         IServiceProvider serviceProvider,
         ILocalContentProvider localContentProvider,
+        TabPersistenceSettings tabPersistenceSettings,
         ILogger<TabPersistenceService> logger)
     {
         _appState = appState;
@@ -49,6 +52,7 @@ public class TabPersistenceService : ITabPersistenceService
         _timelessContentProvider = timelessContentProvider;
         _serviceProvider = serviceProvider;
         _localContentProvider = localContentProvider;
+        _tabPersistenceSettings = tabPersistenceSettings;
 
         _jsonOptions = new JsonSerializerOptions
         {
@@ -62,6 +66,7 @@ public class TabPersistenceService : ITabPersistenceService
 
     public Task ExitAsync(CancellationToken token = default)
     {
+        if(!_tabPersistenceSettings.SaveState) return Task.CompletedTask;
         SaveStates(token);
 
         return Task.CompletedTask;
@@ -69,7 +74,7 @@ public class TabPersistenceService : ITabPersistenceService
 
     private async Task LoadStatesAsync(CancellationToken token = default)
     {
-        if (!File.Exists(_settingsPath))
+        if (!File.Exists(_settingsPath) || !_tabPersistenceSettings.LoadState)
         {
             await CreateEmptyTab();
             return;

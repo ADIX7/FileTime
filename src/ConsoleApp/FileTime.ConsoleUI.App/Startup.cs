@@ -32,6 +32,12 @@ public static class Startup
         return services;
     }
 
+    public static IServiceCollection AddSettings(this IServiceCollection services)
+    {
+        services.TryAddSingleton(new TabPersistenceSettings {LoadState = false, SaveState = false});
+        return services;
+    }
+
     public static IServiceCollection AddConsoleViews(this IServiceCollection services)
     {
         services.TryAddSingleton<MainWindow>();

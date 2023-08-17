@@ -49,6 +49,12 @@ public static class Startup
         serviceCollection.TryAddSingleton<IGuiAppState>(s => s.GetRequiredService<GuiAppState>());
         return serviceCollection;
     }
+    
+    internal static IServiceCollection AddSettings(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.TryAddSingleton(new TabPersistenceSettings());
+        return serviceCollection;
+    }
 
     internal static IServiceCollection RegisterServices(this IServiceCollection serviceCollection)
     {

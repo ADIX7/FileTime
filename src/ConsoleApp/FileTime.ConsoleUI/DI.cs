@@ -24,6 +24,7 @@ public static class DI
             .RegisterDefaultServices(configuration: configuration)
             .AddConsoleServices(configuration)
             .AddConsoleViews()
+            .AddSettings()
             .AddTerminalUi()
             .AddLocalProviderServices()
             .AddServerCoreServices()

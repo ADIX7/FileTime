@@ -3,9 +3,9 @@ using System.ComponentModel;
 using CircularBuffer;
 using DeclarativeProperty;
 using DynamicData;
-using FileTime.App.Core.Models;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
+using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 using ObservableComputations;
 using IContainer = FileTime.Core.Models.IContainer;
@@ -98,23 +98,34 @@ public class Tab : ITab
                             .ThenOrdering(i => i.DisplayName, ListSortDirection.Descending),
                     ItemOrdering.CreationDate =>
                         items
-                            .Ordering(i => i.CreatedAt),
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => i.CreatedAt),
                     ItemOrdering.CreationDateDesc =>
                         items
-                            .Ordering(i => i.CreatedAt, ListSortDirection.Descending),
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => i.CreatedAt, ListSortDirection.Descending),
                     ItemOrdering.LastModifyDate =>
                         items
-                            .Ordering(i => i.ModifiedAt),
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => i.ModifiedAt),
                     ItemOrdering.LastModifyDateDesc =>
                         items
-                            .Ordering(i => i.ModifiedAt, ListSortDirection.Descending),
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => i.ModifiedAt, ListSortDirection.Descending),
+                    ItemOrdering.Size =>
+                        items
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => GetSize(i)),
+                    ItemOrdering.SizeDesc =>
+                        items
+                            .Ordering(i => i.Type)
+                            .ThenOrdering(i => GetSize(i), ListSortDirection.Descending),
                     _ => throw new NotImplementedException()
                 };
 
                 return Task.FromResult(orderedItems);
             }
         );
-
 
         CurrentSelectedItem = DeclarativePropertyHelpers.CombineLatest(
             CurrentItems.Watch<ObservableCollection<IItem>, IItem>(),
@@ -132,6 +143,16 @@ public class Tab : ITab
             _currentSelectedItemCached = s;
             await _currentRequestItem.SetValue(s);
         });
+    }
+
+    private static long GetSize(IItem item)
+    {
+        if (item is IElement element && element.GetExtension<FileExtension>() is { } fileExtension)
+        {
+            return fileExtension.Size ?? -1;
+        }
+
+        return -2;
     }
 
     private static IItem MapItem(AbsolutePath item)
@@ -242,7 +263,7 @@ public class Tab : ITab
 
     public async Task SetSelectedItem(AbsolutePath newSelectedItem)
     {
-        if (_currentRequestItem.Value is {} v && v.Path == newSelectedItem.Path) return;
+        if (_currentRequestItem.Value is { } v && v.Path == newSelectedItem.Path) return;
         await _currentRequestItem.SetValue(newSelectedItem);
     }
 
