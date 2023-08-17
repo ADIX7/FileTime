@@ -47,7 +47,9 @@ public static class DI
 #if DEBUG || VERBOSE_LOGGING
                     .MinimumLevel.Verbose()
 #endif
+#if DEBUG
                     .ReadFrom.Configuration(serviceProvider.GetRequiredService<IConfiguration>())
+#endif
                     .Enrich.FromLogContext()
                     .WriteTo.File(
                         Path.Combine(Program.AppDataRoot, "logs", "appLog.log"),

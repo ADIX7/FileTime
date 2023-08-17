@@ -150,7 +150,7 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
         {
             SetStyleColor(renderContext, foregroundColor, fillColor);
 
-            // Use the same array that children use. Also use that area, so we working only inside the border 
+            // Use the same array that children use. Also use that area, so we work only inside the border 
             Array2DHelper.RenderEmpty(
                 renderContext.ConsoleDriver,
                 borderChildUpdatedCells,

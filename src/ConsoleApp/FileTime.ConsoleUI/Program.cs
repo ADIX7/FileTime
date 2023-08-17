@@ -3,16 +3,13 @@ using FileTime.App.Core;
 using FileTime.App.Core.Configuration;
 using FileTime.ConsoleUI;
 using FileTime.ConsoleUI.App;
-using FileTime.ConsoleUI.App.Styling;
 using FileTime.ConsoleUI.InfoProviders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Debugging;
 using TerminalUI;
-using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
-using TerminalUI.Styling;
 using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
