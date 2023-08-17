@@ -67,7 +67,7 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
             unfilledForeground,
             unfilledBackground);
 
-        if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
+        var skipRender = !renderContext.ForceRerender && !NeedsRerender(renderState);
 
         var utf8Support = ApplicationContext!.SupportUtf8Output;
         var unfilledCharacter = unfilledCharacterS.GetChar(utf8Support);
@@ -117,16 +117,17 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
         var textStartPosition = position;
         if (leftCap.HasValue)
         {
-            RenderText(leftCap.Value, driver, position, size with {Width = 1});
+            RenderText(leftCap.Value, renderContext, position, size with {Width = 1}, skipRender);
             textStartPosition = textStartPosition with {X = textStartPosition.X + 1};
         }
 
         // Filled
         RenderText(
             filledText,
-            driver,
+            renderContext,
             textStartPosition,
-            size with {Width = progressQuotientWidth}
+            size with {Width = progressQuotientWidth}, 
+            skipRender
         );
 
         // Transient character
@@ -135,9 +136,10 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
             SetStyleColor(renderContext, foreground, unfilledBackground);
             RenderText(
                 transientChar,
-                driver,
+                renderContext,
                 textStartPosition with {X = textStartPosition.X + progressQuotientWidth},
-                size with {Width = 1}
+                size with {Width = 1},
+                skipRender
             );
         }
 
@@ -150,9 +152,10 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
             SetStyleColor(renderContext, unfilledForeground, unfilledBackground);
             RenderText(
                 unfilledText,
-                driver,
+                renderContext,
                 textStartPosition with {X = textStartPosition.X + progressQuotientWidth + 1},
-                size with {Width = progressRemainderWidth}
+                size with {Width = progressRemainderWidth},
+                skipRender
             );
         }
 
@@ -162,12 +165,13 @@ public partial class ProgressBar<T> : View<ProgressBar<T>, T>
             SetStyleColor(renderContext, foreground, background);
             RenderText(
                 rightCap.Value,
-                driver,
+                renderContext,
                 position with {X = position.X + size.Width - 1},
-                size with {Width = 1});
+                size with {Width = 1},
+                skipRender);
         }
 
-        return true;
+        return !skipRender;
     }
 
     private bool NeedsRerender(RenderState renderState)

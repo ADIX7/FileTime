@@ -1,4 +1,5 @@
 ﻿using PropertyChanged.SourceGenerator;
+using TerminalUI.Color;
 using TerminalUI.Models;
 using TerminalUI.Traits;
 
@@ -16,6 +17,7 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
     [Notify] private char _topRightChar = '┐';
     [Notify] private char _bottomLeftChar = '└';
     [Notify] private char _bottomRightChar = '┘';
+    [Notify] private IColor? _fill;
 
     public Border()
     {
@@ -25,6 +27,9 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
         RerenderProperties.Add(nameof(LeftChar));
         RerenderProperties.Add(nameof(RightChar));
         RerenderProperties.Add(nameof(BottomChar));
+        RerenderProperties.Add(nameof(TopLeftChar));
+        RerenderProperties.Add(nameof(TopRightChar));
+        RerenderProperties.Add(nameof(Fill));
     }
 
     protected override Size CalculateSize()
@@ -51,11 +56,18 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
                 + DataContext?.GetType().Name);
         }
 
+        var backgroundColor = Background ?? renderContext.Background;
+        var foregroundColor = Foreground ?? renderContext.Foreground;
+        var fillColor = Fill ?? Background ?? renderContext.Background;
+
         var childPosition = new Position(X: position.X + _borderThickness.Left, Y: position.Y + _borderThickness.Top);
         var childSize = new Size(
             Width: size.Width - _borderThickness.Left - _borderThickness.Right,
             Height: size.Height - _borderThickness.Top - _borderThickness.Bottom
         );
+
+        var childPositionWithoutPadding = childPosition;
+        var childSizeWithoutPadding = childSize;
 
         if (_padding.Left > 0 || _padding.Top > 0 || _padding.Right > 0 || _padding.Bottom > 0)
         {
@@ -66,85 +78,117 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
             );
         }
 
-        var contentRendered = ContentRendererMethod(renderContext, childPosition, childSize);
+        // Same size as the original.
+        // Although wasting memory, but we would have to delta the position when setting "updatedcells"
+        // It is easier and also covers the fact the children use a different array
+        var borderChildUpdatedCells = new bool[
+            renderContext.UpdatedCells.GetLength(0),
+            renderContext.UpdatedCells.GetLength(1)
+        ];
+        var childRenderContext = renderContext with {UpdatedCells = borderChildUpdatedCells};
+
+        var contentRendered = ContentRendererMethod(childRenderContext, childPosition, childSize);
 
         if (contentRendered)
         {
             var driver = renderContext.ConsoleDriver;
             driver.ResetStyle();
-            SetColorsForDriver(renderContext);
+            SetStyleColor(renderContext, foregroundColor, backgroundColor);
+        }
 
-            RenderTopBorder(renderContext, position, size);
-            RenderBottomBorder(renderContext, position, size);
-            RenderLeftBorder(renderContext, position, size);
-            RenderRightBorder(renderContext, position, size);
+        var updateCellsOnly = !contentRendered;
+        RenderTopBorder(renderContext, position, size, updateCellsOnly);
+        RenderBottomBorder(renderContext, position, size, updateCellsOnly);
+        RenderLeftBorder(renderContext, position, size, updateCellsOnly);
+        RenderRightBorder(renderContext, position, size, updateCellsOnly);
 
-            RenderTopLeftCorner(renderContext, position);
-            RenderTopRightCorner(renderContext, position, size);
-            RenderBottomLeftCorner(renderContext, position, size);
-            RenderBottomRightCorner(renderContext, position, size);
+        RenderTopLeftCorner(renderContext, position, updateCellsOnly);
+        RenderTopRightCorner(renderContext, position, size, updateCellsOnly);
+        RenderBottomLeftCorner(renderContext, position, size, updateCellsOnly);
+        RenderBottomRightCorner(renderContext, position, size, updateCellsOnly);
 
-            //TODO render padding
+        if (fillColor != null)
+        {
+            SetStyleColor(renderContext, foregroundColor, fillColor);
+            
+            // Use the same array that children use. Also use that area, so we working only inside the border 
+            Array2DHelper.RenderEmpty(
+                renderContext.ConsoleDriver,
+                borderChildUpdatedCells,
+                borderChildUpdatedCells,
+                ApplicationContext!.EmptyCharacter,
+                childPositionWithoutPadding,
+                childSizeWithoutPadding
+            );
+
+            //Write back the changes to the original array
+            Array2DHelper.CombineArray2Ds(
+                renderContext.UpdatedCells,
+                borderChildUpdatedCells,
+                new Position(0, 0),
+                renderContext.UpdatedCells,
+                (a, b) => (a ?? false) || (b ?? false)
+            );
         }
 
         return contentRendered;
     }
 
-    private void RenderTopBorder(in RenderContext renderContext, Position position, Size size)
+    private void RenderTopBorder(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
         position = position with {X = position.X + _borderThickness.Left};
         size = new Size(Width: size.Width - _borderThickness.Left - _borderThickness.Right, Height: _borderThickness.Top);
-        RenderText(_topChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_topChar, renderContext, position, size, updateCellsOnly);
     }
 
-    private void RenderBottomBorder(in RenderContext renderContext, Position position, Size size)
+    private void RenderBottomBorder(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
         position = new Position(X: position.X + _borderThickness.Left, Y: position.Y + size.Height - _borderThickness.Bottom);
         size = new Size(Width: size.Width - _borderThickness.Left - _borderThickness.Right, Height: _borderThickness.Bottom);
-        RenderText(_bottomChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_bottomChar, renderContext, position, size, updateCellsOnly);
     }
 
-    private void RenderLeftBorder(in RenderContext renderContext, Position position, Size size)
+    private void RenderLeftBorder(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
         position = position with {Y = position.Y + _borderThickness.Top};
         size = new Size(Width: _borderThickness.Left, Height: size.Height - _borderThickness.Top - _borderThickness.Bottom);
-        RenderText(_leftChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_leftChar, renderContext, position, size, updateCellsOnly);
     }
 
-    private void RenderRightBorder(in RenderContext renderContext, Position position, Size size)
+    private void RenderRightBorder(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
         position = new Position(X: position.X + size.Width - _borderThickness.Right, Y: position.Y + _borderThickness.Top);
         size = new Size(Width: _borderThickness.Right, Height: size.Height - _borderThickness.Top - _borderThickness.Bottom);
-        RenderText(_rightChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_rightChar, renderContext, position, size, updateCellsOnly);
     }
 
-    private void RenderTopLeftCorner(in RenderContext renderContext, Position position)
+    private void RenderTopLeftCorner(in RenderContext renderContext, Position position, bool updateCellsOnly)
     {
         if (_borderThickness.Left == 0 || _borderThickness.Top == 0) return;
 
         var size = new Size(Width: _borderThickness.Left, Height: _borderThickness.Top);
-        RenderText(_topLeftChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_topLeftChar, renderContext, position, size, updateCellsOnly);
     }
 
-    private void RenderTopRightCorner(in RenderContext renderContext, Position position, Size size)
+    private void RenderTopRightCorner(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
         if (_borderThickness.Right == 0 || _borderThickness.Top == 0) return;
 
         position = position with {X = position.X + size.Width - _borderThickness.Right};
         size = new Size(Width: _borderThickness.Right, Height: _borderThickness.Top);
-        RenderText(_topRightChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_topRightChar, renderContext, position, size, updateCellsOnly);
     }
 
-    private void RenderBottomLeftCorner(in RenderContext renderContext, Position position, Size size)
+    private void RenderBottomLeftCorner(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
         if (_borderThickness.Left == 0 || _borderThickness.Bottom == 0) return;
 
         position = position with {Y = position.Y + size.Height - _borderThickness.Bottom};
         size = new Size(Width: _borderThickness.Left, Height: _borderThickness.Bottom);
-        RenderText(_bottomLeftChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_bottomLeftChar, renderContext, position, size, updateCellsOnly);
     }
 
-    private void RenderBottomRightCorner(in RenderContext renderContext, Position position, Size size)
+    private void RenderBottomRightCorner(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly)
     {
         if (_borderThickness.Right == 0 || _borderThickness.Bottom == 0) return;
 
@@ -153,6 +197,6 @@ public sealed partial class Border<T> : ContentView<Border<T>, T>, IDisplayView
             Y: position.Y + size.Height - _borderThickness.Bottom
         );
         size = new Size(Width: _borderThickness.Right, Height: _borderThickness.Bottom);
-        RenderText(_bottomRightChar, renderContext.ConsoleDriver, position, size);
+        RenderText(_bottomRightChar, renderContext, position, size, updateCellsOnly);
     }
 }

@@ -13,32 +13,40 @@ public sealed partial class Rectangle<T> : View<Rectangle<T>, T>, IDisplayView
         IColor? Color);
 
     private RenderState? _lastRenderState;
+
+    [Notify] private IColor? _fill;
+
+    public Rectangle()
+    {
+        RerenderProperties.Add(nameof(Fill));
+    }
+
     protected override Size CalculateSize() => new(Width ?? 0, Height ?? 0);
 
     protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
-        var color = Background ?? renderContext.Background;
-        var renderState = new RenderState(position, size, color);
-        if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
+        var fillColor = Fill ?? Background ?? renderContext.Background;
+        var renderState = new RenderState(position, size, fillColor);
+        var skipRender = !renderContext.ForceRerender && !NeedsRerender(renderState);
         _lastRenderState = renderState;
 
         var driver = renderContext.ConsoleDriver;
 
-        var s = new string(' ', size.Width);
         driver.ResetStyle();
-        if (color is not null)
+        if (fillColor is not null)
         {
-            driver.SetBackgroundColor(color);
+            driver.SetBackgroundColor(fillColor);
         }
 
-        var height = size.Height;
-        for (var i = 0; i < height; i++)
-        {
-            driver.SetCursorPosition(position with {Y = position.Y + i});
-            driver.Write(s);
-        }
+        RenderEmpty(
+            renderContext,
+            position,
+            size,
+            skipRender,
+            false
+        );
 
-        return true;
+        return !skipRender;
     }
 
     private bool NeedsRerender(RenderState renderState)

@@ -4,7 +4,7 @@ using TerminalUI.Traits;
 
 namespace TerminalUI.Controls;
 
-public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>, IVisibilityChangeHandler
+public sealed partial class StackPanel<T> : ChildCollectionView<StackPanel<T>, T>, IVisibilityChangeHandler
 {
     private readonly List<IView> _forceRerenderChildren = new();
     private readonly object _forceRerenderChildrenLock = new();
@@ -39,7 +39,10 @@ public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>
         return new Size(width, height);
     }
 
-    protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
+    protected override bool DefaultRenderer(
+        in RenderContext renderContext,
+        Position position,
+        Size size)
     {
         var neededRerender = false;
         IReadOnlyList<IView> forceRerenderChildren;
@@ -102,9 +105,10 @@ public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>
             SetColorsForDriver(renderContext);
             RenderText(
                 text,
-                renderContext.ConsoleDriver,
+                renderContext,
                 position with {X = position.X + delta},
-                size with {Width = leftWidth}
+                size with {Width = leftWidth},
+                !neededRerender
             );
         }
         else
@@ -116,9 +120,10 @@ public sealed partial class StackPanel<T> : ChildContainerView<StackPanel<T>, T>
             SetColorsForDriver(renderContext);
             RenderText(
                 text,
-                renderContext.ConsoleDriver,
+                renderContext,
                 position with {Y = position.Y + delta},
-                size with {Height = leftHeight}
+                size with {Height = leftHeight},
+                !neededRerender
             );
         }
 

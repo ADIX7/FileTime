@@ -162,6 +162,8 @@ public sealed partial class ItemsControl<TDataContext, TItem>
                 ? childSize.Height
                 : childSize.Width;
         }
+        
+        // TODO: clean non used space
 
         return neededRerender;
     }

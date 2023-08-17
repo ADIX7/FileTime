@@ -52,14 +52,16 @@ public class ProgressBarExamples
 
     private void RenderProgressBar<T>(ProgressBar<T> progressBar, Position position)
     {
+        var s = new Size(10, 1);
         var renderContext = new RenderContext(
             _driver,
             true,
             null,
             null,
             new(),
-            new TextFormatContext(true)
+            new TextFormatContext(true),
+            new bool[s.Width,s.Height]
         );
-        progressBar.Render(renderContext, position, new Size(10, 1));
+        progressBar.Render(renderContext, position, s);
     }
 }

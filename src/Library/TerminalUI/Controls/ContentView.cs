@@ -48,7 +48,7 @@ public abstract partial class ContentView<TConcrete, T>
         {
             if (_placeholderRenderDone) return false;
             _placeholderRenderDone = true;
-            RenderEmpty(renderContext, position, size);
+            RenderEmpty(renderContext, position, size, false);
             return true;
         }
 

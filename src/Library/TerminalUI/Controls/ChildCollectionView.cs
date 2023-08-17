@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TerminalUI.Controls;
 
-public abstract class ChildContainerView<TConcrete, T>
+public abstract class ChildCollectionView<TConcrete, T>
     : View<TConcrete, T>, IChildContainer<T>
     where TConcrete : View<TConcrete, T>
 {
@@ -12,7 +12,7 @@ public abstract class ChildContainerView<TConcrete, T>
     public ReadOnlyObservableCollection<IView> Children { get; }
     public ChildInitializer<T> ChildInitializer { get; }
 
-    protected ChildContainerView()
+    protected ChildCollectionView()
     {
         ChildInitializer = new ChildInitializer<T>(this);
         Children = new ReadOnlyObservableCollection<IView>(_children);

@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
-using TerminalUI.ConsoleDrivers;
 using TerminalUI.Models;
 using TerminalUI.TextFormat;
 using TerminalUI.Traits;
@@ -200,12 +199,18 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         return renderResult;
     }
 
-    protected void RenderEmpty(in RenderContext renderContext, Position position, Size size)
+    protected void RenderEmpty(in RenderContext renderContext, Position position, Size size, bool updateCellsOnly, bool resetStyle = true)
     {
+        UpdateCells(renderContext.UpdatedCells, position, size.Width, size.Height);
+        if (updateCellsOnly) return;
         var driver = renderContext.ConsoleDriver;
-        driver.ResetStyle();
+        if (resetStyle)
+        {
+            driver.ResetStyle();
+        }
 
-        var placeHolder = new string(ApplicationContext!.EmptyCharacter, size.Width);
+        Span<char> placeHolder = stackalloc char[size.Width];
+        placeHolder.Fill(ApplicationContext!.EmptyCharacter);
         for (var i = 0; i < size.Height; i++)
         {
             driver.SetCursorPosition(position with {Y = position.Y + i});
@@ -213,13 +218,30 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         }
     }
 
+    private void UpdateCells(bool[,] renderContextUpdatedCells, Position position, int sizeWidth, int sizeHeight)
+    {
+        for (var x = 0; x < sizeWidth; x++)
+        {
+            for (var y = 0; y < sizeHeight; y++)
+            {
+                renderContextUpdatedCells[position.X + x, position.Y + y] = true;
+            }
+        }
+    }
+
     protected void RenderText(
         IList<string> textLines,
-        IConsoleDriver driver,
+        in RenderContext renderContext,
         Position position,
         Size size,
+        bool updateCellsOnly,
         TextTransformer? textTransformer = null)
     {
+        UpdateCells(renderContext.UpdatedCells, position, size.Width, size.Height);
+
+        if (updateCellsOnly) return;
+
+        var driver = renderContext.ConsoleDriver;
         for (var i = 0; i < textLines.Count; i++)
         {
             var currentPosition = position with {Y = position.Y + i};
@@ -234,6 +256,10 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
             {
                 text = text[..size.Width];
             }
+            else if (text.Length < size.Width)
+            {
+                text = text.PadRight(size.Width);
+            }
 
             try
             {
@@ -247,38 +273,17 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
     }
 
     protected void RenderText(
-        string text,
-        IConsoleDriver driver,
+        in ReadOnlySpan<char> text,
+        in RenderContext renderContext,
         Position position,
         Size size,
-        TextTransformer? textTransformer = null)
+        bool updateCellsOnly)
     {
-        for (var i = 0; i < size.Height; i++)
-        {
-            var currentPosition = position with {Y = position.Y + i};
-            var finalText = text;
+        UpdateCells(renderContext.UpdatedCells, position, size.Width, size.Height);
 
-            if (textTransformer is not null)
-            {
-                finalText = textTransformer(finalText, currentPosition, size);
-            }
+        if (updateCellsOnly) return;
 
-            if (finalText.Length > size.Width)
-            {
-                finalText = finalText[..size.Width];
-            }
-
-            driver.SetCursorPosition(currentPosition);
-            driver.Write(finalText);
-        }
-    }
-
-    protected void RenderText(
-        in ReadOnlySpan<char> text,
-        IConsoleDriver driver,
-        Position position,
-        Size size)
-    {
+        var driver = renderContext.ConsoleDriver;
         for (var i = 0; i < size.Height; i++)
         {
             var currentPosition = position with {Y = position.Y + i};
@@ -296,10 +301,16 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
     protected void RenderText(
         char content,
-        IConsoleDriver driver,
+        in RenderContext renderContext,
         Position position,
-        Size size)
+        Size size,
+        bool updateCellsOnly)
     {
+        UpdateCells(renderContext.UpdatedCells, position, size.Width, size.Height);
+
+        if (updateCellsOnly) return;
+
+        var driver = renderContext.ConsoleDriver;
         var contentString = new string(content, size.Width);
 
         for (var i = 0; i < size.Height; i++)
@@ -323,6 +334,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         {
             t.ApplyFormat(driver, renderContext.TextFormat);
         }
+
         if (foreground is not null)
         {
             driver.SetForegroundColor(foreground);

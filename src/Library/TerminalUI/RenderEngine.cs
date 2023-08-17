@@ -1,4 +1,5 @@
-﻿using TerminalUI.Controls;
+﻿using TerminalUI.ConsoleDrivers;
+using TerminalUI.Controls;
 using TerminalUI.Models;
 using TerminalUI.TextFormat;
 using TerminalUI.Traits;
@@ -14,6 +15,9 @@ public class RenderEngine : IRenderEngine
     private readonly List<IView> _forcedTemporaryViewsToRender = new();
     private bool _rerenderRequested = true;
     private bool _lastCursorVisible;
+    private bool[,]? _updatedCells;
+    private bool[,]? _filledCells;
+    private bool[,]? _lastFilledCells;
 
     public RenderEngine(IApplicationContext applicationContext, IEventLoop eventLoop)
     {
@@ -77,6 +81,18 @@ public class RenderEngine : IRenderEngine
         var initialPosition = new Position(0, 0);
         var size = driver.GetWindowSize();
 
+        //TODO: this could be stack allocated when sizes are small
+        if (_updatedCells is null
+            || _updatedCells.GetLength(0) != size.Width
+            || _updatedCells.GetLength(1) != size.Height)
+        {
+            _updatedCells = new bool[size.Width, size.Height];
+        }
+        else
+        {
+            ClearArray2D(_updatedCells);
+        }
+
         RenderViews(
             forcedTemporaryViewsToRender,
             new RenderContext(
@@ -85,7 +101,8 @@ public class RenderEngine : IRenderEngine
                 null,
                 null,
                 new RenderStatistics(),
-                new TextFormatContext(driver.SupportsAnsiEscapeSequence)
+                new TextFormatContext(driver.SupportsAnsiEscapeSequence),
+                _updatedCells
             ),
             initialPosition,
             size);
@@ -98,10 +115,40 @@ public class RenderEngine : IRenderEngine
                 null,
                 null,
                 new RenderStatistics(),
-                new TextFormatContext(driver.SupportsAnsiEscapeSequence)
+                new TextFormatContext(driver.SupportsAnsiEscapeSequence),
+                _updatedCells
             ),
             initialPosition,
             size);
+
+        if (_lastFilledCells is not null
+            && _lastFilledCells.GetLength(0) == size.Width
+            && _lastFilledCells.GetLength(1) == size.Height)
+        {
+            Array2DHelper.CombineArray2Ds(
+                _updatedCells,
+                _lastFilledCells,
+                new Position(0, 0),
+                _updatedCells,
+                (a, b) => (a ?? false) || (b ?? false)
+            );
+        }
+
+        if (_filledCells is null
+            || _filledCells.GetLength(0) != size.Width
+            || _filledCells.GetLength(1) != size.Height)
+        {
+            _filledCells = new bool[size.Width, size.Height];
+        }
+        else
+        {
+            ClearArray2D(_filledCells);
+        }
+
+        driver.ResetStyle();
+        Array2DHelper.RenderEmpty(driver, _updatedCells, _filledCells, _applicationContext.EmptyCharacter, initialPosition, size);
+
+        (_lastFilledCells, _filledCells) = (_filledCells, _lastFilledCells);
 
         if (_applicationContext.FocusManager.Focused is { } focused)
         {
@@ -126,6 +173,20 @@ public class RenderEngine : IRenderEngine
             view.Attached = true;
             view.GetRequestedSize();
             view.Render(renderContext, position, size);
+        }
+    }
+
+    private void ClearArray2D<T>(T[,] array, T defaultValue = default!)
+    {
+        var maxX = array.GetLength(0);
+        var maxY = array.GetLength(1);
+
+        for (var x = 0; x < maxX; x++)
+        {
+            for (var y = 0; y < maxY; y++)
+            {
+                array[x, y] = defaultValue;
+            }
         }
     }
 

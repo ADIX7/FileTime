@@ -100,38 +100,39 @@ public sealed partial class TextBox<T> : View<TextBox<T>, T>, IFocusable, IDispl
             foreground,
             background);
 
-        if (!renderContext.ForceRerender && !NeedsRerender(renderStatus)) return false;
+        var skipRender = !renderContext.ForceRerender && !NeedsRerender(renderStatus);
         _lastRenderState = renderStatus;
 
         var driver = renderContext.ConsoleDriver;
         SetStyleColor(renderContext, foreground, background);
 
-        RenderEmpty(renderContext, position, size);
+        RenderEmpty(renderContext, position, size, skipRender);
 
         if (PasswordChar is { } passwordChar && !char.IsControl(passwordChar))
         {
             for (var i = 0; i < _textLines.Count; i++)
             {
                 var pos = position with {Y = position.Y + i};
-                RenderPasswordTextLine(_textLines[i], passwordChar, driver, pos, size);
+                RenderPasswordTextLine(_textLines[i], passwordChar, renderContext, pos, size, skipRender);
             }
         }
         else
         {
-            RenderText(_textLines, driver, position, size);
+            RenderText(_textLines, renderContext, position, size, skipRender);
         }
 
         _cursorPosition = position + _relativeCursorPosition;
 
-        return true;
+        return !skipRender;
     }
 
     private void RenderPasswordTextLine(
         string sourceText,
         char passwordChar,
-        IConsoleDriver driver,
+        in RenderContext renderContext,
         Position position,
-        Size size)
+        Size size,
+        bool updateCellsOnly)
     {
         Span<char> text = stackalloc char[sourceText.Length];
         for (var j = 0; j < text.Length; j++)
@@ -139,7 +140,7 @@ public sealed partial class TextBox<T> : View<TextBox<T>, T>, IFocusable, IDispl
             text[j] = passwordChar;
         }
 
-        RenderText(text, driver, position, size);
+        RenderText(text, renderContext, position, size, updateCellsOnly);
     }
 
     private bool NeedsRerender(RenderState renderState)

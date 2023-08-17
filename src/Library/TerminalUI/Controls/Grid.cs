@@ -7,7 +7,7 @@ using TerminalUI.ViewExtensions;
 
 namespace TerminalUI.Controls;
 
-public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeHandler
+public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChangeHandler
 {
     private readonly List<IView> _forceRerenderChildren = new();
     private readonly object _forceRerenderChildrenLock = new();
@@ -202,7 +202,8 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
         }
     }
 
-    private bool RenderViewsByPosition(RenderContext context,
+    private bool RenderViewsByPosition(
+        in RenderContext context,
         Position gridPosition,
         Size gridSize,
         ReadOnlySpan<int> columnWidths,
@@ -238,39 +239,26 @@ public sealed class Grid<T> : ChildContainerView<Grid<T>, T>, IVisibilityChangeH
 
         if (!viewsByPosition.TryGetValue((column, row), out var children))
         {
-            RenderEmpty(context, renderPosition, renderSize);
+            RenderEmpty(context, renderPosition, renderSize, false);
             return true;
         }
 
         var needsRerender = children.Any(forceRerenderChildren.Contains);
+        var updatedContext = context;
         if (needsRerender)
         {
-            context = new RenderContext(
-                context.ConsoleDriver,
-                true,
-                context.Foreground,
-                context.Background,
-                context.Statistics,
-                context.TextFormat
-            );
-            RenderEmpty(context, renderPosition, renderSize);
+            updatedContext = context with {ForceRerender = true};
+            RenderEmpty(updatedContext, renderPosition, renderSize, false);
         }
 
         //This implies that children further back in the list will be rendered on top of children placed before in the list.
-        foreach (var child in children.Where(child => child.IsVisible))
+        foreach (var child in children)
         {
-            var rendered = child.Render(context, renderPosition, renderSize);
+            var rendered = child.Render(updatedContext, renderPosition, renderSize);
             if (rendered && !needsRerender)
             {
                 needsRerender = true;
-                context = new RenderContext(
-                    context.ConsoleDriver,
-                    true,
-                    context.Foreground,
-                    context.Background,
-                    context.Statistics,
-                    context.TextFormat
-                );
+                updatedContext = context with {ForceRerender = true};
             }
         }
 

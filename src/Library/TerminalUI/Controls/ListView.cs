@@ -232,6 +232,8 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
             item.Render(renderContext, position with {X = position.X + deltaX}, size with {Width = width});
             deltaX = nextDeltaX;
         }
+        
+        //TODO: render empty to remaining space
 
         return true;
     }
@@ -277,23 +279,20 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
         if (lastItemIndex > listViewItems.Length)
             lastItemIndex = listViewItems.Length;
 
+        var anyRendered = false;
         for (var i = renderStartIndex; i < lastItemIndex; i++)
         {
             var item = listViewItems[i];
-            item.Render(renderContext, position with {Y = position.Y + deltaY}, requestedItemSize with {Width = size.Width});
+            anyRendered = 
+                item.Render(renderContext, position with {Y = position.Y + deltaY}, requestedItemSize with {Width = size.Width}) 
+                || anyRendered;
             deltaY += requestedItemSize.Height;
         }
 
-        var driver = ApplicationContext!.ConsoleDriver;
-        var placeholder = new string(' ', size.Width);
-        driver.ResetStyle();
-        for (var i = deltaY; i < size.Height; i++)
-        {
-            driver.SetCursorPosition(position with {Y = position.Y + i});
-            driver.Write(placeholder);
-        }
+        // TODO: this should only render if deltaY is changed compared to last render or if last render was a horizontal
+        RenderEmpty(renderContext, position with {Y = position.Y + deltaY}, size with {Height = size.Height - deltaY}, false);
 
-        return true;
+        return anyRendered;
     }
 
     private ReadOnlySpan<ListViewItem<TItem, TDataContext>> InstantiateItemViews()

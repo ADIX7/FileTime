@@ -16,6 +16,7 @@ public readonly ref struct RenderContext
     public IColor? Background { get; init; }
     public RenderStatistics Statistics { get; init; }
     public TextFormatContext TextFormat { get; init; }
+    public bool[,] UpdatedCells { get; init; }
 
     public RenderContext(
         IConsoleDriver consoleDriver,
@@ -23,7 +24,8 @@ public readonly ref struct RenderContext
         IColor? foreground,
         IColor? background,
         RenderStatistics statistics,
-        TextFormatContext textFormat)
+        TextFormatContext textFormat,
+        bool[,] updatedCells)
     {
         RenderId = _renderId++;
 
@@ -33,6 +35,7 @@ public readonly ref struct RenderContext
         Background = background;
         Statistics = statistics;
         TextFormat = textFormat;
+        UpdatedCells = updatedCells;
     }
 
     public static RenderContext Empty =>
@@ -42,6 +45,7 @@ public readonly ref struct RenderContext
             null,
             null,
             new RenderStatistics(),
-            new TextFormatContext(false)
+            new TextFormatContext(false),
+            new bool[0, 0]
         );
 }

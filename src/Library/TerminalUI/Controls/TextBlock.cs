@@ -58,7 +58,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
             background,
             _textFormat);
 
-        if (!renderContext.ForceRerender && !NeedsRerender(renderState)) return false;
+        var skipRender = !renderContext.ForceRerender && !NeedsRerender(renderState);
 
         _lastRenderState = renderState;
 
@@ -67,7 +67,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
             if (_placeholderRenderDone)
             {
                 _placeholderRenderDone = true;
-                RenderEmpty(renderContext, position, size);
+                RenderEmpty(renderContext, position, size, skipRender);
             }
 
             return false;
@@ -75,12 +75,11 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
         _placeholderRenderDone = false;
 
-        var driver = renderContext.ConsoleDriver;
         SetStyleColor(renderContext, foreground, background, _textFormat);
 
-        RenderText(_textLines, driver, position, size, TransformText);
+        RenderText(_textLines, renderContext, position, size, skipRender, TransformText);
 
-        return true;
+        return !skipRender;
     }
 
     private string TransformText(string text, Position position, Size size)
