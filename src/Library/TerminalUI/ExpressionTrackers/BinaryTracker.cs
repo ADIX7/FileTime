@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections;
+using System.Linq.Expressions;
 
 namespace TerminalUI.ExpressionTrackers;
 
@@ -26,6 +27,10 @@ public class BinaryTracker : ExpressionTrackerBase
         {
             ExpressionType.Equal => (v1, v2) => Equals(v1, v2),
             ExpressionType.NotEqual => (v1, v2) => !Equals(v1, v2),
+            ExpressionType.GreaterThan => (v1, v2) => Comparer.Default.Compare(v1, v2) > 0,
+            ExpressionType.GreaterThanOrEqual => (v1, v2) => Comparer.Default.Compare(v1, v2) >= 0,
+            ExpressionType.LessThan => (v1, v2) => Comparer.Default.Compare(v1, v2) < 0,
+            ExpressionType.LessThanOrEqual => (v1, v2) => Comparer.Default.Compare(v1, v2) <= 0,
             _ => throw new NotImplementedException()
         };
 

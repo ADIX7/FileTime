@@ -44,6 +44,12 @@ public abstract class ChildCollectionView<TConcrete, T>
         };
     }
 
+    public override void AddChild(IView child)
+    {
+        base.AddChild(child);
+        _children.Add(child);
+    }
+
     public override TChild AddChild<TChild>(TChild child)
     {
         child = base.AddChild(child);

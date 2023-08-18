@@ -376,6 +376,12 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         return child;
     }
 
+    public virtual void AddChild(IView child)
+    {
+        Debug.Assert(child != null);
+        SetupNewChild(child, null);
+    }
+
     public virtual TChild AddChild<TChild, TDataContext>(TChild child, Func<T?, TDataContext?> dataContextMapper)
         where TChild : IView<TDataContext>
     {
@@ -387,15 +393,18 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         return child;
     }
 
-    private void SetupNewChild(IView child, IDisposable dataContextmapper)
+    private void SetupNewChild(IView child, IDisposable? dataContextMapper)
     {
         child.ApplicationContext = ApplicationContext;
         child.Attached = Attached;
         child.VisualParent = this;
         VisualChildren.Add(child);
 
-        AddDisposable(dataContextmapper);
-        child.AddDisposable(dataContextmapper);
+        if (dataContextMapper is not null)
+        {
+            AddDisposable(dataContextMapper);
+            child.AddDisposable(dataContextMapper);
+        }
     }
 
     public virtual void RemoveChild<TDataContext>(IView<TDataContext> child)

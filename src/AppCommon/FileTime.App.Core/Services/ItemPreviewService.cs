@@ -6,20 +6,17 @@ namespace FileTime.App.Core.Services;
 
 public class ItemPreviewService : IItemPreviewService
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly IEnumerable<IItemPreviewProvider> _itemPreviewProviders;
     public IDeclarativeProperty<IItemPreviewViewModel?> ItemPreview { get; }
 
     public ItemPreviewService(
         IAppState appState,
-        IServiceProvider serviceProvider,
         IEnumerable<IItemPreviewProvider> itemPreviewProviders)
     {
-        _serviceProvider = serviceProvider;
         _itemPreviewProviders = itemPreviewProviders;
         ItemPreview = appState
             .SelectedTab
-            .Map(t => t.CurrentSelectedItem)
+            .Map(t => t?.CurrentSelectedItem)
             .Switch()
             .Debounce(TimeSpan.FromMilliseconds(250))
             .Map(async (item, _) =>

@@ -117,6 +117,8 @@ public class App : IApplication
 
             Thread.Sleep(10);
         }
+        
+        Task.Run(async () => await _lifecycleService.ExitAsync()).Wait();
     }
 
     private void Render() => _applicationContext.RenderEngine.Run();

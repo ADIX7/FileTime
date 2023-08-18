@@ -26,12 +26,14 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
     [Notify] private string? _text = string.Empty;
     [Notify] private TextAlignment _textAlignment = TextAlignment.Left;
     [Notify] private ITextFormat? _textFormat;
+    [Notify] private int _textStartIndex;
 
     public TextBlock()
     {
         RerenderProperties.Add(nameof(Text));
         RerenderProperties.Add(nameof(TextAlignment));
         RerenderProperties.Add(nameof(TextFormat));
+        RerenderProperties.Add(nameof(TextStartIndex));
 
         ((INotifyPropertyChanged) this).PropertyChanged += (o, e) =>
         {
@@ -78,7 +80,17 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
         SetStyleColor(renderContext, foreground, background, _textFormat);
 
-        RenderText(_textLines, renderContext, position, size, skipRender, TransformText);
+        var textLines = _textLines;
+        if (_textStartIndex < _textLines.Length)
+        {
+            textLines = _textLines[_textStartIndex..];
+        }
+        else
+        {
+            _textStartIndex = _textLines.Length - size.Height;
+        }
+
+        RenderText(textLines, renderContext, position, size, skipRender, TransformText);
 
         return !skipRender;
     }

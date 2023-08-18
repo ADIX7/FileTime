@@ -45,6 +45,7 @@ public static class Startup
         services.TryAddSingleton<Dialogs>();
         services.TryAddSingleton<Timeline>();
         services.TryAddSingleton<FrequencyNavigation>();
+        services.TryAddSingleton<ItemPreviews>();
         return services;
     }
 }

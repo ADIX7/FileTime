@@ -27,6 +27,7 @@
     xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
     xmlns:interactions="using:FileTime.Core.Interactions"
     xmlns:itemPreview="clr-namespace:FileTime.App.Core.ViewModels.ItemPreview;assembly=FileTime.App.Core"
+    xmlns:itemPreviewInterface="clr-namespace:FileTime.App.Core.ViewModels.ItemPreview;assembly=FileTime.App.Core.Abstraction"
     xmlns:local="using:FileTime.GuiApp.App.Views"
     xmlns:local1="clr-namespace:FileTime.Providers.Local;assembly=FileTime.Providers.Local.Abstractions"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -557,7 +558,7 @@
                                         </TextBlock>
                                     </Grid>
 
-                                    <Grid IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNull}, ConverterParameter=0, FallbackValue=False}" RowDefinitions="Auto, Auto">
+                                    <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.BaseItem.Exceptions.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0, FallbackValue=False}" RowDefinitions="Auto, Auto">
                                         <TextBlock
                                             Foreground="{DynamicResource ErrorBrush}"
                                             HorizontalAlignment="Center"
@@ -579,7 +580,7 @@
                                 </Grid>
                                 <Grid DataContext="{Binding ItemPreviewService.ItemPreview.Value}" IsVisible="{Binding FallbackValue=false, Converter={x:Static ObjectConverters.IsNotNull}}">
                                     <Grid IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static itemPreview:ElementPreviewViewModel.PreviewName}}">
-                                        <Grid x:DataType="itemPreview:ElementPreviewViewModel">
+                                        <Grid x:DataType="itemPreviewInterface:IElementPreviewViewModel">
                                             <TextBlock
                                                 HorizontalAlignment="Center"
                                                 IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"

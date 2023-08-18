@@ -19,6 +19,11 @@ public static class ViewExtensions
         Func<TSourceDataContext?, TTargetDataContext?> dataContextMapper)
         => new(view, dataContextMapper);
 
+    public static ChildWithDataContextBinding<TSourceDataContext, TTargetDataContext> WithDataContextBinding<TSourceDataContext, TTargetDataContext>(
+        this IView<TTargetDataContext> view,
+        Expression<Func<TSourceDataContext?, TTargetDataContext?>> dataContextMapper)
+        => new(view, dataContextMapper);
+
     public static TView Setup<TView>(this TView view, Action<TView> action)
     {
         action(view);

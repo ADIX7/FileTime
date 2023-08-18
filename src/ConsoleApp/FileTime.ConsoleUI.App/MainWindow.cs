@@ -34,6 +34,7 @@ public class MainWindow
     private readonly FrequencyNavigation _frequencyNavigation;
     private readonly Dialogs _dialogs;
     private readonly Timeline _timeline;
+    private readonly ItemPreviews _itemPreviews;
     private readonly Lazy<IView> _root;
 
 
@@ -44,7 +45,8 @@ public class MainWindow
         CommandPalette commandPalette,
         FrequencyNavigation frequencyNavigation,
         Dialogs dialogs,
-        Timeline timeline)
+        Timeline timeline,
+        ItemPreviews itemPreviews)
     {
         _rootViewModel = rootViewModel;
         _applicationContext = applicationContext;
@@ -53,6 +55,7 @@ public class MainWindow
         _frequencyNavigation = frequencyNavigation;
         _dialogs = dialogs;
         _timeline = timeline;
+        _itemPreviews = itemPreviews;
         _root = new Lazy<IView>(Initialize);
     }
 
@@ -141,7 +144,18 @@ public class MainWindow
                     {
                         ParentsItemsView().WithExtension(new GridPositionExtension(0, 0)),
                         SelectedItemsView().WithExtension(new GridPositionExtension(1, 0)),
-                        SelectedsItemsView().WithExtension(new GridPositionExtension(2, 0)),
+                        new Grid<IRootViewModel>
+                        {
+                            Extensions =
+                            {
+                                new GridPositionExtension(2, 0)
+                            },
+                            ChildInitializer =
+                            {
+                                SelectedsItemsView(),
+                                _itemPreviews.View()
+                            }
+                        }
                     }
                 },
                 new ItemsControl<IRootViewModel, string>
@@ -347,15 +361,21 @@ public class MainWindow
     {
         var list = new ListView<IRootViewModel, IItemViewModel>
         {
-            ListPadding = 8
+            ListPadding = 8,
+            ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions())
         };
-
-        list.ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions());
 
         list.Bind(
             list,
-            root => root.AppState.SelectedTab.Value.SelectedsChildren.Value,
-            v => v.ItemsSource);
+            dc => dc.AppState.SelectedTab.Value.SelectedsChildren.Value.Count > 0,
+            l => l.IsVisible,
+            fallbackValue: false);
+
+        list.Bind(
+            list,
+            dc => dc.AppState.SelectedTab.Value.SelectedsChildren.Value,
+            v => v.ItemsSource,
+            fallbackValue: null);
 
         return list;
     }
@@ -364,14 +384,13 @@ public class MainWindow
     {
         var list = new ListView<IRootViewModel, IItemViewModel>
         {
-            ListPadding = 8
+            ListPadding = 8,
+            ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions())
         };
-
-        list.ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions());
 
         list.Bind(
             list,
-            root => root.AppState.SelectedTab.Value.ParentsChildren.Value,
+            dc => dc.AppState.SelectedTab.Value.ParentsChildren.Value,
             v => v.ItemsSource);
 
         return list;

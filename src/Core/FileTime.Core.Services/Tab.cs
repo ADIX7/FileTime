@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq.Expressions;
 using CircularBuffer;
 using DeclarativeProperty;
 using DynamicData;
@@ -14,6 +15,8 @@ namespace FileTime.Core.Services;
 
 public class Tab : ITab
 {
+    private record LastItemSelectingContext(IContainer? CurrentLocationValue);
+
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ITabEvents _tabEvents;
     private readonly DeclarativeProperty<IContainer?> _currentLocation = new();
@@ -22,9 +25,11 @@ public class Tab : ITab
     private readonly ObservableCollection<ItemFilter> _itemFilters = new();
     private readonly CircularBuffer<FullName> _history = new(20);
     private readonly CircularBuffer<FullName> _future = new(20);
+    private readonly List<AbsolutePath> _selectedItemCandidates = new();
     private AbsolutePath? _currentSelectedItemCached;
     private PointInTime _currentPointInTime;
     private CancellationTokenSource? _setCurrentLocationCancellationTokenSource;
+    private LastItemSelectingContext? _lastItemSelectingContext;
 
     public IDeclarativeProperty<IContainer?> CurrentLocation { get; }
     public IDeclarativeProperty<ObservableCollection<IItem>?> CurrentItems { get; }
@@ -81,47 +86,32 @@ public class Tab : ITab
                 return Task.FromResult(items);
             }
         ).CombineLatest(
-            Ordering,
+            Ordering.Map(ordering =>
+            {
+                var (itemComparer, order) = ordering switch
+                {
+                    ItemOrdering.Name => ((Expression<Func<IItem, IComparable>>) (i => i.DisplayName), ListSortDirection.Ascending),
+                    ItemOrdering.NameDesc => (i => i.DisplayName, ListSortDirection.Descending),
+                    ItemOrdering.CreationDate => (i => i.CreatedAt ?? DateTime.MinValue, ListSortDirection.Ascending),
+                    ItemOrdering.CreationDateDesc => (i => i.CreatedAt ?? DateTime.MinValue, ListSortDirection.Descending),
+                    ItemOrdering.LastModifyDate => (i => i.ModifiedAt ?? DateTime.MinValue, ListSortDirection.Ascending),
+                    ItemOrdering.LastModifyDateDesc => (i => i.ModifiedAt ?? DateTime.MinValue, ListSortDirection.Descending),
+                    ItemOrdering.Size => (i => GetSize(i), ListSortDirection.Ascending),
+                    ItemOrdering.SizeDesc => (i => GetSize(i), ListSortDirection.Descending),
+                    _ => throw new NotImplementedException()
+                };
+
+                return (itemComparer, order);
+            }),
             (items, ordering) =>
             {
                 if (items is null) return Task.FromResult<ObservableCollection<IItem>?>(null);
 
-                ObservableCollection<IItem>? orderedItems = ordering switch
-                {
-                    ItemOrdering.Name =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => i.DisplayName),
-                    ItemOrdering.NameDesc =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => i.DisplayName, ListSortDirection.Descending),
-                    ItemOrdering.CreationDate =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => i.CreatedAt),
-                    ItemOrdering.CreationDateDesc =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => i.CreatedAt, ListSortDirection.Descending),
-                    ItemOrdering.LastModifyDate =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => i.ModifiedAt),
-                    ItemOrdering.LastModifyDateDesc =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => i.ModifiedAt, ListSortDirection.Descending),
-                    ItemOrdering.Size =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => GetSize(i)),
-                    ItemOrdering.SizeDesc =>
-                        items
-                            .Ordering(i => i.Type)
-                            .ThenOrdering(i => GetSize(i), ListSortDirection.Descending),
-                    _ => throw new NotImplementedException()
-                };
+                var (itemComparer, order) = ordering;
+
+                ObservableCollection<IItem>? orderedItems = items
+                    .Ordering(i => i.Type)
+                    .ThenOrdering(itemComparer, order);
 
                 return Task.FromResult(orderedItems);
             }
@@ -132,8 +122,25 @@ public class Tab : ITab
             _currentRequestItem.DistinctUntilChanged(),
             (items, selected) =>
             {
-                if (selected != null && (items?.Any(i => i.FullName == selected.Path) ?? true)) return Task.FromResult<AbsolutePath?>(selected);
+                var itemSelectingContext = new LastItemSelectingContext(CurrentLocation.Value);
+                var lastItemSelectingContext = _lastItemSelectingContext;
+                _lastItemSelectingContext = itemSelectingContext;
                 if (items == null || items.Count == 0) return Task.FromResult<AbsolutePath?>(null);
+                if (selected != null)
+                {
+                    if (items.Any(i => i.FullName == selected.Path))
+                        return Task.FromResult<AbsolutePath?>(selected);
+                }
+
+                if (lastItemSelectingContext != null
+                    && itemSelectingContext == lastItemSelectingContext)
+                {
+                    var candidate = _selectedItemCandidates.FirstOrDefault(c => items.Any(i => i.FullName?.Path == c.Path.Path));
+                    if (candidate != null)
+                    {
+                        return Task.FromResult(candidate);
+                    }
+                }
 
                 return Task.FromResult(GetSelectedItemByItems(items));
             }).DistinctUntilChanged();
@@ -141,8 +148,31 @@ public class Tab : ITab
         CurrentSelectedItem.Subscribe(async (s, _) =>
         {
             _currentSelectedItemCached = s;
+
             await _currentRequestItem.SetValue(s);
         });
+
+        DeclarativePropertyHelpers.CombineLatest(
+            CurrentItems,
+            CurrentSelectedItem,
+            (items, selected) =>
+            {
+                if(items is null || selected is null) return Task.FromResult<IEnumerable<AbsolutePath>?>(null);
+                var primaryCandidates = items.SkipWhile(i => i.FullName is {Path: var p} && p != selected.Path.Path).Skip(1);
+                var secondaryCandidates = items.TakeWhile(i => i.FullName is {Path: var p} && p != selected.Path.Path).Reverse();
+                var candidates = primaryCandidates
+                    .Concat(secondaryCandidates)
+                    .Select(c => new AbsolutePath(_timelessContentProvider, c));
+
+                return Task.FromResult(candidates);
+            })
+            .Subscribe(candidates =>
+            {
+                if(candidates is null) return;
+                
+                _selectedItemCandidates.Clear();
+                _selectedItemCandidates.AddRange(candidates);
+            });
     }
 
     private static long GetSize(IItem item)

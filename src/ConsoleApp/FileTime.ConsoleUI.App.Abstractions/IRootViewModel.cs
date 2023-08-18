@@ -1,5 +1,6 @@
 ﻿using DeclarativeProperty;
 using FileTime.App.CommandPalette.ViewModels;
+using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.App.FrequencyNavigation.ViewModels;
@@ -20,5 +21,6 @@ public interface IRootViewModel
     ITimelineViewModel TimelineViewModel { get; }
     IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get; }
     IFrequencyNavigationViewModel FrequencyNavigation { get; }
+    IItemPreviewService ItemPreviewService { get; }
     event Action<IInputElement>? FocusReadInputElement;
 }

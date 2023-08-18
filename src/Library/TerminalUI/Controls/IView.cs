@@ -55,6 +55,7 @@ public interface IView<T> : IView
     TChild CreateChild<TChild, TDataContext>(Func<T?, TDataContext?> dataContextMapper)
         where TChild : IView<TDataContext>, new();
 
+    void AddChild(IView child);
     TChild AddChild<TChild>(TChild child) where TChild : IView<T>;
 
     TChild AddChild<TChild, TDataContext>(TChild child, Func<T?, TDataContext?> dataContextMapper)
