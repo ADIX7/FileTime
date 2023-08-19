@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using Avalonia.Input;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using GeneralInputKey;
 

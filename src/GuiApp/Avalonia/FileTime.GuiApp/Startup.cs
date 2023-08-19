@@ -5,7 +5,6 @@ using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
-using FileTime.GuiApp.App.Configuration;
 using FileTime.GuiApp.CustomImpl.ViewModels;
 using FileTime.GuiApp.App.IconProviders;
 using FileTime.GuiApp.App.Logging;

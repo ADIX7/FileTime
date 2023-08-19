@@ -1,5 +1,4 @@
-﻿using FileTime.ConsoleUI.App;
-using FileTime.ConsoleUI.App.Configuration;
+﻿using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.Styling;
 using FileTime.ConsoleUI.Styles;
 using Microsoft.Extensions.DependencyInjection;

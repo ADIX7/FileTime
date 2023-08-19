@@ -1,9 +1,7 @@
 using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Extensions;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
-using FileTime.Core.Extensions;
 using FileTime.Core.Models;
 using GeneralInputKey;
 using Humanizer;

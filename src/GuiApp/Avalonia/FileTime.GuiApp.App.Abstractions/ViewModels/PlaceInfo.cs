@@ -1,5 +1,4 @@
 using FileTime.Core.Models;
-using FileTime.GuiApp.App.Models;
 
 namespace FileTime.GuiApp.App.ViewModels;
 

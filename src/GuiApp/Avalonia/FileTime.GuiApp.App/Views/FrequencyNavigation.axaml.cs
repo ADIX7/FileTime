@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.FrequencyNavigation.ViewModels;
 using FileTime.GuiApp.App.Extensions;

@@ -1,5 +1,4 @@
-﻿using TerminalUI.Color;
-using TerminalUI.ConsoleDrivers;
+﻿using TerminalUI.ConsoleDrivers;
 using TerminalUI.Controls;
 using TerminalUI.Models;
 using TerminalUI.TextFormat;

@@ -1,5 +1,4 @@
 using Avalonia.Input;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.GuiApp.App.Extensions;

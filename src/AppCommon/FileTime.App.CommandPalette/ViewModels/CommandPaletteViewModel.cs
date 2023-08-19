@@ -1,5 +1,4 @@
 ﻿using FileTime.App.CommandPalette.Services;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FuzzyPanel;

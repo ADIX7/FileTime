@@ -15,7 +15,6 @@ using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
 using InitableService;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
 

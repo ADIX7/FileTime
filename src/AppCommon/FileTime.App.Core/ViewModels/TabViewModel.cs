@@ -1,10 +1,8 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using DeclarativeProperty;
 using DynamicData;
 using DynamicData.Binding;
 using FileTime.App.Core.Extensions;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Enums;

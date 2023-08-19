@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using DeclarativeProperty;
-using FileTime.App.Core.Models;
 using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
 

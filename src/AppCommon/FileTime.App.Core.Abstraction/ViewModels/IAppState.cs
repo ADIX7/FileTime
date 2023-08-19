@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using DeclarativeProperty;
 using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Models.Enums;
-using FileTime.App.Core.ViewModels.Timeline;
 
 namespace FileTime.App.Core.ViewModels;
 

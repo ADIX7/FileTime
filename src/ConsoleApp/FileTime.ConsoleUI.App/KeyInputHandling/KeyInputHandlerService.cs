@@ -1,5 +1,4 @@
-﻿using FileTime.App.Core.Models;
-using FileTime.App.Core.Models.Enums;
+﻿using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using GeneralInputKey;

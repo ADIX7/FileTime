@@ -1,5 +1,4 @@
 ﻿using DeclarativeProperty;
-using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FuzzyPanel;
 using GeneralInputKey;

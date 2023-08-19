@@ -1,6 +1,4 @@
-﻿using System.Reactive.Subjects;
-using FileTime.Core.Interactions;
-using FileTime.Core.Models;
+﻿using FileTime.Core.Interactions;
 using PropertyChanged.SourceGenerator;
 
 namespace FileTime.App.Core.Interactions;

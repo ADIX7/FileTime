@@ -1,14 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Avalonia.Input;
-using FileTime.App.Core.Configuration;
 using FileTime.App.Core.ViewModels;
-using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;
 using FileTime.Providers.Local;
-using MvvmGen;
 using PropertyChanged.SourceGenerator;
 
 namespace FileTime.GuiApp.CustomImpl.ViewModels;
