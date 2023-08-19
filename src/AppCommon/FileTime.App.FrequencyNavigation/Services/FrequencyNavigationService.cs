@@ -25,6 +25,8 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
     private Dictionary<string, ContainerFrequencyData> _containerScores = new();
     private readonly DeclarativeProperty<bool> _showWindow = new(false);
     private readonly string _dbPath;
+    private bool _loaded;
+    
     [Notify] IFrequencyNavigationViewModel? _currentModal;
     IDeclarativeProperty<bool> IFrequencyNavigationService.ShowWindow => _showWindow;
 
@@ -181,7 +183,11 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         };
     }
 
-    public async Task InitAsync() => await LoadStateAsync();
+    public async Task InitAsync()
+    {
+        await LoadStateAsync();
+        _loaded = true;
+    }
 
     private async Task LoadStateAsync()
     {
@@ -212,6 +218,7 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
 
     private async Task SaveStateAsync(CancellationToken token = default)
     {
+        if(!_loaded) return;
         await _saveLock.WaitAsync(token);
         try
         {
