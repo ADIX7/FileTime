@@ -143,7 +143,28 @@ public class MainWindow
                     ChildInitializer =
                     {
                         ParentsItemsView().WithExtension(new GridPositionExtension(0, 0)),
-                        SelectedItemsView().WithExtension(new GridPositionExtension(1, 0)),
+                        new Grid<IRootViewModel>
+                        {
+                            Extensions =
+                            {
+                                new GridPositionExtension(1, 0)
+                            },
+                            ChildInitializer =
+                            {
+                                SelectedItemsView(),
+                                new TextBlock<IRootViewModel>
+                                {
+                                    Text = "Empty",
+                                    Foreground = _theme.ErrorForegroundColor,
+                                    TextAlignment = TextAlignment.Center
+                                }.Setup(t => t.Bind(
+                                    t,
+                                    dc => dc.AppState.SelectedTab.Value.CurrentItems.Value.Count == 0,
+                                    t => t.IsVisible,
+                                    fallbackValue: true
+                                ))
+                            }
+                        },
                         new Grid<IRootViewModel>
                         {
                             Extensions =

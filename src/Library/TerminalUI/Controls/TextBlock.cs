@@ -90,6 +90,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
         => TextAlignment switch
         {
             TextAlignment.Right => string.Format($"{{0,{size.Width}}}", text),
+            TextAlignment.Center => string.Format($"{{0,{(size.Width - text.Length) / 2 + text.Length}}}", text),
             _ => text
         };
 
