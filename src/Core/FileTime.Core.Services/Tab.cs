@@ -124,8 +124,9 @@ public class Tab : ITab
             {
                 var itemSelectingContext = new LastItemSelectingContext(CurrentLocation.Value);
                 var lastItemSelectingContext = _lastItemSelectingContext;
-                _lastItemSelectingContext = itemSelectingContext;
                 if (items == null || items.Count == 0) return Task.FromResult<AbsolutePath?>(null);
+                
+                _lastItemSelectingContext = itemSelectingContext;
                 if (selected != null)
                 {
                     if (items.Any(i => i.FullName == selected.Path))
