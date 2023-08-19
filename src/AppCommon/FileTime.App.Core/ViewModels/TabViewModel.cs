@@ -39,6 +39,7 @@ public partial class TabViewModel : ITabViewModel
 
     public IDeclarativeProperty<IContainer?> CurrentLocation { get; private set; }
     public IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; private set; }
+    public IDeclarativeProperty<int?> CurrentSelectedItemIndex { get; set; }
     public IDeclarativeProperty<IContainerViewModel?> CurrentSelectedItemAsContainer { get; private set; }
     public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> CurrentItems { get; private set; }
     public IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; }
@@ -97,6 +98,25 @@ public partial class TabViewModel : ITabViewModel
                 tab.SetSelectedItem(new AbsolutePath(_timelessContentProvider, baseItem));
             }
         );
+
+        CurrentSelectedItemIndex = DeclarativePropertyHelpers.CombineLatest(
+            tab.CurrentSelectedItem,
+            CurrentItems.Watch<ObservableCollection<IItemViewModel>, IItemViewModel>(),
+            (currentSelectedItem, currentItems) =>
+            {
+                if (currentItems is null || currentSelectedItem is null)
+                    return Task.FromResult<int?>(-1);
+
+                for (var i = 0; i < currentItems.Count; i++)
+                {
+                    if (currentItems[i].BaseItem?.FullName?.Path == currentSelectedItem?.Path.Path)
+                    {
+                        return Task.FromResult<int?>(i);
+                    }
+                }
+
+                return Task.FromResult<int?>(-1);
+            });
 
         CurrentSelectedItem.Subscribe((v) =>
         {

@@ -19,6 +19,7 @@ public interface ITabViewModel : IInitable<ITab, int>, IDisposable
     IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> SelectedsChildren { get; }
     IDeclarativeProperty<ObservableCollection<IItemViewModel>> ParentsChildren { get; }
+    IDeclarativeProperty<int?> CurrentSelectedItemIndex { get; set; }
 
     void ClearMarkedItems();
     void RemoveMarkedItem(FullName fullName);

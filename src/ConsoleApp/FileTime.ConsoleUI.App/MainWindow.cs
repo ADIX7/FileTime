@@ -11,6 +11,7 @@ using TerminalUI.Color;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
+using TerminalUI.TextFormat;
 using TerminalUI.ViewExtensions;
 
 namespace FileTime.ConsoleUI.App;
@@ -215,43 +216,47 @@ public class MainWindow
                     }
                 },
                 _timeline.View().WithExtension(new GridPositionExtension(0, 4)),
-                new Grid<IRootViewModel>
+                StatusLine().WithExtension(new GridPositionExtension(0, 5)),
+            }
+        };
+
+    private IView<IRootViewModel> StatusLine()
+        => new Grid<IRootViewModel>
+        {
+            ColumnDefinitionsObject = "* Auto",
+            ChildInitializer =
+            {
+                new StackPanel<IRootViewModel>
                 {
-                    ColumnDefinitionsObject = "* Auto",
-                    Extensions =
-                    {
-                        new GridPositionExtension(0, 5)
-                    },
+                    Orientation = Orientation.Horizontal,
                     ChildInitializer =
                     {
-                        new StackPanel<IRootViewModel>
-                        {
-                            Orientation = Orientation.Horizontal,
-                            ChildInitializer =
-                            {
-                                new TextBlock<IRootViewModel>
-                                    {
-                                        Margin = "0 0 1 0",
-                                    }
-                                    .Setup(t => t.Bind(
-                                        t,
-                                        dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.Attributes,
-                                        tb => tb.Text)),
-                                new TextBlock<IRootViewModel>
-                                    {
-                                        Margin = "0 0 1 0",
-                                    }
-                                    .Setup(t => t.Bind(
-                                        t,
-                                        dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.ModifiedAt,
-                                        tb => tb.Text,
-                                        v => v.ToString()))
-                            }
-                        },
                         new TextBlock<IRootViewModel>
                             {
-                                Extensions = {new GridPositionExtension(1, 0)}
+                                Margin = "0 0 1 0",
                             }
+                            .Setup(t => t.Bind(
+                                t,
+                                dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.Attributes,
+                                tb => tb.Text)),
+                        new TextBlock<IRootViewModel>
+                            {
+                                Margin = "0 0 1 0",
+                            }
+                            .Setup(t => t.Bind(
+                                t,
+                                dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.ModifiedAt,
+                                tb => tb.Text,
+                                v => v.ToString()))
+                    }
+                },
+                new StackPanel<IRootViewModel>()
+                {
+                    Orientation = Orientation.Horizontal,
+                    Extensions = {new GridPositionExtension(1, 0)},
+                    ChildInitializer =
+                    {
+                        new TextBlock<IRootViewModel>()
                             .Setup(t =>
                             {
                                 t.Bind(
@@ -268,9 +273,54 @@ public class MainWindow
                                         ? $"{ByteSize.FromBytes(v.Value.FreeSize)} / {ByteSize.FromBytes(v.Value.TotalSize)} free"
                                         : string.Empty
                                 );
-                            })
+                            }),
+                        new StackPanel<IRootViewModel>
+                            {
+                                Margin = "2 0 0 0",
+                                Orientation = Orientation.Horizontal,
+                                ChildInitializer =
+                                {
+                                    new TextBlock<IRootViewModel>()
+                                        .Setup(t => t.Bind(
+                                            t,
+                                            dc => dc.AppState.SelectedTab.Value.CurrentSelectedItemIndex.Value,
+                                            tb => tb.Text,
+                                            v => v is null || v < 0 ? "?" : $"{v + 1}")),
+                                    new TextBlock<IRootViewModel>
+                                        {
+                                            Foreground = _theme.MarkedItemForegroundColor,
+                                            TextFormat = new AnsiFormat
+                                            {
+                                                IsBold = true
+                                            }
+                                        }
+                                        .Setup(t =>
+                                        {
+                                            t.Bind(
+                                                t,
+                                                dc => dc.AppState.SelectedTab.Value.MarkedItems.Value.Count,
+                                                tb => tb.Text,
+                                                v => $"/{v}");
+
+                                            t.Bind(
+                                                t,
+                                                dc => dc.AppState.SelectedTab.Value.MarkedItems.Value.Count > 0,
+                                                s => s.IsVisible);
+                                        }),
+                                    new TextBlock<IRootViewModel>()
+                                        .Setup(t => t.Bind(
+                                            t,
+                                            dc => dc.AppState.SelectedTab.Value.CurrentItems.Value.Count,
+                                            tb => tb.Text,
+                                            v => $"/{v}")),
+                                }
+                            }
+                            .Setup(s => s.Bind(
+                                s,
+                                dc => dc.AppState.SelectedTab.Value.CurrentItems.Value.Count > 0,
+                                s => s.IsVisible)),
                     }
-                },
+                }
             }
         };
 
