@@ -58,7 +58,7 @@ public class RenderEngine : IRenderEngine
 
         if (visibilityChangeHandler is null)
         {
-            //AddViewToForcedTemporaryRenderGroup(parent ?? view);
+            AddViewToForcedTemporaryRenderGroup(parent ?? view);
             return;
         }
 
