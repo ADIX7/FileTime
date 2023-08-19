@@ -2,7 +2,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using TerminalUI.Controls;
-using TerminalUI.ExpressionTrackers;
 using TerminalUI.Traits;
 
 namespace TerminalUI;

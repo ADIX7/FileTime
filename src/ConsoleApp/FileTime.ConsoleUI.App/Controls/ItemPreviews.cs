@@ -79,9 +79,11 @@ public class ItemPreviews
                             .Setup(t => t.Bind(
                                 t,
                                 dc => dc.TextContent,
-                                t => t.Text)),
+                                t => t.Text,
+                                fallbackValue: string.Empty)),
                         new TextBlock<IElementPreviewViewModel>
                         {
+                            Margin = "0 1 0 0",
                             Extensions = {new GridPositionExtension(0, 1)}
                         }.Setup(t => t.Bind(
                             t,

@@ -21,7 +21,6 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
     private RenderState? _lastRenderState;
     private string[]? _textLines;
-    private bool _placeholderRenderDone;
 
     [Notify] private string? _text = string.Empty;
     [Notify] private TextAlignment _textAlignment = TextAlignment.Left;
@@ -64,30 +63,22 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
         _lastRenderState = renderState;
 
-        if (_textLines is null)
+        var textLines = _textLines;
+        var textStartIndex = _textStartIndex;
+        if (textLines is null)
         {
-            if (!_placeholderRenderDone)
-            {
-                _placeholderRenderDone = true;
-                RenderEmpty(renderContext, position, size, skipRender);
-                return true;
-            }
-
             return false;
         }
 
-        _placeholderRenderDone = false;
-
         SetStyleColor(renderContext, foreground, background, _textFormat);
 
-        var textLines = _textLines;
-        if (_textStartIndex < _textLines.Length)
+        if (textStartIndex < textLines.Length)
         {
-            textLines = _textLines[_textStartIndex..];
+            textLines = textLines[textStartIndex..];
         }
         else
         {
-            _textStartIndex = _textLines.Length - size.Height;
+            _textStartIndex = textLines.Length - size.Height;
         }
 
         RenderText(textLines, renderContext, position, size, skipRender, TransformText);
@@ -99,7 +90,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
         => TextAlignment switch
         {
             TextAlignment.Right => string.Format($"{{0,{size.Width}}}", text),
-            _ => string.Format($"{{0,{-size.Width}}}", text)
+            _ => text
         };
 
     private bool NeedsRerender(RenderState renderState)

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace TerminalUI;
 
@@ -7,8 +6,11 @@ public class EventLoop : IEventLoop
 {
     private readonly IApplicationContext _applicationContext;
     private readonly ILogger<EventLoop> _logger;
+    private readonly List<Action> _initializers = new();
     private readonly List<Action> _permanentQueue = new();
 
+    public int ThreadId { get; set; } = -1;
+    
     public EventLoop(
         IApplicationContext applicationContext,
         ILogger<EventLoop> logger)
@@ -18,15 +20,22 @@ public class EventLoop : IEventLoop
     }
 
     public void AddToPermanentQueue(Action action) => _permanentQueue.Add(action);
+    public void AddInitializer(Action action) => _initializers.Add(action);
 
     public void Run()
     {
         _applicationContext.IsRunning = true;
+        ThreadId = Thread.CurrentThread.ManagedThreadId;
+        foreach (var initializer in _initializers)
+        {
+            initializer();
+        }
         while (_applicationContext.IsRunning)
         {
             ProcessQueues();
             Thread.Sleep(10);
         }
+        ThreadId = -1;
     }
 
     private void ProcessQueues()
@@ -35,7 +44,7 @@ public class EventLoop : IEventLoop
         {
             /*try
             {*/
-                action();
+            action();
             /*}
             catch (Exception e)
             {

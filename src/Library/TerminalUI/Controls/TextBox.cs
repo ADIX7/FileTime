@@ -103,10 +103,7 @@ public sealed partial class TextBox<T> : View<TextBox<T>, T>, IFocusable, IDispl
         var skipRender = !renderContext.ForceRerender && !NeedsRerender(renderStatus);
         _lastRenderState = renderStatus;
 
-        var driver = renderContext.ConsoleDriver;
         SetStyleColor(renderContext, foreground, background);
-
-        RenderEmpty(renderContext, position, size, skipRender);
 
         if (PasswordChar is { } passwordChar && !char.IsControl(passwordChar))
         {

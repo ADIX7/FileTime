@@ -96,37 +96,6 @@ public sealed partial class StackPanel<T> : ChildCollectionView<StackPanel<T>, T
                 : childSize.Width;
         }
 
-        if (Orientation == Orientation.Horizontal)
-        {
-            var leftWidth = size.Width - delta;
-            Span<char> text = stackalloc char[leftWidth];
-            text.Fill(ApplicationContext!.EmptyCharacter);
-
-            SetColorsForDriver(renderContext);
-            RenderText(
-                text,
-                renderContext,
-                position with {X = position.X + delta},
-                size with {Width = leftWidth},
-                !neededRerender
-            );
-        }
-        else
-        {
-            var leftHeight = size.Height - delta;
-            Span<char> text = stackalloc char[size.Width];
-            text.Fill(ApplicationContext!.EmptyCharacter);
-
-            SetColorsForDriver(renderContext);
-            RenderText(
-                text,
-                renderContext,
-                position with {Y = position.Y + delta},
-                size with {Height = leftHeight},
-                !neededRerender
-            );
-        }
-
         return neededRerender;
     }
 

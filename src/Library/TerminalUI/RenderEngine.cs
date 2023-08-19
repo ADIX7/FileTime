@@ -1,5 +1,4 @@
-﻿using TerminalUI.ConsoleDrivers;
-using TerminalUI.Controls;
+﻿using TerminalUI.Controls;
 using TerminalUI.Models;
 using TerminalUI.TextFormat;
 using TerminalUI.Traits;
@@ -15,9 +14,11 @@ public class RenderEngine : IRenderEngine
     private readonly List<IView> _forcedTemporaryViewsToRender = new();
     private bool _rerenderRequested = true;
     private bool _lastCursorVisible;
+    private bool _forceRerenderAll;
     private bool[,]? _updatedCells;
     private bool[,]? _filledCells;
     private bool[,]? _lastFilledCells;
+    private DateTime _renderRequestDetected;
 
     public RenderEngine(IApplicationContext applicationContext, IEventLoop eventLoop)
     {
@@ -25,12 +26,23 @@ public class RenderEngine : IRenderEngine
         _eventLoop = eventLoop;
 
         _eventLoop.AddToPermanentQueue(Render);
+        _eventLoop.AddInitializer(() =>
+        {
+            _applicationContext.ConsoleDriver.ThreadId = _eventLoop.ThreadId;
+            _applicationContext.ConsoleDriver.EnterRestrictedMode();
+        });
     }
 
     public void RequestRerender(IView view) => RequestRerender();
 
-    public void VisibilityChanged(IView view)
+    public void VisibilityChanged(IView view, bool newVisibility)
     {
+        if (!newVisibility)
+        {
+            _forceRerenderAll = true;
+            return;
+        }
+
         IVisibilityChangeHandler? visibilityChangeHandler = null;
         var parent = view.VisualParent;
         while (parent?.VisualParent != null)
@@ -46,12 +58,11 @@ public class RenderEngine : IRenderEngine
 
         if (visibilityChangeHandler is null)
         {
-            AddViewToForcedTemporaryRenderGroup(parent ?? view);
+            //AddViewToForcedTemporaryRenderGroup(parent ?? view);
+            return;
         }
-        else
-        {
-            visibilityChangeHandler.ChildVisibilityChanged(view);
-        }
+
+        visibilityChangeHandler.ChildVisibilityChanged(view);
     }
 
     public void Run() => _eventLoop.Run();
@@ -68,6 +79,7 @@ public class RenderEngine : IRenderEngine
     {
         List<IView> permanentViewsToRender;
         List<IView> forcedTemporaryViewsToRender;
+        bool forceRerenderAll;
         lock (_lock)
         {
             if (!_rerenderRequested) return;
@@ -75,6 +87,9 @@ public class RenderEngine : IRenderEngine
             permanentViewsToRender = _permanentViewsToRender.ToList();
             forcedTemporaryViewsToRender = _forcedTemporaryViewsToRender.ToList();
             _forcedTemporaryViewsToRender.Clear();
+
+            forceRerenderAll = _forceRerenderAll;
+            _forceRerenderAll = false;
         }
 
         var driver = _applicationContext.ConsoleDriver;
@@ -93,25 +108,28 @@ public class RenderEngine : IRenderEngine
             ClearArray2D(_updatedCells);
         }
 
-        RenderViews(
-            forcedTemporaryViewsToRender,
-            new RenderContext(
-                driver,
-                true,
-                null,
-                null,
-                new RenderStatistics(),
-                new TextFormatContext(driver.SupportsAnsiEscapeSequence),
-                _updatedCells
-            ),
-            initialPosition,
-            size);
+        if (!forceRerenderAll)
+        {
+            RenderViews(
+                forcedTemporaryViewsToRender,
+                new RenderContext(
+                    driver,
+                    true,
+                    null,
+                    null,
+                    new RenderStatistics(),
+                    new TextFormatContext(driver.SupportsAnsiEscapeSequence),
+                    _updatedCells
+                ),
+                initialPosition,
+                size);
+        }
 
         RenderViews(
             permanentViewsToRender,
             new RenderContext(
                 driver,
-                false,
+                forceRerenderAll,
                 null,
                 null,
                 new RenderStatistics(),

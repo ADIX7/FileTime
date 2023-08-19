@@ -6,7 +6,11 @@ namespace TerminalUI.ConsoleDrivers;
 
 public class DotnetDriver : IConsoleDriver
 {
+    protected bool CheckThreadId;
     public bool SupportsAnsiEscapeSequence { get; protected set; }
+    public int ThreadId { get; set; }
+
+    public void EnterRestrictedMode() => CheckThreadId = true;
 
     public virtual bool Init()
     {
@@ -25,10 +29,31 @@ public class DotnetDriver : IConsoleDriver
         return new(x, y);
     }
 
-    public void Write(string text) => Console.Out.Write(text);
-    public void Write(ReadOnlySpan<char> text) => Console.Out.Write(text);
+    public void Write(string text)
+    {
+        CheckThread();
+        Console.Out.Write(text);
+    }
 
-    public void Write(char text) => Console.Out.Write(text);
+    public void Write(ReadOnlySpan<char> text)
+    {
+        CheckThread();
+        Console.Out.Write(text);
+    }
+
+    public void Write(char text)
+    {
+        CheckThread();
+        Console.Out.Write(text);
+    }
+
+    private void CheckThread()
+    {
+        if (CheckThreadId && ThreadId != Thread.CurrentThread.ManagedThreadId)
+        {
+            throw new InvalidOperationException("Cannot write to console from another thread");
+        }
+    }
 
     public virtual void Dispose() => Console.Clear();
 
@@ -40,7 +65,7 @@ public class DotnetDriver : IConsoleDriver
     public virtual void SetForegroundColor(IColor foreground)
     {
         if (foreground == SpecialColor.None) return;
-        
+
         if (foreground is not ConsoleColor consoleColor) throw new NotSupportedException();
         Console.ForegroundColor = consoleColor.Color;
     }
@@ -48,7 +73,7 @@ public class DotnetDriver : IConsoleDriver
     public virtual void SetBackgroundColor(IColor background)
     {
         if (background == SpecialColor.None) return;
-        
+
         if (background is not ConsoleColor consoleColor) throw new NotSupportedException();
         Console.BackgroundColor = consoleColor.Color;
     }

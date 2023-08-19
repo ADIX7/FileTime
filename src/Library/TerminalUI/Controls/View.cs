@@ -132,7 +132,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         }
         else if (e.PropertyName == nameof(IsVisible))
         {
-            ApplicationContext?.RenderEngine.VisibilityChanged(this);
+            ApplicationContext?.RenderEngine.VisibilityChanged(this, IsVisible);
         }
     }
 
@@ -218,7 +218,7 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         }
     }
 
-    private void UpdateCells(bool[,] renderContextUpdatedCells, Position position, int sizeWidth, int sizeHeight)
+    private static void UpdateCells(bool[,] renderContextUpdatedCells, Position position, int sizeWidth, int sizeHeight)
     {
         for (var x = 0; x < sizeWidth; x++)
         {
@@ -235,14 +235,12 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         Position position,
         Size size,
         bool updateCellsOnly,
-        TextTransformer? textTransformer = null)
+        TextTransformer? textTransformer = null,
+        bool useAsciiOnly = true)
     {
-        UpdateCells(renderContext.UpdatedCells, position, size.Width, size.Height);
-
-        if (updateCellsOnly) return;
-
         var driver = renderContext.ConsoleDriver;
-        for (var i = 0; i < textLines.Count; i++)
+        var end = int.Min(textLines.Count, size.Height);
+        for (var i = 0; i < end; i++)
         {
             var currentPosition = position with {Y = position.Y + i};
             var text = textLines[i];
@@ -252,22 +250,40 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
                 text = textTransformer(text, currentPosition, size);
             }
 
-            if (text.Length > size.Width)
+            if (useAsciiOnly)
             {
-                text = text[..size.Width];
+                RenderTextAsciiOnly(
+                    text,
+                    renderContext,
+                    currentPosition,
+                    size.Width,
+                    updateCellsOnly);
             }
-            else if (text.Length < size.Width)
+            else
             {
-                text = text.PadRight(size.Width);
-            }
+                if (text.Length > size.Width)
+                {
+                    text = text[..size.Width];
+                }
 
-            try
-            {
-                driver.SetCursorPosition(currentPosition);
-                driver.Write(text);
-            }
-            catch
-            {
+
+                foreach (var c in text)
+                {
+                    if (char.IsControl(c))
+                        throw new Exception("Control character");
+                }
+
+                if (updateCellsOnly) continue;
+                UpdateCells(renderContext.UpdatedCells, currentPosition, text.Length, 1);
+
+                try
+                {
+                    driver.SetCursorPosition(currentPosition);
+                    driver.Write(text);
+                }
+                catch
+                {
+                }
             }
         }
     }
@@ -279,10 +295,6 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         Size size,
         bool updateCellsOnly)
     {
-        UpdateCells(renderContext.UpdatedCells, position, size.Width, size.Height);
-
-        if (updateCellsOnly) return;
-
         var driver = renderContext.ConsoleDriver;
         for (var i = 0; i < size.Height; i++)
         {
@@ -293,6 +305,9 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
             {
                 finalText = finalText[..size.Width];
             }
+
+            UpdateCells(renderContext.UpdatedCells, currentPosition, finalText.Length, 1);
+            if (updateCellsOnly) continue;
 
             driver.SetCursorPosition(currentPosition);
             driver.Write(finalText);
@@ -311,7 +326,8 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         if (updateCellsOnly) return;
 
         var driver = renderContext.ConsoleDriver;
-        var contentString = new string(content, size.Width);
+        Span<char> contentString = stackalloc char[size.Width];
+        contentString.Fill(content);
 
         for (var i = 0; i < size.Height; i++)
         {
@@ -320,6 +336,37 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
             driver.SetCursorPosition(currentPosition);
             driver.Write(contentString);
         }
+    }
+
+    private void RenderTextAsciiOnly(
+        ReadOnlySpan<char> text,
+        in RenderContext renderContext,
+        Position position,
+        int width,
+        bool updateCellsOnly)
+    {
+        Span<char> finalText = stackalloc char[width];
+
+        var finalTextPosition = 0;
+        for (var i = 0; i < text.Length && finalTextPosition < width; i++)
+        {
+            var c = text[i];
+            if (c < 32 || c > 255) continue;
+
+            finalText[finalTextPosition] = c;
+            finalTextPosition++;
+        }
+
+        for (var i = 0; i < finalTextPosition; i++)
+        {
+            renderContext.UpdatedCells[position.X + i, position.Y] = true;
+        }
+
+        if (updateCellsOnly) return;
+
+        var driver = renderContext.ConsoleDriver;
+        driver.SetCursorPosition(position);
+        driver.Write(finalText[..finalTextPosition]);
     }
 
     protected void SetStyleColor(

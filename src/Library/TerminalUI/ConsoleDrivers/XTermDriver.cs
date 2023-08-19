@@ -28,6 +28,7 @@ public sealed class XTermDriver : DotnetDriver
 
     public override void Dispose()
     {
+        CheckThreadId = false;
         Write("\x1b[?1047l");
         SetCursorPosition(_initialCursorPosition);
     }

@@ -6,6 +6,7 @@ namespace TerminalUI.ConsoleDrivers;
 public interface IConsoleDriver
 {
     bool SupportsAnsiEscapeSequence { get; }
+    int ThreadId { get; set; }
     bool Init();
     void Dispose();
     void SetCursorPosition(Position position);
@@ -22,4 +23,5 @@ public interface IConsoleDriver
     void SetBackgroundColor(IColor background);
     Size GetWindowSize();
     void Clear();
+    void EnterRestrictedMode();
 }
