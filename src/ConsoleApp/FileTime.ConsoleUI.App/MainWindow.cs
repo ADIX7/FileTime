@@ -143,7 +143,8 @@ public class MainWindow
                             {
                                 new TextBlock<IRootViewModel>
                                 {
-                                    Text = _consoleApplicationConfiguration.Value.ClipboardSingleIcon ?? "C",
+                                    Text = _consoleApplicationConfiguration.Value.ClipboardSingleIcon ??
+                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "C" : "\ud83d\udccb"),
                                     AsciiOnly = false
                                 }.Setup(t => t.Bind(
                                     t,
@@ -151,7 +152,8 @@ public class MainWindow
                                     t => t.IsVisible)),
                                 new TextBlock<IRootViewModel>
                                 {
-                                    Text = _consoleApplicationConfiguration.Value.ClipboardMultipleIcon ?? "CC",
+                                    Text = _consoleApplicationConfiguration.Value.ClipboardMultipleIcon ??
+                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "CC" : "\ud83d\udccb+"),
                                     AsciiOnly = false
                                 }.Setup(t => t.Bind(
                                     t,
