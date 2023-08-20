@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -273,8 +273,8 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
                         throw new Exception("Control character");
                 }
 
-                if (updateCellsOnly) continue;
                 UpdateCells(renderContext.UpdatedCells, currentPosition, text.Length, 1);
+                if (updateCellsOnly) continue;
 
                 try
                 {
