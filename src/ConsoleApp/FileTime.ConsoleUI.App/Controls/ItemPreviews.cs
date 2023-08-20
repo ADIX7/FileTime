@@ -1,5 +1,6 @@
 ﻿using FileTime.App.Core.Models;
 using FileTime.App.Core.ViewModels.ItemPreview;
+using FileTime.ConsoleUI.App.Preview;
 using FileTime.ConsoleUI.App.Styling;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
@@ -11,10 +12,12 @@ namespace FileTime.ConsoleUI.App.Controls;
 public class ItemPreviews
 {
     private readonly ITheme _theme;
+    private readonly IConsoleAppState _appState;
 
-    public ItemPreviews(ITheme theme)
+    public ItemPreviews(ITheme theme, IConsoleAppState appState)
     {
         _theme = theme;
+        _appState = appState;
     }
 
     public IView<IRootViewModel> View()
@@ -75,11 +78,34 @@ public class ItemPreviews
                     ChildInitializer =
                     {
                         new TextBlock<IElementPreviewViewModel>()
-                            .Setup(t => t.Bind(
-                                t,
-                                dc => dc.TextContent,
-                                t => t.Text,
-                                fallbackValue: string.Empty)),
+                            .Setup(t =>
+                            {
+                                t.Bind(
+                                    t,
+                                    dc => dc.TextContent,
+                                    t => t.Text,
+                                    fallbackValue: string.Empty);
+                                
+                                t.Bind(
+                                    t,
+                                    dc => _appState.PreviewType,
+                                    t => t.IsVisible,
+                                    v => v is null or ItemPreviewType.Text);
+                            }),
+                        new BinaryView<IElementPreviewViewModel>()
+                            .Setup(b =>
+                            {
+                                b.Bind(
+                                    b,
+                                    dc => dc.BinaryContent,
+                                    b => b.Data);
+                                
+                                b.Bind(
+                                    b,
+                                    dc => _appState.PreviewType,
+                                    t => t.IsVisible,
+                                    v => v == ItemPreviewType.Binary);
+                            }),
                         new TextBlock<IElementPreviewViewModel>
                         {
                             Margin = "0 1 0 0",

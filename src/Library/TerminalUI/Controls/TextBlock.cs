@@ -17,7 +17,8 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
         string? Text,
         IColor? Foreground,
         IColor? Background,
-        ITextFormat? TextFormat);
+        ITextFormat? TextFormat,
+        bool AsciiOnly);
 
     private RenderState? _lastRenderState;
     private string[]? _textLines;
@@ -26,6 +27,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
     [Notify] private TextAlignment _textAlignment = TextAlignment.Left;
     [Notify] private ITextFormat? _textFormat;
     [Notify] private int _textStartIndex;
+    [Notify] private bool _asciiOnly = true;
 
     public TextBlock()
     {
@@ -33,6 +35,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
         RerenderProperties.Add(nameof(TextAlignment));
         RerenderProperties.Add(nameof(TextFormat));
         RerenderProperties.Add(nameof(TextStartIndex));
+        RerenderProperties.Add(nameof(AsciiOnly));
 
         ((INotifyPropertyChanged) this).PropertyChanged += (o, e) =>
         {
@@ -51,19 +54,23 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
 
         var foreground = Foreground ?? renderContext.Foreground;
         var background = Background ?? renderContext.Background;
+        var text = Text;
+        var textLines = _textLines;
+        var asciiOnly = _asciiOnly;
+        
         var renderState = new RenderState(
             position,
             size,
-            Text,
+            text,
             foreground,
             background,
-            _textFormat);
+            _textFormat,
+            asciiOnly);
 
         var skipRender = !renderContext.ForceRerender && !NeedsRerender(renderState);
 
         _lastRenderState = renderState;
 
-        var textLines = _textLines;
         var textStartIndex = _textStartIndex;
         if (textLines is null)
         {
@@ -81,7 +88,7 @@ public sealed partial class TextBlock<T> : View<TextBlock<T>, T>, IDisplayView
             _textStartIndex = textLines.Length - size.Height;
         }
 
-        RenderText(textLines, renderContext, position, size, skipRender, TransformText);
+        RenderText(textLines, renderContext, position, size, skipRender, TransformText, asciiOnly);
 
         return !skipRender;
     }

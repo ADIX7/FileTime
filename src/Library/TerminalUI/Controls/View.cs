@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -220,10 +220,13 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
     private static void UpdateCells(bool[,] renderContextUpdatedCells, Position position, int sizeWidth, int sizeHeight)
     {
+        var xLen = renderContextUpdatedCells.GetLength(0);
+        var yLen = renderContextUpdatedCells.GetLength(1);
         for (var x = 0; x < sizeWidth; x++)
         {
             for (var y = 0; y < sizeHeight; y++)
             {
+                if (position.X + x >= xLen || position.Y + y >= yLen) continue;
                 renderContextUpdatedCells[position.X + x, position.Y + y] = true;
             }
         }

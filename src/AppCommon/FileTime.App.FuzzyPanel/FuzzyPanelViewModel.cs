@@ -29,13 +29,20 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
             _searchText = value;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SearchText)));
 
-            UpdateFilteredMatchesInternal();
+            UpdateFilteredMatches();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                SelectedItem = null;
+            }
+            else
+            {
+                UpdateSelectedItem();
+            }
         }
     }
 
-    private void UpdateFilteredMatchesInternal()
+    private void UpdateSelectedItem()
     {
-        UpdateFilteredMatches();
         if (SelectedItem != null && FilteredMatches.Contains(SelectedItem)) return;
 
         SelectedItem = FilteredMatches.Count > 0

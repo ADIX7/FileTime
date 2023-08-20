@@ -22,7 +22,6 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
         IUserCommandHandlerService userCommandHandlerService,
         ICommandKeysHelperService commandKeysHelperService,
         ILogger<CommandPaletteViewModel> logger)
-        : base((a, b) => a.Identifier == b.Identifier)
     {
         _commandPaletteService = commandPaletteService;
         _identifiableUserCommandService = identifiableUserCommandService;

@@ -8,6 +8,10 @@ public class MockRenderEngine : IRenderEngine
     {
     }
 
+    public void VisibilityChanged(IView view, bool newVisibility)
+    {
+    }
+
     public void VisibilityChanged(IView view)
     {
     }

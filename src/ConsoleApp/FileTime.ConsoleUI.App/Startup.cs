@@ -5,12 +5,23 @@ using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.Controls;
 using FileTime.ConsoleUI.App.KeyInputHandling;
 using FileTime.ConsoleUI.App.Services;
+using FileTime.ConsoleUI.App.UserCommand;
 using FileTime.Core.Interactions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FileTime.ConsoleUI.App;
+
+public class StartupHandler : IStartupHandler
+{
+    public StartupHandler(IIdentifiableUserCommandService identifiableUserCommandService)
+    {
+        identifiableUserCommandService.AddIdentifiableUserCommand(NextPreviewUserCommand.Instance);
+        identifiableUserCommandService.AddIdentifiableUserCommand(PreviousPreviewUserCommand.Instance);
+    }
+    public Task InitAsync() => Task.CompletedTask;
+}
 
 public static class Startup
 {
@@ -27,6 +38,8 @@ public static class Startup
         services.TryAddSingleton<IRootViewModel, RootViewModel>();
         services.TryAddSingleton<IDialogService, DialogService>();
         services.TryAddSingleton<IUserCommunicationService>(sp => sp.GetRequiredService<IDialogService>());
+        services.AddSingleton<IUserCommandHandler, ConsoleUserCommandHandler>();
+        services.AddSingleton<IStartupHandler, StartupHandler>();
 
         services.Configure<ConsoleApplicationConfiguration>(configuration);
         return services;

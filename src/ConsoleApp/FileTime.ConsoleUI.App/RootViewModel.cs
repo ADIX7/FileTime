@@ -4,13 +4,15 @@ using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.App.FrequencyNavigation.ViewModels;
+using FileTime.ConsoleUI.App.Preview;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
+using PropertyChanged.SourceGenerator;
 
 namespace FileTime.ConsoleUI.App;
 
-public class RootViewModel : IRootViewModel
+public partial class RootViewModel : IRootViewModel
 {
     public string UserName => Environment.UserName;
     public string MachineName => Environment.MachineName;
@@ -19,6 +21,7 @@ public class RootViewModel : IRootViewModel
     public ICommandPaletteViewModel CommandPalette { get; }
     public IFrequencyNavigationViewModel FrequencyNavigation { get; }
     public IItemPreviewService ItemPreviewService { get; }
+    public IClipboardService ClipboardService { get; }
     public IDialogService DialogService { get; }
     public ITimelineViewModel TimelineViewModel { get; }
     public IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get;}
@@ -32,7 +35,8 @@ public class RootViewModel : IRootViewModel
         IDialogService dialogService,
         ITimelineViewModel timelineViewModel,
         IFrequencyNavigationViewModel frequencyNavigation,
-        IItemPreviewService itemPreviewService)
+        IItemPreviewService itemPreviewService,
+        IClipboardService clipboardService)
     {
         AppState = appState;
         PossibleCommands = possibleCommands;
@@ -41,6 +45,7 @@ public class RootViewModel : IRootViewModel
         TimelineViewModel = timelineViewModel;
         FrequencyNavigation = frequencyNavigation;
         ItemPreviewService = itemPreviewService;
+        ClipboardService = clipboardService;
 
         DialogService.ReadInput.PropertyChanged += (o, e) =>
         {
@@ -50,6 +55,14 @@ public class RootViewModel : IRootViewModel
                 {
                     FocusReadInputElement?.Invoke(readInputs.Inputs[0]);
                 }
+            }
+        };
+
+        itemPreviewService.ItemPreview.PropertyChanged += (o, e) =>
+        {
+            if (e.PropertyName == nameof(itemPreviewService.ItemPreview.Value))
+            {
+                appState.PreviewType = null;
             }
         };
 

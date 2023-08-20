@@ -22,5 +22,6 @@ public interface IRootViewModel
     IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get; }
     IFrequencyNavigationViewModel FrequencyNavigation { get; }
     IItemPreviewService ItemPreviewService { get; }
+    IClipboardService ClipboardService { get; }
     event Action<IInputElement>? FocusReadInputElement;
 }

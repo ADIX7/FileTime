@@ -105,13 +105,13 @@ public class CommandPalette
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
+                                    d => d.CommandPalette.SelectedItem.Identifier == item.DataContext.Identifier ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
                                     t => t.Background
                                 );
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
+                                    d => d.CommandPalette.SelectedItem.Identifier == item.DataContext.Identifier ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
                                     t => t.Foreground
                                 );
 

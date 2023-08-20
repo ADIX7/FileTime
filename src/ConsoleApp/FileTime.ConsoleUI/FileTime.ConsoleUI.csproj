@@ -35,4 +35,8 @@
     <PackageReference Include="Terminal.Gui" Version="1.13.5" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

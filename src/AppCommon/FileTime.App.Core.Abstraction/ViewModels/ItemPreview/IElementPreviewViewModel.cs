@@ -6,5 +6,6 @@ public interface IElementPreviewViewModel : IItemPreviewViewModel
 {
     ItemPreviewMode Mode { get; }
     string TextContent { get; }
+    byte[] BinaryContent { get; }
     string TextEncoding { get; }
 }

@@ -26,6 +26,7 @@ public partial class ElementPreviewViewModel : IElementPreviewViewModel, IAsyncI
     public ItemPreviewMode Mode { get; private set; }
 
     [Property] private string? _textContent;
+    [Property] private byte[]? _binaryContent;
     [Property] private string? _textEncoding;
 
     public string Name => PreviewName;
@@ -35,6 +36,7 @@ public partial class ElementPreviewViewModel : IElementPreviewViewModel, IAsyncI
         try
         {
             var content = await element.Provider.GetContentAsync(element, MaxTextPreviewSize);
+            BinaryContent = content;
 
             if (content is null)
             {

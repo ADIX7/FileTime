@@ -1,11 +1,13 @@
 ﻿using System.Globalization;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
+using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.Controls;
 using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using Humanizer.Bytes;
+using Microsoft.Extensions.Options;
 using TerminalUI;
 using TerminalUI.Color;
 using TerminalUI.Controls;
@@ -36,6 +38,7 @@ public class MainWindow
     private readonly Dialogs _dialogs;
     private readonly Timeline _timeline;
     private readonly ItemPreviews _itemPreviews;
+    private readonly IOptions<ConsoleApplicationConfiguration> _consoleApplicationConfiguration;
     private readonly Lazy<IView> _root;
 
 
@@ -47,7 +50,8 @@ public class MainWindow
         FrequencyNavigation frequencyNavigation,
         Dialogs dialogs,
         Timeline timeline,
-        ItemPreviews itemPreviews)
+        ItemPreviews itemPreviews,
+        IOptions<ConsoleApplicationConfiguration> consoleApplicationConfiguration)
     {
         _rootViewModel = rootViewModel;
         _applicationContext = applicationContext;
@@ -57,6 +61,7 @@ public class MainWindow
         _dialogs = dialogs;
         _timeline = timeline;
         _itemPreviews = itemPreviews;
+        _consoleApplicationConfiguration = consoleApplicationConfiguration;
         _root = new Lazy<IView>(Initialize);
     }
 
@@ -92,7 +97,7 @@ public class MainWindow
             {
                 new Grid<IRootViewModel>
                 {
-                    ColumnDefinitionsObject = "Auto * Auto",
+                    ColumnDefinitionsObject = "Auto * Auto Auto",
                     ChildInitializer =
                     {
                         new StackPanel<IRootViewModel>
@@ -130,8 +135,32 @@ public class MainWindow
                                 root => root.AppState.SelectedTab.Value.CurrentLocation.Value.FullName.Path,
                                 tb => tb.Text
                             )),
+                        new StackPanel<IRootViewModel>
+                        {
+                            Margin = "2 0 0 0",
+                            Extensions = {new GridPositionExtension(2, 0)},
+                            ChildInitializer =
+                            {
+                                new TextBlock<IRootViewModel>
+                                {
+                                    Text = _consoleApplicationConfiguration.Value.ClipboardSingleIcon ?? "C",
+                                    AsciiOnly = false
+                                }.Setup(t => t.Bind(
+                                    t,
+                                    dc => dc.ClipboardService.Content.Count == 1,
+                                    t => t.IsVisible)),
+                                new TextBlock<IRootViewModel>
+                                {
+                                    Text = _consoleApplicationConfiguration.Value.ClipboardMultipleIcon ?? "CC",
+                                    AsciiOnly = false
+                                }.Setup(t => t.Bind(
+                                    t,
+                                    dc => dc.ClipboardService.Content.Count > 1,
+                                    t => t.IsVisible))
+                            }
+                        },
                         TabControl()
-                            .WithExtension(new GridPositionExtension(2, 0))
+                            .WithExtension(new GridPositionExtension(3, 0))
                     }
                 },
                 new Grid<IRootViewModel>
@@ -375,6 +404,7 @@ public class MainWindow
     {
         var tabList = new ListView<IRootViewModel, ITabViewModel>
         {
+            Margin = "1 0 0 0",
             Orientation = Orientation.Horizontal,
             ItemTemplate = item =>
             {
