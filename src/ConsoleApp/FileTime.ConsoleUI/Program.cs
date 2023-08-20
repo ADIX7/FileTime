@@ -15,7 +15,13 @@ using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 IConsoleDriver? driver = null;
 
+#if DEBUG
 (AppDataRoot, EnvironmentName) = Init.InitDevelopment();
+#endif
+if (AppDataRoot is null)
+{
+    (AppDataRoot, EnvironmentName) = Init.InitRelease();
+}
 InitLogging();
 try
 {
@@ -27,9 +33,9 @@ try
 
     driver = serviceProvider.GetRequiredService<IConsoleDriver>();
     Log.Logger.Debug("Using driver {Driver}", driver.GetType().Name);
-    
+
     driver.SetCursorVisible(false);
-    
+
     var applicationContext = serviceProvider.GetRequiredService<IApplicationContext>();
     var theme = serviceProvider.GetRequiredService<ITheme>();
 
@@ -68,15 +74,26 @@ static void InitLogging()
 
 static IConfigurationRoot CreateConfiguration(string[] strings)
 {
-    var configurationRoot = new ConfigurationBuilder()
-        .AddInMemoryCollection(MainConfiguration.Configuration)
-        .AddInMemoryCollection(MainConsoleConfiguration.Configuration)
+    var configurationBuilder = new ConfigurationBuilder()
+            .AddInMemoryCollection(MainConfiguration.Configuration)
+            .AddInMemoryCollection(MainConsoleConfiguration.Configuration)
 #if DEBUG
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 #endif
-        .AddCommandLine(strings)
-        .Build();
-    return configurationRoot;
+        ;
+
+    var configurationDirectory = new DirectoryInfo(Path.Combine(AppDataRoot, "config"));
+    if (configurationDirectory.Exists)
+    {
+        foreach (var settingsFile in configurationDirectory.GetFiles("*.json"))
+        {
+            configurationBuilder.AddJsonFile(settingsFile.FullName, optional: true, reloadOnChange: true);
+        }
+    }
+
+    configurationBuilder.AddCommandLine(strings);
+
+    return configurationBuilder.Build();
 }
 
 static bool HandleInfoProviders(string[] args, IServiceProvider serviceProvider)
