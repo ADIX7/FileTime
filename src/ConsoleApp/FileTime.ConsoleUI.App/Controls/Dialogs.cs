@@ -5,6 +5,7 @@ using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using GeneralInputKey;
+using TerminalUI.Color;
 using TerminalUI.Controls;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
@@ -84,6 +85,7 @@ public class Dialogs
         {
             Margin = 5,
             BorderThickness = 1,
+            Background = SpecialColor.None,
             Content = new Grid<IRootViewModel>
             {
                 ChildInitializer =
