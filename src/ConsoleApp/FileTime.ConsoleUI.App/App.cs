@@ -1,8 +1,10 @@
 ﻿using System.Collections.Specialized;
+using System.ComponentModel;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.KeyInputHandling;
+using FileTime.ConsoleUI.App.Styling;
 using GeneralInputKey;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -26,6 +28,7 @@ public class App : IApplication
     private readonly IApplicationContext _applicationContext;
     private readonly IConsoleDriver _consoleDriver;
     private readonly IAppState _appState;
+    private readonly IThemeProvider _themeProvider;
     private readonly ILogger<App> _logger;
     private readonly IKeyInputHandlerService _keyInputHandlerService;
     private readonly Thread _renderThread;
@@ -38,6 +41,7 @@ public class App : IApplication
         IApplicationContext applicationContext,
         IConsoleDriver consoleDriver,
         IAppState appState,
+        IThemeProvider themeProvider,
         IOptions<ConsoleApplicationConfiguration> consoleApplicationConfiguration,
         ILogger<App> logger)
     {
@@ -48,12 +52,29 @@ public class App : IApplication
         _applicationContext = applicationContext;
         _consoleDriver = consoleDriver;
         _appState = appState;
+        _themeProvider = themeProvider;
         _logger = logger;
         
+        if (themeProvider is INotifyPropertyChanged notifyPropertyChanged)
+            notifyPropertyChanged.PropertyChanged += ThemeProviderPropertyChanged;
+        
+        _applicationContext.Theme = themeProvider.CurrentTheme.ConsoleTheme ?? _applicationContext.Theme;
+
         _applicationContext.SupportUtf8Output = !consoleApplicationConfiguration.Value.DisableUtf8;
 
         _renderThread = new Thread(Render);
     }
+
+    private void ThemeProviderPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IThemeProvider.CurrentTheme))
+        {
+            UpdateConsoleTheme();
+        }
+    }
+
+    private void UpdateConsoleTheme() 
+        => _applicationContext.Theme = _themeProvider.CurrentTheme.ConsoleTheme;
 
     public void Run()
     {
@@ -117,7 +138,7 @@ public class App : IApplication
 
             Thread.Sleep(10);
         }
-        
+
         Task.Run(async () => await _lifecycleService.ExitAsync()).Wait();
     }
 

@@ -1,10 +1,15 @@
 ﻿using FileTime.ConsoleUI.App.Configuration;
-using FileTime.ConsoleUI.App.Styling;
-using FileTime.ConsoleUI.Styles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
+using TerminalUI.Styling;
+using TerminalUI.Styling.Controls;
+using IConsoleTheme = TerminalUI.Styling.ITheme;
+using ConsoleTheme = TerminalUI.Styling.Theme;
+using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
+using Theme = FileTime.ConsoleUI.App.Styling.Theme;
 
 namespace FileTime.ConsoleUI;
 
@@ -49,14 +54,53 @@ public static class Startup
     {
         serviceCollection.TryAddSingleton<ITheme>(sp =>
         {
+            var colorProvider = sp.GetRequiredService<IColorProvider>();
+
+            return new Theme(
+                DefaultForegroundColor: null,
+                DefaultForegroundAccentColor: colorProvider.RedForeground,
+                DefaultBackgroundColor: null,
+                ElementColor: colorProvider.GrayForeground,
+                ContainerColor: colorProvider.BlueForeground,
+                MarkedItemForegroundColor: colorProvider.YellowForeground,
+                MarkedItemBackgroundColor: null,
+                MarkedSelectedItemForegroundColor: colorProvider.BlackForeground,
+                MarkedSelectedItemBackgroundColor: colorProvider.YellowForeground,
+                SelectedItemColor: colorProvider.BlackForeground,
+                SelectedTabBackgroundColor: colorProvider.GreenBackground,
+                WarningForegroundColor: colorProvider.YellowForeground,
+                ErrorForegroundColor: colorProvider.RedForeground,
+                ListViewItemTheme: new(
+                    SelectedBackgroundColor: colorProvider.GrayBackground,
+                    SelectedForegroundColor: colorProvider.BlackForeground
+                ),
+                ConsoleTheme: new ConsoleTheme
+                {
+                    ControlThemes = new ControlThemes
+                    {
+                        ProgressBar = new ProgressBarTheme
+                        {
+                            ForegroundColor = colorProvider.BlueForeground,
+                            BackgroundColor = colorProvider.GrayBackground,
+                            UnfilledForeground = colorProvider.GrayForeground,
+                            UnfilledBackground = colorProvider.GrayBackground,
+                        }
+                    }
+                }
+            );
+        });
+        
+        serviceCollection.TryAddSingleton<IColorProvider>(sp =>
+        {
             var driver = sp.GetRequiredService<IConsoleDriver>();
 
             return driver switch
             {
-                XTermDriver _ => DefaultThemes.Color256Theme,
-                DotnetDriver _ => DefaultThemes.ConsoleColorTheme,
+                XTermDriver _ => new AnsiColorProvider(),
+                DotnetDriver _ => new ConsoleColorProvider(),
                 _ => throw new ArgumentOutOfRangeException(nameof(driver))
             };
+            
         });
 
         return serviceCollection;

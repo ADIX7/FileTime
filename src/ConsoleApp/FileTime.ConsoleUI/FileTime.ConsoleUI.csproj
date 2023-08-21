@@ -19,7 +19,6 @@
     <ProjectReference Include="..\..\Library\TerminalUI.DependencyInjection\TerminalUI.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools.Compression\FileTime.Tools.Compression.csproj" />
     <ProjectReference Include="..\FileTime.ConsoleUI.App\FileTime.ConsoleUI.App.csproj" />
-    <ProjectReference Include="..\FileTime.ConsoleUI.Styles\FileTime.ConsoleUI.Styles.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +36,10 @@
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <Content Include="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

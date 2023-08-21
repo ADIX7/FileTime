@@ -15,6 +15,8 @@ var services = new ServiceCollection()
     .AddSingleton<IRenderEngine, MockRenderEngine>();
 IServiceProvider provider = services.BuildServiceProvider();
 
+var colorProvider = new ConsoleColorProvider();
+
 var applicationContext = provider.GetRequiredService<IApplicationContext>();
 applicationContext.Theme = new Theme
 {
@@ -22,7 +24,7 @@ applicationContext.Theme = new Theme
     {
         ProgressBar = new ProgressBarTheme
         {
-            ForegroundColor = ConsoleColors.Foregrounds.Blue
+            ForegroundColor = colorProvider.BlueForeground
         }
     }
 };

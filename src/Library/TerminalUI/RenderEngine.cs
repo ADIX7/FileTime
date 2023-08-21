@@ -1,5 +1,6 @@
 ﻿using TerminalUI.Controls;
 using TerminalUI.Models;
+using TerminalUI.Styling;
 using TerminalUI.TextFormat;
 using TerminalUI.Traits;
 
@@ -19,6 +20,7 @@ public class RenderEngine : IRenderEngine
     private bool[,]? _filledCells;
     private bool[,]? _lastFilledCells;
     private DateTime _renderRequestDetected;
+    private ITheme? _lastTheme;
 
     public RenderEngine(IApplicationContext applicationContext, IEventLoop eventLoop)
     {
@@ -90,6 +92,12 @@ public class RenderEngine : IRenderEngine
 
             forceRerenderAll = _forceRerenderAll;
             _forceRerenderAll = false;
+        }
+
+        if (_applicationContext.Theme != _lastTheme)
+        {
+            _lastTheme = _applicationContext.Theme;
+            forceRerenderAll = true;
         }
 
         var driver = _applicationContext.ConsoleDriver;

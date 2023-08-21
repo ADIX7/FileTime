@@ -5,6 +5,7 @@ using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.Controls;
 using FileTime.ConsoleUI.App.KeyInputHandling;
 using FileTime.ConsoleUI.App.Services;
+using FileTime.ConsoleUI.App.Styling;
 using FileTime.ConsoleUI.App.UserCommand;
 using FileTime.Core.Interactions;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ public class StartupHandler : IStartupHandler
         identifiableUserCommandService.AddIdentifiableUserCommand(NextPreviewUserCommand.Instance);
         identifiableUserCommandService.AddIdentifiableUserCommand(PreviousPreviewUserCommand.Instance);
     }
+
     public Task InitAsync() => Task.CompletedTask;
 }
 
@@ -38,10 +40,12 @@ public static class Startup
         services.TryAddSingleton<IRootViewModel, RootViewModel>();
         services.TryAddSingleton<IDialogService, DialogService>();
         services.TryAddSingleton<IUserCommunicationService>(sp => sp.GetRequiredService<IDialogService>());
-        services.AddSingleton<IUserCommandHandler, ConsoleUserCommandHandler>();
+        services.TryAddSingleton<IUserCommandHandler, ConsoleUserCommandHandler>();
         services.AddSingleton<IStartupHandler, StartupHandler>();
+        services.TryAddSingleton<IThemeProvider, ThemeProvider>();
 
         services.Configure<ConsoleApplicationConfiguration>(configuration);
+        services.Configure<StyleConfigurationRoot>(configuration.GetSection("Style"));
         return services;
     }
 

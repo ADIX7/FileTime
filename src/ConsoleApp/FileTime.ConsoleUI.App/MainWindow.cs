@@ -41,11 +41,10 @@ public class MainWindow
     private readonly IOptions<ConsoleApplicationConfiguration> _consoleApplicationConfiguration;
     private readonly Lazy<IView> _root;
 
-
     public MainWindow(
         IRootViewModel rootViewModel,
         IApplicationContext applicationContext,
-        ITheme theme,
+        IThemeProvider themeProvider,
         CommandPalette commandPalette,
         FrequencyNavigation frequencyNavigation,
         Dialogs dialogs,
@@ -55,7 +54,7 @@ public class MainWindow
     {
         _rootViewModel = rootViewModel;
         _applicationContext = applicationContext;
-        _theme = theme;
+        _theme = themeProvider.CurrentTheme;
         _commandPalette = commandPalette;
         _frequencyNavigation = frequencyNavigation;
         _dialogs = dialogs;

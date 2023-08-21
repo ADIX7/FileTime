@@ -1,11 +1,6 @@
-﻿using FileTime.ConsoleUI.App;
-using FileTime.ConsoleUI.App.Styling;
-using TerminalUI.Color;
-using TerminalUI.Styling;
-using TerminalUI.Styling.Controls;
-using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
+﻿using TerminalUI.Color;
 
-namespace FileTime.ConsoleUI.Styles;
+namespace FileTime.ConsoleUI.App.Styling;
 
 using IConsoleTheme = TerminalUI.Styling.ITheme;
 using ConsoleTheme = TerminalUI.Styling.Theme;
@@ -25,11 +20,9 @@ public record Theme(
     IColor? WarningForegroundColor,
     IColor? ErrorForegroundColor,
     ListViewItemTheme ListViewItemTheme,
-    IConsoleTheme? ConsoleTheme,
-    Type? ForegroundColors,
-    Type? BackgroundColors) : ITheme, IColorSampleProvider;
+    IConsoleTheme? ConsoleTheme) : ITheme;
 
-public static class DefaultThemes
+/*public static class DefaultThemes
 {
     public static Theme Color256Theme => new(
         DefaultForegroundColor: null,
@@ -100,4 +93,4 @@ public static class DefaultThemes
         ForegroundColors: typeof(ConsoleColors.Foregrounds),
         BackgroundColors: typeof(ConsoleColors.Backgrounds)
     );
-}
+}*/

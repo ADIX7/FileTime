@@ -10,14 +10,15 @@ public static class ColorSchema
 {
     private const int ColorTextMargin = 5;
 
-    public static void PrintColorSchema(ITheme theme, IConsoleDriver consoleDriver)
+    public static void PrintColorSchema(IThemeProvider themeProvider, IColorProvider colorProvider, IConsoleDriver consoleDriver)
     {
+        var theme = themeProvider.CurrentTheme;
+
         consoleDriver.Dispose();
         consoleDriver.ResetStyle();
         PrintThemeColors(theme, consoleDriver);
 
-        if (theme is IColorSampleProvider colorSampleProvider)
-            PrintColorPalette(colorSampleProvider, consoleDriver);
+        PrintColorPalette(colorProvider, consoleDriver);
     }
 
     private static void PrintThemeColors(ITheme theme, IConsoleDriver consoleDriver)
@@ -50,37 +51,26 @@ public static class ColorSchema
         consoleDriver.Write(Environment.NewLine);
     }
 
-    private static void PrintColorPalette(IColorSampleProvider colorSampleProvider, IConsoleDriver consoleDriver)
+    private static void PrintColorPalette(IColorProvider colorSampleProvider, IConsoleDriver consoleDriver)
     {
-        if (colorSampleProvider.ForegroundColors is { } foregroundColors)
-        {
-            PrintColorPalette("foreground", foregroundColors, consoleDriver);
-        }
+        var colorPalette = colorSampleProvider.GetType();
 
-        if (colorSampleProvider.BackgroundColors is { } backgroundColors)
-        {
-            PrintColorPalette("background", backgroundColors, consoleDriver);
-        }
-    }
-
-    private static void PrintColorPalette(string paletteName, Type colorPalette, IConsoleDriver consoleDriver)
-    {
         var colorType = typeof(IColor);
         var colorFields = colorPalette
             .GetFields()
-            .Where(f => f.FieldType.IsAssignableTo(colorType) && f.IsStatic)
-            .ToDictionary(f => f.Name, f => (IColor?) f.GetValue(null));
+            .Where(f => f.FieldType.IsAssignableTo(colorType) && !f.IsStatic)
+            .ToDictionary(f => f.Name, f => (IColor?) f.GetValue(colorSampleProvider));
         var colorProperties = colorPalette
             .GetProperties()
-            .Where(p => p.PropertyType.IsAssignableTo(colorType) && (p.GetMethod?.IsStatic ?? false))
-            .ToDictionary(p => p.Name, p => (IColor?) p.GetValue(null));
+            .Where(p => p.PropertyType.IsAssignableTo(colorType) && p.GetMethod is {IsStatic: false})
+            .ToDictionary(p => p.Name, p => (IColor?) p.GetValue(colorSampleProvider));
 
         var colors = colorFields
             .Concat(colorProperties)
             .OrderBy(v => v.Key)
             .ToDictionary(k => k.Key, v => v.Value);
 
-        consoleDriver.Write("Color palette for " + paletteName + Environment.NewLine);
+        consoleDriver.Write("Color palette for " + colorPalette.Name + Environment.NewLine);
 
         if (colors.Count == 0)
         {
@@ -94,7 +84,7 @@ public static class ColorSchema
         {
             PrintColor(consoleDriver, key, value, colorTextStartX);
         }
-        
+
         consoleDriver.ResetStyle();
         consoleDriver.Write(Environment.NewLine);
     }

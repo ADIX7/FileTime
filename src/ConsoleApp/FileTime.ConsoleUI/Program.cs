@@ -3,12 +3,14 @@ using FileTime.App.Core;
 using FileTime.App.Core.Configuration;
 using FileTime.ConsoleUI;
 using FileTime.ConsoleUI.App;
+using FileTime.ConsoleUI.App.Styling;
 using FileTime.ConsoleUI.InfoProviders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Debugging;
 using TerminalUI;
+using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
 using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
 
@@ -37,9 +39,9 @@ try
     driver.SetCursorVisible(false);
 
     var applicationContext = serviceProvider.GetRequiredService<IApplicationContext>();
-    var theme = serviceProvider.GetRequiredService<ITheme>();
+    var defaultTheme = serviceProvider.GetRequiredService<ITheme>();
 
-    applicationContext.Theme = theme.ConsoleTheme;
+    applicationContext.Theme = defaultTheme.ConsoleTheme;
 
     var app = serviceProvider.GetRequiredService<IApplication>();
     app.Run();
@@ -79,6 +81,7 @@ static IConfigurationRoot CreateConfiguration(string[] strings)
             .AddInMemoryCollection(MainConsoleConfiguration.Configuration)
 #if DEBUG
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
 #endif
         ;
 
@@ -103,7 +106,8 @@ static bool HandleInfoProviders(string[] args, IServiceProvider serviceProvider)
         {
             "--info=colors",
             () => ColorSchema.PrintColorSchema(
-                serviceProvider.GetRequiredService<ITheme>(),
+                serviceProvider.GetRequiredService<IThemeProvider>(),
+                serviceProvider.GetRequiredService<IColorProvider>(),
                 serviceProvider.GetRequiredService<IConsoleDriver>()
             )
         },
