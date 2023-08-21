@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using DeclarativeProperty;
 
 namespace FileTime.GuiApp.App.ViewModels;
@@ -8,4 +9,5 @@ public interface IMainWindowViewModelBase
     bool Loading { get; }
     IObservable<string?> MainFont { get; } 
     DeclarativeProperty<string> FatalError { get; }
+    IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint { get; }
 }

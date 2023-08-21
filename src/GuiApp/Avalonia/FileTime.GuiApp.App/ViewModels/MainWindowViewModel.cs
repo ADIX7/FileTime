@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Linq;
 using System.Reflection;
+using Avalonia.Controls;
 using Avalonia.Input;
 using DeclarativeProperty;
 using FileTime.App.CommandPalette.Services;
@@ -37,12 +38,13 @@ namespace FileTime.GuiApp.App.ViewModels;
 [Inject(typeof(IClipboardService), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IModalService), PropertyName = "_modalService")]
 [Inject(typeof(ITimelineViewModel), PropertyAccessModifier = AccessModifier.Public)]
-[Inject(typeof(IPossibleCommandsViewModel), PropertyName = "PossibleCommands",PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IPossibleCommandsViewModel), PropertyName = "PossibleCommands", PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
     public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
     public DeclarativeProperty<string> FatalError { get; } = new();
+    public IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint { get; } = new[] {WindowTransparencyLevel.Blur};
     public IGuiAppState AppState => _appState;
     public DeclarativeProperty<string> Title { get; } = new();
     public Action? FocusDefaultElement { get; set; }
