@@ -36,6 +36,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<ICommandKeysHelperService, CommandKeysHelperService>();
         serviceCollection.TryAddSingleton<IPossibleCommandsService, PossibleCommandsService>();
         serviceCollection.TryAddSingleton<IPossibleCommandsViewModel, PossibleCommandsViewModel>();
+        serviceCollection.TryAddSingleton<IProgramsService, ProgramsService>();
 
         return serviceCollection
             .AddCommandHandlers()
@@ -53,7 +54,7 @@ public static class Startup
 
     internal static IServiceCollection AddConfiguration(this IServiceCollection serviceCollection, IConfigurationRoot configuration) =>
         serviceCollection
-            .Configure<ProgramsConfiguration>(configuration.GetSection(SectionNames.ProgramsSectionName))
+            .Configure<ProgramsConfigurationRoot>(configuration.GetSection(SectionNames.ProgramsSectionName))
             .Configure<KeyBindingConfiguration>(configuration.GetSection(SectionNames.KeybindingSectionName))
             .AddSingleton<IConfiguration>(configuration);
 }

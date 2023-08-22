@@ -20,6 +20,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(CreateElementCommand.Instance);
         AddUserCommand(DeleteCommand.HardDelete);
         AddUserCommand(DeleteCommand.SoftDelete);
+        AddUserCommand(EditCommand.Instance);
         AddUserCommand(EnterRapidTravelCommand.Instance);
         AddUserCommand(ExitRapidTravelCommand.Instance);
         AddUserCommand(GoBackCommand.Instance);

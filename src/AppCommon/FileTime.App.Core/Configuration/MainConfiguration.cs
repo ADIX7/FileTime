@@ -6,7 +6,7 @@ namespace FileTime.App.Core.Configuration;
 
 public class MainConfiguration
 {
-    private static readonly Lazy<List<CommandBindingConfiguration>> _defaultKeybindings = new(InitDefaultKeyBindings);
+    private static readonly Lazy<List<CommandBindingConfiguration>> DefaultKeybindings = new(InitDefaultKeyBindings);
 
     public static Dictionary<string, string?> Configuration { get; }
 
@@ -18,7 +18,7 @@ public class MainConfiguration
         };
 
         PopulateDefaultEditorPrograms(Configuration);
-        PopulateDefaultKeyBindings(Configuration, _defaultKeybindings.Value,
+        PopulateDefaultKeyBindings(Configuration, DefaultKeybindings.Value,
             SectionNames.KeybindingSectionName + ":" + nameof(KeyBindingConfiguration.DefaultKeyBindings));
     }
 
@@ -60,7 +60,7 @@ public class MainConfiguration
             new(CreateContainer.CommandName, new[] {Keys.C, Keys.C}),
             new(CreateElementCommand.CommandName, new[] {Keys.C, Keys.E}),
             //new CommandBindingConfiguration(ConfigCommand.Cut, new[] { Keys.D, Keys.D }),
-            //new CommandBindingConfiguration(ConfigCommand.Edit, new KeyConfig(Keys.F4)),
+            new(EditCommand.CommandName, new[] {Keys.F4}),
             new(EnterRapidTravelCommand.CommandName, new KeyConfig(Keys.Comma, shift: true)),
             new(EnterRapidTravelCommand.CommandName, new KeyConfig(Keys.Question, shift: true)),
             new(GoBackCommand.CommandName, new KeyConfig(Keys.Left, alt: true)),
@@ -120,23 +120,35 @@ public class MainConfiguration
 
     private static void PopulateDefaultEditorPrograms(Dictionary<string, string?> configuration)
     {
-        var editorPrograms = new List<ProgramConfiguration>()
+        var linuxEditorPrograms = new List<ProgramConfiguration>
         {
-            new(@"c:\Program Files\Notepad++\notepad++.exe"),
+            new(@"gedit"),
+        };
+        var windowsEditorPrograms = new List<ProgramConfiguration>
+        {
             new("notepad.exe"),
         };
 
+        PopulateDefaultEditorPrograms(configuration, linuxEditorPrograms, nameof(ProgramsConfigurationRoot.Linux));
+        PopulateDefaultEditorPrograms(configuration, windowsEditorPrograms, nameof(ProgramsConfigurationRoot.Windows));
+    }
+
+    private static void PopulateDefaultEditorPrograms(
+        Dictionary<string, string?> configuration,
+        List<ProgramConfiguration> editorPrograms,
+        string os)
+    {
         for (var i = 0; i < editorPrograms.Count; i++)
         {
             if (editorPrograms[i].Path is not { } path) continue;
             configuration.Add(
-                $"{SectionNames.ProgramsSectionName}:{nameof(ProgramsConfiguration.DefaultEditorPrograms)}:[{i}]:{nameof(ProgramConfiguration.Path)}",
+                $"{SectionNames.ProgramsSectionName}:{os}:{nameof(ProgramsConfiguration.DefaultEditorPrograms)}:[{i}]:{nameof(ProgramConfiguration.Path)}",
                 path);
 
             if (editorPrograms[i].Arguments is { } arguments)
             {
                 configuration.Add(
-                    $"{SectionNames.ProgramsSectionName}:{nameof(ProgramsConfiguration.DefaultEditorPrograms)}:[{i}]:{nameof(ProgramConfiguration.Arguments)}",
+                    $"{SectionNames.ProgramsSectionName}:{os}:{nameof(ProgramsConfiguration.DefaultEditorPrograms)}:[{i}]:{nameof(ProgramConfiguration.Arguments)}",
                     arguments);
             }
         }
