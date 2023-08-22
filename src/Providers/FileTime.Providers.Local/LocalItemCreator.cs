@@ -63,6 +63,9 @@ public class LocalItemCreator : ItemCreatorBase<ILocalContentProvider>
         try
         {
             _logger.LogTrace("Trying to create element with path {Path}", path);
+            var directory = Path.GetDirectoryName(path);
+            if (directory is { } && !Directory.Exists(directory)) Directory.CreateDirectory(directory);
+            
             await using (File.Create(path))
             {
             }
