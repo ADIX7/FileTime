@@ -396,13 +396,6 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         }
     }
 
-    protected void SetColorsForDriver(in RenderContext renderContext)
-    {
-        var foreground = Foreground ?? renderContext.Foreground;
-        var background = Background ?? renderContext.Background;
-        SetStyleColor(renderContext, foreground, background);
-    }
-
     public TChild CreateChild<TChild>() where TChild : IView<T>, new()
     {
         var child = new TChild();

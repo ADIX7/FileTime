@@ -112,14 +112,16 @@ public sealed partial class ItemsControl<TDataContext, TItem>
     {
         var neededRerender = false;
         IReadOnlyList<IView> forceRerenderChildren;
+        IReadOnlyList<IView> children;
         lock (_forceRerenderChildrenLock)
         {
             forceRerenderChildren = _forceRerenderChildren.ToList();
             _forceRerenderChildren.Clear();
+            children = _children.ToList();
         }
 
         var delta = 0;
-        foreach (var child in _children)
+        foreach (var child in children)
         {
             if (!child.IsVisible) continue;
 

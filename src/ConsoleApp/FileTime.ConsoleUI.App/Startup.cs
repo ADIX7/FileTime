@@ -40,7 +40,7 @@ public static class Startup
         services.TryAddSingleton<IRootViewModel, RootViewModel>();
         services.TryAddSingleton<IDialogService, DialogService>();
         services.TryAddSingleton<IUserCommunicationService>(sp => sp.GetRequiredService<IDialogService>());
-        services.TryAddSingleton<IUserCommandHandler, ConsoleUserCommandHandler>();
+        services.AddSingleton<IUserCommandHandler, ConsoleUserCommandHandler>();
         services.AddSingleton<IStartupHandler, StartupHandler>();
         services.TryAddSingleton<IThemeProvider, ThemeProvider>();
 

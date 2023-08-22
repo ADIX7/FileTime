@@ -66,6 +66,10 @@ public partial class BinaryView<T> : View<BinaryView<T>, T>, IDisplayView
         _lastRenderState = renderState;
 
         if (data is null) return false;
+        
+        var driver = renderContext.ConsoleDriver;
+        driver.ResetStyle();
+        SetStyleColor(renderContext, foreground, background);
 
         var lineI = 0;
         var textSize = size with {Height = 1};

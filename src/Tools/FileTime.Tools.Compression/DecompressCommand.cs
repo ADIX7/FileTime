@@ -69,6 +69,7 @@ public class DecompressCommand : CommandBase, IExecutableCommand, ITransportatio
         foreach (var archiveContext in _archives)
         {
             await DecompressFile(archiveContext, resolvedTarget, contentWriterFactory, itemCreator);
+            await _commandSchedulerNotifier.RefreshContainer(Target);
         }
     }
 
@@ -81,9 +82,9 @@ public class DecompressCommand : CommandBase, IExecutableCommand, ITransportatio
         var archive = archiveContext.Archive;
         foreach (var archiveEntry in archive.Entries)
         {
-            var subPath = string.Join(Constants.SeparatorChar, archiveEntry.Key.Split('\\'));
+            var subPath = archiveContext.TargetContainerName + Constants.SeparatorChar + string.Join(Constants.SeparatorChar, archiveEntry.Key.Split('\\'));
             var entryPath = Target.GetChild(subPath);
-            
+
             if (archiveEntry.IsDirectory)
             {
                 await itemCreator.CreateContainerAsync(resolvedTarget.Provider, entryPath);
