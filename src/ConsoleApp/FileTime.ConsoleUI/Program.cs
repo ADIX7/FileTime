@@ -13,6 +13,7 @@ using TerminalUI;
 using TerminalUI.Color;
 using TerminalUI.ConsoleDrivers;
 using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
+using Version = FileTime.ConsoleUI.InfoProviders.Version;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 IConsoleDriver? driver = null;
@@ -111,6 +112,10 @@ static bool HandleInfoProviders(string[] args, IServiceProvider serviceProvider)
                 serviceProvider.GetRequiredService<IConsoleDriver>()
             )
         },
+        {
+            "--version",
+            () => Version.PrintVersionInfo(serviceProvider.GetRequiredService<IConsoleDriver>())
+        }
     };
     infoProviders.Add("--help", () => Help.PrintHelp(infoProviders.Keys));
     foreach (var infoProviderKey in infoProviders.Keys)
