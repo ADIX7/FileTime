@@ -8,16 +8,16 @@ namespace FileTime.Providers.Local;
 public class LocalItemMover : IItemMover<ILocalContentProvider>
 {
     private readonly IAdminContentAccessorFactory _adminContentAccessorFactory;
-    private readonly IAdminContentProvider _adminContentProvider;
+    private readonly IAdminElevationManager _adminElevationManager;
     private readonly ILogger<LocalItemMover> _logger;
 
     public LocalItemMover(
         IAdminContentAccessorFactory adminContentAccessorFactory,
-        IAdminContentProvider adminContentProvider,
+        IAdminElevationManager adminElevationManager,
         ILogger<LocalItemMover> logger)
     {
         _adminContentAccessorFactory = adminContentAccessorFactory;
-        _adminContentProvider = adminContentProvider;
+        _adminElevationManager = adminElevationManager;
         _logger = logger;
     }
     
@@ -60,7 +60,8 @@ public class LocalItemMover : IItemMover<ILocalContentProvider>
             }
 
             var adminItemMover = await _adminContentAccessorFactory.CreateAdminItemMoverAsync();
-            await adminItemMover.RenameAsync(_adminContentProvider, fullName, newPath);
+            var remoteContentProvider = await _adminElevationManager.GetRemoteContentProviderAsync();
+            await adminItemMover.RenameAsync(remoteContentProvider, fullName, newPath);
         }
     }
 }

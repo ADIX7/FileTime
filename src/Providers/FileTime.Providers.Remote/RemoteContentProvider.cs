@@ -2,18 +2,25 @@
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using FileTime.Server.Common;
 
 namespace FileTime.Providers.Remote;
 
-public class RemoteContentProvider : ContentProviderBase, IRemoteContentProvider
+public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentProvider
 {
+    private readonly Func<Task<IRemoteConnection>> _remoteConnectionProvider;
+
     public RemoteContentProvider(
         ITimelessContentProvider timelessContentProvider,
+        Func<Task<IRemoteConnection>> remoteConnectionProvider,
         string remoteName,
         string name = "remote")
         : base(name, timelessContentProvider)
     {
+        _remoteConnectionProvider = remoteConnectionProvider;
     }
+    public async Task<IRemoteConnection> GetRemoteConnectionAsync() 
+        => await _remoteConnectionProvider();
 
     //TODO implement
     public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath, PointInTime pointInTime, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown, ItemInitializationSettings itemInitializationSettings = default) => throw new NotImplementedException();

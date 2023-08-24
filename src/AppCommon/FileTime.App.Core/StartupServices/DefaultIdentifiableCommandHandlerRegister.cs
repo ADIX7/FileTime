@@ -11,6 +11,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
     {
         _userCommandHandlerService = userCommandHandlerService;
 
+        AddUserCommand(AddRemoteContentProviderCommand.Instance);
         AddUserCommand(CloseTabCommand.Instance);
         AddUserCommand(CopyCommand.Instance);
         AddUserCommand(CopyBase64Command.Instance);

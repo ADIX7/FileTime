@@ -8,16 +8,16 @@ namespace FileTime.Providers.Local;
 public class LocalItemDeleter : IItemDeleter<ILocalContentProvider>
 {
     private readonly IAdminContentAccessorFactory _adminContentAccessorFactory;
-    private readonly IAdminContentProvider _adminContentProvider;
+    private readonly IAdminElevationManager _adminElevationManager;
     private readonly ILogger<LocalItemDeleter> _logger;
 
     public LocalItemDeleter(
         IAdminContentAccessorFactory adminContentAccessorFactory,
-        IAdminContentProvider adminContentProvider,
+        IAdminElevationManager adminElevationManager,
         ILogger<LocalItemDeleter> logger)
     {
         _adminContentAccessorFactory = adminContentAccessorFactory;
-        _adminContentProvider = adminContentProvider;
+        _adminElevationManager = adminElevationManager;
         _logger = logger;
     }
 
@@ -59,7 +59,8 @@ public class LocalItemDeleter : IItemDeleter<ILocalContentProvider>
             }
 
             var adminItemDeleter = await _adminContentAccessorFactory.CreateAdminItemDeleterAsync();
-            await adminItemDeleter.DeleteAsync(_adminContentProvider, fullName);
+            var remoteContentProvider = await _adminElevationManager.GetRemoteContentProviderAsync();
+            await adminItemDeleter.DeleteAsync(remoteContentProvider, fullName);
         }
     }
 }

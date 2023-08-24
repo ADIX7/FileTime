@@ -3,8 +3,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using FileTime.App.Core.Services;
 using FileTime.Core.Interactions;
+using FileTime.Core.Timeline;
 using FileTime.Providers.Local;
-using FileTime.Server.Common;
+using FileTime.Providers.Remote;
 using FileTime.Server.Common.Connections.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,12 +21,14 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
 
     private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly IUserCommunicationService _dialogService;
+    private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ILogger<AdminElevationManager> _logger;
     private readonly IOptionsMonitor<AdminElevationConfiguration> _configuration;
     private readonly IServiceProvider _serviceProvider;
     private ConnectionInfo? _connectionInfo;
     private bool _isAdminInstanceRunning;
     private Process? _adminProcess;
+    private RemoteContentProvider? _remoteContentProvider;
 
     public bool IsAdminModeSupported => true;
     private bool StartProcess => _configuration.CurrentValue.StartProcess ?? true;
@@ -40,12 +43,14 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
 
     public AdminElevationManager(
         IUserCommunicationService dialogService,
+        ITimelessContentProvider timelessContentProvider,
         ILogger<AdminElevationManager> logger,
         IOptionsMonitor<AdminElevationConfiguration> configuration,
         IServiceProvider serviceProvider
     )
     {
         _dialogService = dialogService;
+        _timelessContentProvider = timelessContentProvider;
         _logger = logger;
         _configuration = configuration;
         _serviceProvider = serviceProvider;
@@ -126,16 +131,25 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
         }
     }
 
-    public async Task<IRemoteConnection> CreateConnectionAsync()
+    //Note: this does not have to return a task
+    public Task<IRemoteContentProvider> GetRemoteContentProviderAsync()
     {
-        ArgumentNullException.ThrowIfNull(_connectionInfo);
         try
         {
+            if (_remoteContentProvider != null) return Task.FromResult((IRemoteContentProvider)_remoteContentProvider);
+
+            ArgumentNullException.ThrowIfNull(_connectionInfo);
             //TODO: use other connections too (if there will be any)
             ArgumentNullException.ThrowIfNull(_connectionInfo.SignalRBaseUrl);
 
-            var connection = await SignalRConnection.GetOrCreateForAsync(_connectionInfo.SignalRBaseUrl);
-            return connection;
+            _remoteContentProvider = new RemoteContentProvider(
+                _timelessContentProvider,
+                async () => await SignalRConnection.GetOrCreateForAsync(_connectionInfo.SignalRBaseUrl),
+                "local",
+                "localAdminRemote"
+            );
+
+            return Task.FromResult((IRemoteContentProvider)_remoteContentProvider);
         }
         catch (Exception ex)
         {
@@ -181,8 +195,8 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
         try
         {
             _logger.LogInformation("Stopping admin process");
-            var connection = await CreateConnectionAsync();
-            await connection.Exit();
+            var connection = await GetRemoteContentProviderAsync();
+            await (await connection.GetRemoteConnectionAsync()).Exit();
             _logger.LogInformation("Admin process stopped successfully");
         }
         catch (Exception ex)

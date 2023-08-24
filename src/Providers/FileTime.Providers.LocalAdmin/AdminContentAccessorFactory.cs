@@ -22,34 +22,34 @@ public class AdminContentAccessorFactory : IAdminContentAccessorFactory
 
     public bool IsAdminModeSupported => _adminElevationManager.IsAdminModeSupported;
 
-    public async Task<IRemoteItemCreator> CreateAdminItemCreatorAsync()
-        => await CreateHelperAsync<IRemoteItemCreator>();
+    public async Task<RemoteItemCreator> CreateAdminItemCreatorAsync()
+        => await CreateHelperAsync<RemoteItemCreator>();
 
-    public async Task<IRemoteItemDeleter> CreateAdminItemDeleterAsync()
-        => await CreateHelperAsync<IRemoteItemDeleter>();
+    public async Task<RemoteItemDeleter> CreateAdminItemDeleterAsync()
+        => await CreateHelperAsync<RemoteItemDeleter>();
 
-    public async Task<IRemoteItemMover> CreateAdminItemMoverAsync()
-        => await CreateHelperAsync<IRemoteItemMover>();
+    public async Task<RemoteItemMover> CreateAdminItemMoverAsync()
+        => await CreateHelperAsync<RemoteItemMover>();
 
-    public async Task<IRemoteContentWriter> CreateContentWriterAsync(NativePath nativePath)
+    public async Task<RemoteContentWriter> CreateContentWriterAsync(NativePath nativePath)
     {
         await _adminElevationManager.CreateAdminInstanceIfNecessaryAsync();
-        var connection = await _adminElevationManager.CreateConnectionAsync();
+        var connection = await _adminElevationManager.GetRemoteContentProviderAsync();
         var contentWriter = _serviceProvider.GetInitableResolver(
             connection,
             _adminElevationManager.ProviderName,
             nativePath,
             Guid.NewGuid()
-        ).GetRequiredService<IRemoteContentWriter>();
+        ).GetRequiredService<RemoteContentWriter>();
 
         return contentWriter;
     }
 
     private async Task<T> CreateHelperAsync<T>()
-        where T : class, IInitable<IRemoteConnection, string>
+        where T : class, IInitable<IRemoteContentProvider, string>
     {
         await _adminElevationManager.CreateAdminInstanceIfNecessaryAsync();
-        var connection = await _adminElevationManager.CreateConnectionAsync();
+        var connection = await _adminElevationManager.GetRemoteContentProviderAsync();
 
         Debug.Assert(connection != null);
 

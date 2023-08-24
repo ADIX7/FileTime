@@ -6,8 +6,8 @@ namespace FileTime.Providers.LocalAdmin;
 public interface IAdminContentAccessorFactory
 {
     bool IsAdminModeSupported { get; }
-    Task<IRemoteItemCreator> CreateAdminItemCreatorAsync();
-    Task<IRemoteItemDeleter> CreateAdminItemDeleterAsync();
-    Task<IRemoteItemMover> CreateAdminItemMoverAsync();
-    Task<IRemoteContentWriter> CreateContentWriterAsync(NativePath nativePath);
+    Task<RemoteItemCreator> CreateAdminItemCreatorAsync();
+    Task<RemoteItemDeleter> CreateAdminItemDeleterAsync();
+    Task<RemoteItemMover> CreateAdminItemMoverAsync();
+    Task<RemoteContentWriter> CreateContentWriterAsync(NativePath nativePath);
 }

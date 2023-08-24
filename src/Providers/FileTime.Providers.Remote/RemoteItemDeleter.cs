@@ -1,17 +1,20 @@
-﻿using FileTime.Core.Models;
-using FileTime.Server.Common;
+﻿using FileTime.Core.ContentAccess;
+using FileTime.Core.Models;
+using InitableService;
 
 namespace FileTime.Providers.Remote;
 
-public class RemoteItemDeleter : IRemoteItemDeleter
+public class RemoteItemDeleter : IItemDeleter<IRemoteContentProvider>, IInitable<IRemoteContentProvider, string>
 {
-    private IRemoteConnection _remoteConnection = null!;
+    private IRemoteContentProvider _remoteContentProvider = null!;
     private string _remoteContentProviderId = null!;
-    public void Init(IRemoteConnection remoteConnection, string remoteContentProviderId)
+
+    public void Init(IRemoteContentProvider remoteConnection, string remoteContentProviderId)
     {
-        _remoteConnection = remoteConnection;
+        _remoteContentProvider = remoteConnection;
         _remoteContentProviderId = remoteContentProviderId;
     }
-    public async Task DeleteAsync(IRemoteContentProvider contentProvider, FullName fullName) 
-        => await _remoteConnection.DeleteItemAsync(_remoteContentProviderId, fullName);
+
+    public async Task DeleteAsync(IRemoteContentProvider contentProvider, FullName fullName)
+        => await (await _remoteContentProvider.GetRemoteConnectionAsync()).DeleteItemAsync(_remoteContentProviderId, fullName);
 }

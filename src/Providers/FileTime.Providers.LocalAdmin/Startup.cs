@@ -11,7 +11,6 @@ public static class Startup
     {
         services.AddOptions<AdminElevationConfiguration>().Bind(configuration.GetSection(AdminElevationConfiguration.SectionName));
         services.TryAddSingleton<IAdminContentAccessorFactory, AdminContentAccessorFactory>();
-        services.TryAddSingleton<IAdminContentProvider, AdminContentProvider>();
         services.TryAddSingleton<AdminElevationManager>();
         services.TryAddSingleton<IAdminElevationManager>(sp => sp.GetRequiredService<AdminElevationManager>());
         services.AddSingleton<IExitHandler>(sp => sp.GetRequiredService<AdminElevationManager>());

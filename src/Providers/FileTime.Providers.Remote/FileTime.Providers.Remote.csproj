@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.ContentAccess\FileTime.Core.ContentAccess.csproj" />
+    <ProjectReference Include="..\..\Server\FileTime.Server.Common.Abstractions\FileTime.Server.Common.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.Providers.Remote.Abstractions\FileTime.Providers.Remote.Abstractions.csproj" />
   </ItemGroup>
 

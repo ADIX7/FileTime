@@ -8,16 +8,16 @@ namespace FileTime.Providers.Local;
 public class LocalItemCreator : ItemCreatorBase<ILocalContentProvider>
 {
     private readonly IAdminContentAccessorFactory _adminContentAccessorFactory;
-    private readonly IAdminContentProvider _adminContentProvider;
+    private readonly IAdminElevationManager _adminElevationManager;
     private readonly ILogger<LocalItemCreator> _logger;
 
     public LocalItemCreator(
         IAdminContentAccessorFactory adminContentAccessorFactory,
-        IAdminContentProvider adminContentProvider,
+        IAdminElevationManager adminElevationManager,
         ILogger<LocalItemCreator> logger)
     {
         _adminContentAccessorFactory = adminContentAccessorFactory;
-        _adminContentProvider = adminContentProvider;
+        _adminElevationManager = adminElevationManager;
         _logger = logger;
     }
 
@@ -46,7 +46,8 @@ public class LocalItemCreator : ItemCreatorBase<ILocalContentProvider>
             }
 
             var adminItemCreator = await _adminContentAccessorFactory.CreateAdminItemCreatorAsync();
-            await adminItemCreator.CreateContainerAsync(_adminContentProvider, fullName);
+            var remoteContentProvider = await _adminElevationManager.GetRemoteContentProviderAsync();
+            await adminItemCreator.CreateContainerAsync(remoteContentProvider, fullName);
         }
     }
 
@@ -80,7 +81,8 @@ public class LocalItemCreator : ItemCreatorBase<ILocalContentProvider>
             }
 
             var adminItemCreator = await _adminContentAccessorFactory.CreateAdminItemCreatorAsync();
-            await adminItemCreator.CreateElementAsync(_adminContentProvider, fullName);
+            var remoteContentProvider = await _adminElevationManager.GetRemoteContentProviderAsync();
+            await adminItemCreator.CreateElementAsync(remoteContentProvider, fullName);
         }
     }
 }

@@ -8,10 +8,10 @@ public static class Startup
     public static IServiceCollection AddRemoteProviderServices(this IServiceCollection serviceCollection)
     {
         serviceCollection.TryAddSingleton<IRemoteContentProvider, RemoteContentProvider>();
-        serviceCollection.TryAddTransient<IRemoteItemCreator, RemoteItemCreator>();
-        serviceCollection.TryAddTransient<IRemoteItemDeleter, RemoteItemDeleter>();
-        serviceCollection.TryAddTransient<IRemoteItemMover, RemoteItemMover>();
-        serviceCollection.TryAddTransient<IRemoteContentWriter, RemoteContentWriter>();
+        serviceCollection.TryAddTransient<RemoteItemCreator>();
+        serviceCollection.TryAddTransient<RemoteItemDeleter>();
+        serviceCollection.TryAddTransient<RemoteItemMover>();
+        serviceCollection.TryAddTransient<RemoteContentWriter>();
         return serviceCollection;
     }
 }

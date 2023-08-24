@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
-    <ProjectReference Include="..\FileTime.Providers.Remote.Abstractions\FileTime.Providers.Remote.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.Providers.Remote\FileTime.Providers.Remote.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,19 +1,20 @@
-﻿using FileTime.Core.Models;
-using FileTime.Server.Common;
+﻿using FileTime.Core.ContentAccess;
+using FileTime.Core.Models;
+using InitableService;
 
 namespace FileTime.Providers.Remote;
 
-public class RemoteItemMover : IRemoteItemMover
+public class RemoteItemMover : IItemMover<IRemoteContentProvider>, IInitable<IRemoteContentProvider, string>
 {
-
-    private IRemoteConnection _remoteConnection = null!;
+    private IRemoteContentProvider _remoteContentProvider = null!;
     private string _remoteContentProviderId = null!;
-    public void Init(IRemoteConnection remoteConnection, string remoteContentProviderId)
+
+    public void Init(IRemoteContentProvider remoteConnection, string remoteContentProviderId)
     {
-        _remoteConnection = remoteConnection;
+        _remoteContentProvider = remoteConnection;
         _remoteContentProviderId = remoteContentProviderId;
     }
 
     public async Task RenameAsync(IRemoteContentProvider contentProvider, FullName fullName, FullName newPath)
-        => await _remoteConnection.MoveItemAsync(_remoteContentProviderId, fullName, newPath);
+        => await (await _remoteContentProvider.GetRemoteConnectionAsync()).MoveItemAsync(_remoteContentProviderId, fullName, newPath);
 }

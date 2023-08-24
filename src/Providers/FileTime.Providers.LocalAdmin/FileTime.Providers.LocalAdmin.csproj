@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\Server\FileTime.Server.Common\FileTime.Server.Common.csproj" />
     <ProjectReference Include="..\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.Providers.LocalAdmin.Abstractions\FileTime.Providers.LocalAdmin.Abstractions.csproj" />
+    <ProjectReference Include="..\FileTime.Providers.Remote.Abstractions\FileTime.Providers.Remote.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.Providers.Remote\FileTime.Providers.Remote.csproj" />
   </ItemGroup>
 
