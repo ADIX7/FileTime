@@ -8,15 +8,17 @@ namespace FileTime.Providers.Remote;
 
 public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentProvider
 {
+    public string RemoteProviderName { get; }
     private readonly Func<Task<IRemoteConnection>> _remoteConnectionProvider;
 
     public RemoteContentProvider(
         ITimelessContentProvider timelessContentProvider,
         Func<Task<IRemoteConnection>> remoteConnectionProvider,
         string remoteName,
-        string name = "remote")
+        string name)
         : base(name, timelessContentProvider)
     {
+        RemoteProviderName = remoteName;
         _remoteConnectionProvider = remoteConnectionProvider;
     }
     public async Task<IRemoteConnection> GetRemoteConnectionAsync() 

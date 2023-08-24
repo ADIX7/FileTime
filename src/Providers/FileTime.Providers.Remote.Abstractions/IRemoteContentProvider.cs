@@ -6,4 +6,5 @@ namespace FileTime.Providers.Remote;
 public interface IRemoteContentProvider : IContentProvider
 {
     Task<IRemoteConnection> GetRemoteConnectionAsync();
+    string RemoteProviderName { get; }
 }

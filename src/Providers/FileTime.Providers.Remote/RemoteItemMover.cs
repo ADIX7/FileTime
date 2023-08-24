@@ -4,17 +4,13 @@ using InitableService;
 
 namespace FileTime.Providers.Remote;
 
-public class RemoteItemMover : IItemMover<IRemoteContentProvider>, IInitable<IRemoteContentProvider, string>
+public class RemoteItemMover : IItemMover<IRemoteContentProvider>, IInitable<IRemoteContentProvider>
 {
     private IRemoteContentProvider _remoteContentProvider = null!;
-    private string _remoteContentProviderId = null!;
 
-    public void Init(IRemoteContentProvider remoteConnection, string remoteContentProviderId)
-    {
-        _remoteContentProvider = remoteConnection;
-        _remoteContentProviderId = remoteContentProviderId;
-    }
+    public void Init(IRemoteContentProvider remoteConnection) => _remoteContentProvider = remoteConnection;
 
     public async Task RenameAsync(IRemoteContentProvider contentProvider, FullName fullName, FullName newPath)
-        => await (await _remoteContentProvider.GetRemoteConnectionAsync()).MoveItemAsync(_remoteContentProviderId, fullName, newPath);
+        => await (await _remoteContentProvider.GetRemoteConnectionAsync())
+            .MoveItemAsync(_remoteContentProvider.RemoteProviderName, fullName, newPath);
 }

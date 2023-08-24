@@ -4,17 +4,13 @@ using InitableService;
 
 namespace FileTime.Providers.Remote;
 
-public class RemoteItemDeleter : IItemDeleter<IRemoteContentProvider>, IInitable<IRemoteContentProvider, string>
+public class RemoteItemDeleter : IItemDeleter<IRemoteContentProvider>, IInitable<IRemoteContentProvider>
 {
     private IRemoteContentProvider _remoteContentProvider = null!;
-    private string _remoteContentProviderId = null!;
 
-    public void Init(IRemoteContentProvider remoteConnection, string remoteContentProviderId)
-    {
-        _remoteContentProvider = remoteConnection;
-        _remoteContentProviderId = remoteContentProviderId;
-    }
+    public void Init(IRemoteContentProvider remoteConnection) => _remoteContentProvider = remoteConnection;
 
     public async Task DeleteAsync(IRemoteContentProvider contentProvider, FullName fullName)
-        => await (await _remoteContentProvider.GetRemoteConnectionAsync()).DeleteItemAsync(_remoteContentProviderId, fullName);
+        => await (await _remoteContentProvider.GetRemoteConnectionAsync())
+            .DeleteItemAsync(_remoteContentProvider.RemoteProviderName, fullName);
 }

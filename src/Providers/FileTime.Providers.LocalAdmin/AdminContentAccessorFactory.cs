@@ -46,7 +46,7 @@ public class AdminContentAccessorFactory : IAdminContentAccessorFactory
     }
 
     private async Task<T> CreateHelperAsync<T>()
-        where T : class, IInitable<IRemoteContentProvider, string>
+        where T : class, IInitable<IRemoteContentProvider>
     {
         await _adminElevationManager.CreateAdminInstanceIfNecessaryAsync();
         var connection = await _adminElevationManager.GetRemoteContentProviderAsync();
@@ -54,8 +54,7 @@ public class AdminContentAccessorFactory : IAdminContentAccessorFactory
         Debug.Assert(connection != null);
 
         var helper = _serviceProvider.GetInitableResolver(
-                connection,
-                _adminElevationManager.ProviderName)
+                connection)
             .GetRequiredService<T>();
         return helper;
     }

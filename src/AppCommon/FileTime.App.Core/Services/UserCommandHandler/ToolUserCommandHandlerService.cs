@@ -9,6 +9,10 @@ using FileTime.Core.Enums;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using FileTime.Providers.Remote;
+using FileTime.Server.Common;
+using FileTime.Server.Common.Connections.SignalR;
+using InitableService;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
@@ -24,6 +28,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private readonly IContainerSizeScanProvider _containerSizeScanProvider;
     private readonly IProgramsService _programsService;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ToolUserCommandHandlerService> _logger;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
@@ -40,6 +45,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         IContentAccessorFactory contentAccessorFactory,
         IContainerSizeScanProvider containerSizeScanProvider,
         IProgramsService programsService,
+        IServiceProvider serviceProvider,
         ILogger<ToolUserCommandHandlerService> logger) : base(appState)
     {
         _systemClipboardService = systemClipboardService;
@@ -51,6 +57,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         _contentAccessorFactory = contentAccessorFactory;
         _containerSizeScanProvider = containerSizeScanProvider;
         _programsService = programsService;
+        _serviceProvider = serviceProvider;
         _logger = logger;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -58,6 +65,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
         AddCommandHandler(new IUserCommandHandler[]
         {
+            new TypeUserCommandHandler<AddRemoteContentProviderCommand>(AddRemoteContentProvider),
             new TypeUserCommandHandler<OpenInDefaultFileExplorerCommand>(OpenInDefaultFileExplorer),
             new TypeUserCommandHandler<CopyNativePathCommand>(CopyNativePath),
             new TypeUserCommandHandler<CopyBase64Command>(CopyBase64),
@@ -68,11 +76,50 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         });
     }
 
+    private async Task AddRemoteContentProvider()
+    {
+        var containerNameInput = new TextInputElement("Path");
+        var providerName = new TextInputElement("Provider name")
+        {
+            Value = "remote_" + Guid.NewGuid().ToString("N")
+        };
+        var inputs = new IInputElement[] {containerNameInput, providerName};
+        var result = await _userCommunicationService.ReadInputs(inputs);
+
+        if (!result) return;
+
+        var path = containerNameInput.Value!;
+
+        Func<Task<IRemoteConnection>>? connection = null;
+        if (path.StartsWith("http"))
+        {
+            connection = async () => await SignalRConnection.GetOrCreateForAsync(path);
+        }
+
+        if (connection is null)
+        {
+            _userCommunicationService.ShowToastMessage("Unknown path type");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(providerName.Value))
+        {
+            _userCommunicationService.ShowToastMessage("Provider name can not be empty");
+            return;
+        }
+
+        var remoteContentProvider = new RemoteContentProvider(
+            _timelessContentProvider,
+            connection,
+            "local",
+            providerName.Value);
+    }
+
     private Task Edit()
     {
-        if ( _currentSelectedTab?.CurrentSelectedItem.Value?.BaseItem is not IElement {NativePath: { } filePath}) 
+        if (_currentSelectedTab?.CurrentSelectedItem.Value?.BaseItem is not IElement {NativePath: { } filePath})
             return Task.CompletedTask;
-        
+
         var getNext = false;
         while (true)
         {

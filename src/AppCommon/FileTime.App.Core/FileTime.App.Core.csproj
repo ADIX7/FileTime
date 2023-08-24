@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
     <PackageReference Include="morelinq" Version="3.4.2" />
     <PackageReference Include="MvvmGen" Version="1.2.1" />
@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\Library\ObservableComputations.Extensions\ObservableComputations.Extensions.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local.Abstractions\FileTime.Providers.Local.Abstractions.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.LocalAdmin.Abstractions\FileTime.Providers.LocalAdmin.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Server\FileTime.Server.Common\FileTime.Server.Common.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools\FileTime.Tools.csproj" />
     <ProjectReference Include="..\FileTime.App.CommandPalette.Abstractions\FileTime.App.CommandPalette.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.App.CommandPalette\FileTime.App.CommandPalette.csproj" />
