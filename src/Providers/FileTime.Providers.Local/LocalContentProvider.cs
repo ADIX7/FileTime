@@ -54,12 +54,13 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         });*/
     }
 
-    public override bool CanHandlePath(NativePath path)
+    public override async Task<bool> CanHandlePathAsync(NativePath path)
     {
-        var rootDrive = Items
-            .FirstOrDefault(r =>
+        var rootDrive = await Items
+            .ToAsyncEnumerable()
+            .FirstOrDefaultAwaitAsync(async r =>
                 path.Path.StartsWith(
-                    GetNativePath(r.Path).Path,
+                    (await GetNativePathAsync(r.Path)).Path,
                     _isCaseInsensitive
                         ? StringComparison.InvariantCultureIgnoreCase
                         : StringComparison.InvariantCulture
@@ -73,8 +74,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     {
         var rootDriveInfos = _rootDriveInfos.Value;
         var rootDriveInfo = rootDriveInfos.FirstOrDefault(d => path.Path.StartsWith(d.Path.Path));
-        
-        if(rootDriveInfo is null) return null;
+
+        if (rootDriveInfo is null) return null;
 
         return new VolumeSizeInfo(rootDriveInfo.Size, rootDriveInfo.Free);
     }
@@ -391,7 +392,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                                  nativePath.TrimStart(Constants.SeparatorChar).Split(Path.DirectorySeparatorChar)))
             .TrimEnd(Constants.SeparatorChar))!;
 
-    public override NativePath GetNativePath(FullName fullName)
+    public override ValueTask<NativePath> GetNativePathAsync(FullName fullName) 
+        => ValueTask.FromResult(GetNativePath(fullName));
+
+    public NativePath GetNativePath(FullName fullName)
     {
         var path = string.Join(Path.DirectorySeparatorChar, fullName.Path.Split(Constants.SeparatorChar).Skip(1));
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !path.StartsWith("/")) path = "/" + path;

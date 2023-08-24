@@ -14,17 +14,20 @@ public class ConnectionHub : Hub<ISignalRClient>, ISignalRHub
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private readonly IApplicationStopper _applicationStopper;
     private readonly IContentAccessManager _contentAccessManager;
+    private readonly ITimelessContentProvider _timelessContentProvider;
 
     public ConnectionHub(
         IContentProviderRegistry contentProviderRegistry,
         IContentAccessorFactory contentAccessorFactory,
         IApplicationStopper applicationStopper,
-        IContentAccessManager contentAccessManager)
+        IContentAccessManager contentAccessManager,
+        ITimelessContentProvider timelessContentProvider)
     {
         _contentProviderRegistry = contentProviderRegistry;
         _contentAccessorFactory = contentAccessorFactory;
         _applicationStopper = applicationStopper;
         _contentAccessManager = contentAccessManager;
+        _timelessContentProvider = timelessContentProvider;
     }
 
     public Task Exit()
@@ -86,4 +89,7 @@ public class ConnectionHub : Hub<ISignalRClient>, ISignalRHub
         _contentAccessManager.RemoveContentWriter(transactionId);
         return Task.CompletedTask;
     }
+
+    public async Task<string?> GetNativePathAsync(string fullNamePath) 
+        => (await _timelessContentProvider.GetNativePathByFullNameAsync(new FullName(fullNamePath)))?.Path;
 }

@@ -24,7 +24,7 @@ public class LocalItemDeleter : IItemDeleter<ILocalContentProvider>
     public async Task DeleteAsync(ILocalContentProvider contentProvider, FullName fullName)
     {
         _logger.LogTrace("Start deleting item {FullName}", fullName);
-        var nativePath = contentProvider.GetNativePath(fullName).Path;
+        var nativePath = (await contentProvider.GetNativePathAsync(fullName)).Path;
 
         try
         {

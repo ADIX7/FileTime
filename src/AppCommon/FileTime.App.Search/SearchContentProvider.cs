@@ -66,7 +66,9 @@ public class SearchContentProvider : ContentProviderBase, ISearchContentProvider
             .First(searchTask => searchTask.SearchContainer.NativePath == nativePath).SearchContainer);
     }
 
-    public override NativePath GetNativePath(FullName fullName) => new(fullName.Path);
+    public override ValueTask<NativePath> GetNativePathAsync(FullName fullName)
+        => ValueTask.FromResult(new NativePath(fullName.Path));
+
     public override FullName GetFullName(NativePath nativePath) => new(nativePath.Path);
 
     public override Task<byte[]?> GetContentAsync(
@@ -76,7 +78,7 @@ public class SearchContentProvider : ContentProviderBase, ISearchContentProvider
     )
         => Task.FromResult(null as byte[]);
 
-    public override bool CanHandlePath(NativePath path) => path.Path.StartsWith(ContentProviderName);
+    public override Task<bool> CanHandlePathAsync(NativePath path) => Task.FromResult(path.Path.StartsWith(ContentProviderName));
     public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
 
     public async Task<ISearchTask> StartSearchAsync(ISearchMatcher matcher, IContainer searchIn)

@@ -12,7 +12,6 @@ using FileTime.Core.Timeline;
 using FileTime.Providers.Remote;
 using FileTime.Server.Common;
 using FileTime.Server.Common.Connections.SignalR;
-using InitableService;
 using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.Core.Services.UserCommandHandler;
@@ -28,7 +27,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private readonly IContainerSizeScanProvider _containerSizeScanProvider;
     private readonly IProgramsService _programsService;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IContentProviderRegistry _contentProviderRegistry;
     private readonly ILogger<ToolUserCommandHandlerService> _logger;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
@@ -45,7 +44,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         IContentAccessorFactory contentAccessorFactory,
         IContainerSizeScanProvider containerSizeScanProvider,
         IProgramsService programsService,
-        IServiceProvider serviceProvider,
+        IContentProviderRegistry contentProviderRegistry,
         ILogger<ToolUserCommandHandlerService> logger) : base(appState)
     {
         _systemClipboardService = systemClipboardService;
@@ -57,7 +56,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         _contentAccessorFactory = contentAccessorFactory;
         _containerSizeScanProvider = containerSizeScanProvider;
         _programsService = programsService;
-        _serviceProvider = serviceProvider;
+        _contentProviderRegistry = contentProviderRegistry;
         _logger = logger;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -81,7 +80,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         var containerNameInput = new TextInputElement("Path");
         var providerName = new TextInputElement("Provider name")
         {
-            Value = "remote_" + Guid.NewGuid().ToString("N")
+            Value = "remote_" + Guid.NewGuid().ToString("N")[..8]
         };
         var inputs = new IInputElement[] {containerNameInput, providerName};
         var result = await _userCommunicationService.ReadInputs(inputs);
@@ -113,6 +112,12 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
             connection,
             "local",
             providerName.Value);
+        
+        _contentProviderRegistry.AddContentProvider(remoteContentProvider);
+        
+        
+        await _userCommandHandlerService.HandleCommandAsync(
+            new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, remoteContentProvider)));
     }
 
     private Task Edit()

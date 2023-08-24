@@ -4,11 +4,9 @@ using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.App.FrequencyNavigation.ViewModels;
-using FileTime.ConsoleUI.App.Preview;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
-using PropertyChanged.SourceGenerator;
 
 namespace FileTime.ConsoleUI.App;
 

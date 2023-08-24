@@ -18,25 +18,30 @@ public class StreamCopyCommandHandler : ICommandHandler
         _contentAccessorFactory = contentAccessorFactory;
     }
 
-    public bool CanHandle(ICommand command)
+    public async Task<bool> CanHandleAsync(ICommand command)
     {
         if (command is not CopyCommand copyCommand) return false;
 
         var targetSupportsContentStream =
-            _contentProviderRegistry
+            (await _contentProviderRegistry
                 .ContentProviders
-                .FirstOrDefault(p => p.CanHandlePath(copyCommand.Target!))
-                ?.SupportsContentStreams ?? false;
+                .ToAsyncEnumerable()
+                .FirstOrDefaultAwaitAsync(async p => await p.CanHandlePathAsync(copyCommand.Target))
+            )?.SupportsContentStreams ?? false;
 
         var allSourcesSupportsContentStream =
-            copyCommand
+            (await copyCommand
                 .Sources
-                .Select(s =>
+                .ToAsyncEnumerable()
+                .SelectAwait(s =>
                     _contentProviderRegistry
                         .ContentProviders
-                        .FirstOrDefault(p => p.CanHandlePath(s))
+                        .ToAsyncEnumerable()
+                        .FirstOrDefaultAwaitAsync(async p => await p.CanHandlePathAsync(s))
                 )
-                .All(p => p?.SupportsContentStreams ?? false);
+                .ToListAsync()
+            )
+            .All(p => p?.SupportsContentStreams ?? false);
 
         return targetSupportsContentStream && allSourcesSupportsContentStream;
     }

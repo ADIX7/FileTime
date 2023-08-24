@@ -23,7 +23,10 @@ public class CommandRunner : ICommandRunner
         }
         else
         {
-            var commandHandler = _commandHandlers.Find(c => c.CanHandle(command));
+            var commandHandler = await _commandHandlers
+                .ToAsyncEnumerable()
+                .FirstOrDefaultAwaitAsync(async c => await c.CanHandleAsync(command));
+            
             if (commandHandler != null)
             {
                 await commandHandler.ExecuteAsync(command);

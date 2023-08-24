@@ -73,7 +73,7 @@ public class RootContentProvider : IRootContentProvider
             pointInTime
         ) ?? throw new FileNotFoundException();
 
-    public NativePath GetNativePath(FullName fullName) => throw new NotImplementedException();
+    public ValueTask<NativePath> GetNativePathAsync(FullName fullName) => throw new NotImplementedException();
 
     public FullName GetFullName(NativePath nativePath) => throw new NotImplementedException();
 
@@ -82,9 +82,9 @@ public class RootContentProvider : IRootContentProvider
         int? maxLength = null,
         CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-    public bool CanHandlePath(NativePath path) => throw new NotImplementedException();
+    public Task<bool> CanHandlePathAsync(NativePath path) => throw new NotImplementedException();
 
-    public bool CanHandlePath(FullName path) => throw new NotImplementedException();
+    public Task<bool> CanHandlePathAsync(FullName path) => throw new NotImplementedException();
     public VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
 
     public IItem WithParent(AbsolutePath parent) => this;

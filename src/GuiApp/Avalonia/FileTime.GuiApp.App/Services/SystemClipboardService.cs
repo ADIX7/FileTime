@@ -46,7 +46,7 @@ public class SystemClipboardService : ISystemClipboardService
         if (obj is IEnumerable<IStorageItem> storageItems)
         {
             return storageItems
-                .Select(i => _timelessContentProvider.GetFullNameByNativePath(new NativePath(WebUtility.UrlDecode(i.Path.AbsolutePath))))
+                .Select(i => _timelessContentProvider.GetFullNameByNativePathAsync(new NativePath(WebUtility.UrlDecode(i.Path.AbsolutePath))))
                 .Where(i => i != null)
                 .OfType<FullName>();
         }
@@ -72,7 +72,7 @@ public class SystemClipboardService : ISystemClipboardService
         }
 
         var fileNativePaths = files
-            .Select(i => _timelessContentProvider.GetNativePathByFullName(i))
+            .Select(i => _timelessContentProvider.GetNativePathByFullNameAsync(i))
             .Where(i => i != null)
             .OfType<NativePath>();
 

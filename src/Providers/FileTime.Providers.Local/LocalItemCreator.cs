@@ -24,7 +24,7 @@ public class LocalItemCreator : ItemCreatorBase<ILocalContentProvider>
     public override async Task CreateContainerAsync(ILocalContentProvider contentProvider, FullName fullName)
     {
         _logger.LogTrace("Start creating container {FullName}", fullName);
-        var path = contentProvider.GetNativePath(fullName).Path;
+        var path = (await contentProvider.GetNativePathAsync(fullName)).Path;
         if (Directory.Exists(path))
         {
             _logger.LogTrace("Container with path {Path} already exists", path);
@@ -54,7 +54,7 @@ public class LocalItemCreator : ItemCreatorBase<ILocalContentProvider>
     public override async Task CreateElementAsync(ILocalContentProvider contentProvider, FullName fullName)
     {
         _logger.LogTrace("Start creating element {FullName}", fullName);
-        var path = contentProvider.GetNativePath(fullName).Path;
+        var path = (await contentProvider.GetNativePathAsync(fullName)).Path;
         if (File.Exists(path))
         {
             _logger.LogTrace("Element with path {Path} already exists", path);

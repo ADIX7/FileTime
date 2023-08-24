@@ -82,8 +82,8 @@ public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSize
             itemInitializationSettings
         );
 
-    public override NativePath GetNativePath(FullName fullName)
-        => new(fullName.Path);
+    public override ValueTask<NativePath> GetNativePathAsync(FullName fullName)
+        => ValueTask.FromResult(new NativePath(fullName.Path));
 
     public override FullName GetFullName(NativePath nativePath)
         => new(nativePath.Path);
@@ -95,8 +95,8 @@ public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSize
         //TODO read from original source
         => Task.FromResult((byte[]?) null);
 
-    public override bool CanHandlePath(NativePath path)
-        => path.Path.StartsWith(ContentProviderName);
+    public override Task<bool> CanHandlePathAsync(NativePath path)
+        => Task.FromResult(path.Path.StartsWith(ContentProviderName));
 
     public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
 

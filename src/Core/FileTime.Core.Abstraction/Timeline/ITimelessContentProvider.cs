@@ -15,6 +15,6 @@ public interface ITimelessContentProvider
         ItemInitializationSettings itemInitializationSettings = default);
 
     Task<IItem?> GetItemByNativePathAsync(NativePath nativePath, PointInTime? pointInTime = null);
-    FullName? GetFullNameByNativePath(NativePath nativePath);
-    NativePath? GetNativePathByFullName(FullName fullName);
+    ValueTask<FullName?> GetFullNameByNativePathAsync(NativePath nativePath);
+    ValueTask<NativePath?> GetNativePathByFullNameAsync(FullName fullName);
 }

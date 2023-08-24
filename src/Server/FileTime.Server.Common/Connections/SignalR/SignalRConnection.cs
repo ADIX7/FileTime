@@ -77,4 +77,10 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
 
     public async Task CloseWriterAsync(string transactionId)
         => await _client.CloseWriterAsync(transactionId);
+
+    public async Task<NativePath?> GetNativePathAsync(FullName fullName)
+    {
+        var path = await _client.GetNativePathAsync(fullName.Path);
+        return path is null ? null : new NativePath(path);
+    }
 }

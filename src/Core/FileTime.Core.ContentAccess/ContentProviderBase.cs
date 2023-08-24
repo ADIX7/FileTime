@@ -72,7 +72,7 @@ public abstract class ContentProviderBase : IContentProvider
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default)
-        => await GetItemByNativePathAsync(GetNativePath(fullName), pointInTime, forceResolve, forceResolvePathType,
+        => await GetItemByNativePathAsync(await GetNativePathAsync(fullName), pointInTime, forceResolve, forceResolvePathType,
             itemInitializationSettings);
 
     public abstract Task<IItem> GetItemByNativePathAsync(NativePath nativePath,
@@ -81,15 +81,18 @@ public abstract class ContentProviderBase : IContentProvider
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default);
 
-    public abstract NativePath GetNativePath(FullName fullName);
+    public abstract ValueTask<NativePath> GetNativePathAsync(FullName fullName);
     public abstract FullName GetFullName(NativePath nativePath);
 
     public abstract Task<byte[]?> GetContentAsync(IElement element,
         int? maxLength = null,
         CancellationToken cancellationToken = default);
 
-    public abstract bool CanHandlePath(NativePath path);
-    public bool CanHandlePath(FullName path) => CanHandlePath(GetNativePath(path));
+    public abstract Task<bool> CanHandlePathAsync(NativePath path);
+    public async Task<bool> CanHandlePathAsync(FullName path) 
+        => path.Path.TrimEnd(Constants.SeparatorChar) == Name 
+           || await CanHandlePathAsync(await GetNativePathAsync(path));
+
     public abstract VolumeSizeInfo? GetVolumeSizeInfo(FullName path);
 
     public IItem WithParent(AbsolutePath parent) => this; 

@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using PropertyChanged.SourceGenerator;
+﻿using PropertyChanged.SourceGenerator;
 using TerminalUI.Color;
 using TerminalUI.Models;
 using TerminalUI.Traits;

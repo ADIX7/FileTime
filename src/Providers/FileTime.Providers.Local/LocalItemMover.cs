@@ -26,8 +26,8 @@ public class LocalItemMover : IItemMover<ILocalContentProvider>
         _logger.LogTrace("Start renaming item {FullName}", fullName);
         try
         {
-            var source = contentProvider.GetNativePath(fullName);
-            var destination = contentProvider.GetNativePath(newPath);
+            var source = await contentProvider.GetNativePathAsync(fullName);
+            var destination = await contentProvider.GetNativePathAsync(newPath);
 
             if (File.Exists(source.Path))
             {

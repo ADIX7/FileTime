@@ -45,7 +45,7 @@ public class TimelessContentProvider : ITimelessContentProvider
     {
         foreach (var contentProvider in _contentProviderRegistry.ContentProviders)
         {
-            if (!contentProvider.CanHandlePath(nativePath)) continue;
+            if (!await contentProvider.CanHandlePathAsync(nativePath)) continue;
 
             return await contentProvider.GetItemByNativePathAsync(nativePath, pointInTime ?? PointInTime.Present);
         }
@@ -53,11 +53,11 @@ public class TimelessContentProvider : ITimelessContentProvider
         return null;
     }
 
-    public FullName? GetFullNameByNativePath(NativePath nativePath)
+    public async ValueTask<FullName?> GetFullNameByNativePathAsync(NativePath nativePath)
     {
         foreach (var contentProvider in _contentProviderRegistry.ContentProviders)
         {
-            if (!contentProvider.CanHandlePath(nativePath)) continue;
+            if (!await contentProvider.CanHandlePathAsync(nativePath)) continue;
 
             return contentProvider.GetFullName(nativePath);
         }
@@ -65,13 +65,13 @@ public class TimelessContentProvider : ITimelessContentProvider
         return null;
     }
 
-    public NativePath? GetNativePathByFullName(FullName fullName)
+    public async ValueTask<NativePath?> GetNativePathByFullNameAsync(FullName fullName)
     {
         foreach (var contentProvider in _contentProviderRegistry.ContentProviders)
         {
-            if (!contentProvider.CanHandlePath(fullName)) continue;
+            if (!await contentProvider.CanHandlePathAsync(fullName)) continue;
 
-            return contentProvider.GetNativePath(fullName);
+            return await contentProvider.GetNativePathAsync(fullName);
         }
 
         return null;

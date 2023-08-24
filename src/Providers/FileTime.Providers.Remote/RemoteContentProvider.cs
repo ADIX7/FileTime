@@ -21,18 +21,51 @@ public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentP
         RemoteProviderName = remoteName;
         _remoteConnectionProvider = remoteConnectionProvider;
     }
-    public async Task<IRemoteConnection> GetRemoteConnectionAsync() 
+
+    public async Task<IRemoteConnection> GetRemoteConnectionAsync()
         => await _remoteConnectionProvider();
 
     //TODO implement
-    public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath, PointInTime pointInTime, bool forceResolve = false, AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown, ItemInitializationSettings itemInitializationSettings = default) => throw new NotImplementedException();
+    public override Task<IItem> GetItemByNativePathAsync(
+        NativePath nativePath,
+        PointInTime pointInTime,
+        bool forceResolve = false,
+        AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
+        ItemInitializationSettings itemInitializationSettings = default) =>
+        throw new NotImplementedException();
 
-    public override NativePath GetNativePath(FullName fullName) => throw new NotImplementedException();
+    //TODO: make it async
+    public override async ValueTask<NativePath> GetNativePathAsync(FullName fullName)
+    {
+        var remoteFullname = new FullName(ConvertLocalFullNameToRemote(fullName));
+
+        var connection = await GetRemoteConnectionAsync();
+        var remoteNativePath = await connection.GetNativePathAsync(remoteFullname);
+        return new NativePath(remoteNativePath!.Path);
+    }
 
     public override FullName GetFullName(NativePath nativePath) => throw new NotImplementedException();
 
     public override Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-    public override bool CanHandlePath(NativePath path) => throw new NotImplementedException();
+    public override Task<bool> CanHandlePathAsync(NativePath path) => throw new NotImplementedException();
     public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => throw new NotImplementedException();
+
+    private string ConvertLocalFullNameToRemote(FullName fullName)
+    {
+        var remotePath =
+            RemoteProviderName
+            + Constants.SeparatorChar
+            + fullName.Path[Name.Length..];
+        return remotePath;
+    }
+
+    private FullName ConvertRemoteFullnameToLocal(string remotePath)
+    {
+        var localPath =
+            Name
+            + Constants.SeparatorChar
+            + remotePath[RemoteProviderName.Length..];
+        return new FullName(localPath);
+    }
 }

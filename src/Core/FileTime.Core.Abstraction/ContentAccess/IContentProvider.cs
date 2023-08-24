@@ -22,11 +22,11 @@ public interface IContentProvider : IContainer, IOnContainerEnter
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default);
 
-    NativePath GetNativePath(FullName fullName);
+    ValueTask<NativePath> GetNativePathAsync(FullName fullName);
     FullName GetFullName(NativePath nativePath);
 
     Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default);
-    bool CanHandlePath(NativePath path);
-    bool CanHandlePath(FullName path);
+    Task<bool> CanHandlePathAsync(NativePath path);
+    Task<bool> CanHandlePathAsync(FullName path);
     VolumeSizeInfo? GetVolumeSizeInfo(FullName path);
 }

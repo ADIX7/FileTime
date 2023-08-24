@@ -15,4 +15,5 @@ public interface ISignalRHub
     //TODO: CancellationToken https://github.com/nenoNaninu/TypedSignalR.Client/issues/120
     Task WriteBytesAsync(string transactionId, string data, int index);
     Task CloseWriterAsync(string transactionId);
+    Task<string?> GetNativePathAsync(string fullNamePath);
 }
