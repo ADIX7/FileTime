@@ -21,7 +21,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup Condition="Exists('appsettings.Development.json') AND '$(Configuration)' == 'Debug'">
     <Content Include="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup Condition="Exists('appsettings.Local.json') AND '$(Configuration)' == 'Debug'">

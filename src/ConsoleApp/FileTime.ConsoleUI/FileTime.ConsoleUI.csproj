@@ -34,11 +34,11 @@
     <PackageReference Include="Terminal.Gui" Version="1.13.5" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup Condition="Exists('appsettings.json') AND '$(Configuration)' == 'Debug'">
     <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup Condition="Exists('appsettings.Local.json') AND '$(Configuration)' == 'Debug'">
     <Content Include="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
