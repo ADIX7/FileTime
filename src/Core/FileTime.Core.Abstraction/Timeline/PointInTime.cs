@@ -2,8 +2,8 @@ namespace FileTime.Core.Timeline;
 
 public class PointInTime
 {
-    public static readonly PointInTime Eternal = new PointInTime();
-    public static readonly PointInTime Present = new PointInTime();
+    public static readonly PointInTime Eternal = new();
+    public static readonly PointInTime Present = new();
 
     private readonly List<Difference> _differences;
 
@@ -46,5 +46,5 @@ public class PointInTime
         return merged;
     }
 
-    public static PointInTime CreateEmpty() => new PointInTime();
+    public static PointInTime CreateEmpty() => new();
 }

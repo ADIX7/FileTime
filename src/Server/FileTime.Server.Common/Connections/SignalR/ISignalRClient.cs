@@ -2,5 +2,5 @@
 
 public interface ISignalRClient
 {
-    
+    Task RemoveTrackedItem(int itemId);
 }

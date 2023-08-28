@@ -28,6 +28,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IContainerSizeScanProvider _containerSizeScanProvider;
     private readonly IProgramsService _programsService;
     private readonly IContentProviderRegistry _contentProviderRegistry;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ToolUserCommandHandlerService> _logger;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
@@ -45,6 +46,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         IContainerSizeScanProvider containerSizeScanProvider,
         IProgramsService programsService,
         IContentProviderRegistry contentProviderRegistry,
+        IServiceProvider serviceProvider,
         ILogger<ToolUserCommandHandlerService> logger) : base(appState)
     {
         _systemClipboardService = systemClipboardService;
@@ -57,6 +59,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         _containerSizeScanProvider = containerSizeScanProvider;
         _programsService = programsService;
         _contentProviderRegistry = contentProviderRegistry;
+        _serviceProvider = serviceProvider;
         _logger = logger;
         SaveCurrentLocation(l => _currentLocation = l);
         SaveCurrentSelectedItem(i => _currentSelectedItem = i);
@@ -92,7 +95,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         Func<Task<IRemoteConnection>>? connection = null;
         if (path.StartsWith("http"))
         {
-            connection = async () => await SignalRConnection.GetOrCreateForAsync(path);
+            connection = async () => await SignalRConnection.GetOrCreateForAsync(path, providerName.Value);
         }
 
         if (connection is null)
@@ -109,15 +112,17 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
         var remoteContentProvider = new RemoteContentProvider(
             _timelessContentProvider,
+            _serviceProvider,
             connection,
             "local",
             providerName.Value);
-        
+
         _contentProviderRegistry.AddContentProvider(remoteContentProvider);
-        
-        
+
         await _userCommandHandlerService.HandleCommandAsync(
             new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, remoteContentProvider)));
+        
+        await remoteContentProvider.InitializeChildren();
     }
 
     private Task Edit()

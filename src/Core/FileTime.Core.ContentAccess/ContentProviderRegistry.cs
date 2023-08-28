@@ -28,6 +28,7 @@ public class ContentProviderRegistry : IContentProviderRegistry
 
     private void InitializeContentProviderListIfNeeded()
     {
+        if (_initialized) return;
         lock (_lock)
         {
             if (!_initialized)

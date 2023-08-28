@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
+      <ProjectReference Include="..\..\Core\FileTime.Core.Serialization\FileTime.Core.Serialization.csproj" />
     </ItemGroup>
 
     <ItemGroup>

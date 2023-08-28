@@ -2,6 +2,7 @@
 using Autofac.Extensions.DependencyInjection;
 using FileTime.App.DependencyInjection;
 using FileTime.Providers.Local;
+using FileTime.Server;
 using FileTime.Server.App;
 using FileTime.Server.Common;
 using Microsoft.Extensions.Configuration;

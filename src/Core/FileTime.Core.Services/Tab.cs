@@ -188,7 +188,17 @@ public class Tab : ITab
 
     private static IItem MapItem(AbsolutePath item)
     {
-        var t = Task.Run(async () => await item.ResolveAsync(true));
+        var t = Task.Run(async () =>
+        {
+            try
+            {
+                return await item.ResolveAsync(true);
+            }
+            catch
+            {
+                return null;
+            }
+        });
         t.Wait();
         return t.Result;
     }

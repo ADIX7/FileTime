@@ -55,7 +55,7 @@ public static class Startup
         return serviceCollection;
     }
 
-    internal static IServiceCollection RegisterServices(this IServiceCollection serviceCollection)
+    internal static IServiceCollection RegisterGuiServices(this IServiceCollection serviceCollection)
     {
         serviceCollection.TryAddSingleton<IRxSchedulerService, AvaloniaRxSchedulerService>();
         serviceCollection.TryAddSingleton<IKeyInputHandlerService, KeyInputHandlerService>();

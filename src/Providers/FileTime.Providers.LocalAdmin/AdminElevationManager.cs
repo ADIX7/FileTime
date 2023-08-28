@@ -14,6 +14,7 @@ namespace FileTime.Providers.LocalAdmin;
 
 public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChanged, IExitHandler
 {
+    private const string AdminContentProviderName = "localAdminRemote";
     private class ConnectionInfo
     {
         public string? SignalRBaseUrl { get; init; }
@@ -144,9 +145,10 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
 
             _remoteContentProvider = new RemoteContentProvider(
                 _timelessContentProvider,
-                async () => await SignalRConnection.GetOrCreateForAsync(_connectionInfo.SignalRBaseUrl),
+                _serviceProvider,
+                async () => await SignalRConnection.GetOrCreateForAsync(_connectionInfo.SignalRBaseUrl, AdminContentProviderName),
                 "local",
-                "localAdminRemote"
+                AdminContentProviderName
             );
 
             return Task.FromResult((IRemoteContentProvider)_remoteContentProvider);

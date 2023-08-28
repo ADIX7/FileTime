@@ -6,7 +6,7 @@ using FileTime.App.Search;
 using FileTime.ConsoleUI.App;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Providers.Local;
-using FileTime.Server.Common;
+using FileTime.Server;
 using FileTime.Tools.Compression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

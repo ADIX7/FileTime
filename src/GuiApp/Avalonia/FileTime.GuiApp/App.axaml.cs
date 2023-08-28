@@ -9,6 +9,7 @@ using FileTime.GuiApp.App;
 using FileTime.GuiApp.App.Font;
 using FileTime.GuiApp.App.ViewModels;
 using FileTime.GuiApp.App.Views;
+using FileTime.Server;
 using FileTime.Server.Common;
 using FileTime.Tools.Compression;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +32,7 @@ public class Application : Avalonia.Application
             .AddCompression()
             .ConfigureFont(configuration)
             .RegisterLogging()
-            .RegisterServices()
+            .RegisterGuiServices()
             .AddSettings()
             .AddViewModels()
             .BuildServiceProvider();

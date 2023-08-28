@@ -13,7 +13,7 @@ namespace FileTime.App.Core;
 
 public static class Startup
 {
-    public static IServiceCollection AddCoreAppServices(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
+    public static IServiceCollection AddAppCoreDependencies(this IServiceCollection serviceCollection, IConfigurationRoot configuration)
     {
         serviceCollection.TryAddTransient<ITabViewModel, TabViewModel>();
         serviceCollection.TryAddTransient<IContainerViewModel, ContainerViewModel>();

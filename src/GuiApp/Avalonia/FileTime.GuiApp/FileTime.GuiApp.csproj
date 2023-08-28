@@ -46,6 +46,7 @@
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.DependencyInjection\FileTime.App.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.FrequencyNavigation\FileTime.App.FrequencyNavigation.csproj" />
     <ProjectReference Include="..\..\..\AppCommon\FileTime.App.Search\FileTime.App.Search.csproj" />
+    <ProjectReference Include="..\..\..\Server\FileTime.Server.Extensions.DependencyInjection\FileTime.Server.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\..\Tools\FileTime.Tools.Compression\FileTime.Tools.Compression.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.CustomImpl\FileTime.GuiApp.CustomImpl.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.Font\FileTime.GuiApp.Font.csproj" />

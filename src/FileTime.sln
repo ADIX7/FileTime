@@ -139,6 +139,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Providers.Smb", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Providers.Smb.Abstractions", "Providers\FileTime.Providers.Smb.Abstractions\FileTime.Providers.Smb.Abstractions.csproj", "{595F736D-4711-4AD3-8D4F-13DD85FB35E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Core.Serialization", "Core\FileTime.Core.Serialization\FileTime.Core.Serialization.csproj", "{0AAC0BDF-35F2-434C-882E-047415D55682}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Core.Extensions.DependencyInjection", "Core\FileTime.Core.Extensions.DependencyInjection\FileTime.Core.Extensions.DependencyInjection.csproj", "{0A29616B-5413-4DA9-96EC-B45D6AF632C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Server.Tracker", "Server\FileTime.Server.Tracker\FileTime.Server.Tracker.csproj", "{BD382403-86D8-4E99-B279-370FC22F059C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTime.Server.Extensions.DependencyInjection", "Server\FileTime.Server.Extensions.DependencyInjection\FileTime.Server.Extensions.DependencyInjection.csproj", "{25AA9F04-EEEE-49C4-870B-CDFF71717687}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -381,6 +389,22 @@ Global
 		{595F736D-4711-4AD3-8D4F-13DD85FB35E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{595F736D-4711-4AD3-8D4F-13DD85FB35E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{595F736D-4711-4AD3-8D4F-13DD85FB35E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AAC0BDF-35F2-434C-882E-047415D55682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AAC0BDF-35F2-434C-882E-047415D55682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AAC0BDF-35F2-434C-882E-047415D55682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AAC0BDF-35F2-434C-882E-047415D55682}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A29616B-5413-4DA9-96EC-B45D6AF632C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A29616B-5413-4DA9-96EC-B45D6AF632C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A29616B-5413-4DA9-96EC-B45D6AF632C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A29616B-5413-4DA9-96EC-B45D6AF632C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD382403-86D8-4E99-B279-370FC22F059C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD382403-86D8-4E99-B279-370FC22F059C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD382403-86D8-4E99-B279-370FC22F059C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD382403-86D8-4E99-B279-370FC22F059C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25AA9F04-EEEE-49C4-870B-CDFF71717687}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25AA9F04-EEEE-49C4-870B-CDFF71717687}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25AA9F04-EEEE-49C4-870B-CDFF71717687}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25AA9F04-EEEE-49C4-870B-CDFF71717687}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -446,6 +470,10 @@ Global
 		{CA48A181-256E-4546-B164-6768B240BFFC} = {2FC40FE1-4446-44AB-BF77-00F94D995FA3}
 		{CC8AA3FC-7A5B-4558-AB35-DFF59F2AEF47} = {2FC40FE1-4446-44AB-BF77-00F94D995FA3}
 		{595F736D-4711-4AD3-8D4F-13DD85FB35E7} = {2FC40FE1-4446-44AB-BF77-00F94D995FA3}
+		{0AAC0BDF-35F2-434C-882E-047415D55682} = {3324D046-1E05-46B5-B1BA-82910D56B332}
+		{0A29616B-5413-4DA9-96EC-B45D6AF632C9} = {3324D046-1E05-46B5-B1BA-82910D56B332}
+		{BD382403-86D8-4E99-B279-370FC22F059C} = {778AAF38-20FF-438C-A9C3-60850C8B5A27}
+		{25AA9F04-EEEE-49C4-870B-CDFF71717687} = {778AAF38-20FF-438C-A9C3-60850C8B5A27}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {859FB3DF-C60A-46B1-82E5-90274905D1EF}

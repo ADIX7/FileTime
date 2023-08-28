@@ -1,4 +1,7 @@
-﻿using FileTime.Core.Models;
+﻿using FileTime.Core.Enums;
+using FileTime.Core.Models;
+using FileTime.Core.Serialization;
+using FileTime.Core.Timeline;
 using InitableService;
 using Microsoft.AspNetCore.SignalR.Client;
 using Serilog;
@@ -6,7 +9,7 @@ using TypedSignalR.Client;
 
 namespace FileTime.Server.Common.Connections.SignalR;
 
-public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
+public class SignalRConnection : IRemoteConnection, IAsyncInitable<string, string>
 {
     private static readonly Dictionary<string, SignalRConnection> Connections = new();
     private static readonly object ConnectionsLock = new();
@@ -15,7 +18,7 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
     private HubConnection _connection = null!;
     private ISignalRHub _client = null!;
 
-    public async Task InitAsync(string baseUrl)
+    public async Task InitAsync(string baseUrl, string providerName)
     {
         _baseUrl = baseUrl;
 
@@ -26,9 +29,10 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
         _connection = connectionBuilder.Build();
         await _connection.StartAsync();
         _client = _connection.CreateHubProxy<ISignalRHub>();
+        await _client.SetClientIdentifier(providerName);
     }
 
-    public static async Task<SignalRConnection> GetOrCreateForAsync(string baseUrl)
+    public static async Task<SignalRConnection> GetOrCreateForAsync(string baseUrl, string providerName)
     {
         SignalRConnection? connection;
         lock (ConnectionsLock)
@@ -47,7 +51,7 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
             Connections.Add(baseUrl, connection);
         }
 
-        await connection.InitAsync(baseUrl);
+        await connection.InitAsync(baseUrl, providerName);
         return connection;
     }
 
@@ -78,9 +82,32 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string>
     public async Task CloseWriterAsync(string transactionId)
         => await _client.CloseWriterAsync(transactionId);
 
-    public async Task<NativePath?> GetNativePathAsync(FullName fullName)
+    public async Task<NativePath> GetNativePathAsync(string contentProviderId, FullName fullName)
     {
-        var path = await _client.GetNativePathAsync(fullName.Path);
-        return path is null ? null : new NativePath(path);
+        var path = await _client.GetNativePathAsync(contentProviderId, fullName.Path);
+        return new NativePath(path);
     }
+
+    public async Task<ISerialized> GetItemByNativePathAsync(
+        string contentProviderId,
+        NativePath nativePath,
+        PointInTime pointInTime,
+        bool forceResolve,
+        AbsolutePathType forceResolvePathType,
+        ItemInitializationSettings itemInitializationSettings)
+    {
+        var item = await _client.GetItemByNativePathAsync(
+            contentProviderId,
+            nativePath, 
+            pointInTime, 
+            forceResolve, 
+            forceResolvePathType, 
+            itemInitializationSettings
+        );
+
+        return item;
+    }
+
+    public async Task<SerializedAbsolutePath[]> GetChildren(string contentProviderId, string fullName) 
+        => await _client.GetChildren(contentProviderId, fullName);
 }

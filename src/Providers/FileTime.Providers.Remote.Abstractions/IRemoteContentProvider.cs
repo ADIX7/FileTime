@@ -7,4 +7,5 @@ public interface IRemoteContentProvider : IContentProvider
 {
     Task<IRemoteConnection> GetRemoteConnectionAsync();
     string RemoteProviderName { get; }
+    Task InitializeChildren();
 }

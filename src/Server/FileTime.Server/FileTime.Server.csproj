@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\AppCommon\FileTime.App.DependencyInjection\FileTime.App.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
     <ProjectReference Include="..\FileTime.Server.App\FileTime.Server.App.csproj" />
+    <ProjectReference Include="..\FileTime.Server.Extensions.DependencyInjection\FileTime.Server.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\FileTime.Server.Web\FileTime.Server.Web.csproj" />
   </ItemGroup>
 
