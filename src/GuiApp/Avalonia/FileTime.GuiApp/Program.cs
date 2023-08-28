@@ -92,15 +92,11 @@ public static class Program
         => HandleUnhandledException(sender, e.Exception);
 
     private static void HandleUnhandledException(object? sender, Exception? ex, [CallerMemberName] string caller = "")
-    {
-        Log.Fatal(
-            ex,
-            "An unhandled exception come from '{Caller}' exception handler from an object of type '{Type}' and value '{Value}': {Exception}",
-            caller,
-            sender?.GetType().ToString() ?? "null",
-            sender?.ToString() ?? "null",
-            ex);
-
-        Log.CloseAndFlush();
-    }
+        => Log.Warning(
+                ex,
+                "An unhandled exception come from '{Caller}' exception handler from an object of type '{Type}' and value '{Value}': {Exception}",
+                caller,
+                sender?.GetType().ToString() ?? "null",
+                sender?.ToString() ?? "null",
+                ex);
 }
