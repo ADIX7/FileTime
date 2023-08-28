@@ -26,7 +26,8 @@ public sealed partial class Rectangle<T> : View<Rectangle<T>, T>, IDisplayView
     protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
         var fillColor = Fill ?? Background ?? renderContext.Background;
-        var renderState = new RenderState(position, size, fillColor);
+        var renderSize = new Size(Width ?? size.Width, Height ?? size.Height);
+        var renderState = new RenderState(position, renderSize, fillColor);
         var skipRender = !renderContext.ForceRerender && !NeedsRerender(renderState);
         _lastRenderState = renderState;
 
@@ -41,7 +42,7 @@ public sealed partial class Rectangle<T> : View<Rectangle<T>, T>, IDisplayView
         RenderEmpty(
             renderContext,
             position,
-            size,
+            renderSize,
             skipRender,
             false
         );

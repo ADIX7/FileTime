@@ -3,7 +3,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Threading;
 using FileTime.App.ContainerSizeScanner;
-using FileTime.GuiApp.App.Helper;
+using FileTime.App.Core.Helpers;
 
 namespace FileTime.GuiApp.App.Converters;
 
@@ -16,18 +16,12 @@ public class ItemSizeToBrushConverter : IMultiValueConverter
     {
         if (values is [ISizePreviewItem previewItem, ContainerPreview sizeContainerViewModel])
         {
-            var items = sizeContainerViewModel.TopItems;
-            var i = 0;
-            for (; i < items.Count; i++)
-            {
-                if (items[i].Name == previewItem.Name) break;
-            }
-
-            var hue = (360d * i / (items.Count < 1 ? 1 : items.Count)) + HueDiff;
-            if (hue > 360) hue -= 360;
-            if (hue < 0) hue += 360;
-
-            var (r, g, b) = ColorHelper.HlsToRgb(hue, Lightness, 1);
+            var (r, g, b) = SizePreviewItemHelper.GetItemColor(
+                sizeContainerViewModel.TopItems,
+                previewItem,
+                HueDiff,
+                Lightness
+            );
 
             var task = Dispatcher.UIThread.InvokeAsync(() => new SolidColorBrush(Color.FromRgb(r, g, b)));
             task.Wait();

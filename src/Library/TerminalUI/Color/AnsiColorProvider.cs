@@ -6,49 +6,24 @@ public class AnsiColorProvider : ColorProviderBase
     {
         var finalColor = ParseInternal(color, type);
 
-        finalColor ??= ParseHexColor(color, type);
+        finalColor ??= FromRgb(color, type);
 
         if (finalColor is not null) return finalColor;
 
         throw new NotSupportedException($"Color can not be parsed. {color}");
     }
 
-    private static IColor? ParseHexColor(string color, ColorType colorType)
+    private IColor? FromRgb(string color, ColorType type)
     {
-        if (!color.StartsWith("#")) return null;
-        if (color.Length == 4)
+        if (ParseHexColor(color) is var (r, g, b))
         {
-            var r = ColorCharToColorByte(color[1]);
-            var g = ColorCharToColorByte(color[2]);
-            var b = ColorCharToColorByte(color[3]);
-
-            r += (byte) (r << 4);
-            g += (byte) (g << 4);
-            b += (byte) (b << 4);
-
-            return new ColorRgb(r, g, b, colorType);
-        }
-        
-        if (color.Length == 7)
-        {
-            var r = (byte) (ColorCharToColorByte(color[1]) << 4 | ColorCharToColorByte(color[2]));
-            var g = (byte) (ColorCharToColorByte(color[3]) << 4 | ColorCharToColorByte(color[4]));
-            var b = (byte) (ColorCharToColorByte(color[5]) << 4 | ColorCharToColorByte(color[6]));
-
-            return new ColorRgb(r, g, b, colorType);
+            return new ColorRgb(r, g, b, type);
         }
 
-        throw new NotSupportedException($"Hex color can not be parsed. {color}");
+        return null;
     }
 
-    private static byte ColorCharToColorByte(char color) =>
-        color switch
-        {
-            >= '0' and <= '9' => (byte) (color - '0'),
-            >= 'A' and <= 'F' => (byte) (color - 'A' + 10),
-            >= 'a' and <= 'f' => (byte) (color - 'a' + 10),
-            _ => throw new NotSupportedException($"Hex color can not be parsed. {color}")
-        };
+    public override IColor FromRgb(Rgb rgb, ColorType type) => new ColorRgb(rgb.R, rgb.G, rgb.B, type);
 
     public override IColor BlackForeground { get; } = new Color256(0, ColorType.Foreground);
     public override IColor BlueForeground { get; } = new Color256(12, ColorType.Foreground);

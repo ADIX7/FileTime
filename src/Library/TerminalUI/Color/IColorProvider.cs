@@ -3,6 +3,7 @@
 public interface IColorProvider
 {
     IColor Parse(string color, ColorType type);
+    IColor FromRgb(Rgb rgb, ColorType type);
 
     IColor BlackForeground { get; }
     IColor BlueForeground { get; }

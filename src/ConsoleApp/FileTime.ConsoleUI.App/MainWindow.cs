@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using FileTime.App.Core.Models.Enums;
+using FileTime.App.Core.Models.Traits;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.Controls;
@@ -479,7 +480,9 @@ public class MainWindow
 
         list.Bind(
             list,
-            dc => dc.AppState.SelectedTab.Value.SelectedsChildren.Value.Count > 0,
+            dc =>
+                dc.AppState.SelectedTab.Value.SelectedsChildren.Value.Count > 0
+                && dc.ItemPreviewService.ItemPreview.Value == null,
             l => l.IsVisible,
             fallbackValue: false);
 
@@ -534,52 +537,43 @@ public class MainWindow
                                 );
                             }),
                         new StackPanel<IItemViewModel>
+                        {
+                            Extensions = {new GridPositionExtension(1, 0)},
+                            ChildInitializer =
                             {
-                                Extensions = {new GridPositionExtension(1, 0)},
-                                ChildInitializer =
-                                {
-                                    new TextBlock<IItemViewModel>()
-                                        .Setup(t =>
-                                        {
-                                            if (!options.ShowAttributes) return;
-                                            t.Bind(
-                                                t,
-                                                dc => ((IContainer) dc.BaseItem).Items.Count,
-                                                tb => tb.Text,
-                                                t => $" {t}");
-                                        })
-                                }
-                            }
-                            .Setup(s => s.Bind(
-                                s,
-                                dc => dc.BaseItem.Type == AbsolutePathType.Container,
-                                s => s.IsVisible)),
-                        new StackPanel<IItemViewModel>
-                            {
-                                Extensions = {new GridPositionExtension(1, 0)},
-                                ChildInitializer =
-                                {
-                                    new TextBlock<IItemViewModel>()
-                                        .Setup(t =>
-                                        {
-                                            if (!options.ShowAttributes) return;
-                                            t.Bind(
-                                                t,
-                                                dc => ((IElementViewModel) dc).Size.Value,
-                                                tb => tb.Text,
-                                                v =>
-                                                {
-                                                    var b = ByteSize.FromBytes(v);
+                                new TextBlock<IItemViewModel>()
+                                    .Setup(t =>
+                                    {
+                                        if (!options.ShowAttributes) return;
+                                        t.Bind(
+                                            t,
+                                            dc => dc is ISizeProvider 
+                                                ? ((ISizeProvider) dc).Size.Value
+                                                : ((ISizeProvider) dc.BaseItem).Size.Value,
+                                            tb => tb.Text,
+                                            v =>
+                                            {
+                                                var b = ByteSize.FromBytes(v);
 
-                                                    return $"{b.LargestWholeNumberValue:0.#} " + b.GetLargestWholeNumberSymbol(NumberFormatInfo.CurrentInfo).First();
-                                                });
-                                        })
-                                }
+                                                return $"{b.LargestWholeNumberValue:0.#} " + b.GetLargestWholeNumberSymbol(NumberFormatInfo.CurrentInfo).First();
+                                            });
+                                    }),
+                                
+                                /*new TextBlock<IItemViewModel>()
+                                    .Setup(t =>
+                                    {
+                                        if (!options.ShowAttributes) return;
+                                        t.Bind(
+                                            t,
+                                            dc => ((IContainer) dc.BaseItem).Items.Count,
+                                            tb => tb.Text,
+                                            t => $" {t,4}");
+                                    }).Setup(s => s.Bind(
+                                        s,
+                                        dc => dc.BaseItem.Type == AbsolutePathType.Container,
+                                        s => s.IsVisible))*/
                             }
-                            .Setup(s => s.Bind(
-                                s,
-                                dc => dc.BaseItem.Type == AbsolutePathType.Element,
-                                s => s.IsVisible))
+                        },
                     }
                 }
             }

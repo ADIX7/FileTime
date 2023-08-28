@@ -25,4 +25,9 @@
     <ProjectReference Include="..\..\Library\GeneralInputKey\GeneralInputKey.csproj" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Folder Include="Models\Traits\" />
+  </ItemGroup>
+
 </Project>

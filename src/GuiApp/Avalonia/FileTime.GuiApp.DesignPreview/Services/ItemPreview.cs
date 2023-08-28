@@ -58,6 +58,7 @@ public class ItemPreview
             SupportsDelete.True,
             true,
             "attr",
+            0,
             null!,
             PointInTime.Present, 
             new ObservableCollection<Exception>(),

@@ -6,7 +6,6 @@ using DeclarativeProperty;
 using DynamicData;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
-using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 using ObservableComputations;
 using IContainer = FileTime.Core.Models.IContainer;
@@ -178,12 +177,12 @@ public class Tab : ITab
 
     private static long GetSize(IItem item)
     {
-        if (item is IElement element && element.GetExtension<FileExtension>() is { } fileExtension)
+        if (item is IElement element)
         {
-            return fileExtension.Size ?? -1;
+            return element.Size;
         }
 
-        return -2;
+        return -1;
     }
 
     private static IItem MapItem(AbsolutePath item)

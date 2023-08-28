@@ -321,7 +321,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     {
         if (_selectedTab is null || _currentItems?.Value is null) return Task.CompletedTask;
 
-        var newSelectedItem = getNewSelected(_currentItems.Value);
+        var newSelectedItem = getNewSelected(_currentItems.Value.ToArray());
         if (newSelectedItem == null) return Task.CompletedTask;
 
         if (_selectedTab.Tab is { } tab)

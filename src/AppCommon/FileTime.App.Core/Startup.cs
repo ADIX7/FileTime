@@ -18,7 +18,6 @@ public static class Startup
         serviceCollection.TryAddTransient<ITabViewModel, TabViewModel>();
         serviceCollection.TryAddTransient<IContainerViewModel, ContainerViewModel>();
         serviceCollection.TryAddTransient<IElementViewModel, ElementViewModel>();
-        serviceCollection.TryAddTransient<IFileViewModel, FileViewModel>();
         serviceCollection.TryAddTransient<IItemNameConverterService, ItemNameConverterService>();
         serviceCollection.TryAddTransient<ElementPreviewViewModel>();
         serviceCollection.TryAddSingleton<IUserCommandHandlerService, UserCommandHandlerService>();

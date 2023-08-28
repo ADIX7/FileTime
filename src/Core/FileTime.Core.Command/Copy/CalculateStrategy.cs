@@ -1,5 +1,4 @@
 using FileTime.Core.Models;
-using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Command.Copy;
@@ -20,7 +19,7 @@ public class CalculateStrategy : ICopyStrategy
     public async Task CopyAsync(AbsolutePath from, AbsolutePath to, CopyCommandContext context)
     {
         var resolvedFrom = await from.ResolveAsync();
-        _operationStatuses.Add(new OperationProgress(from.Path.Path, (resolvedFrom as IElement)?.GetExtension<FileExtension>()?.Size ?? 0L));
+        _operationStatuses.Add(new OperationProgress(from.Path.Path, (resolvedFrom as IElement)?.Size ?? 0L));
     }
 
     public Task CreateContainerAsync(IContainer target, string name, PointInTime currentTime) => Task.CompletedTask;

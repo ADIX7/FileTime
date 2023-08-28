@@ -127,10 +127,17 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
 
     protected override Size CalculateSize()
     {
-        return WithCalculatedSize(
+        if (Width.HasValue && Height.HasValue)
+        {
+            return new Size(Width.Value, Height.Value);
+        }
+        
+        var size = WithCalculatedSize(
             RenderContext.Empty,
             new Option<Size>(new Size(0, 0), false),
             CalculateSizeInternal);
+
+        return new Size(Width ?? size.Width, Height ?? size.Height);
 
         Size CalculateSizeInternal(in RenderContext _, ReadOnlySpan<int> columnWidths, ReadOnlySpan<int> rowHeights)
         {
@@ -153,11 +160,14 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
 
     protected override bool DefaultRenderer(in RenderContext renderContext, Position position, Size size)
     {
-        if (size.Width == 0 || size.Height == 0) return false;
+        var width = Width ?? size.Width;
+        var height = Height ?? size.Height;
+        
+        if (width == 0 || height == 0) return false;
 
         return WithCalculatedSize(
             renderContext,
-            new Option<Size>(size, true),
+            new Option<Size>(new Size(width, height), true),
             DefaultRendererInternal
         );
 

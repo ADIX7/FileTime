@@ -17,7 +17,7 @@ public static class Startup
 {
     public static readonly Dictionary<string, Func<IConsoleDriver>> Drivers = new()
     {
-        ["windows"] = () => new XTermDriver(),
+        ["xterm"] = () => new XTermDriver(),
         ["dotnet"] = () => new DotnetDriver()
     };
     public static IServiceCollection AddConsoleDriver(this IServiceCollection serviceCollection)

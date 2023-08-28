@@ -7,8 +7,8 @@ namespace FileTime.App.Core.ViewModels;
 
 public interface IElementViewModel :
     IItemViewModel,
-    ISizeProvider,
-    IInitable<IElement, ITabViewModel, ItemViewModelType>
+    IInitable<IElement, ITabViewModel, ItemViewModelType>,
+    ISizeProvider
 {
     IElement? Element { get; }
 }

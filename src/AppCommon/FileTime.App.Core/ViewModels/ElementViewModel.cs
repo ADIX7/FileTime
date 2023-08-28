@@ -5,16 +5,20 @@ using FileTime.Core.Models;
 
 namespace FileTime.App.Core.ViewModels;
 
-public partial class ElementViewModel : ItemViewModel, IElementViewModel
+public class ElementViewModel : ItemViewModel, IElementViewModel
 {
+    private readonly DeclarativeProperty<long> _size = new(0);
     public IElement? Element => BaseItem as Element;
 
     public ElementViewModel(IItemNameConverterService itemNameConverterService, IAppState appState) : base(itemNameConverterService, appState)
     {
     }
 
-    public void Init(IElement item, ITabViewModel parentTab, ItemViewModelType itemViewModelType) 
-        => Init((IItem)item, parentTab, itemViewModelType);
+    public void Init(IElement item, ITabViewModel parentTab, ItemViewModelType itemViewModelType)
+    {
+        Init((IItem) item, parentTab, itemViewModelType);
+        _size.SetValueSafe(item.Size);
+    }
 
-    public IDeclarativeProperty<long> Size { get; protected set; } = new DeclarativeProperty<long>(0);
+    public IDeclarativeProperty<long> Size => _size;
 }

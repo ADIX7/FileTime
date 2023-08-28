@@ -4,7 +4,6 @@ using DynamicData;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
-using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -356,11 +355,6 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var parent = new AbsolutePath(_timelessContentProvider, pointInTime, parentFullName,
             AbsolutePathType.Container);
 
-        var extensions = new ExtensionCollection()
-        {
-            new FileExtension(fileInfo.Length)
-        };
-
         return new Element(
             fileInfo.Name,
             fileInfo.Name,
@@ -374,10 +368,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             SupportsDelete.True,
             true,
             GetFileAttributes(fileInfo),
+            fileInfo.Length,
             this,
             pointInTime,
             new ObservableCollection<Exception>(),
-            extensions.AsReadOnly()
+            new ExtensionCollection().AsReadOnly()
         );
     }
 

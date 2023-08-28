@@ -146,8 +146,8 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
 
         if (!IsVisible) return false;
 
-        ActualWidth = size.Width;
-        ActualHeight = size.Height;
+        ActualWidth = Width ?? size.Width;
+        ActualHeight = Height ?? size.Height;
 
         if (RenderMethod is null)
         {
@@ -167,9 +167,13 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
             );
 
             size = new Size(
-                size.Width - Margin.Left - Margin.Right,
-                size.Height - Margin.Top - Margin.Bottom
+                ActualWidth - Margin.Left - Margin.Right,
+                ActualHeight - Margin.Top - Margin.Bottom
             );
+        }
+        else if (Width.HasValue || Height.HasValue)
+        {
+            size = new Size(ActualWidth, ActualHeight);
         }
 
         bool renderResult;

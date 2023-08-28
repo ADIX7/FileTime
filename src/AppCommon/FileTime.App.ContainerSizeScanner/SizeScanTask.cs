@@ -1,7 +1,6 @@
 ﻿using DeclarativeProperty;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
-using FileTime.Core.Models.Extensions;
 using FileTime.Core.Timeline;
 using Microsoft.Extensions.Logging;
 
@@ -104,10 +103,7 @@ public class SizeScanTask : ISizeScanTask
         {
             if (_cancelled) return;
 
-            var fileExtension = element.GetExtension<FileExtension>();
-            var size = fileExtension?.Size ?? 0;
-
-            var sizeProperty = new DeclarativeProperty<long>(size);
+            var sizeProperty = new DeclarativeProperty<long>(element.Size);
             var childName = sizeScanContainer.FullName!.GetChild(element.Name).Path;
 
             var childElement = new SizeScanElement

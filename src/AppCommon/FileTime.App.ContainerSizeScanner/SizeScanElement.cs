@@ -18,6 +18,9 @@ public record SizeScanElement : ISizeScanElement
     public required DateTime? ModifiedAt { get; init;}
 
     public required IDeclarativeProperty<long> Size { get; init; }
+    
+    long IElement.Size => Size.Value;
+    
     public bool IsHidden => false;
     public bool IsExists => true;
     public SupportsDelete CanDelete => SupportsDelete.False;

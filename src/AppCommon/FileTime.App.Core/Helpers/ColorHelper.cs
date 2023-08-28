@@ -1,4 +1,4 @@
-﻿namespace FileTime.GuiApp.App.Helper;
+﻿namespace FileTime.App.Core.Helpers;
 
 public static class ColorHelper
 {

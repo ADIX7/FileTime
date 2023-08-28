@@ -18,6 +18,7 @@ public record Element(
     SupportsDelete CanDelete,
     bool CanRename,
     string? Attributes,
+    long Size,
     IContentProvider Provider,
     PointInTime PointInTime,
     ObservableCollection<Exception> Exceptions,

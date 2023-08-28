@@ -31,6 +31,8 @@ public class BinaryTracker : ExpressionTrackerBase
             ExpressionType.GreaterThanOrEqual => (v1, v2) => Comparer.Default.Compare(v1, v2) >= 0,
             ExpressionType.LessThan => (v1, v2) => Comparer.Default.Compare(v1, v2) < 0,
             ExpressionType.LessThanOrEqual => (v1, v2) => Comparer.Default.Compare(v1, v2) <= 0,
+            ExpressionType.AndAlso => (v1, v2) => v1 is true && v2 is true,
+            ExpressionType.OrElse => (v1, v2) => v1 is true || v2 is true,
             _ => throw new NotImplementedException()
         };
 

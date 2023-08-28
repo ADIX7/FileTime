@@ -7,7 +7,6 @@ using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
-using FileTime.Core.Models.Extensions;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using InitableService;
@@ -206,25 +205,11 @@ public partial class TabViewModel : ITabViewModel
         }
         else if (item is IElement element)
         {
-            var fileExtension = element.GetExtension<FileExtension>();
+            var elementViewModel = _serviceProvider
+                .GetInitableResolver<IElement, ITabViewModel, ItemViewModelType>(element, this, type)
+                .GetRequiredService<IElementViewModel>();
 
-            if (fileExtension is not null)
-            {
-                var fileViewModel = _serviceProvider
-                    .GetInitableResolver<IElement, FileExtension, ITabViewModel, ItemViewModelType>(
-                        element, fileExtension, this, type)
-                    .GetRequiredService<IFileViewModel>();
-
-                return fileViewModel;
-            }
-            else
-            {
-                var elementViewModel = _serviceProvider
-                    .GetInitableResolver<IElement, ITabViewModel, ItemViewModelType>(element, this, type)
-                    .GetRequiredService<IElementViewModel>();
-
-                return elementViewModel;
-            }
+            return elementViewModel;
         }
 
         throw new ArgumentException($"{nameof(item)} is not {nameof(IContainer)} neither {nameof(IElement)}");

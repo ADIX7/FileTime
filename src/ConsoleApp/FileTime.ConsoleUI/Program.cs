@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using FileTime.App.Core;
 using FileTime.App.Core.Configuration;
 using FileTime.ConsoleUI;
@@ -52,7 +50,6 @@ try
 }
 finally
 {
-    driver?.Clear();
     driver?.SetCursorVisible(true);
     driver?.Dispose();
 }

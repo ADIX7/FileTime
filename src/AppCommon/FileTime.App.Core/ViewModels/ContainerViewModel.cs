@@ -4,7 +4,7 @@ using FileTime.Core.Models;
 
 namespace FileTime.App.Core.ViewModels;
 
-public partial class ContainerViewModel : ItemViewModel, IContainerViewModel
+public class ContainerViewModel : ItemViewModel, IContainerViewModel
 {
     public IContainer? Container => BaseItem as IContainer;
 

@@ -36,6 +36,7 @@ public sealed class XTermDriver : DotnetDriver
     public override void ResetStyle()
     {
         Write("\x1b[0m");
+        base.ResetStyle();
     }
 
     public override void SetBackgroundColor(IColor background)

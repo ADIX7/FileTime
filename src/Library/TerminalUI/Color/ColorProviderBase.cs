@@ -3,8 +3,46 @@
 public abstract class ColorProviderBase : IColorProvider
 {
     public abstract IColor Parse(string color, ColorType type);
+    public abstract IColor FromRgb(Rgb rgb, ColorType type);
 
-    protected IColor? ParseInternal(string color, ColorType type) 
+    protected static Rgb? ParseHexColor(string color)
+    {
+        if (!color.StartsWith("#")) return null;
+        if (color.Length == 4)
+        {
+            var r = ColorCharToColorByte(color[1]);
+            var g = ColorCharToColorByte(color[2]);
+            var b = ColorCharToColorByte(color[3]);
+
+            r += (byte) (r << 4);
+            g += (byte) (g << 4);
+            b += (byte) (b << 4);
+
+            return new(r, g, b);
+        }
+
+        if (color.Length == 7)
+        {
+            var r = (byte) (ColorCharToColorByte(color[1]) << 4 | ColorCharToColorByte(color[2]));
+            var g = (byte) (ColorCharToColorByte(color[3]) << 4 | ColorCharToColorByte(color[4]));
+            var b = (byte) (ColorCharToColorByte(color[5]) << 4 | ColorCharToColorByte(color[6]));
+
+            return new(r, g, b);
+        }
+
+        return null;
+    }
+
+    private static byte ColorCharToColorByte(char color) =>
+        color switch
+        {
+            >= '0' and <= '9' => (byte) (color - '0'),
+            >= 'A' and <= 'F' => (byte) (color - 'A' + 10),
+            >= 'a' and <= 'f' => (byte) (color - 'a' + 10),
+            _ => throw new NotSupportedException($"Hex color can not be parsed. {color}")
+        };
+
+    protected IColor? ParseInternal(string color, ColorType type)
         => (color.ToLower(), type) switch
         {
             ("black", ColorType.Foreground) => BlackForeground,

@@ -80,10 +80,11 @@ public abstract class PropertyTrackerBase<TSource, TExpressionResult>
         {
             return new ConstantTracker(constantExpression.Value);
         }
-        /*else if (expression is not ConstantExpression)
+        else if (expression is TypeBinaryExpression typeBinaryExpression)
         {
-            Debug.Assert(false, "Unknown expression type " + expression.GetType());
-        }*/
+            var childExpression = FindReactiveProperties(typeBinaryExpression.Expression, parameters);
+            return new TypeBinaryTracker(typeBinaryExpression, childExpression);
+        }
 
         throw new NotSupportedException();
     }
