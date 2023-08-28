@@ -7,6 +7,7 @@ using DynamicData;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using FileTime.Core.Traits;
 using ObservableComputations;
 using IContainer = FileTime.Core.Models.IContainer;
 
@@ -100,17 +101,21 @@ public class Tab : ITab
                     _ => throw new NotImplementedException()
                 };
 
-                return (itemComparer, order);
+                return (itemComparer, order, ordering is not ItemOrdering.Name and not ItemOrdering.NameDesc);
             }),
             (items, ordering) =>
             {
                 if (items is null) return Task.FromResult<ObservableCollection<IItem>?>(null);
 
-                var (itemComparer, order) = ordering;
+                var (itemComparer, order, addName) = ordering;
 
-                ObservableCollection<IItem>? orderedItems = items
+                var primaryOrderedItems = items
                     .Ordering(i => i.Type)
                     .ThenOrdering(itemComparer, order);
+
+                ObservableCollection<IItem>? orderedItems = addName
+                    ? primaryOrderedItems.ThenOrdering(i => i.DisplayName)
+                    : primaryOrderedItems;
 
                 return Task.FromResult(orderedItems);
             }
@@ -124,7 +129,7 @@ public class Tab : ITab
                 var itemSelectingContext = new LastItemSelectingContext(CurrentLocation.Value);
                 var lastItemSelectingContext = _lastItemSelectingContext;
                 if (items == null || items.Count == 0) return Task.FromResult<AbsolutePath?>(null);
-                
+
                 _lastItemSelectingContext = itemSelectingContext;
                 if (selected != null)
                 {
@@ -153,23 +158,23 @@ public class Tab : ITab
         });
 
         DeclarativePropertyHelpers.CombineLatest(
-            CurrentItems,
-            CurrentSelectedItem,
-            (items, selected) =>
-            {
-                if(items is null || selected is null) return Task.FromResult<IEnumerable<AbsolutePath>?>(null);
-                var primaryCandidates = items.SkipWhile(i => i.FullName is {Path: var p} && p != selected.Path.Path).Skip(1);
-                var secondaryCandidates = items.TakeWhile(i => i.FullName is {Path: var p} && p != selected.Path.Path).Reverse();
-                var candidates = primaryCandidates
-                    .Concat(secondaryCandidates)
-                    .Select(c => new AbsolutePath(_timelessContentProvider, c));
+                CurrentItems,
+                CurrentSelectedItem,
+                (items, selected) =>
+                {
+                    if (items is null || selected is null) return Task.FromResult<IEnumerable<AbsolutePath>?>(null);
+                    var primaryCandidates = items.SkipWhile(i => i.FullName is {Path: var p} && p != selected.Path.Path).Skip(1);
+                    var secondaryCandidates = items.TakeWhile(i => i.FullName is {Path: var p} && p != selected.Path.Path).Reverse();
+                    var candidates = primaryCandidates
+                        .Concat(secondaryCandidates)
+                        .Select(c => new AbsolutePath(_timelessContentProvider, c));
 
-                return Task.FromResult(candidates);
-            })
+                    return Task.FromResult(candidates);
+                })
             .Subscribe(candidates =>
             {
-                if(candidates is null) return;
-                
+                if (candidates is null) return;
+
                 _selectedItemCandidates.Clear();
                 _selectedItemCandidates.AddRange(candidates);
             });
@@ -180,6 +185,10 @@ public class Tab : ITab
         if (item is IElement element)
         {
             return element.Size;
+        }
+        else if (item is ISizeProvider sizeProvider)
+        {
+            return sizeProvider.Size.Value;
         }
 
         return -1;

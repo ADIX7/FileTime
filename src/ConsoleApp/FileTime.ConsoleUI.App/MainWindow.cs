@@ -1,12 +1,12 @@
 ﻿using System.Globalization;
 using FileTime.App.Core.Models.Enums;
-using FileTime.App.Core.Models.Traits;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.Controls;
 using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
+using FileTime.Core.Traits;
 using Humanizer.Bytes;
 using Microsoft.Extensions.Options;
 using TerminalUI;
@@ -538,6 +538,7 @@ public class MainWindow
                             }),
                         new StackPanel<IItemViewModel>
                         {
+                            Orientation = Orientation.Horizontal,
                             Extensions = {new GridPositionExtension(1, 0)},
                             ChildInitializer =
                             {
@@ -559,7 +560,7 @@ public class MainWindow
                                             });
                                     }),
                                 
-                                /*new TextBlock<IItemViewModel>()
+                                new TextBlock<IItemViewModel>()
                                     .Setup(t =>
                                     {
                                         if (!options.ShowAttributes) return;
@@ -571,7 +572,7 @@ public class MainWindow
                                     }).Setup(s => s.Bind(
                                         s,
                                         dc => dc.BaseItem.Type == AbsolutePathType.Container,
-                                        s => s.IsVisible))*/
+                                        s => s.IsVisible))
                             }
                         },
                     }

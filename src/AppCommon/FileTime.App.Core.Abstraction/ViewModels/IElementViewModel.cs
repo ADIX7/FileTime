@@ -1,6 +1,6 @@
 using FileTime.App.Core.Models.Enums;
-using FileTime.App.Core.Models.Traits;
 using FileTime.Core.Models;
+using FileTime.Core.Traits;
 using InitableService;
 
 namespace FileTime.App.Core.ViewModels;

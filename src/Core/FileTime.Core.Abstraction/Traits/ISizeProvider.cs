@@ -1,6 +1,6 @@
 ﻿using DeclarativeProperty;
 
-namespace FileTime.App.Core.Models.Traits;
+namespace FileTime.Core.Traits;
 
 public interface ISizeProvider
 {

@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:guiappvm="using:FileTime.GuiApp.App.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:traits="clr-namespace:FileTime.App.Core.Models.Traits;assembly=FileTime.App.Core.Abstraction"
+    xmlns:traits="clr-namespace:FileTime.Core.Traits;assembly=FileTime.Core.Abstraction"
     x:Name="ItemRoot"
     HorizontalAlignment="Stretch"
     HorizontalContentAlignment="Stretch"
