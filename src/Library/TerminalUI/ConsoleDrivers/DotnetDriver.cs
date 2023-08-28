@@ -11,6 +11,7 @@ public class DotnetDriver : IConsoleDriver
     public int ThreadId { get; set; }
 
     public void EnterRestrictedMode() => CheckThreadId = true;
+    public void ExitRestrictedMode() => CheckThreadId = false;
 
     public virtual bool Init()
     {

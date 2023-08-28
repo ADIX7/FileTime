@@ -8,21 +8,27 @@ namespace FileTime.ConsoleUI.App.Services;
 public class CustomLoggerSink : ILogEventSink
 {
     private readonly Lazy<IDialogService> _dialogService;
-    
+
     public CustomLoggerSink(IServiceProvider serviceProvider)
     {
         _dialogService = new Lazy<IDialogService>(() => serviceProvider.GetRequiredService<IDialogService>());
     }
-    
+
     public void Emit(LogEvent logEvent)
     {
-        if (logEvent.Level >= LogEventLevel.Error)
+        if (logEvent.Level >= LogEventLevel.Error 
+            && logEvent.Properties.TryGetValue("SourceContext", out var sourceContext))
         {
-            var message = logEvent.RenderMessage();
-            if (logEvent.Exception is not null)
-                message += $" {logEvent.Exception.Message}";
-            Debug.WriteLine(message);
-            _dialogService.Value.ShowToastMessage(message);
+            var s = sourceContext.ToString();
+
+            if (s != "\"Microsoft.AspNetCore.SignalR.Client.HubConnection\"")
+            {
+                var message = logEvent.RenderMessage();
+                if (logEvent.Exception is not null)
+                    message += $" {logEvent.Exception.Message}";
+                Debug.WriteLine(message);
+                _dialogService.Value.ShowToastMessage(message);
+            }
         }
     }
 }

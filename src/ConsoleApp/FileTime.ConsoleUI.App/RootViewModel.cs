@@ -7,6 +7,7 @@ using FileTime.App.FrequencyNavigation.ViewModels;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
+using FileTime.Providers.LocalAdmin;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -20,6 +21,7 @@ public partial class RootViewModel : IRootViewModel
     public IFrequencyNavigationViewModel FrequencyNavigation { get; }
     public IItemPreviewService ItemPreviewService { get; }
     public IClipboardService ClipboardService { get; }
+    public IAdminElevationManager AdminElevationManager { get; }
     public IDialogService DialogService { get; }
     public ITimelineViewModel TimelineViewModel { get; }
     public IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get;}
@@ -34,7 +36,8 @@ public partial class RootViewModel : IRootViewModel
         ITimelineViewModel timelineViewModel,
         IFrequencyNavigationViewModel frequencyNavigation,
         IItemPreviewService itemPreviewService,
-        IClipboardService clipboardService)
+        IClipboardService clipboardService,
+        IAdminElevationManager adminElevationManager)
     {
         AppState = appState;
         PossibleCommands = possibleCommands;
@@ -44,6 +47,7 @@ public partial class RootViewModel : IRootViewModel
         FrequencyNavigation = frequencyNavigation;
         ItemPreviewService = itemPreviewService;
         ClipboardService = clipboardService;
+        AdminElevationManager = adminElevationManager;
 
         DialogService.ReadInput.PropertyChanged += (o, e) =>
         {

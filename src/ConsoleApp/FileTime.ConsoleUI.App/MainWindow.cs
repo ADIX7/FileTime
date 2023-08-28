@@ -138,12 +138,22 @@ public class MainWindow
                         {
                             Margin = "2 0 0 0",
                             Extensions = {new GridPositionExtension(2, 0)},
+                            Orientation = Orientation.Horizontal,
                             ChildInitializer =
                             {
                                 new TextBlock<IRootViewModel>
                                 {
+                                    Text = _consoleApplicationConfiguration.Value.AdminModeIcon ??
+                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "A+ " : "\ud83d\udd11"),
+                                    AsciiOnly = false
+                                }.Setup(t => t.Bind(
+                                    t,
+                                    dc => dc.AdminElevationManager.IsAdminInstanceRunning,
+                                    t => t.IsVisible)),
+                                new TextBlock<IRootViewModel>
+                                {
                                     Text = _consoleApplicationConfiguration.Value.ClipboardSingleIcon ??
-                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "C" : "\ud83d\udccb"),
+                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "C " : "\ud83d\udccb"),
                                     AsciiOnly = false
                                 }.Setup(t => t.Bind(
                                     t,
@@ -152,7 +162,7 @@ public class MainWindow
                                 new TextBlock<IRootViewModel>
                                 {
                                     Text = _consoleApplicationConfiguration.Value.ClipboardMultipleIcon ??
-                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "CC" : "\ud83d\udccb+"),
+                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "CC " : "\ud83d\udccb+"),
                                     AsciiOnly = false
                                 }.Setup(t => t.Bind(
                                     t,

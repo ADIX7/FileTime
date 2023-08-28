@@ -125,8 +125,7 @@ public sealed partial class ItemsControl<TDataContext, TItem>
         {
             if (!child.IsVisible) continue;
 
-            if (!_requestedSizes.TryGetValue(child, out var childSize)) throw new Exception("Child size not found");
-
+            if (!_requestedSizes.TryGetValue(child, out var childSize)) continue;
 
             var childPosition = Orientation == Orientation.Vertical
                 ? position with {Y = position.Y + delta}

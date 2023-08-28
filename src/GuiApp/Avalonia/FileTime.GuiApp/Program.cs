@@ -57,9 +57,9 @@ public static class Program
 
         Log.Logger.Information("Early app starting...");
 
-        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
-        AppDomain.CurrentDomain.UnhandledException -= OnAppDomainUnhandledException;
-        TaskScheduler.UnobservedTaskException -= OnTaskSchedulerUnobservedTaskException;
+        AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
+        AppDomain.CurrentDomain.UnhandledException += OnAppDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnTaskSchedulerUnobservedTaskException;
         try
         {
             BuildAvaloniaApp()

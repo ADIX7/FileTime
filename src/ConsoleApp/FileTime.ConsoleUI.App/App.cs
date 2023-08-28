@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TerminalUI;
 using TerminalUI.ConsoleDrivers;
+using TerminalUI.Models;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -138,6 +139,14 @@ public class App : IApplication
 
             Thread.Sleep(10);
         }
+        
+        _consoleDriver.ExitRestrictedMode();
+        _consoleDriver.Clear();
+        var size = _consoleDriver.GetWindowSize();
+        var shutdownText = "Shutting down...";
+        
+        _consoleDriver.SetCursorPosition(new Position(size.Width / 2 - shutdownText.Length / 2, size.Height / 2));
+        _consoleDriver.Write(shutdownText);
 
         Task.Run(async () => await _lifecycleService.ExitAsync()).Wait();
     }

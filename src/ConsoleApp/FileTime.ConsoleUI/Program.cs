@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using FileTime.App.Core;
 using FileTime.App.Core.Configuration;
 using FileTime.ConsoleUI;
@@ -19,6 +21,7 @@ Console.OutputEncoding = System.Text.Encoding.UTF8;
 IConsoleDriver? driver = null;
 
 #if DEBUG
+
 (AppDataRoot, EnvironmentName) = Init.InitDevelopment();
 #endif
 if (AppDataRoot is null)
@@ -49,6 +52,7 @@ try
 }
 finally
 {
+    driver?.Clear();
     driver?.SetCursorVisible(true);
     driver?.Dispose();
 }

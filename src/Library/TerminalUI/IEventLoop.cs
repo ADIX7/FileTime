@@ -6,4 +6,5 @@ public interface IEventLoop
     void AddToPermanentQueue(Action action);
     void AddInitializer(Action action);
     int ThreadId { get; set; }
+    void AddFinalizer(Action action);
 }

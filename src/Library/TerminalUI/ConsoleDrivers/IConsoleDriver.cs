@@ -24,4 +24,5 @@ public interface IConsoleDriver
     Size GetWindowSize();
     void Clear();
     void EnterRestrictedMode();
+    void ExitRestrictedMode();
 }

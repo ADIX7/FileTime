@@ -51,35 +51,96 @@ public class Dialogs
         };
     }
 
-    private void UpdateReadInputsFocus()
+    public IView<IRootViewModel> View()
     {
-        foreach (var readInputsChild in _readInputs.Children)
+        var root = new Grid<IRootViewModel>()
         {
-            if (readInputsChild.DataContext == _inputElementToFocus)
+            Margin = 5,
+            ChildInitializer =
             {
-                if (FindFocusable(readInputsChild) is { } focusable)
-                {
-                    focusable.Focus();
-                    _inputElementToFocus = null;
-                    break;
-                }
+                ReadInputs(),
+                MessageBox()
             }
-        }
+        };
 
-        IFocusable? FindFocusable(IView view)
-        {
-            if (view is IFocusable focusable) return focusable;
-            foreach (var viewVisualChild in view.VisualChildren)
-            {
-                if (FindFocusable(viewVisualChild) is { } focusableChild)
-                    return focusableChild;
-            }
-
-            return null;
-        }
+        return root;
     }
 
-    public IView<IRootViewModel> View()
+    private IView<IRootViewModel> MessageBox()
+    {
+        var okButton = new Button<IRootViewModel>
+        {
+            Margin = "0 0 5 0",
+            Content = new TextBlock<IRootViewModel>()
+                .Setup(t => t.Bind(
+                    t,
+                    dc => dc.DialogService.LastMessageBox.Value.OkText,
+                    t => t.Text)),
+        }.WithClickHandler(b => b.DataContext?.DialogService.LastMessageBox.Value?.Ok());
+
+        var cancelButton =
+            new Button<IRootViewModel>
+                {
+                    Margin = "0 0 5 0",
+                    Content = new TextBlock<IRootViewModel>()
+                        .Setup(t => t.Bind(
+                            t,
+                            dc => dc.DialogService.LastMessageBox.Value.CancelText,
+                            t => t.Text)),
+                }
+                .Setup(b => b.Bind(
+                    b,
+                    dc => dc.DialogService.LastMessageBox.Value.ShowCancel,
+                    b => b.IsVisible))
+                .WithClickHandler(b => b.DataContext?.DialogService.LastMessageBox.Value?.Cancel());
+
+        var root = new Border<IRootViewModel>
+        {
+            Margin = 5,
+            BorderThickness = 1,
+            Background = SpecialColor.None,
+            Content = new Grid<IRootViewModel>
+            {
+                RowDefinitionsObject = "Auto Auto",
+                ChildInitializer =
+                {
+                    new TextBlock<IRootViewModel>()
+                        .Setup(t => t.Bind(
+                            t,
+                            dc => dc.DialogService.LastMessageBox.Value.Text,
+                            t => t.Text)),
+                    new StackPanel<IRootViewModel>
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Extensions = {new GridPositionExtension(0, 1)},
+                        ChildInitializer =
+                        {
+                            okButton,
+                            cancelButton
+                        }
+                    }
+                }
+            }
+        };
+
+        root.Bind(
+            root,
+            d => d.DialogService.LastMessageBox.Value != null,
+            v => v.IsVisible,
+            fallbackValue: false);
+
+        ((INotifyPropertyChanged) root).PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(IView.IsVisible))
+            {
+                okButton.Focus();
+            }
+        };
+
+        return root;
+    }
+
+    private IView<IRootViewModel> ReadInputs()
     {
         var root = new Border<IRootViewModel>
         {
@@ -88,9 +149,20 @@ public class Dialogs
             Background = SpecialColor.None,
             Content = new Grid<IRootViewModel>
             {
+                RowDefinitionsObject = "Auto Auto",
                 ChildInitializer =
                 {
-                    ReadInputs()
+                    ReadInputsList(),
+                    new ItemsControl<IRootViewModel, IPreviewElement>
+                        {
+                            ItemTemplate = ReadInputPreviewItemTemplate
+                        }
+                        .Setup(i => i.Bind(
+                            i,
+                            dc => dc.DialogService.ReadInput.Value.Previews,
+                            c => c.ItemsSource
+                        ))
+                        .WithExtension(new GridPositionExtension(0, 1))
                 }
             }
         };
@@ -100,57 +172,8 @@ public class Dialogs
             d => d.DialogService.ReadInput.Value != null,
             v => v.IsVisible);
 
-        ((INotifyPropertyChanged) _readInputs).PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(ItemsControl<object, object>.Children))
-            {
-                _readInputChildHandlerUnSubscriber?.Invoke();
-
-                if (_readInputs.Children.Count > 0)
-                {
-                    UpdateReadInputsFocus();
-                }
-                else
-                {
-                    _inputElementToFocus = null;
-                }
-
-                if (_readInputs.Children is INotifyCollectionChanged notifyCollectionChanged)
-                {
-                    notifyCollectionChanged.CollectionChanged += NotifyCollectionChangedEventHandler;
-                    _readInputChildHandlerUnSubscriber = () => { notifyCollectionChanged.CollectionChanged -= NotifyCollectionChangedEventHandler; };
-                }
-
-                void NotifyCollectionChangedEventHandler(
-                    object? sender,
-                    NotifyCollectionChangedEventArgs e)
-                {
-                    UpdateReadInputsFocus();
-                }
-            }
-        };
         return root;
     }
-
-    private IView<IRootViewModel> ReadInputs()
-        => new Grid<IRootViewModel>
-        {
-            RowDefinitionsObject = "Auto Auto",
-            ChildInitializer =
-            {
-                ReadInputsList(),
-                new ItemsControl<IRootViewModel, IPreviewElement>
-                    {
-                        ItemTemplate = ReadInputPreviewItemTemplate
-                    }
-                    .Setup(i => i.Bind(
-                        i,
-                        dc => dc.DialogService.ReadInput.Value.Previews,
-                        c => c.ItemsSource
-                    ))
-                    .WithExtension(new GridPositionExtension(0, 1))
-            }
-        };
 
     private IView<IPreviewElement> ReadInputPreviewItemTemplate()
     {
@@ -367,6 +390,64 @@ public class Dialogs
 
         _readInputs = readInputs;
 
+        ((INotifyPropertyChanged) _readInputs).PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ItemsControl<object, object>.Children))
+            {
+                _readInputChildHandlerUnSubscriber?.Invoke();
+
+                if (_readInputs.Children.Count > 0)
+                {
+                    UpdateReadInputsFocus();
+                }
+                else
+                {
+                    _inputElementToFocus = null;
+                }
+
+                if (_readInputs.Children is INotifyCollectionChanged notifyCollectionChanged)
+                {
+                    notifyCollectionChanged.CollectionChanged += NotifyCollectionChangedEventHandler;
+                    _readInputChildHandlerUnSubscriber = () => { notifyCollectionChanged.CollectionChanged -= NotifyCollectionChangedEventHandler; };
+                }
+
+                void NotifyCollectionChangedEventHandler(
+                    object? sender,
+                    NotifyCollectionChangedEventArgs e)
+                {
+                    UpdateReadInputsFocus();
+                }
+            }
+        };
+
         return readInputs;
+    }
+
+    private void UpdateReadInputsFocus()
+    {
+        foreach (var readInputsChild in _readInputs.Children)
+        {
+            if (readInputsChild.DataContext == _inputElementToFocus)
+            {
+                if (FindFocusable(readInputsChild) is { } focusable)
+                {
+                    focusable.Focus();
+                    _inputElementToFocus = null;
+                    break;
+                }
+            }
+        }
+
+        IFocusable? FindFocusable(IView view)
+        {
+            if (view is IFocusable focusable) return focusable;
+            foreach (var viewVisualChild in view.VisualChildren)
+            {
+                if (FindFocusable(viewVisualChild) is { } focusableChild)
+                    return focusableChild;
+            }
+
+            return null;
+        }
     }
 }

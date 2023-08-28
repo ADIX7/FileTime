@@ -7,6 +7,7 @@ using FileTime.App.FrequencyNavigation.ViewModels;
 using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
+using FileTime.Providers.LocalAdmin;
 
 namespace FileTime.ConsoleUI.App;
 
@@ -23,5 +24,6 @@ public interface IRootViewModel
     IFrequencyNavigationViewModel FrequencyNavigation { get; }
     IItemPreviewService ItemPreviewService { get; }
     IClipboardService ClipboardService { get; }
+    IAdminElevationManager AdminElevationManager { get; }
     event Action<IInputElement>? FocusReadInputElement;
 }

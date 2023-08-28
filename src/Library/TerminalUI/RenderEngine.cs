@@ -33,6 +33,10 @@ public class RenderEngine : IRenderEngine
             _applicationContext.ConsoleDriver.ThreadId = _eventLoop.ThreadId;
             _applicationContext.ConsoleDriver.EnterRestrictedMode();
         });
+        _eventLoop.AddFinalizer(() =>
+        {
+            _applicationContext.ConsoleDriver.ExitRestrictedMode();
+        });
     }
 
     public void RequestRerender(IView view) => RequestRerender();
