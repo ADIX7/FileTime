@@ -92,7 +92,7 @@ public class MainWindow
     private Grid<IRootViewModel> MainContent() =>
         new()
         {
-            RowDefinitionsObject = "Auto * Auto Auto Auto Auto",
+            RowDefinitionsObject = "Auto * Auto Auto Auto Auto Auto",
             ChildInitializer =
             {
                 new Grid<IRootViewModel>
@@ -257,7 +257,27 @@ public class MainWindow
                     }
                 },
                 _timeline.View().WithExtension(new GridPositionExtension(0, 4)),
-                StatusLine().WithExtension(new GridPositionExtension(0, 5)),
+                new TextBlock<IRootViewModel>
+                    {
+                        Extensions =
+                        {
+                            new GridPositionExtension(0, 5)
+                        },
+                    }
+                    .Setup(t =>
+                    {
+                        t.Bind(
+                            t,
+                            dc => dc.AppState.RapidTravelText.Value,
+                            t => t.Text,
+                            v => "Filter: " + v);
+
+                        t.Bind(
+                            t,
+                            dc => dc.AppState.ViewMode.Value == ViewMode.RapidTravel,
+                            t => t.IsVisible);
+                    }),
+                StatusLine().WithExtension(new GridPositionExtension(0, 6)),
             }
         };
 
@@ -548,7 +568,7 @@ public class MainWindow
                                         if (!options.ShowAttributes) return;
                                         t.Bind(
                                             t,
-                                            dc => dc is ISizeProvider 
+                                            dc => dc is ISizeProvider
                                                 ? ((ISizeProvider) dc).Size.Value
                                                 : ((ISizeProvider) dc.BaseItem).Size.Value,
                                             tb => tb.Text,
@@ -559,7 +579,7 @@ public class MainWindow
                                                 return $"{b.LargestWholeNumberValue:0.#} " + b.GetLargestWholeNumberSymbol(NumberFormatInfo.CurrentInfo).First();
                                             });
                                     }),
-                                
+
                                 new TextBlock<IItemViewModel>()
                                     .Setup(t =>
                                     {
