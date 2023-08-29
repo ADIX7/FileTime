@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -7,15 +8,22 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using FileTime.App.Core;
+using FileTime.GuiApp.App.InstanceManagement;
+using FileTime.GuiApp.App.InstanceManagement.Messages;
 using Serilog;
 using Serilog.Debugging;
+using Serilog.Extensions.Logging;
 
 namespace FileTime.GuiApp;
 
 public static class Program
 {
-    public static string AppDataRoot { get; private set; }
-    public static string EnvironmentName { get; private set; }
+    public static string AppDataRoot { get; private set; } = null!;
+    public static string EnvironmentName { get; private set; } = null!;
+
+    private static ILogger _logger = null!;
+    
+    internal static List<string> DirectoriesToOpen { get; } = new();
 
     private static void InitLogging()
     {
@@ -37,13 +45,15 @@ public static class Program
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true)
             .CreateBootstrapLogger();
+
+        _logger = Log.ForContext(typeof(Program));
     }
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
 #if DEBUG
         (AppDataRoot, EnvironmentName) = Init.InitDevelopment();
@@ -55,8 +65,53 @@ public static class Program
 
         InitLogging();
 
-        Log.Logger.Information("Early app starting...");
+        _logger.Information("Early app starting...");
+        _logger.Information("Args ({ArgsLength}): {Args}", args.Length, $"\"{string.Join("\", \"", args)}\"");
 
+        if (!await CheckDirectoryArguments(args))
+        {
+            NormalStartup(args);
+        }
+    }
+
+    private static async Task<bool> CheckDirectoryArguments(string[] args)
+    {
+        var directoryArguments = new List<string>();
+        foreach (var path in args)
+        {
+            var directory = new DirectoryInfo(path);
+            if (directory.Exists)
+            {
+                directoryArguments.Add(directory.FullName);
+            }
+        }
+
+        if (directoryArguments.Count == 0) return false;
+
+        var loggerFactory = new SerilogLoggerFactory(Log.Logger);
+        var logger = loggerFactory.CreateLogger(typeof(InstanceManager).Name);
+        var instanceManager = new InstanceManager(new DummyInstanceMessageHandler(), logger);
+
+        try
+        {
+            if (await instanceManager.TryConnectAsync())
+            {
+                await instanceManager.SendMessageAsync(new OpenContainers(directoryArguments));
+                return true;
+            }
+        }
+        catch
+        {
+            // ignored
+        }
+
+        DirectoriesToOpen.AddRange(directoryArguments);
+
+        return false;
+    }
+
+    private static void NormalStartup(string[] args)
+    {
         AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
         AppDomain.CurrentDomain.UnhandledException += OnAppDomainUnhandledException;
         TaskScheduler.UnobservedTaskException += OnTaskSchedulerUnobservedTaskException;
@@ -73,6 +128,7 @@ public static class Program
         {
             Log.CloseAndFlush();
         }
+        
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
@@ -91,12 +147,13 @@ public static class Program
     private static void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
         => HandleUnhandledException(sender, e.Exception);
 
+    [Conditional("DEBUG")]
     private static void HandleUnhandledException(object? sender, Exception? ex, [CallerMemberName] string caller = "")
-        => Log.Warning(
-                ex,
-                "An unhandled exception come from '{Caller}' exception handler from an object of type '{Type}' and value '{Value}': {Exception}",
-                caller,
-                sender?.GetType().ToString() ?? "null",
-                sender?.ToString() ?? "null",
-                ex);
+        => _logger.Debug(
+            ex,
+            "An unhandled exception come from '{Caller}' exception handler from an object of type '{Type}' and value '{Value}': {Exception}",
+            caller,
+            sender?.GetType().ToString() ?? "null",
+            sender?.ToString() ?? "null",
+            ex);
 }

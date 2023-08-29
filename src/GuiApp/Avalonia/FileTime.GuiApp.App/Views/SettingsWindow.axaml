@@ -1,0 +1,43 @@
+﻿<Window
+    Background="{DynamicResource AppBackgroundColor}"
+    Height="500"
+    Title="Settings"
+    Width="600"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="FileTime.GuiApp.App.Views.SettingsWindow"
+    x:CompileBindings="True"
+    x:DataType="settings:ISettingsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:settings="clr-namespace:FileTime.GuiApp.App.Settings"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid RowDefinitions="Auto * Auto">
+        <TabStrip
+            HorizontalAlignment="Center"
+            ItemsSource="{Binding PaneItems}"
+            SelectedItem="{Binding SelectedPaneItem}">
+            <TabStrip.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Header}" />
+                </DataTemplate>
+            </TabStrip.ItemTemplate>
+        </TabStrip>
+        <Grid Grid.Row="1" Margin="10">
+            <StackPanel IsVisible="{Binding SelectedPane, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static settings:SettingsPane.Advanced}}" VerticalAlignment="Top">
+
+                <ToggleSwitch IsChecked="{Binding SetAsDefaultIsChecked, Mode=TwoWay}">
+                    <ToggleSwitch.OnContent>Set as default file browser</ToggleSwitch.OnContent>
+                    <ToggleSwitch.OffContent>Set as default file browser</ToggleSwitch.OffContent>
+                </ToggleSwitch>
+
+                <ToggleSwitch IsChecked="{Binding SetAsWinEHandlerIsChecked, Mode=TwoWay}">
+                    <ToggleSwitch.OnContent>Set Win+E shortcut</ToggleSwitch.OnContent>
+                    <ToggleSwitch.OffContent>Set Win+E shortcut</ToggleSwitch.OffContent>
+                </ToggleSwitch>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

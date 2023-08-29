@@ -1,4 +1,5 @@
 using FileTime.App.Core.Configuration;
+using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.UserCommandHandler;
 using FileTime.App.Core.StartupServices;
@@ -36,6 +37,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<IPossibleCommandsService, PossibleCommandsService>();
         serviceCollection.TryAddSingleton<IPossibleCommandsViewModel, PossibleCommandsViewModel>();
         serviceCollection.TryAddSingleton<IProgramsService, ProgramsService>();
+        serviceCollection.TryAddSingleton(new TabsToOpenOnStart(new List<TabToOpen>()));
 
         return serviceCollection
             .AddCommandHandlers()

@@ -36,6 +36,7 @@ public class TabPersistenceService : ITabPersistenceService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILocalContentProvider _localContentProvider;
     private readonly TabPersistenceSettings _tabPersistenceSettings;
+    private readonly TabsToOpenOnStart _tabsToOpen;
 
     public TabPersistenceService(
         IApplicationSettings applicationSettings,
@@ -44,6 +45,7 @@ public class TabPersistenceService : ITabPersistenceService
         IServiceProvider serviceProvider,
         ILocalContentProvider localContentProvider,
         TabPersistenceSettings tabPersistenceSettings,
+        TabsToOpenOnStart tabsToOpen,
         ILogger<TabPersistenceService> logger)
     {
         _appState = appState;
@@ -53,6 +55,7 @@ public class TabPersistenceService : ITabPersistenceService
         _serviceProvider = serviceProvider;
         _localContentProvider = localContentProvider;
         _tabPersistenceSettings = tabPersistenceSettings;
+        _tabsToOpen = tabsToOpen;
 
         _jsonOptions = new JsonSerializerOptions
         {
@@ -62,22 +65,63 @@ public class TabPersistenceService : ITabPersistenceService
     }
 
     public async Task InitAsync()
-        => await LoadStatesAsync();
+    {
+        var containers = new List<(int? TabNumber, IContainer Container)>();
+
+        foreach (var (requestedTabNumber, nativePath) in _tabsToOpen.TabsToOpen)
+        {
+            if (await _timelessContentProvider.GetItemByNativePathAsync(nativePath) is not IContainer container) continue;
+
+            containers.Add((requestedTabNumber, container));
+        }
+
+        var loadedTabViewModels = await LoadStatesAsync(containers.Count == 0);
+
+        var tabViewModels = new List<ITabViewModel>();
+        foreach (var (requestedTabNumber, container) in containers)
+        {
+            var tabNumber = requestedTabNumber ?? 1;
+
+            if (tabNumber < 1) tabNumber = 1;
+
+            var tabNumbers = _appState.Tabs.Select(t => t.TabNumber).ToHashSet();
+
+            while (tabNumbers.Contains(tabNumber))
+            {
+                tabNumber++;
+            }
+
+            var tab = await _serviceProvider.GetAsyncInitableResolver(container)
+                .GetRequiredServiceAsync<ITab>();
+            var tabViewModel = _serviceProvider.GetInitableResolver(tab, tabNumber).GetRequiredService<ITabViewModel>();
+
+            _appState.AddTab(tabViewModel);
+            tabViewModels.Add(tabViewModel);
+        }
+
+        tabViewModels.Reverse();
+        await _appState.SetSelectedTabAsync(tabViewModels.Concat(loadedTabViewModels).First());
+    }
 
     public Task ExitAsync(CancellationToken token = default)
     {
-        if(!_tabPersistenceSettings.SaveState) return Task.CompletedTask;
+        if (!_tabPersistenceSettings.SaveState) return Task.CompletedTask;
         SaveStates(token);
 
         return Task.CompletedTask;
     }
 
-    private async Task LoadStatesAsync(CancellationToken token = default)
+    private async Task<IEnumerable<ITabViewModel>> LoadStatesAsync(bool createEmptyIfNecessary, CancellationToken token = default)
     {
         if (!File.Exists(_settingsPath) || !_tabPersistenceSettings.LoadState)
         {
-            await CreateEmptyTab();
-            return;
+            if (createEmptyIfNecessary)
+            {
+                var tabViewModel = await CreateEmptyTab();
+                return new[] {tabViewModel};
+            }
+
+            return Enumerable.Empty<ITabViewModel>();
         }
 
         try
@@ -86,7 +130,8 @@ public class TabPersistenceService : ITabPersistenceService
             var state = await JsonSerializer.DeserializeAsync<PersistenceRoot>(stateReader, cancellationToken: token);
             if (state != null)
             {
-                if (await RestoreTabs(state.TabStates)) return;
+                var (success, tabViewModels) = await RestoreTabs(state.TabStates);
+                if (success) return tabViewModels;
             }
         }
         catch (Exception e)
@@ -94,9 +139,15 @@ public class TabPersistenceService : ITabPersistenceService
             _logger.LogError(e, "Unknown exception while restoring app state");
         }
 
-        await CreateEmptyTab();
+        if (createEmptyIfNecessary)
+        {
+            var tabViewModel = await CreateEmptyTab();
+            return new[] {tabViewModel};
+        }
 
-        async Task CreateEmptyTab()
+        return Enumerable.Empty<ITabViewModel>();
+
+        async Task<ITabViewModel> CreateEmptyTab()
         {
             IContainer? currentDirectory = null;
             try
@@ -116,81 +167,75 @@ public class TabPersistenceService : ITabPersistenceService
             var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
 
             _appState.AddTab(tabViewModel);
+
+            return tabViewModel;
         }
     }
 
-    private async Task<bool> RestoreTabs(TabStates? tabStates)
+    private async Task<(bool Success, IEnumerable<ITabViewModel>)> RestoreTabs(TabStates? tabStates)
     {
         if (tabStates == null
             || tabStates.Tabs == null)
         {
-            return false;
+            return (false, Enumerable.Empty<ITabViewModel>());
         }
 
-        try
+        foreach (var tab in tabStates.Tabs)
         {
-            foreach (var tab in tabStates.Tabs)
+            try
             {
-                try
+                if (tab.Path == null) continue;
+                if (_contentProvidersNotToRestore.Any(p => tab.Path.StartsWith(p))) continue;
+
+                IContainer? container = null;
+                var path = FullName.CreateSafe(tab.Path);
+                while (true)
                 {
-                    if (tab.Path == null) continue;
-                    if (_contentProvidersNotToRestore.Any(p => tab.Path.StartsWith(p))) continue;
-
-                    IContainer? container = null;
-                    var path = FullName.CreateSafe(tab.Path);
-                    while (true)
+                    try
                     {
-                        try
-                        {
-                            var pathItem =
-                                await _timelessContentProvider.GetItemByFullNameAsync(path, PointInTime.Present);
+                        var pathItem =
+                            await _timelessContentProvider.GetItemByFullNameAsync(path, PointInTime.Present);
 
-                            container = pathItem switch
-                            {
-                                IContainer c => c,
-                                IElement e =>
-                                    e.Parent is null
-                                        ? null
-                                        : await e.Parent.ResolveAsync() as IContainer,
-                                _ => null
-                            };
-                            break;
-                        }
-                        catch
+                        container = pathItem switch
                         {
-                            path = path?.GetParent();
-                            if (path == null)
-                            {
-                                throw new Exception($"Could not find an initializable path along {tab.Path}");
-                            }
+                            IContainer c => c,
+                            IElement e =>
+                                e.Parent is null
+                                    ? null
+                                    : await e.Parent.ResolveAsync() as IContainer,
+                            _ => null
+                        };
+                        break;
+                    }
+                    catch
+                    {
+                        path = path?.GetParent();
+                        if (path == null)
+                        {
+                            throw new Exception($"Could not find an initializable path along {tab.Path}");
                         }
                     }
-
-                    if (container == null) continue;
-
-                    if (_contentProvidersNotToRestore.Contains(container.Provider.Name)) continue;
-
-                    var tabToLoad = await _serviceProvider.GetAsyncInitableResolver(container)
-                        .GetRequiredServiceAsync<ITab>();
-                    var tabViewModel = _serviceProvider.GetInitableResolver(tabToLoad, tab.Number)
-                        .GetRequiredService<ITabViewModel>();
-
-                    _appState.AddTab(tabViewModel);
                 }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Unknown exception while restoring tab. {TabState}",
-                        JsonSerializer.Serialize(tab, _jsonOptions));
-                }
+
+                if (container == null) continue;
+
+                if (_contentProvidersNotToRestore.Contains(container.Provider.Name)) continue;
+
+                var tabToLoad = await _serviceProvider.GetAsyncInitableResolver(container)
+                    .GetRequiredServiceAsync<ITab>();
+                var tabViewModel = _serviceProvider.GetInitableResolver(tabToLoad, tab.Number)
+                    .GetRequiredService<ITabViewModel>();
+
+                _appState.AddTab(tabViewModel);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Unknown exception while restoring tab. {TabState}",
+                    JsonSerializer.Serialize(tab, _jsonOptions));
             }
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Unknown exception while restoring tabs");
-            return false;
-        }
 
-        if (_appState.Tabs.Count == 0) return false;
+        if (_appState.Tabs.Count == 0) return (false, Enumerable.Empty<ITabViewModel>());
 
         var optimalTabs = _appState
             .Tabs
@@ -200,10 +245,7 @@ public class TabPersistenceService : ITabPersistenceService
             .Tabs
             .SkipWhile(t => t.TabNumber <= tabStates.ActiveTabNumber);
 
-        var tabToActivate = optimalTabs.Concat(suboptimalTabs).FirstOrDefault();
-        if (tabToActivate is not null) await _appState.SetSelectedTabAsync(tabToActivate);
-
-        return true;
+        return (true, optimalTabs.Concat(suboptimalTabs));
     }
 
     public void SaveStates(CancellationToken token = default)

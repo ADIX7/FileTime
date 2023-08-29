@@ -1,12 +1,14 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
 using FileTime.GuiApp.App.Services;
+using FileTime.GuiApp.App.Settings;
 using FileTime.GuiApp.App.ViewModels;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +70,7 @@ public partial class MainWindow : Window, IUiAccessor
             {
                 var viewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
                 viewModel.FocusDefaultElement = () => Focus();
+                viewModel.ShowWindow = Activate;
                 ViewModel = viewModel;
             }
             catch (Exception ex)
@@ -128,17 +131,6 @@ public partial class MainWindow : Window, IUiAccessor
             {
                 path = placeInfoPath;
             }
-            /*else if (control.DataContext is IElement element && element.GetParent() is IContainer parentContainer)
-            {
-                Task.Run(async () =>
-                {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        await ViewModel.AppState.SelectedTab.OpenContainer(parentContainer);
-                        await ViewModel.AppState.SelectedTab.SetCurrentSelectedItem(element);
-                    });
-                });
-            }*/
 
             if (path is null) return;
 
@@ -252,5 +244,14 @@ public partial class MainWindow : Window, IUiAccessor
                 Dispatcher.UIThread.Invoke(Close);
             });
         }
+    }
+
+    private void SettingsButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var settingsWindow = new SettingsWindow
+        {
+            DataContext = DI.ServiceProvider.GetRequiredService<ISettingsViewModel>()
+        };
+        settingsWindow.ShowDialog(this);
     }
 }

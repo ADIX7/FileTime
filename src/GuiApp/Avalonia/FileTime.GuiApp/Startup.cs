@@ -7,8 +7,10 @@ using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
 using FileTime.GuiApp.CustomImpl.ViewModels;
 using FileTime.GuiApp.App.IconProviders;
+using FileTime.GuiApp.App.InstanceManagement;
 using FileTime.GuiApp.App.Logging;
 using FileTime.GuiApp.App.Services;
+using FileTime.GuiApp.App.Settings;
 using FileTime.GuiApp.App.ViewModels;
 using FileTime.Providers.Local;
 using Microsoft.Extensions.Configuration;
@@ -46,6 +48,7 @@ public static class Startup
         serviceCollection.TryAddSingleton<GuiAppState>();
         serviceCollection.TryAddSingleton<IAppState>(s => s.GetRequiredService<GuiAppState>());
         serviceCollection.TryAddSingleton<IGuiAppState>(s => s.GetRequiredService<GuiAppState>());
+        serviceCollection.TryAddSingleton<ISettingsViewModel, SettingsViewModel>();
         return serviceCollection;
     }
     
@@ -67,6 +70,11 @@ public static class Startup
         serviceCollection.TryAddSingleton<IUserCommunicationService>(s => s.GetRequiredService<IDialogService>());
         serviceCollection.TryAddSingleton<IAppKeyService<Key>, GuiAppKeyService>();
         serviceCollection.TryAddSingleton(new ApplicationConfiguration(false));
+        serviceCollection.TryAddSingleton<IDefaultBrowserRegister, DefaultBrowserRegister>();
+        serviceCollection.TryAddSingleton<IInstanceManager, InstanceManager>();
+        serviceCollection.TryAddSingleton<IInstanceMessageHandler, InstanceMessageHandler>();
+        serviceCollection.AddSingleton<IStartupHandler>(sp => sp.GetRequiredService<IInstanceManager>());
+        serviceCollection.AddSingleton<IExitHandler>(sp => sp.GetRequiredService<IInstanceManager>());
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

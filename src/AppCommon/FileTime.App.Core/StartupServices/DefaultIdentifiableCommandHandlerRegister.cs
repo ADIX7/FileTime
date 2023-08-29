@@ -13,8 +13,8 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
 
         AddUserCommand(AddRemoteContentProviderCommand.Instance);
         AddUserCommand(CloseTabCommand.Instance);
-        AddUserCommand(CopyCommand.Instance);
         AddUserCommand(CopyBase64Command.Instance);
+        AddUserCommand(CopyCommand.Instance);
         AddUserCommand(CopyFilesToClipboardCommand.Instance);
         AddUserCommand(CopyNativePathCommand.Instance);
         AddUserCommand(CreateContainer.Instance);
@@ -32,6 +32,9 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(GoToProviderCommand.Instance);
         AddUserCommand(GoToRootCommand.Instance);
         AddUserCommand(GoUpCommand.Instance);
+        AddUserCommand(IdentifiableRunOrOpenCommand.Instance);
+        AddUserCommand(IdentifiableSearchCommand.SearchByNameContains);
+        AddUserCommand(IdentifiableSearchCommand.SearchByRegex);
         AddUserCommand(MarkCommand.Instance);
         AddUserCommand(MoveCursorDownCommand.Instance);
         AddUserCommand(MoveCursorDownPageCommand.Instance);
@@ -39,6 +42,7 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(MoveCursorToLastCommand.Instance);
         AddUserCommand(MoveCursorUpCommand.Instance);
         AddUserCommand(MoveCursorUpPageCommand.Instance);
+        AddUserCommand(IdentifiableNewTabCommand.Instance);
         AddUserCommand(OpenCommandPaletteCommand.Instance);
         AddUserCommand(OpenInDefaultFileExplorerCommand.Instance);
         AddUserCommand(OpenSelectedCommand.Instance);
@@ -51,19 +55,18 @@ public class DefaultIdentifiableCommandHandlerRegister : IStartupHandler
         AddUserCommand(PauseCommandSchedulerCommand.Instance);
         AddUserCommand(RefreshCommand.Instance);
         AddUserCommand(RenameCommand.Instance);
-        AddUserCommand(IdentifiableRunOrOpenCommand.Instance);
         AddUserCommand(ScanSizeCommand.Instance);
-        AddUserCommand(StartCommandSchedulerCommand.Instance);
-        AddUserCommand(SortItemsCommand.OrderByNameCommand);
-        AddUserCommand(SortItemsCommand.OrderByNameDescCommand);
+        AddUserCommand(SelectNextTabCommand.Instance);
+        AddUserCommand(SelectPreviousTabCommand.Instance);
         AddUserCommand(SortItemsCommand.OrderByCreatedAtCommand);
         AddUserCommand(SortItemsCommand.OrderByCreatedAtDescCommand);
         AddUserCommand(SortItemsCommand.OrderByLastModifiedCommand);
         AddUserCommand(SortItemsCommand.OrderByLastModifiedDescCommand);
+        AddUserCommand(SortItemsCommand.OrderByNameCommand);
+        AddUserCommand(SortItemsCommand.OrderByNameDescCommand);
         AddUserCommand(SortItemsCommand.OrderBySizeCommand);
         AddUserCommand(SortItemsCommand.OrderBySizeDescCommand);
-        AddUserCommand(IdentifiableSearchCommand.SearchByNameContains);
-        AddUserCommand(IdentifiableSearchCommand.SearchByRegex);
+        AddUserCommand(StartCommandSchedulerCommand.Instance);
         AddUserCommand(SwitchToTabCommand.SwitchToLastTab);
         AddUserCommand(SwitchToTabCommand.SwitchToTab1);
         AddUserCommand(SwitchToTabCommand.SwitchToTab2);

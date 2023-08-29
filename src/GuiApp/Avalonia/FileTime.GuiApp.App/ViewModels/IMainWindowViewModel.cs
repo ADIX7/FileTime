@@ -20,5 +20,6 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     IClipboardService ClipboardService { get; }
     ITimelineViewModel TimelineViewModel { get; }
     IPossibleCommandsViewModel PossibleCommands { get; }
+    Action? ShowWindow { get; set; }
     Task RunOrOpenItem(IItemViewModel itemViewModel);
 }

@@ -1,10 +1,13 @@
+using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FileTime.App.CommandPalette;
 using FileTime.App.ContainerSizeScanner;
+using FileTime.App.Core.Models;
 using FileTime.App.DependencyInjection;
 using FileTime.App.FrequencyNavigation;
 using FileTime.App.Search;
+using FileTime.Core.Models;
 using FileTime.GuiApp.App;
 using FileTime.GuiApp.App.Font;
 using FileTime.GuiApp.App.ViewModels;
@@ -21,7 +24,7 @@ public class Application : Avalonia.Application
     private static void InitializeApp()
     {
         var configuration = Startup.CreateConfiguration();
-        DI.ServiceProvider = DependencyInjection
+        var services = DependencyInjection
             .RegisterDefaultServices(configuration: configuration)
             .AddServerCoreServices()
             .AddFrequencyNavigation()
@@ -33,8 +36,21 @@ public class Application : Avalonia.Application
             .RegisterLogging()
             .RegisterGuiServices()
             .AddSettings()
-            .AddViewModels()
-            .BuildServiceProvider();
+            .AddViewModels();
+
+        if (Program.DirectoriesToOpen.Count > 0)
+        {
+            services.AddSingleton(
+                new TabsToOpenOnStart(
+                    Program
+                        .DirectoriesToOpen
+                        .Select(d => new TabToOpen(null, new NativePath(d)))
+                        .ToList()
+                )
+            );
+        }
+
+        DI.ServiceProvider = services.BuildServiceProvider();
 
         var logger = DI.ServiceProvider.GetRequiredService<ILogger<Application>>();
         logger.LogInformation("App initialization completed");

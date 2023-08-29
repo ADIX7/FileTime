@@ -71,10 +71,15 @@ public class SystemClipboardService : ISystemClipboardService
             return;
         }
 
-        var fileNativePaths = files
-            .Select(i => _timelessContentProvider.GetNativePathByFullNameAsync(i))
-            .Where(i => i != null)
-            .OfType<NativePath>();
+        var fileNativePaths = new List<NativePath>();
+        foreach (var file in files)
+        {
+            var fileNativePath = await _timelessContentProvider.GetNativePathByFullNameAsync(file);
+            if (fileNativePath is not null)
+            {
+                fileNativePaths.Add(fileNativePath);
+            }
+        }
 
         var targetFiles = new List<IStorageFile>();
         foreach (var fileNativePath in fileNativePaths)

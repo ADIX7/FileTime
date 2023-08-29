@@ -1,25 +1,7 @@
 <Window
-    Background="Transparent"
-    Closed="Window_OnClosed"
-    Closing="Window_OnClosing"
-    ExtendClientAreaToDecorationsHint="True"
-    FontFamily="{Binding MainFont^, Mode=OneWay}"
-    Icon="/Assets/filetime.ico"
-    KeyDown="OnKeyDown"
-    MinHeight="800"
-    MinWidth="1000"
-    Opened="OnWindowOpened"
-    RequestedThemeVariant="Dark"
-    Title="FileTime"
-    TransparencyLevelHint="{Binding TransparencyLevelHint}"
-    d:DataContext="vm:MainWindowDesignViewModel"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    mc:Ignorable="d"
     x:Class="FileTime.GuiApp.App.Views.MainWindow"
-    x:CompileBindings="True"
-    x:DataType="vm:IMainWindowViewModelBase"
     xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -33,7 +15,25 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sizePreview="clr-namespace:FileTime.App.ContainerSizeScanner;assembly=FileTime.App.ContainerSizeScanner"
     xmlns:vm="using:FileTime.GuiApp.App.ViewModels"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    Title="FileTime"
+    MinWidth="1000"
+    MinHeight="800"
+    d:DataContext="vm:MainWindowDesignViewModel"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:CompileBindings="True"
+    x:DataType="vm:IMainWindowViewModelBase"
+    Background="Transparent"
+    Closed="Window_OnClosed"
+    Closing="Window_OnClosing"
+    ExtendClientAreaToDecorationsHint="True"
+    FontFamily="{Binding MainFont^, Mode=OneWay}"
+    Icon="/Assets/filetime.ico"
+    KeyDown="OnKeyDown"
+    Opened="OnWindowOpened"
+    RequestedThemeVariant="Dark"
+    TransparencyLevelHint="{Binding TransparencyLevelHint}"
+    mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -49,69 +49,85 @@
 
     <Grid>
         <Grid
+            x:DataType="vm:IMainWindowViewModel"
             Background="{DynamicResource AppBackgroundBrush}"
-            IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
-            x:DataType="vm:IMainWindowViewModel">
+            IsVisible="{Binding Loading, Converter={x:Static BoolConverters.Not}, FallbackValue=False}">
 
-            <Grid ColumnDefinitions="250,*" RowDefinitions="Auto,*">
+            <Grid
+                ColumnDefinitions="250,*"
+                RowDefinitions="Auto,*">
 
                 <Grid PointerPressed="HeaderPointerPressed">
                     <Rectangle Fill="#01000000" />
-                    <TextBlock Margin="15,10" Text="{Binding Title.Value}" />
+                    <TextBlock
+                        Margin="15,10"
+                        Text="{Binding Title.Value}" />
                 </Grid>
 
-                <Grid Grid.Column="1" PointerPressed="HeaderPointerPressed">
+                <Grid
+                    Grid.Column="1"
+                    PointerPressed="HeaderPointerPressed">
                     <Rectangle Fill="#01000000" />
 
                     <Grid ColumnDefinitions="*, Auto">
-                        <StackPanel Margin="20,10" Orientation="Horizontal">
+                        <StackPanel
+                            Margin="20,10"
+                            Orientation="Horizontal">
                             <local:PathPresenter DataContext="{Binding AppState.SelectedTab.Value.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
-                            <TextBlock Foreground="{StaticResource AccentBrush}" Text="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.DisplayNameText}" />
+                            <TextBlock
+                                Foreground="{StaticResource AccentBrush}"
+                                Text="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.DisplayNameText}" />
                         </StackPanel>
                         <StackPanel
                             Grid.Column="1"
                             Margin="20,10,160,10"
                             Orientation="Vertical">
                             <Image
+                                Width="20"
                                 Height="20"
+                                Margin="10,0,0,0"
                                 HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
                                 IsVisible="{Binding AdminElevationManager.IsAdminInstanceRunning}"
-                                Margin="10,0,0,0"
-                                Source="{SvgImage /Assets/material/security.svg}"
-                                VerticalAlignment="Center"
-                                Width="20" />
+                                Source="{SvgImage /Assets/material/security.svg}" />
                             <Image
+                                Width="20"
                                 Height="20"
+                                Margin="10,0,0,0"
                                 HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
                                 IsVisible="{Binding ClipboardService.Content.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=1}"
-                                Margin="10,0,0,0"
-                                Source="{SvgImage /Assets/material/clipboard-outline.svg}"
-                                VerticalAlignment="Center"
-                                Width="20" />
+                                Source="{SvgImage /Assets/material/clipboard-outline.svg}" />
                             <Image
+                                Width="20"
                                 Height="20"
-                                HorizontalAlignment="Left"
-                                IsVisible="{Binding ClipboardService.Content.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=1}"
                                 Margin="10,0,0,0"
-                                Source="{SvgImage /Assets/material/clipboard-multiple-outline.svg}"
+                                HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Width="20" />
+                                IsVisible="{Binding ClipboardService.Content.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=1}"
+                                Source="{SvgImage /Assets/material/clipboard-multiple-outline.svg}" />
                         </StackPanel>
                     </Grid>
                 </Grid>
 
-                <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid
+                    Grid.Row="1"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
 
                     <Border
-                        Background="{DynamicResource ContainerBackgroundBrush}"
-                        CornerRadius="10"
                         Margin="10"
-                        Padding="10">
+                        Padding="10"
+                        Background="{DynamicResource ContainerBackgroundBrush}"
+                        CornerRadius="10">
                         <Grid RowDefinitions="Auto,Auto">
 
-                            <TextBlock Margin="0,0,0,10" Text="Drives" />
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                Text="Drives" />
 
-                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.RootDriveInfos}">
+                            <ItemsRepeater
+                                Grid.Row="1"
+                                ItemsSource="{Binding AppState.RootDriveInfos}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="local1:RootDriveInfo">
                                         <Grid
@@ -119,66 +135,66 @@
                                             Cursor="Hand"
                                             PointerPressed="OnHasContainerPointerPressed">
                                             <Grid
-                                                ColumnDefinitions="Auto,*,Auto"
                                                 Margin="0,5"
+                                                ColumnDefinitions="Auto,*,Auto"
                                                 RowDefinitions="Auto,Auto">
                                                 <Image
                                                     Grid.RowSpan="2"
+                                                    Width="20"
                                                     Height="20"
                                                     HorizontalAlignment="Left"
-                                                    Source="{SvgImage /Assets/material/folder.svg}"
                                                     VerticalAlignment="Center"
-                                                    Width="20" />
+                                                    Source="{SvgImage /Assets/material/folder.svg}" />
 
                                                 <StackPanel
                                                     Grid.Column="1"
                                                     HorizontalAlignment="Stretch"
-                                                    Orientation="Horizontal"
-                                                    VerticalAlignment="Center">
+                                                    VerticalAlignment="Center"
+                                                    Orientation="Horizontal">
 
                                                     <TextBlock
                                                         Margin="5,0,0,0"
-                                                        Text="{Binding FullName}"
-                                                        VerticalAlignment="Center" />
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding FullName}" />
 
                                                     <TextBlock
+                                                        Margin="5,0,0,0"
+                                                        VerticalAlignment="Center"
                                                         Classes="ExtraSmallText"
                                                         IsVisible="{Binding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                                        Margin="5,0,0,0"
-                                                        Text="{Binding Label}"
-                                                        VerticalAlignment="Center" />
+                                                        Text="{Binding Label}" />
                                                 </StackPanel>
 
                                                 <StackPanel
                                                     Grid.Column="2"
                                                     HorizontalAlignment="Right"
-                                                    Orientation="Horizontal"
-                                                    VerticalAlignment="Center">
+                                                    VerticalAlignment="Center"
+                                                    Orientation="Horizontal">
 
                                                     <TextBlock
+                                                        VerticalAlignment="Center"
                                                         Classes="SmallText"
-                                                        Text="{Binding Free, Converter={StaticResource FormatSizeConverter}}"
-                                                        VerticalAlignment="Center" />
+                                                        Text="{Binding Free, Converter={StaticResource FormatSizeConverter}}" />
 
                                                     <TextBlock
+                                                        VerticalAlignment="Center"
                                                         Classes="SmallText"
-                                                        Text=" / "
-                                                        VerticalAlignment="Center" />
+                                                        Text=" / " />
 
                                                     <TextBlock
+                                                        VerticalAlignment="Center"
                                                         Classes="SmallText"
-                                                        Text="{Binding Size, Converter={StaticResource FormatSizeConverter}}"
-                                                        VerticalAlignment="Center" />
+                                                        Text="{Binding Size, Converter={StaticResource FormatSizeConverter}}" />
                                                 </StackPanel>
 
                                                 <ProgressBar
+                                                    Grid.Row="1"
                                                     Grid.Column="1"
                                                     Grid.ColumnSpan="2"
-                                                    Grid.Row="1"
-                                                    HorizontalAlignment="Stretch"
-                                                    Margin="5,0,0,0"
-                                                    Maximum="100"
                                                     MinWidth="100"
+                                                    Margin="5,0,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Maximum="100"
                                                     Value="{Binding UsedPercentage}" />
                                             </Grid>
                                         </Grid>
@@ -189,16 +205,20 @@
                     </Border>
 
                     <Border
-                        Background="{DynamicResource ContainerBackgroundBrush}"
-                        CornerRadius="10"
                         Grid.Row="1"
                         Margin="10"
-                        Padding="0,10">
+                        Padding="0,10"
+                        Background="{DynamicResource ContainerBackgroundBrush}"
+                        CornerRadius="10">
                         <Grid RowDefinitions="Auto,Auto">
 
-                            <TextBlock Margin="10,0,10,10" Text="Places" />
+                            <TextBlock
+                                Margin="10,0,10,10"
+                                Text="Places" />
 
-                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.Places}">
+                            <ItemsRepeater
+                                Grid.Row="1"
+                                ItemsSource="{Binding AppState.Places}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:PlaceInfo">
                                         <Grid
@@ -206,19 +226,19 @@
                                             Cursor="Hand"
                                             PointerPressed="OnHasContainerPointerPressed">
                                             <StackPanel
-                                                HorizontalAlignment="Stretch"
                                                 Margin="10,5"
+                                                HorizontalAlignment="Stretch"
                                                 Orientation="Horizontal">
                                                 <Image
+                                                    Width="20"
                                                     Height="20"
-                                                    Source="{Binding Container, Converter={StaticResource ItemToImageConverter}}"
                                                     VerticalAlignment="Center"
-                                                    Width="20" />
+                                                    Source="{Binding Container, Converter={StaticResource ItemToImageConverter}}" />
 
                                                 <TextBlock
                                                     Margin="5,0,0,0"
-                                                    Text="{Binding DisplayName}"
-                                                    VerticalAlignment="Center" />
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding DisplayName}" />
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
@@ -227,81 +247,29 @@
                         </Grid>
                     </Border>
 
-                    <!--Border Grid.Row="2" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
-						<Grid RowDefinitions="Auto,Auto">
-
-							<TextBlock
-								Margin="10,0,10,10"
-								Text="Favorites" />
-
-							<ItemsRepeater
-								Grid.Row="1"
-								Items="{Binding AppState.FavoriteElements}">
-								<ItemsRepeater.ItemTemplate>
-									<DataTemplate>
-										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
-											<StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
-												<Image
-													Width="20"
-													Height="20"
-													VerticalAlignment="Center"
-													Source="{Binding Converter={StaticResource ItemToImageConverter}}" />
-
-												<TextBlock
-													Margin="5,0,0,0"
-													VerticalAlignment="Center"
-													Text="{Binding Name}" />
-											</StackPanel>
-										</Grid>
-									</DataTemplate>
-								</ItemsRepeater.ItemTemplate>
-							</ItemsRepeater>
-						</Grid>
-					</Border>
-
-					<Border Grid.Row="3" CornerRadius="10" Background="{DynamicResource ContainerBackgroundBrush}" Padding="0,10" Margin="10">
-						<Grid RowDefinitions="Auto,Auto">
-
-							<TextBlock
-								Margin="10,0,10,10"
-								Text="History" />
-
-							<ItemsRepeater
-								Grid.Row="1"
-								Items="{Binding AppState.SelectedTab.History}">
-								<ItemsRepeater.ItemTemplate>
-									<DataTemplate>
-										<Grid Classes="SidebarContainerPresenter" PointerPressed="OnHasContainerPointerPressed" Cursor="Hand">
-											<StackPanel Orientation="Horizontal" Margin="10,5" HorizontalAlignment="Stretch">
-												<Image
-													Width="20"
-													Height="20"
-													VerticalAlignment="Center"
-													Source="{Binding Container,Converter={StaticResource ItemToImageConverter}}" />
-
-												<TextBlock
-													Margin="5,0,0,0"
-													VerticalAlignment="Center"
-													Text="{Binding Name}" />
-											</StackPanel>
-										</Grid>
-									</DataTemplate>
-								</ItemsRepeater.ItemTemplate>
-							</ItemsRepeater>
-						</Grid>
-					</Border-->
+                    <Border
+                        Grid.Row="2"
+                        Margin="10"
+                        Padding="10"
+                        VerticalAlignment="Bottom"
+                        Background="{DynamicResource ContainerBackgroundBrush}"
+                        CornerRadius="10">
+                        <Button Click="SettingsButton_OnClick">Settings</Button>
+                    </Border>
 
                 </Grid>
 
                 <Grid
-                    Grid.Column="1"
                     Grid.Row="1"
+                    Grid.Column="1"
                     RowDefinitions="Auto,40,*,Auto">
 
                     <Grid x:Name="CommandGroupsContainer">
                         <Grid.Transitions>
                             <Transitions>
-                                <DoubleTransition Duration="0:0:.2" Property="Height" />
+                                <DoubleTransition
+                                    Property="Height"
+                                    Duration="0:0:.2" />
                             </Transitions>
                         </Grid.Transitions>
                         <i:Interaction.Behaviors>
@@ -325,9 +293,9 @@
                             </ia:DataTriggerBehavior>
                         </i:Interaction.Behaviors>
                         <ItemsControl
-                            ItemsSource="{Binding TimelineViewModel.ParallelCommandsGroups}"
+                            x:Name="CommandGroups"
                             VerticalAlignment="Stretch"
-                            x:Name="CommandGroups">
+                            ItemsSource="{Binding TimelineViewModel.ParallelCommandsGroups}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal" />
@@ -335,55 +303,67 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="300,10" VerticalAlignment="Stretch">
+                                    <Grid
+                                        VerticalAlignment="Stretch"
+                                        ColumnDefinitions="300,10">
                                         <ScrollViewer>
                                             <ItemsControl ItemsSource="{Binding Commands}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border
+                                                            Margin="0,0,10,0"
+                                                            Padding="5"
+                                                            VerticalAlignment="Top"
                                                             Background="{DynamicResource ContainerBackgroundColor}"
                                                             BorderThickness="1"
                                                             Classes.SelectedTimelineCommand="{Binding IsSelected}"
-                                                            CornerRadius="10"
-                                                            Margin="0,0,10,0"
-                                                            Padding="5"
-                                                            VerticalAlignment="Top">
-                                                            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
-                                                                <Grid ColumnDefinitions="*, Auto" Grid.ColumnSpan="2">
+                                                            CornerRadius="10">
+                                                            <Grid
+                                                                ColumnDefinitions="*, *"
+                                                                RowDefinitions="Auto, Auto">
+                                                                <Grid
+                                                                    Grid.ColumnSpan="2"
+                                                                    ColumnDefinitions="*, Auto">
                                                                     <TextBlock Text="{Binding DisplayLabel.Value}" />
 
-                                                                    <Button Command="{Binding Cancel}" Grid.Column="1">
+                                                                    <Button
+                                                                        Grid.Column="1"
+                                                                        Command="{Binding Cancel}">
                                                                         <Image
+                                                                            Width="20"
                                                                             Height="20"
                                                                             HorizontalAlignment="Left"
-                                                                            Source="{SvgImage /Assets/material/close-octagon.svg}"
                                                                             VerticalAlignment="Center"
-                                                                            Width="20" />
+                                                                            Source="{SvgImage /Assets/material/close-octagon.svg}" />
                                                                     </Button>
                                                                 </Grid>
 
                                                                 <StackPanel
-                                                                    Grid.Column="0"
                                                                     Grid.Row="1"
+                                                                    Grid.Column="0"
                                                                     Margin="0,5,5,5">
-                                                                    <TextBlock Text="{Binding DisplayDetailLabel.Value}" TextAlignment="Right" />
+                                                                    <TextBlock
+                                                                        Text="{Binding DisplayDetailLabel.Value}"
+                                                                        TextAlignment="Right" />
 
                                                                     <ProgressBar
+                                                                        MinWidth="50"
                                                                         Margin="0,5,0,0"
                                                                         Maximum="100"
-                                                                        MinWidth="50"
                                                                         Value="{Binding CurrentProgress.Value}" />
                                                                 </StackPanel>
                                                                 <StackPanel
-                                                                    Grid.Column="1"
                                                                     Grid.Row="1"
+                                                                    Grid.Column="1"
                                                                     Margin="5,5,0,5">
-                                                                    <TextBlock Text="{Binding TotalProgress.Value, StringFormat={}{0}%}" TextAlignment="Right" />
+                                                                    <TextBlock
+                                                                        Text="{Binding TotalProgress.Value, StringFormat={}{0}%}"
+                                                                        TextAlignment="Right" />
 
                                                                     <ProgressBar
+                                                                        MinWidth="50"
                                                                         Margin="0,5,0,0"
                                                                         Maximum="100"
-                                                                        MinWidth="50"
                                                                         Value="{Binding TotalProgress.Value}" />
                                                                 </StackPanel>
                                                             </Grid>
@@ -394,19 +374,21 @@
                                         </ScrollViewer>
 
                                         <Rectangle
-                                            Fill="{DynamicResource ContentSeparatorBrush}"
                                             Grid.Column="1"
-                                            HorizontalAlignment="Center"
+                                            Width="1"
                                             Margin="0,10,0,10"
+                                            HorizontalAlignment="Center"
                                             VerticalAlignment="Stretch"
-                                            Width="1" />
+                                            Fill="{DynamicResource ContentSeparatorBrush}" />
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </Grid>
 
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding AppState.Tabs}">
+                    <ItemsControl
+                        Grid.Row="1"
+                        ItemsSource="{Binding AppState.Tabs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />
@@ -415,26 +397,32 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid RowDefinitions="Auto,1">
-                                    <StackPanel Margin="20,0,20,0" Orientation="Horizontal">
+                                    <StackPanel
+                                        Margin="20,0,20,0"
+                                        Orientation="Horizontal">
 
-                                        <TextBlock Text="{Binding TabNumber, StringFormat=({0})}" VerticalAlignment="Center" />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{Binding TabNumber, StringFormat=({0})}" />
 
                                         <TextBlock
                                             Margin="5,0,0,0"
-                                            Text="{Binding CurrentLocation.Value.Name, FallbackValue=Loading...}"
-                                            VerticalAlignment="Center" />
+                                            VerticalAlignment="Center"
+                                            Text="{Binding CurrentLocation.Value.Name, FallbackValue=Loading...}" />
                                     </StackPanel>
 
                                     <Rectangle
-                                        Fill="{DynamicResource ForegroundBrush}"
                                         Grid.Row="1"
+                                        Fill="{DynamicResource ForegroundBrush}"
                                         IsVisible="{Binding IsSelected.Value}" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <Grid Grid.Row="2" Margin="20,0,0,0">
+                    <Grid
+                        Grid.Row="2"
+                        Margin="20,0,0,0">
                         <Grid ColumnDefinitions="15*,10,40*,10,45*">
 
                             <ListBox
@@ -455,31 +443,33 @@
                             </ListBox>
 
                             <Rectangle
-                                Fill="{DynamicResource ContentSeparatorBrush}"
                                 Grid.Column="1"
-                                HorizontalAlignment="Center"
+                                Width="1"
                                 Margin="0,10,0,10"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Stretch"
-                                Width="1" />
+                                Fill="{DynamicResource ContentSeparatorBrush}" />
 
-                            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                            <Grid
+                                Grid.Column="2"
+                                RowDefinitions="Auto,*">
                                 <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentLocation.Value.IsLoading^, FallbackValue=False}">
                                     <Image
-                                        Classes="LoadingAnimation"
+                                        Width="40"
                                         Height="40"
-                                        Source="{SvgImage /Assets/loading.svg}"
-                                        Width="40" />
+                                        Classes="LoadingAnimation"
+                                        Source="{SvgImage /Assets/loading.svg}" />
                                 </Grid>
                                 <ListBox
+                                    x:Name="CurrentItems"
+                                    Grid.Row="1"
                                     AutoScrollToSelectedItem="True"
                                     Classes="ContentListView"
-                                    Grid.Row="1"
                                     IsTabStop="True"
                                     ItemsSource="{Binding AppState.SelectedTab.Value.CurrentItems.Value}"
                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                    SelectedItem="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value}"
-                                    x:Name="CurrentItems">
+                                    SelectedItem="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value}">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="corevm:IItemViewModel">
                                             <local:ItemView
@@ -491,24 +481,24 @@
                                 </ListBox>
 
                                 <TextBlock
+                                    x:Name="CurrentEmpty"
+                                    Grid.Row="1"
+                                    Margin="10"
+                                    HorizontalAlignment="Center"
                                     FontWeight="Bold"
                                     Foreground="{DynamicResource ErrorBrush}"
-                                    Grid.Row="1"
-                                    HorizontalAlignment="Center"
-                                    IsVisible="{Binding AppState.SelectedTab.Value.CurrentItems.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
-                                    Margin="10"
-                                    x:Name="CurrentEmpty">
+                                    IsVisible="{Binding AppState.SelectedTab.Value.CurrentItems.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}">
                                     Empty
                                 </TextBlock>
                             </Grid>
 
                             <Rectangle
-                                Fill="{DynamicResource ContentSeparatorBrush}"
                                 Grid.Column="3"
-                                HorizontalAlignment="Center"
+                                Width="1"
                                 Margin="0,10,0,10"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Stretch"
-                                Width="1" />
+                                Fill="{DynamicResource ContentSeparatorBrush}" />
 
                             <Grid Grid.Column="4">
                                 <Grid IsVisible="{Binding ItemPreviewService.ItemPreview.Value, Converter={x:Static ObjectConverters.IsNull}}">
@@ -517,31 +507,33 @@
 
                                             <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentSelectedItemAsContainer.Value.Container.IsLoading^, FallbackValue=False}">
                                                 <Image
-                                                    Classes="LoadingAnimation"
+                                                    Width="40"
                                                     Height="40"
-                                                    Source="{SvgImage /Assets/loading.svg}"
-                                                    Width="40" />
+                                                    Classes="LoadingAnimation"
+                                                    Source="{SvgImage /Assets/loading.svg}" />
                                             </Grid>
 
 
-                                            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab.Value.CurrentLocation.Value.Exceptions}">
+                                            <ItemsRepeater
+                                                Grid.Row="1"
+                                                ItemsSource="{Binding AppState.SelectedTab.Value.CurrentLocation.Value.Exceptions}">
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate>
                                                         <TextBlock
-                                                            Classes="ErrorText"
                                                             Margin="5,0,5,10"
+                                                            Classes="ErrorText"
                                                             Text="{Binding Converter={StaticResource ExceptionToStringConverter}}" />
                                                     </DataTemplate>
                                                 </ItemsRepeater.ItemTemplate>
                                             </ItemsRepeater>
 
                                             <ListBox
+                                                x:Name="ChildItems"
+                                                Grid.Row="2"
                                                 AutoScrollToSelectedItem="True"
                                                 Classes="ContentListView"
-                                                Grid.Row="2"
                                                 IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}"
-                                                ItemsSource="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value}"
-                                                x:Name="ChildItems">
+                                                ItemsSource="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value}">
                                                 <ListBox.ItemTemplate>
                                                     <DataTemplate x:DataType="corevm:IItemViewModel">
                                                         <local:ItemView />
@@ -551,37 +543,43 @@
                                         </Grid>
 
                                         <TextBlock
+                                            x:Name="ChildEmpty"
+                                            Margin="10"
+                                            HorizontalAlignment="Center"
                                             FontWeight="Bold"
                                             Foreground="{DynamicResource ErrorBrush}"
-                                            HorizontalAlignment="Center"
-                                            IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}"
-                                            Margin="10"
-                                            x:Name="ChildEmpty">
+                                            IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value.Count, Converter={StaticResource EqualsConverter}, ConverterParameter=0}">
                                             Empty
                                         </TextBlock>
                                     </Grid>
 
-                                    <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.BaseItem.Exceptions.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0, FallbackValue=False}" RowDefinitions="Auto, Auto">
+                                    <Grid
+                                        IsVisible="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.BaseItem.Exceptions.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0, FallbackValue=False}"
+                                        RowDefinitions="Auto, Auto">
                                         <TextBlock
-                                            Foreground="{DynamicResource ErrorBrush}"
-                                            HorizontalAlignment="Center"
                                             Margin="0,0,0,10"
+                                            HorizontalAlignment="Center"
+                                            Foreground="{DynamicResource ErrorBrush}"
                                             Text="There were some errors while opening container."
                                             TextWrapping="Wrap" />
 
-                                        <ItemsRepeater Grid.Row="1" ItemsSource="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.BaseItem.Exceptions}">
+                                        <ItemsRepeater
+                                            Grid.Row="1"
+                                            ItemsSource="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.BaseItem.Exceptions}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock
-                                                        Classes="ErrorText"
                                                         Margin="5,0,5,10"
+                                                        Classes="ErrorText"
                                                         Text="{Binding Converter={StaticResource ExceptionToStringConverter}}" />
                                                 </DataTemplate>
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>
                                     </Grid>
                                 </Grid>
-                                <Grid DataContext="{Binding ItemPreviewService.ItemPreview.Value}" IsVisible="{Binding FallbackValue=false, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <Grid
+                                    DataContext="{Binding ItemPreviewService.ItemPreview.Value}"
+                                    IsVisible="{Binding FallbackValue=false, Converter={x:Static ObjectConverters.IsNotNull}}">
                                     <Grid IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static itemPreview:ElementPreviewViewModel.PreviewName}}">
                                         <Grid x:DataType="itemPreviewInterface:IElementPreviewViewModel">
                                             <TextBlock
@@ -592,9 +590,13 @@
                                                 HorizontalAlignment="Center"
                                                 IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Empty}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
                                                 Text="Empty" />
-                                            <Grid IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}" RowDefinitions="*, Auto">
+                                            <Grid
+                                                IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Text}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
+                                                RowDefinitions="*, Auto">
                                                 <ScrollViewer>
-                                                    <TextBox IsReadOnly="True" Text="{Binding TextContent}" />
+                                                    <TextBox
+                                                        IsReadOnly="True"
+                                                        Text="{Binding TextContent}" />
                                                 </ScrollViewer>
                                                 <TextBlock
                                                     Grid.Row="1"
@@ -603,9 +605,15 @@
                                             </Grid>
                                         </Grid>
                                     </Grid>
-                                    <Grid IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static sizePreview:ContainerPreview.PreviewName}}" x:Name="SizeContainerPreview">
-                                        <Grid RowDefinitions="Auto, Auto" x:DataType="sizePreview:ContainerPreview">
-                                            <ItemsControl ItemsSource="{Binding TopItems}" Margin="0,0,0,30">
+                                    <Grid
+                                        x:Name="SizeContainerPreview"
+                                        IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static sizePreview:ContainerPreview.PreviewName}}">
+                                        <Grid
+                                            x:DataType="sizePreview:ContainerPreview"
+                                            RowDefinitions="Auto, Auto">
+                                            <ItemsControl
+                                                Margin="0,0,0,30"
+                                                ItemsSource="{Binding TopItems}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal" />
@@ -618,8 +626,12 @@
                                                                 <MultiBinding Converter="{StaticResource ItemSizeToSizeConverter}">
                                                                     <MultiBinding.Bindings>
                                                                         <Binding />
-                                                                        <Binding ElementName="SizeContainerPreview" Path="DataContext" />
-                                                                        <Binding ElementName="SizeContainerPreview" Path="Bounds.Width" />
+                                                                        <Binding
+                                                                            ElementName="SizeContainerPreview"
+                                                                            Path="DataContext" />
+                                                                        <Binding
+                                                                            ElementName="SizeContainerPreview"
+                                                                            Path="Bounds.Width" />
                                                                     </MultiBinding.Bindings>
                                                                 </MultiBinding>
                                                             </Grid.Width>
@@ -629,36 +641,44 @@
                                                                     <MultiBinding Converter="{StaticResource ItemSizeToBrushConverter}">
                                                                         <MultiBinding.Bindings>
                                                                             <Binding />
-                                                                            <Binding ElementName="SizeContainerPreview" Path="DataContext" />
+                                                                            <Binding
+                                                                                ElementName="SizeContainerPreview"
+                                                                                Path="DataContext" />
                                                                         </MultiBinding.Bindings>
                                                                     </MultiBinding>
                                                                 </Rectangle.Fill>
                                                             </Rectangle>
-                                                            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                            <StackPanel
+                                                                HorizontalAlignment="Left"
+                                                                VerticalAlignment="Center">
                                                                 <TextBlock
+                                                                    Margin="5,5,5,2"
                                                                     Classes="SmallText"
                                                                     FontWeight="Bold"
-                                                                    Margin="5,5,5,2"
                                                                     Text="{Binding Name}">
                                                                     <TextBlock.Foreground>
                                                                         <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
                                                                             <MultiBinding.Bindings>
                                                                                 <Binding />
-                                                                                <Binding ElementName="SizeContainerPreview" Path="DataContext" />
+                                                                                <Binding
+                                                                                    ElementName="SizeContainerPreview"
+                                                                                    Path="DataContext" />
                                                                             </MultiBinding.Bindings>
                                                                         </MultiBinding>
                                                                     </TextBlock.Foreground>
                                                                 </TextBlock>
                                                                 <TextBlock
+                                                                    Margin="5,2,5,5"
                                                                     Classes="SmallText"
                                                                     FontWeight="Bold"
-                                                                    Margin="5,2,5,5"
                                                                     Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}">
                                                                     <TextBlock.Foreground>
                                                                         <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
                                                                             <MultiBinding.Bindings>
                                                                                 <Binding />
-                                                                                <Binding ElementName="SizeContainerPreview" Path="DataContext" />
+                                                                                <Binding
+                                                                                    ElementName="SizeContainerPreview"
+                                                                                    Path="DataContext" />
                                                                             </MultiBinding.Bindings>
                                                                         </MultiBinding>
                                                                     </TextBlock.Foreground>
@@ -669,15 +689,19 @@
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
 
-                                            <ItemsControl Grid.Row="1" ItemsSource="{Binding TopItems}">
+                                            <ItemsControl
+                                                Grid.Row="1"
+                                                ItemsSource="{Binding TopItems}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,20">
+                                                        <Grid
+                                                            Margin="0,0,0,20"
+                                                            ColumnDefinitions="Auto,*">
                                                             <TextBlock Text="{Binding Name}" />
                                                             <TextBlock
                                                                 Grid.Column="1"
-                                                                HorizontalAlignment="Right"
                                                                 Margin="0,0,20,0"
+                                                                HorizontalAlignment="Right"
                                                                 Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}" />
                                                         </Grid>
                                                     </DataTemplate>
@@ -690,11 +714,11 @@
                         </Grid>
 
                         <ItemsRepeater
-                            HorizontalAlignment="Center"
-                            IsVisible="{Binding AppState.PopupTexts.Count, Converter={StaticResource NotEqualsConverter}}"
-                            ItemsSource="{Binding AppState.PopupTexts}"
                             Margin="0,0,0,20"
-                            VerticalAlignment="Top">
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            IsVisible="{Binding AppState.PopupTexts.Count, Converter={StaticResource NotEqualsConverter}}"
+                            ItemsSource="{Binding AppState.PopupTexts}">
                             <ItemsRepeater.Styles>
                                 <Style Selector="TextBlock">
                                     <Style.Animations>
@@ -712,12 +736,12 @@
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
                                     <Border
-                                        Background="{DynamicResource ContainerGradientBackgroundBrush}"
                                         Margin="5"
-                                        Padding="5">
+                                        Padding="5"
+                                        Background="{DynamicResource ContainerGradientBackgroundBrush}">
                                         <TextBlock
-                                            Foreground="{DynamicResource AccentComplementBrush}"
                                             HorizontalAlignment="Center"
+                                            Foreground="{DynamicResource AccentComplementBrush}"
                                             Text="{Binding}" />
                                     </Border>
                                 </DataTemplate>
@@ -725,26 +749,34 @@
                         </ItemsRepeater>
                     </Grid>
 
-                    <Grid Grid.Row="3" RowDefinitions="Auto, Auto">
+                    <Grid
+                        Grid.Row="3"
+                        RowDefinitions="Auto, Auto">
                         <Grid>
-                            <TextBlock IsVisible="{Binding AppState.ContainerStatus.Value, Converter={x:Static ObjectConverters.IsNotNull}}" Text="{Binding AppState.ContainerStatus.Value}" />
+                            <TextBlock
+                                IsVisible="{Binding AppState.ContainerStatus.Value, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Text="{Binding AppState.ContainerStatus.Value}" />
                         </Grid>
                         <Grid Grid.Row="1">
-                            <Grid IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualsConverter}, ConverterParameter=RapidTravel}" RowDefinitions="1,Auto">
+                            <Grid
+                                IsVisible="{Binding AppState.ViewMode^, Converter={StaticResource EqualsConverter}, ConverterParameter=RapidTravel}"
+                                RowDefinitions="1,Auto">
 
                                 <Rectangle
-                                    Fill="{DynamicResource ContentSeparatorBrush}"
                                     Height="1"
-                                    HorizontalAlignment="Stretch"
                                     Margin="10,0"
-                                    VerticalAlignment="Center" />
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Fill="{DynamicResource ContentSeparatorBrush}" />
 
                                 <StackPanel
                                     Grid.Row="1"
                                     Margin="30,10,10,10"
                                     Orientation="Horizontal">
 
-                                    <TextBlock Margin="0,0,30,0" Text="Rapid travel mode" />
+                                    <TextBlock
+                                        Margin="0,0,30,0"
+                                        Text="Rapid travel mode" />
 
                                     <TextBlock Text="Filter " />
 
@@ -759,13 +791,15 @@
                                 </Grid.RowDefinitions>
 
                                 <Rectangle
-                                    Fill="{DynamicResource ContentSeparatorBrush}"
                                     Height="1"
-                                    HorizontalAlignment="Stretch"
                                     Margin="10,0"
-                                    VerticalAlignment="Center" />
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Fill="{DynamicResource ContentSeparatorBrush}" />
 
-                                <ItemsRepeater Grid.Row="1" ItemsSource="{Binding PossibleCommands.PossibleCommands}">
+                                <ItemsRepeater
+                                    Grid.Row="1"
+                                    ItemsSource="{Binding PossibleCommands.PossibleCommands}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="corevm:IPossibleCommandEntryViewModel">
                                             <Grid>
@@ -775,7 +809,9 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBlock Text="{Binding KeysText}" />
-                                                <TextBlock Grid.Column="1" Text="{Binding Title}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Text="{Binding Title}" />
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
@@ -787,61 +823,63 @@
             </Grid>
 
             <Border
-                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                x:Name="ReadInputContainer"
                 HorizontalAlignment="Stretch"
-                IsVisible="{Binding DialogService.ReadInput.Value, Converter={x:Static ObjectConverters.IsNotNull}}"
                 VerticalAlignment="Stretch"
-                x:Name="ReadInputContainer">
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                IsVisible="{Binding DialogService.ReadInput.Value, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Border
-                    Background="{DynamicResource ContainerBackgroundBrush}"
-                    HorizontalAlignment="Center"
                     Padding="20"
-                    VerticalAlignment="Center">
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource ContainerBackgroundBrush}">
                     <Grid RowDefinitions="Auto,Auto,Auto">
 
                         <ItemsControl
+                            x:Name="InputList"
                             ItemsSource="{Binding DialogService.ReadInput.Value.Inputs}"
-                            KeyUp="InputList_OnKeyUp"
-                            x:Name="InputList">
+                            KeyUp="InputList_OnKeyUp">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid
-                                        ColumnDefinitions="250,*"
-                                        Margin="10,5"
+                                        x:Name="ItemRoot"
                                         MinWidth="500"
-                                        x:Name="ItemRoot">
+                                        Margin="10,5"
+                                        ColumnDefinitions="250,*">
                                         <TextBlock
                                             HorizontalAlignment="Left"
-                                            Text="{Binding Label}"
-                                            VerticalAlignment="Top" />
+                                            VerticalAlignment="Top"
+                                            Text="{Binding Label}" />
                                         <Grid Grid.Column="1">
                                             <TextBox
+                                                VerticalAlignment="Top"
+                                                x:DataType="interactions:TextInputElement"
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:InputType.Text}}"
                                                 Tag="InputItem"
-                                                Text="{Binding Value, Mode=TwoWay}"
-                                                VerticalAlignment="Top"
-                                                x:DataType="interactions:TextInputElement" />
+                                                Text="{Binding Value, Mode=TwoWay}" />
                                             <TextBox
+                                                VerticalAlignment="Top"
+                                                x:DataType="interactions:PasswordInputElement"
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:InputType.Password}}"
                                                 PasswordChar="{Binding PasswordChar}"
                                                 Tag="InputItem"
-                                                Text="{Binding Value, Mode=TwoWay}"
-                                                VerticalAlignment="Top"
-                                                x:DataType="interactions:PasswordInputElement" />
+                                                Text="{Binding Value, Mode=TwoWay}" />
                                             <ListBox
+                                                x:DataType="interactions:IOptionsInputElement"
                                                 Classes="RadioButtonListBox"
                                                 IsVisible="{Binding Type, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static interactions:InputType.Options}}"
                                                 ItemsSource="{Binding Options}"
                                                 SelectedItem="{Binding Value}"
-                                                Tag="InputItem"
-                                                x:DataType="interactions:IOptionsInputElement" />
+                                                Tag="InputItem" />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl Grid.Row="1" ItemsSource="{Binding DialogService.ReadInput.Value.Previews}">
+                        <ItemsControl
+                            Grid.Row="1"
+                            ItemsSource="{Binding DialogService.ReadInput.Value.Previews}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <local:ReadInputPreview />
@@ -855,32 +893,32 @@
                             Margin="0,10,0,0"
                             Orientation="Horizontal">
                             <Button
+                                Width="80"
+                                HorizontalContentAlignment="Center"
                                 Command="{Binding Process}"
-                                Content="Ok"
-                                HorizontalContentAlignment="Center"
-                                Width="80" />
+                                Content="Ok" />
                             <Button
-                                Command="{Binding Cancel}"
-                                Content="Cancel"
-                                HorizontalContentAlignment="Center"
+                                Width="80"
                                 Margin="10,0,0,0"
-                                Width="80" />
+                                HorizontalContentAlignment="Center"
+                                Command="{Binding Cancel}"
+                                Content="Cancel" />
                         </StackPanel>
                     </Grid>
                 </Border>
             </Border>
 
             <Border
-                Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 DataContext="{Binding DialogService.LastMessageBox.Value}"
                 HorizontalAlignment="Stretch"
-                IsVisible="{Binding Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
-                VerticalAlignment="Stretch">
+                VerticalAlignment="Stretch"
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                IsVisible="{Binding Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                 <Border
-                    Background="{DynamicResource ContainerBackgroundBrush}"
-                    HorizontalAlignment="Center"
                     Padding="20"
-                    VerticalAlignment="Center">
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource ContainerBackgroundBrush}">
                     <Grid RowDefinitions="Auto,Auto">
 
                         <TextBlock Text="{Binding Text}" />
@@ -889,59 +927,67 @@
                             Margin="0,10,0,0"
                             Orientation="Horizontal">
                             <Button
-                                Command="{Binding Ok}"
-                                Content="{Binding OkText}"
+                                Width="80"
                                 HorizontalContentAlignment="Center"
-                                Width="80" />
+                                Command="{Binding Ok}"
+                                Content="{Binding OkText}" />
                             <Button
+                                Width="80"
+                                Margin="10,0,0,0"
+                                HorizontalContentAlignment="Center"
                                 Command="{Binding Cancel}"
                                 Content="{Binding CancelText}"
-                                HorizontalContentAlignment="Center"
-                                IsVisible="{Binding ShowCancel}"
-                                Margin="10,0,0,0"
-                                Width="80" />
+                                IsVisible="{Binding ShowCancel}" />
                         </StackPanel>
                     </Grid>
                 </Border>
             </Border>
 
             <Border
-                Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 DataContext="{Binding FrequencyNavigationService.CurrentModal}"
                 HorizontalAlignment="Stretch"
-                IsVisible="{Binding ShowWindow.Value, FallbackValue=False}"
-                VerticalAlignment="Stretch">
-                <Grid Background="{DynamicResource ContainerBackgroundColor}" Margin="100">
+                VerticalAlignment="Stretch"
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                IsVisible="{Binding ShowWindow.Value, FallbackValue=False}">
+                <Grid
+                    Margin="100"
+                    Background="{DynamicResource ContainerBackgroundColor}">
                     <local:FrequencyNavigation IsVisible="{Binding ShowWindow^, FallbackValue=False}" />
                 </Grid>
             </Border>
 
             <Border
-                Background="{DynamicResource BarelyTransparentBackgroundColor}"
                 DataContext="{Binding CommandPaletteService.CurrentModal}"
                 HorizontalAlignment="Stretch"
-                IsVisible="{Binding ShowWindow.Value, FallbackValue=False}"
-                VerticalAlignment="Stretch">
-                <Grid Background="{DynamicResource ContainerBackgroundColor}" Margin="100">
+                VerticalAlignment="Stretch"
+                Background="{DynamicResource BarelyTransparentBackgroundColor}"
+                IsVisible="{Binding ShowWindow.Value, FallbackValue=False}">
+                <Grid
+                    Margin="100"
+                    Background="{DynamicResource ContainerBackgroundColor}">
                     <local:CommandPalette IsVisible="{Binding ShowWindow^, FallbackValue=False}" />
                 </Grid>
             </Border>
         </Grid>
 
-        <Grid Background="{DynamicResource AppLoadingBackgroundBrush}" IsVisible="{Binding Loading}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid
+            Background="{DynamicResource AppLoadingBackgroundBrush}"
+            IsVisible="{Binding Loading}">
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
                 <Image
+                    Width="128"
                     Height="128"
-                    Source="/Assets/filetime.ico"
-                    Width="128" />
+                    Source="/Assets/filetime.ico" />
                 <TextBlock
-                    HorizontalAlignment="Center"
                     Margin="50"
+                    HorizontalAlignment="Center"
                     Text="{Binding Title.Value}" />
                 <TextBlock
-                    Foreground="Red"
-                    HorizontalAlignment="Center"
                     Margin="50"
+                    HorizontalAlignment="Center"
+                    Foreground="Red"
                     Text="{Binding FatalError.Value}" />
             </StackPanel>
         </Grid>

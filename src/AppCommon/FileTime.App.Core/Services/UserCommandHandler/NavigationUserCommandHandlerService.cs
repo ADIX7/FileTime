@@ -86,11 +86,14 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<MoveCursorToLastCommand>(MoveCursorToLast),
             new TypeUserCommandHandler<MoveCursorUpCommand>(MoveCursorUp),
             new TypeUserCommandHandler<MoveCursorUpPageCommand>(MoveCursorUpPage),
+            new TypeUserCommandHandler<NewTabCommand>(NewTabAsync),
             new TypeUserCommandHandler<OpenCommandPaletteCommand>(OpenCommandPalette),
             new TypeUserCommandHandler<OpenContainerCommand>(OpenContainer),
             new TypeUserCommandHandler<OpenSelectedCommand>(OpenSelected),
             new TypeUserCommandHandler<RunOrOpenCommand>(RunOrOpen),
             new TypeUserCommandHandler<RefreshCommand>(Refresh),
+            new TypeUserCommandHandler<SelectNextTabCommand>(SelectNextTab),
+            new TypeUserCommandHandler<SelectPreviousTabCommand>(SelectPreviousTab),
             new TypeUserCommandHandler<SwitchToTabCommand>(SwitchToTab),
         });
     }
@@ -346,38 +349,19 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task SwitchToTab(SwitchToTabCommand command)
     {
-        var number = command.TabNumber;
-        var tabViewModel = _appState.Tabs.FirstOrDefault(t => t.TabNumber == number);
+        var tabNumber = command.TabNumber;
+        var tabViewModel = _appState.Tabs.FirstOrDefault(t => t.TabNumber == tabNumber);
 
-        if (number == -1)
+        if (tabNumber == -1)
         {
             var greatestNumber = _appState.Tabs.Max(t => t.TabNumber);
             tabViewModel = _appState.Tabs.FirstOrDefault(t => t.TabNumber == greatestNumber);
         }
-        else if (tabViewModel == null)
+
+        if (tabViewModel == null)
         {
-            IContainer? newLocation = null;
-
-            try
-            {
-                newLocation = _currentLocation?.Value?.FullName is { } fullName
-                    ? (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(fullName, PointInTime.Present)
-                    : _localContentProvider;
-            }
-            catch (Exception ex)
-            {
-                var fullName = _currentLocation?.Value?.FullName?.Path ?? "unknown";
-                _logger.LogError(ex, "Could not resolve container while switching to tab {TabNumber} to path {FullName}", number, fullName);
-            }
-
-            newLocation ??= _localContentProvider;
-
-            var tab = await _serviceProvider.GetAsyncInitableResolver(newLocation)
-                .GetRequiredServiceAsync<ITab>();
-            var newTabViewModel = _serviceProvider.GetInitableResolver(tab, number).GetRequiredService<ITabViewModel>();
-
-            _appState.AddTab(newTabViewModel);
-            tabViewModel = newTabViewModel;
+            var newLocation = await GetLocationForNewTabAsync(tabNumber);
+            tabViewModel = await CreateTabAsync(newLocation, tabNumber);
         }
 
         if (_viewMode == ViewMode.RapidTravel)
@@ -385,7 +369,94 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             await _userCommandHandlerService.HandleCommandAsync(ExitRapidTravelCommand.Instance);
         }
 
+        await _appState.SetSelectedTabAsync(tabViewModel);
+    }
+
+    private async Task NewTabAsync(NewTabCommand command)
+    {
+        var numbers = _appState.Tabs.Select(t => t.TabNumber).ToHashSet();
+
+        var tabNumber = 1;
+        while (numbers.Contains(tabNumber))
+        {
+            tabNumber++;
+        }
+
+        IContainer? newLocation = null;
+
+        if (command.Path is { } path)
+        {
+            newLocation = await _timelessContentProvider.GetItemByFullNameAsync(path, PointInTime.Present) as IContainer;
+        }
+
+        newLocation ??= await GetLocationForNewTabAsync(tabNumber);
+        var tabViewModel = await CreateTabAsync(newLocation, tabNumber);
+
+        if (_viewMode == ViewMode.RapidTravel)
+        {
+            await _userCommandHandlerService.HandleCommandAsync(ExitRapidTravelCommand.Instance);
+        }
+
+        if (command.Open)
+        {
+            await _appState.SetSelectedTabAsync(tabViewModel);
+        }
+    }
+
+    private async Task SelectNextTab()
+    {
+        var currentTabNumber = _appState.SelectedTab.Value?.TabNumber;
+
+        var nextTabNumbers = _appState.Tabs.Select(t => t.TabNumber).Order().SkipWhile(n => n <= currentTabNumber).ToArray();
+
+        if (nextTabNumbers.Length == 0) return;
+
+        var nextTabNumber = nextTabNumbers[0];
+        var tabViewModel = _appState.Tabs.FirstOrDefault(t => t.TabNumber == nextTabNumber);
         await _appState.SetSelectedTabAsync(tabViewModel!);
+    }
+
+    private async Task SelectPreviousTab()
+    {
+        var currentTabNumber = _appState.SelectedTab.Value?.TabNumber;
+
+        var nextTabNumbers = _appState.Tabs.Select(t => t.TabNumber).Order().TakeWhile(n => n < currentTabNumber).ToArray();
+
+        if (nextTabNumbers.Length == 0) return;
+
+        var nextTabNumber = nextTabNumbers[^1];
+        var tabViewModel = _appState.Tabs.FirstOrDefault(t => t.TabNumber == nextTabNumber);
+        await _appState.SetSelectedTabAsync(tabViewModel!);
+    }
+
+    private async Task<IContainer> GetLocationForNewTabAsync(int tabNumber)
+    {
+        try
+        {
+            var newLocation = _currentLocation?.Value?.FullName is { } fullName
+                ? (IContainer) await _timelessContentProvider.GetItemByFullNameAsync(fullName, PointInTime.Present)
+                : _localContentProvider;
+
+            return newLocation;
+        }
+        catch (Exception ex)
+        {
+            var fullName = _currentLocation?.Value?.FullName?.Path ?? "unknown";
+            _logger.LogError(ex, "Could not resolve container while switching to tab {TabNumber} to path {FullName}", tabNumber, fullName);
+        }
+
+        return _localContentProvider;
+    }
+
+    private async Task<ITabViewModel> CreateTabAsync(IContainer newLocation, int tabNumber)
+    {
+        var tab = await _serviceProvider.GetAsyncInitableResolver(newLocation)
+            .GetRequiredServiceAsync<ITab>();
+        var newTabViewModel = _serviceProvider.GetInitableResolver(tab, tabNumber).GetRequiredService<ITabViewModel>();
+
+        _appState.AddTab(newTabViewModel);
+
+        return newTabViewModel;
     }
 
     private Task CloseTab()

@@ -11,6 +11,7 @@ using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.App.FrequencyNavigation.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using FileTime.GuiApp.App.InstanceManagement;
 using FileTime.GuiApp.App.Services;
 using FileTime.Providers.Local;
 using FileTime.Providers.LocalAdmin;
@@ -39,6 +40,7 @@ namespace FileTime.GuiApp.App.ViewModels;
 [Inject(typeof(IModalService), PropertyName = "_modalService")]
 [Inject(typeof(ITimelineViewModel), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IPossibleCommandsViewModel), PropertyName = "PossibleCommands", PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IInstanceMessageHandler), PropertyName = "_instanceMessageHandler")]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
@@ -48,6 +50,7 @@ public partial class MainWindowViewModel : IMainWindowViewModel
     public IGuiAppState AppState => _appState;
     public DeclarativeProperty<string> Title { get; } = new();
     public Action? FocusDefaultElement { get; set; }
+    public Action? ShowWindow { get; set; }
 
     partial void OnInitialize()
     {
@@ -72,7 +75,8 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         Title.SetValueSafe(title);
 
         _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
-
+        _instanceMessageHandler.ShowWindow += () => ShowWindow?.Invoke();
+        
         Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
     }
 
