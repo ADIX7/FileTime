@@ -44,7 +44,6 @@ public class PortWriterService : IHostedService
                 return;
             }
 
-            using var tempFileStream = File.CreateText(filename);
             var address = GetAddress();
             if (address is null)
             {
@@ -59,7 +58,23 @@ public class PortWriterService : IHostedService
                 return;
             }
 
+            _logger.LogInformation("Writing port to {PortFile}", filename);
+            using var tempFileStream = File.CreateText(filename);
             tempFileStream.Write(port.ToString());
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                try
+                {
+                    _logger.LogInformation("Deleting port file {PortFile}", filename);
+                    File.Delete(filename);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error while deleting port file {PortFile}", filename);
+                }
+            });
         }
         catch (Exception ex)
         {

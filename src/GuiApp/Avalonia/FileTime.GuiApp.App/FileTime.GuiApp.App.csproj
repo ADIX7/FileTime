@@ -55,6 +55,7 @@
     <ProjectReference Include="..\FileTime.GuiApp.App.Abstractions\FileTime.GuiApp.App.Abstractions.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.DesignPreview\FileTime.GuiApp.DesignPreview.csproj" />
     <ProjectReference Include="..\FileTime.GuiApp.Font.Abstractions\FileTime.GuiApp.Font.Abstractions.csproj" />
+
   </ItemGroup>
 
 

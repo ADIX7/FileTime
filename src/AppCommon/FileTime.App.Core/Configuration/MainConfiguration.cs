@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using FileTime.App.Core.UserCommand;
 using FileTime.Providers.LocalAdmin;
 using GeneralInputKey;
@@ -12,9 +13,12 @@ public class MainConfiguration
 
     static MainConfiguration()
     {
+        var serverFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "FileTime.Server.exe"
+            : "FileTime.Server";
         Configuration = new()
         {
-            {AdminElevationConfiguration.SectionName + ":" + nameof(AdminElevationConfiguration.ServerExecutablePath), "FileTime.Server.exe"},
+            {AdminElevationConfiguration.SectionName + ":" + nameof(AdminElevationConfiguration.ServerExecutablePath), serverFileName},
         };
 
         PopulateDefaultEditorPrograms(Configuration);

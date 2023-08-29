@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using FileTime.App.Core.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Timeline;
@@ -73,30 +74,28 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
             var port = _configuration.CurrentValue.ServerPort;
             _logger.LogTrace("Admin server port is {Port}", port is null ? "<not set>" : $"{port}");
             if (StartProcess || port is null)
-            {
+            {                
                 var portFileName = Path.GetTempFileName();
-                var process = new Process
-                {
-                    StartInfo = new()
-                    {
-                        FileName = _configuration.CurrentValue.ServerExecutablePath,
-                        ArgumentList =
-                        {
-                            "--PortWriter:FileName",
-                            portFileName
-                        },
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    },
-                    EnableRaisingEvents = true
-                };
+                File.Delete(portFileName);
+                
+                var process = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+                    ? CreateWindowsAdminProcess(portFileName)
+                    : CreateLinuxAdminProcess(portFileName);
                 process.Exited += ProcessExitHandler;
                 process.Start();
                 _adminProcess = process;
 
                 //TODO: timeout
                 while (!File.Exists(portFileName) || new FileInfo(portFileName).Length == 0)
+                {
                     await Task.Delay(10);
+                    if (process.HasExited)
+                    {
+                        throw new Exception(
+                            $"Server process exited with code {process.ExitCode} without creating the port file"
+                        );
+                    }
+                }
 
                 var content = await File.ReadAllLinesAsync(portFileName);
                 if (int.TryParse(content.FirstOrDefault(), out var parsedPort))
@@ -130,6 +129,42 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
         {
             _lock.Release();
         }
+    }
+
+    private Process CreateWindowsAdminProcess(string portFileName) 
+        => new()
+        {
+            StartInfo = new()
+            {
+                FileName = _configuration.CurrentValue.ServerExecutablePath,
+                ArgumentList =
+                {
+                    "--PortWriter:FileName",
+                    portFileName
+                },
+                UseShellExecute = true,
+                Verb = "runas"
+            },
+            EnableRaisingEvents = true
+        };
+
+    private Process CreateLinuxAdminProcess(string portFileName)
+    {
+        return new Process
+        {
+            StartInfo = new()
+            {
+                FileName = _configuration.CurrentValue.LinuxElevationTool,
+                ArgumentList =
+                {
+                    _configuration.CurrentValue.ServerExecutablePath,
+                    "--PortWriter:FileName",
+                    portFileName
+                },
+                CreateNoWindow = true
+            },
+            EnableRaisingEvents = true
+        };
     }
 
     //Note: this does not have to return a task
