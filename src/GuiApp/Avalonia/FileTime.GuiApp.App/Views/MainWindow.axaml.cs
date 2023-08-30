@@ -51,38 +51,45 @@ public partial class MainWindow : Window, IUiAccessor
         _initializer = initializer;
     }
 
-    private void OnWindowOpened(object sender, EventArgs e)
+    private async void OnWindowOpened(object sender, EventArgs e)
     {
-        if (DataContext is not MainWindowViewModel && !Design.IsDesignMode)
+        try
         {
-            _initializer?.Invoke();
-
-            _logger = DI.ServiceProvider.GetService<ILogger<MainWindow>>();
-            _modalService = DI.ServiceProvider.GetRequiredService<IModalService>();
-            DI.ServiceProvider.GetRequiredService<SystemClipboardService>().UiAccessor = this;
-
-            ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
-
-            _logger?.LogInformation(
-                $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
-
-            try
+            if (DataContext is not MainWindowViewModel && !Design.IsDesignMode)
             {
-                var viewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
-                viewModel.FocusDefaultElement = () => Focus();
-                viewModel.ShowWindow = Activate;
-                ViewModel = viewModel;
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error initializing {ViewModel}", nameof(MainWindowViewModel));
-                if (DataContext is IMainWindowViewModelBase mainWindowViewModelBase)
+                await Task.Delay(100);
+                _initializer?.Invoke();
+
+                _logger = DI.ServiceProvider.GetService<ILogger<MainWindow>>();
+                _modalService = DI.ServiceProvider.GetRequiredService<IModalService>();
+                DI.ServiceProvider.GetRequiredService<SystemClipboardService>().UiAccessor = this;
+
+                ReadInputContainer.PropertyChanged += ReadInputContainerOnPropertyChanged;
+
+                _logger?.LogInformation(
+                    $"{nameof(MainWindow)} opened, starting {nameof(MainWindowViewModel)} initialization...");
+
+                try
                 {
-                    mainWindowViewModelBase.FatalError.SetValueSafe(
-                        $"Error initializing {nameof(MainWindowViewModel)}: " + ex.Message
-                    );
+                    var viewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
+                    viewModel.FocusDefaultElement = () => Focus();
+                    viewModel.ShowWindow = Activate;
+                    ViewModel = viewModel;
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Error initializing {ViewModel}", nameof(MainWindowViewModel));
+                    if (DataContext is IMainWindowViewModelBase mainWindowViewModelBase)
+                    {
+                        mainWindowViewModelBase.FatalError.SetValueSafe(
+                            $"Error initializing {nameof(MainWindowViewModel)}: " + ex.Message
+                        );
+                    }
                 }
             }
+        }
+        catch
+        {
         }
     }
 

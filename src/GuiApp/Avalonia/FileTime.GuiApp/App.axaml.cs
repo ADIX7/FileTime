@@ -16,6 +16,7 @@ using FileTime.Server;
 using FileTime.Tools.Compression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace FileTime.GuiApp;
 
@@ -23,6 +24,7 @@ public class Application : Avalonia.Application
 {
     private static void InitializeApp()
     {
+        Log.Logger.Information("App initialization starting...");
         var configuration = Startup.CreateConfiguration();
         var services = DependencyInjection
             .RegisterDefaultServices(configuration: configuration)
@@ -62,6 +64,7 @@ public class Application : Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            Log.Logger.Information("Creating MainWindow instance...");
             desktop.MainWindow = new MainWindow(InitializeApp)
             {
                 DataContext = new MainWindowLoadingViewModel(),

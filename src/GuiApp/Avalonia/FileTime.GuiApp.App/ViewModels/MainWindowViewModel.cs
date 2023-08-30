@@ -85,7 +85,11 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
         _instanceMessageHandler.ShowWindow += () => ShowWindow?.Invoke();
         
-        Task.Run(async () => await _lifecycleService.InitStartupHandlersAsync()).Wait();
+        Task.Run(async () =>
+        {
+            await Task.Delay(100);
+            await _lifecycleService.InitStartupHandlersAsync();
+        });
     }
 
     public void ProcessKeyDown(KeyEventArgs e)

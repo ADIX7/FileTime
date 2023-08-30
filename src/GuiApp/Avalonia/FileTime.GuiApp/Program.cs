@@ -22,7 +22,7 @@ public static class Program
     public static string EnvironmentName { get; private set; } = null!;
 
     private static ILogger _logger = null!;
-    
+
     internal static List<string> DirectoriesToOpen { get; } = new();
 
     private static void InitLogging()
@@ -41,7 +41,8 @@ public static class Program
             .WriteTo.File(
                 Path.Combine(logFolder, "appLog.log"),
                 fileSizeLimitBytes: 10 * 1024 * 1024,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}",
+                outputTemplate:
+                "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}",
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true)
             .CreateBootstrapLogger();
@@ -128,15 +129,16 @@ public static class Program
         {
             Log.CloseAndFlush();
         }
-        
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<Application>()
             .UsePlatformDetect()
-            .UseReactiveUI()
-            .LogToTrace();
+#if DEBUG
+            .LogToTrace()
+#endif
+    ;
 
     private static void OnTaskSchedulerUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         => HandleUnhandledException(sender, e.Exception);

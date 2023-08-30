@@ -70,7 +70,8 @@ public class TabPersistenceService : ITabPersistenceService
 
         foreach (var (requestedTabNumber, nativePath) in _tabsToOpen.TabsToOpen)
         {
-            if (await _timelessContentProvider.GetItemByNativePathAsync(nativePath) is not IContainer container) continue;
+            if (await _timelessContentProvider.GetItemByNativePathAsync(nativePath) is not IContainer container)
+                continue;
 
             containers.Add((requestedTabNumber, container));
         }
@@ -111,14 +112,16 @@ public class TabPersistenceService : ITabPersistenceService
         return Task.CompletedTask;
     }
 
-    private async Task<IEnumerable<ITabViewModel>> LoadStatesAsync(bool createEmptyIfNecessary, CancellationToken token = default)
+    private async Task<IEnumerable<ITabViewModel>> LoadStatesAsync(
+        bool createEmptyIfNecessary,
+        CancellationToken token = default)
     {
         if (!File.Exists(_settingsPath) || !_tabPersistenceSettings.LoadState)
         {
             if (createEmptyIfNecessary)
             {
                 var tabViewModel = await CreateEmptyTab();
-                return new[] {tabViewModel};
+                return new[] { tabViewModel };
             }
 
             return Enumerable.Empty<ITabViewModel>();
@@ -142,7 +145,7 @@ public class TabPersistenceService : ITabPersistenceService
         if (createEmptyIfNecessary)
         {
             var tabViewModel = await CreateEmptyTab();
-            return new[] {tabViewModel};
+            return new[] { tabViewModel };
         }
 
         return Enumerable.Empty<ITabViewModel>();
@@ -162,7 +165,8 @@ public class TabPersistenceService : ITabPersistenceService
                 // ignored
             }
 
-            var tab = await _serviceProvider.GetAsyncInitableResolver<IContainer>(currentDirectory ?? _localContentProvider)
+            var tab = await _serviceProvider
+                .GetAsyncInitableResolver<IContainer>(currentDirectory ?? _localContentProvider)
                 .GetRequiredServiceAsync<ITab>();
             var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
 
@@ -265,8 +269,7 @@ public class TabPersistenceService : ITabPersistenceService
         foreach (var tab in _appState.Tabs)
         {
             var currentLocation = tab.CurrentLocation.Value;
-            if (currentLocation is null) continue;
-            var path = currentLocation.FullName!.Path;
+            if (currentLocation?.FullName?.Path is not { } path) continue;
 
             if (currentLocation.GetExtension<RealContainerProviderExtension>()?.RealContainer() is { } realPath)
             {
