@@ -5,6 +5,7 @@ using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Interactions;
+using FileTime.GuiApp.App.CloudDrives;
 using FileTime.GuiApp.App.Configuration;
 using FileTime.GuiApp.App.ContextMenu;
 using FileTime.GuiApp.CustomImpl.ViewModels;
@@ -84,18 +85,21 @@ public static class Startup
         {
             serviceCollection
                 .AddSingleton<IContextMenuProvider, WindowsContextMenuProvider>()
-                .AddSingleton<IPlacesService, WindowsPlacesService>();
+                .AddSingleton<IPlacesService, WindowsPlacesService>()
+                .AddSingleton<ICloudDriveService, WindowsCloudDriveService>();
         }
         else
         {
             serviceCollection
                 .AddSingleton<IContextMenuProvider, LinuxContextMenuProvider>()
-                .AddSingleton<IPlacesService, LinuxPlacesService>();
+                .AddSingleton<IPlacesService, LinuxPlacesService>()
+                .AddSingleton<ICloudDriveService, LinuxCloudDriveService>();
         }
 
         return serviceCollection
-            .AddSingleton<IExitHandler, RootDriveInfoService>()
-            .AddSingleton<IStartupHandler>(sp => sp.GetRequiredService<IPlacesService>());
+            .AddSingleton<IExitHandler>(sp => sp.GetRequiredService<IRootDriveInfoService>())
+            .AddSingleton<IStartupHandler>(sp => sp.GetRequiredService<IPlacesService>())
+            .AddSingleton<IStartupHandler>(sp => sp.GetRequiredService<ICloudDriveService>());
     }
 
     internal static IServiceCollection RegisterLogging(this IServiceCollection serviceCollection)

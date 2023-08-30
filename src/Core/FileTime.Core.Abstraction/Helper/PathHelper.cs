@@ -1,3 +1,4 @@
+using System.Collections;
 using FileTime.Core.Models;
 
 namespace FileTime.Core.Helper;
@@ -33,6 +34,7 @@ public static class PathHelper
 
         return string.Join(Constants.SeparatorChar, commonPathParts);
     }
+
     public static string GetCommonPath(string? path1, string? path2)
     {
         var path1Parts = path1?.Split(Constants.SeparatorChar) ?? Array.Empty<string>();
@@ -50,5 +52,19 @@ public static class PathHelper
         }
 
         return string.Join(Constants.SeparatorChar, commonPathParts);
+    }
+
+    public static string ReplaceEnvironmentVariablePlaceHolders(string path)
+    {
+        foreach (DictionaryEntry environmentVariable in Environment.GetEnvironmentVariables())
+        {
+            var value = environmentVariable.Value?.ToString();
+
+            if (value is null) continue;
+
+            path = path.Replace($"%{environmentVariable.Key}%", value, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return path;
     }
 }

@@ -4,6 +4,7 @@ using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.App.FrequencyNavigation.Services;
+using FileTime.GuiApp.App.CloudDrives;
 using FileTime.GuiApp.App.Services;
 using FileTime.Providers.LocalAdmin;
 
@@ -21,6 +22,7 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     IClipboardService ClipboardService { get; }
     ITimelineViewModel TimelineViewModel { get; }
     IPossibleCommandsViewModel PossibleCommands { get; }
+    ICloudDriveService CloudDriveService { get; }
     Action? ShowWindow { get; set; }
     Thickness IconStatusPanelMargin { get; }
     Task RunOrOpenItem(IItemViewModel itemViewModel);

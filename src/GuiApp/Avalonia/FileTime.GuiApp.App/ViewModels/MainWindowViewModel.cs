@@ -13,6 +13,7 @@ using FileTime.App.Core.ViewModels.Timeline;
 using FileTime.App.FrequencyNavigation.Services;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
+using FileTime.GuiApp.App.CloudDrives;
 using FileTime.GuiApp.App.InstanceManagement;
 using FileTime.GuiApp.App.Services;
 using FileTime.Providers.Local;
@@ -43,6 +44,7 @@ namespace FileTime.GuiApp.App.ViewModels;
 [Inject(typeof(ITimelineViewModel), PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IPossibleCommandsViewModel), PropertyName = "PossibleCommands", PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IInstanceMessageHandler), PropertyName = "_instanceMessageHandler")]
+[Inject(typeof(ICloudDriveService), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
@@ -57,7 +59,7 @@ public partial class MainWindowViewModel : IMainWindowViewModel
 
     partial void OnInitialize()
     {
-        _logger?.LogInformation($"Starting {nameof(MainWindowViewModel)} initialization...");
+        _logger.LogInformation($"Starting {nameof(MainWindowViewModel)} initialization...");
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

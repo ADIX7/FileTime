@@ -7,6 +7,8 @@ using Avalonia.VisualTree;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
+using FileTime.Core.Timeline;
+using FileTime.GuiApp.App.CloudDrives;
 using FileTime.GuiApp.App.Services;
 using FileTime.GuiApp.App.Settings;
 using FileTime.GuiApp.App.ViewModels;
@@ -137,6 +139,11 @@ public partial class MainWindow : Window, IUiAccessor
             else if (control.DataContext is PlaceInfo {Path: { } placeInfoPath})
             {
                 path = placeInfoPath;
+            }
+            else if (control.DataContext is CloudDrive {Path: { } cloudDrivePath})
+            {
+                var timelessContentProvider = DI.ServiceProvider.GetRequiredService<ITimelessContentProvider>();
+                path = await timelessContentProvider.GetFullNameByNativePathAsync(cloudDrivePath);
             }
 
             if (path is null) return;

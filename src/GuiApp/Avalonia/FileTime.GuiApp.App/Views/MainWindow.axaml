@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:appCoreModels="using:FileTime.App.Core.Models"
+    xmlns:cloudDrives="clr-namespace:FileTime.GuiApp.App.CloudDrives;assembly=FileTime.GuiApp.App.Abstractions"
     xmlns:corevm="using:FileTime.App.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
@@ -116,13 +117,13 @@
 
                     <Border
                         Margin="10"
-                        Padding="10"
+                        Padding="0,10"
                         Background="{DynamicResource ContainerBackgroundBrush}"
                         CornerRadius="10">
                         <Grid RowDefinitions="Auto,Auto">
 
                             <TextBlock
-                                Margin="0,0,0,10"
+                                Margin="10,0,10,10"
                                 Text="Drives" />
 
                             <ItemsRepeater
@@ -135,7 +136,7 @@
                                             Cursor="Hand"
                                             PointerPressed="OnHasContainerPointerPressed">
                                             <Grid
-                                                Margin="0,5"
+                                                Margin="10,5"
                                                 ColumnDefinitions="Auto,*,Auto"
                                                 RowDefinitions="Auto,Auto">
                                                 <Image
@@ -209,7 +210,8 @@
                         Margin="10"
                         Padding="0,10"
                         Background="{DynamicResource ContainerBackgroundBrush}"
-                        CornerRadius="10">
+                        CornerRadius="10"
+                        IsVisible="{Binding AppState.Places.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
                         <Grid RowDefinitions="Auto,Auto">
 
                             <TextBlock
@@ -249,6 +251,52 @@
 
                     <Border
                         Grid.Row="2"
+                        Margin="10"
+                        Padding="0,10"
+                        VerticalAlignment="Bottom"
+                        Background="{DynamicResource ContainerBackgroundBrush}"
+                        CornerRadius="10"
+                        IsVisible="{Binding CloudDriveService.CloudDrives.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
+                        <Grid RowDefinitions="Auto,Auto">
+
+                            <TextBlock
+                                Margin="10,0,10,10"
+                                Text="Cloud drives" />
+
+                            <ItemsRepeater
+                                Grid.Row="1"
+                                ItemsSource="{Binding CloudDriveService.CloudDrives}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="cloudDrives:CloudDrive">
+                                        <Grid
+                                            Classes="SidebarContainerPresenter"
+                                            Cursor="Hand"
+                                            PointerPressed="OnHasContainerPointerPressed">
+                                            <StackPanel
+                                                Margin="10,5"
+                                                HorizontalAlignment="Stretch"
+                                                Orientation="Horizontal"
+                                                ToolTip.Tip="{Binding Name}">
+                                                <Image
+                                                    Width="20"
+                                                    Height="20"
+                                                    VerticalAlignment="Center"
+                                                    Source="{Binding Path, Converter={StaticResource ItemToImageConverter}}" />
+
+                                                <TextBlock
+                                                    Margin="5,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Name}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </Grid>
+                    </Border>
+
+                    <Border
+                        Grid.Row="3"
                         Margin="10"
                         Padding="10"
                         VerticalAlignment="Bottom"

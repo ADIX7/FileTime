@@ -33,32 +33,38 @@ public class MaterialIconProvider : IIconProvider
         });
     }
 
-    public ImagePath GetImage(IItem item)
+    public ImagePath GetImage(IItem item) => GetImage(item.NativePath?.Path, item is IContainer, item.Provider is ILocalContentProvider);
+
+    public ImagePath GetImage(string? localPath, bool isContainer, bool isLocalItem)
     {
-        item = item is ISymlinkElement symlinkElement ? symlinkElement.RealItem : item;
-        var icon = item is IContainer ? "folder.svg" : "file.svg";
-        var localPath = item.NativePath?.Path.TrimEnd(Path.DirectorySeparatorChar);
+        var icon = isContainer ? "folder.svg" : "file.svg";
+        localPath = localPath?.TrimEnd(Path.DirectorySeparatorChar);
 
         if (!EnableAdvancedIcons) return GetAssetPath(icon);
 
-        if (localPath != null && _specialPaths.Value.Find(p => p.Path == localPath) is SpecialPathWithIcon specialPath)
+        if (_specialPaths.Value.Find(p => p.Path == localPath) is { } specialPath)
         {
             return specialPath.IconPath;
         }
 
-        if (item is not IElement element) return GetAssetPath(icon);
+        if (isContainer || localPath is null) return GetAssetPath(icon);
 
-        if (element.Provider is ILocalContentProvider && (localPath?.EndsWith(".svg") ?? false))
+        if (isLocalItem && localPath.EndsWith(".svg"))
         {
             return new ImagePath(ImagePathType.Absolute, localPath);
         }
 
-        string? possibleIcon = null;
-        var fileName = element.Name;
-        var extension = element.Name.Contains('.') ? element.Name.Split('.').Last() : null;
+        string? possibleIcon;
+        var fileName = localPath.Split(Path.DirectorySeparatorChar).Last();
 
-        if (_iconsByFileName.TryGetValue(fileName, out var value)) possibleIcon = value;
-        else if (_iconsByExtension.FirstOrDefault(k => fileName.EndsWith("." + k.Key)) is KeyValuePair<string, string> {Key: { }} matchingExtension) possibleIcon = matchingExtension.Value;
+        if (_iconsByFileName.TryGetValue(fileName, out var value))
+        {
+            possibleIcon = value;
+        }
+        else if (_iconsByExtension.FirstOrDefault(k => fileName.EndsWith("." + k.Key)) is var matchingExtension)
+        {
+            possibleIcon = matchingExtension.Value;
+        }
 
         if (possibleIcon != null)
         {

@@ -1,12 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
-using FileTime.App.Core.Services;
 using FileTime.Core.Models;
 using ObservableComputations;
 
 namespace FileTime.Providers.Local;
 
-public class RootDriveInfoService : IRootDriveInfoService, IExitHandler
+public class RootDriveInfoService : IRootDriveInfoService
 {
     private readonly ILocalContentProvider _localContentProvider;
     private readonly List<DriveInfo> _rootDrives = new();
