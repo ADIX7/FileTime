@@ -1,4 +1,5 @@
-﻿using FileTime.App.CommandPalette.Services;
+﻿using Avalonia;
+using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.Core.ViewModels.Timeline;
@@ -21,5 +22,6 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     ITimelineViewModel TimelineViewModel { get; }
     IPossibleCommandsViewModel PossibleCommands { get; }
     Action? ShowWindow { get; set; }
+    Thickness IconStatusPanelMargin { get; }
     Task RunOrOpenItem(IItemViewModel itemViewModel);
 }

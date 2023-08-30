@@ -80,7 +80,7 @@
                         </StackPanel>
                         <StackPanel
                             Grid.Column="1"
-                            Margin="20,10,160,10"
+                            Margin="{Binding IconStatusPanelMargin, Mode=OneTime}"
                             Orientation="Vertical">
                             <Image
                                 Width="20"

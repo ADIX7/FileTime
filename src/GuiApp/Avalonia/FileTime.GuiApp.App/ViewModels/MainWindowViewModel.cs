@@ -1,5 +1,7 @@
 ﻿using System.Reactive.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using DeclarativeProperty;
@@ -49,12 +51,18 @@ public partial class MainWindowViewModel : IMainWindowViewModel
     public IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint { get; } = new[] {WindowTransparencyLevel.Blur};
     public IGuiAppState AppState => _appState;
     public DeclarativeProperty<string> Title { get; } = new();
+    public Thickness IconStatusPanelMargin { get; private set; } = new(20, 10, 10, 10);
     public Action? FocusDefaultElement { get; set; }
     public Action? ShowWindow { get; set; }
 
     partial void OnInitialize()
     {
         _logger?.LogInformation($"Starting {nameof(MainWindowViewModel)} initialization...");
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            IconStatusPanelMargin = new(20, 10, 160, 10);
+        }
 
         var version = Assembly.GetEntryAssembly()!.GetName().Version;
         var versionString = "Unknown version";
