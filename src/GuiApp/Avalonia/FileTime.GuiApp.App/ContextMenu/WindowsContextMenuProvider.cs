@@ -6,10 +6,11 @@ using Avalonia.Media;
 using FileTime.Core.Models;
 using FileTime.GuiApp.App.Helper;
 using FileTime.GuiApp.App.IconProviders;
+using FileTime.GuiApp.App.Services;
 using FileTime.Providers.Local;
 using Microsoft.Win32;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.GuiApp.App.ContextMenu;
 
 [SupportedOSPlatform("windows")]
 public class WindowsContextMenuProvider : IContextMenuProvider

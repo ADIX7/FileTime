@@ -6,7 +6,7 @@ using FileTime.GuiApp.App.ViewModels;
 using FileTime.Providers.Local;
 using Syroot.Windows.IO;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.GuiApp.App.Places;
 
 public class WindowsPlacesService : IPlacesService
 {

@@ -1,6 +1,7 @@
 using FileTime.Core.Models;
+using FileTime.GuiApp.App.Services;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.GuiApp.App.ContextMenu;
 
 public class LinuxContextMenuProvider : IContextMenuProvider
 {

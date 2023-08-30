@@ -5,7 +5,7 @@ using FileTime.GuiApp.App.IconProviders;
 using FileTime.GuiApp.App.ViewModels;
 using FileTime.Providers.Local;
 
-namespace FileTime.GuiApp.App.Services;
+namespace FileTime.GuiApp.App.Places;
 
 public class LinuxPlacesService : IPlacesService
 {
