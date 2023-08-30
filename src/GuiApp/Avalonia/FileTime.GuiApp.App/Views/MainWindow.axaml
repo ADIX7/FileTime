@@ -133,7 +133,6 @@
                                     <DataTemplate x:DataType="local1:RootDriveInfo">
                                         <Grid
                                             Classes="SidebarContainerPresenter"
-                                            Cursor="Hand"
                                             PointerPressed="OnHasContainerPointerPressed">
                                             <Grid
                                                 Margin="10,5"
@@ -225,7 +224,6 @@
                                     <DataTemplate x:DataType="vm:PlaceInfo">
                                         <Grid
                                             Classes="SidebarContainerPresenter"
-                                            Cursor="Hand"
                                             PointerPressed="OnHasContainerPointerPressed">
                                             <StackPanel
                                                 Margin="10,5"
@@ -270,7 +268,6 @@
                                     <DataTemplate x:DataType="cloudDrives:CloudDrive">
                                         <Grid
                                             Classes="SidebarContainerPresenter"
-                                            Cursor="Hand"
                                             PointerPressed="OnHasContainerPointerPressed">
                                             <StackPanel
                                                 Margin="10,5"
@@ -302,7 +299,21 @@
                         VerticalAlignment="Bottom"
                         Background="{DynamicResource ContainerBackgroundBrush}"
                         CornerRadius="10">
-                        <Button Click="SettingsButton_OnClick">Settings</Button>
+                        <StackPanel>
+                            <TextBlock Margin="0,0,0,10">Actions</TextBlock>
+                            <StackPanel Orientation="Horizontal">
+                                <Grid
+                                    Classes="IconButton"
+                                    Cursor="Hand"
+                                    PointerPressed="SettingsButtonClicked">
+                                    <Image
+                                        Margin="5"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Source="{SvgImage /Assets/material/settings.svg}" />
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
                     </Border>
 
                 </Grid>

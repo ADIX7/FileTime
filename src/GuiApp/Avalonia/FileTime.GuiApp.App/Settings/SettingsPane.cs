@@ -2,6 +2,6 @@
 
 public enum SettingsPane
 {
-    Home,
+    General,
     Advanced
 }

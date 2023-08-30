@@ -18,7 +18,7 @@ public partial class SettingsViewModel : ISettingsViewModel
 
     public List<SettingsPaneItem> PaneItems { get; } = new()
     {
-        new("Home", SettingsPane.Home),
+        new("General", SettingsPane.General),
         new("Advanced", SettingsPane.Advanced)
     };
 

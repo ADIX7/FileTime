@@ -260,7 +260,7 @@ public partial class MainWindow : Window, IUiAccessor
         }
     }
 
-    private void SettingsButton_OnClick(object? sender, RoutedEventArgs e)
+    private void SettingsButtonClicked(object? sender, PointerPressedEventArgs e)
     {
         var settingsWindow = new SettingsWindow
         {
