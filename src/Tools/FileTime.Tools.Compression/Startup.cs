@@ -1,5 +1,10 @@
 ﻿using FileTime.App.Core.Services;
+using FileTime.Core.ContentAccess;
+using FileTime.Tools.Compression.Compress;
+using FileTime.Tools.Compression.ContentProvider;
+using FileTime.Tools.Compression.Decompress;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FileTime.Tools.Compression;
 
@@ -21,6 +26,8 @@ public static class Startup
         services.AddSingleton<CompressCommandFactory>();
         services.AddSingleton<DecompressCommandFactory>();
         services.AddSingleton<IUserCommandHandler, CompressionUserCommandHandler>();
+        services.TryAddSingleton<ICompressedContentProviderFactory, CompressedContentProviderFactory>();
+        services.AddSingleton<ISubContentProvider, CompressedSubContentProvider>();
         return services;
     }
 }

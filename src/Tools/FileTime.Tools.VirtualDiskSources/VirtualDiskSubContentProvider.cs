@@ -79,7 +79,12 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
         var childFullName = new FullName(childFullNameBase);
         var childNativePath = new NativePath(childNativePathBase);
 
-        var parent = new AbsolutePath(_timelessContentProvider, pointInTime, childFullName.GetParent()!, AbsolutePathType.Container);
+        var parent = new AbsolutePath(
+            _timelessContentProvider,
+            pointInTime,
+            childFullName.GetParent()!,
+            AbsolutePathType.Container
+        );
 
         var container = discReader.Root;
         for (var i = 1; i < pathParts.Length - 1; i++)
@@ -125,7 +130,7 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
     private IContainer CreateContainer(
         UdfReader discReader,
         DiscDirectoryInfo sourceContainer,
-        FullName fullname,
+        FullName fullName,
         NativePath nativePath,
         IContentProvider parentContentProvider,
         AbsolutePath parent,
@@ -137,7 +142,7 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
         var container = new Container(
             sourceContainer.Name,
             sourceContainer.Name,
-            fullname,
+            fullName,
             nativePath,
             parent,
             true,
@@ -159,8 +164,16 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
         {
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                LoadChildren(container, sourceContainer, children, pointInTime, exceptions);
-                discReader.Dispose();
+                try
+                {
+                    container.StartLoading();
+                    LoadChildren(container, sourceContainer, children, pointInTime, exceptions);
+                }
+                finally
+                {
+                    discReader.Dispose();
+                    container.StopLoading();
+                }
             });
         }
 

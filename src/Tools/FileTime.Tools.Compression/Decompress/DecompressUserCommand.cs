@@ -1,6 +1,6 @@
 ﻿using FileTime.App.Core.UserCommand;
 
-namespace FileTime.Tools.Compression;
+namespace FileTime.Tools.Compression.Decompress;
 
 public class DecompressUserCommand : IIdentifiableUserCommand
 {

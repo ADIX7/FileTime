@@ -9,8 +9,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
     <ProjectReference Include="..\..\Core\FileTime.Core.Command\FileTime.Core.Command.csproj" />
+    <ProjectReference Include="..\..\Core\FileTime.Core.ContentAccess\FileTime.Core.ContentAccess.csproj" />
+    <ProjectReference Include="..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
     <ProjectReference Include="..\FileTime.Tools.Compression.Core\FileTime.Tools.Compression.Core.csproj" />
     <ProjectReference Include="..\FileTime.Tools\FileTime.Tools.csproj" />
   </ItemGroup>
+
+
 
 </Project>

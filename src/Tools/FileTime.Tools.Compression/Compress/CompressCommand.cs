@@ -9,7 +9,7 @@ using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompressCompressionType = SharpCompress.Common.CompressionType;
 
-namespace FileTime.Tools.Compression;
+namespace FileTime.Tools.Compression.Compress;
 
 public class CompressCommand : CommandBase, IExecutableCommand, ITransportationCommand, IRequireInputCommand
 {

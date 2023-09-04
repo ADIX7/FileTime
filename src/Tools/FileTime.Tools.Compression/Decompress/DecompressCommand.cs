@@ -4,7 +4,7 @@ using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using SharpCompress.Archives;
 
-namespace FileTime.Tools.Compression;
+namespace FileTime.Tools.Compression.Decompress;
 
 public class DecompressCommand : CommandBase, IExecutableCommand, ITransportationCommand, IDisposable
 {

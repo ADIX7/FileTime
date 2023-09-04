@@ -4,6 +4,8 @@ using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.UserCommandHandler;
 using FileTime.App.Core.ViewModels;
 using FileTime.Core.Models;
+using FileTime.Tools.Compression.Compress;
+using FileTime.Tools.Compression.Decompress;
 
 namespace FileTime.Tools.Compression;
 

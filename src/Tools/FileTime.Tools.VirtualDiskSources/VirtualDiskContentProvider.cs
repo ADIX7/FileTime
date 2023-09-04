@@ -28,7 +28,6 @@ public class VirtualDiskContentProvider : SubContentProviderBase, IVirtualDiskCo
         var parentItem = await ParentContentProvider.GetItemByNativePathAsync(supportedPath, element.PointInTime);
         if (parentItem is not IElement parentElement) return null;
 
-
         var contentReaderFactory = _contentAccessorFactory.GetContentReaderFactory(parentElement.Provider);
         var reader = await contentReaderFactory.CreateContentReaderAsync(parentElement);
 
