@@ -40,10 +40,7 @@ public class LocalContentReader : IContentReader
         }
     }
 
-    public void SetPosition(long position)
-    {
-        Position = position;
-    }
+    public void SetPosition(long position) => Position = position;
 
     public Stream AsStream() => _binaryReader.BaseStream;
 

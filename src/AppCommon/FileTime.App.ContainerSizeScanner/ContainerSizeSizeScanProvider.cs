@@ -100,6 +100,9 @@ public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSize
 
     public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
 
+    public override ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath)
+        => ValueTask.FromResult<NativePath?>(nativePath);
+
     public ISizeScanTask StartSizeScan(IContainer scanSizeOf)
     {
         var searchTask = _serviceProvider

@@ -6,14 +6,14 @@ namespace FileTime.Core.ContentAccess;
 
 public abstract class SubContentProviderBase : ContentProviderBase
 {
-    private readonly IContentProvider _parentContentProvider;
+    public IContentProvider ParentContentProvider { get; }
 
     protected SubContentProviderBase(
         IContentProvider parentContentProvider,
         string name,
         ITimelessContentProvider timelessContentProvider) : base(name, timelessContentProvider)
     {
-        _parentContentProvider = parentContentProvider;
+        ParentContentProvider = parentContentProvider;
     }
 
     public override async Task<IItem> GetItemByNativePathAsync(
@@ -22,7 +22,7 @@ public abstract class SubContentProviderBase : ContentProviderBase
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default)
-        => await _parentContentProvider.GetItemByNativePathAsync(
+        => await ParentContentProvider.GetItemByNativePathAsync(
             nativePath,
             pointInTime,
             forceResolve,
@@ -30,17 +30,14 @@ public abstract class SubContentProviderBase : ContentProviderBase
             itemInitializationSettings);
 
     public override async ValueTask<NativePath> GetNativePathAsync(FullName fullName)
-        => await _parentContentProvider.GetNativePathAsync(fullName);
+        => await ParentContentProvider.GetNativePathAsync(fullName);
 
     public override FullName GetFullName(NativePath nativePath)
-        => _parentContentProvider.GetFullName(nativePath);
-
-    public override async Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default)
-        => await _parentContentProvider.GetContentAsync(element, maxLength, cancellationToken);
+        => ParentContentProvider.GetFullName(nativePath);
 
     public override async Task<bool> CanHandlePathAsync(NativePath path)
-        => await _parentContentProvider.CanHandlePathAsync(path);
+        => await ParentContentProvider.CanHandlePathAsync(path);
 
-    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path)
-        => _parentContentProvider.GetVolumeSizeInfo(path);
+    public override async ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath)
+        => await ParentContentProvider.GetSupportedPathPart(nativePath);
 }

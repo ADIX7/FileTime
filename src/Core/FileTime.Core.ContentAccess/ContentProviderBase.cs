@@ -95,5 +95,6 @@ public abstract class ContentProviderBase : IContentProvider
 
     public abstract VolumeSizeInfo? GetVolumeSizeInfo(FullName path);
 
-    public IItem WithParent(AbsolutePath parent) => this; 
+    public IItem WithParent(AbsolutePath parent) => this;
+    public abstract ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath);
 }

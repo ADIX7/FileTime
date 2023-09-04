@@ -1,12 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using DiscUtils;
-using DiscUtils.Iso9660;
 using DiscUtils.Udf;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
-using FileTime.Tools.VirtualDiskSources.Abstractions;
 
 namespace FileTime.Tools.VirtualDiskSources;
 
@@ -14,14 +12,17 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
 {
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly IVirtualDiskContentProviderFactory _virtualDiskContentProviderFactory;
 
     public VirtualDiskSubContentProvider(
         IContentAccessorFactory contentAccessorFactory,
-        ITimelessContentProvider timelessContentProvider
+        ITimelessContentProvider timelessContentProvider,
+        IVirtualDiskContentProviderFactory virtualDiskContentProviderFactory
     )
     {
         _contentAccessorFactory = contentAccessorFactory;
         _timelessContentProvider = timelessContentProvider;
+        _virtualDiskContentProviderFactory = virtualDiskContentProviderFactory;
     }
 
     public Task<bool> CanHandleAsync(IElement parentElement)
@@ -36,7 +37,7 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
     {
         var contentReaderFactory = _contentAccessorFactory.GetContentReaderFactory(parentElement.Provider);
         var reader = await contentReaderFactory.CreateContentReaderAsync(parentElement);
-        
+
         await using var readerStream = reader.AsStream();
         var discReader = new UdfReader(readerStream);
 
@@ -48,15 +49,18 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
             var rootFullName = new FullName(rootFullNameBase);
             var rootNativePath = new NativePath(rootNativePathBase);
 
-            return CreateContainer(discReader.Root,
+            var container = CreateContainer(
+                discReader,
+                discReader.Root,
                 rootFullName,
                 rootNativePath,
                 parentElement.Provider,
                 parentElement.Parent!,
                 parentElement.PointInTime,
                 itemInitializationSettings);
+            return container;
         }
-        
+
         return ResolveNonRootChild(discReader, parentElement, itemPath, pointInTime, itemInitializationSettings);
     }
 
@@ -74,7 +78,7 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
 
         var childFullName = new FullName(childFullNameBase);
         var childNativePath = new NativePath(childNativePathBase);
-        
+
         var parent = new AbsolutePath(_timelessContentProvider, pointInTime, childFullName.GetParent()!, AbsolutePathType.Container);
 
         var container = discReader.Root;
@@ -89,6 +93,7 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
         if (container.GetDirectories().FirstOrDefault(d => d.Name == pathParts[^1]) is { } childContainer)
         {
             return CreateContainer(
+                discReader,
                 childContainer,
                 childFullName,
                 childNativePath,
@@ -99,22 +104,26 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
             );
         }
 
-        if (container.GetFiles().FirstOrDefault(d => d.Name == pathParts[^1]) is { } childElement)
+        if (container.GetFiles().FirstOrDefault(d => d.Name == pathParts[^1]) is not { } childElement)
         {
-            return CreateElement(
-                childElement,
-                childFullName,
-                childNativePath,
-                parentElement.Provider,
-                parent,
-                pointInTime
-            );
+            return null;
         }
 
-        return null;
+        var element = CreateElement(
+            childElement,
+            childFullName,
+            childNativePath,
+            parentElement.Provider,
+            parent,
+            pointInTime
+        );
+
+        discReader.Dispose();
+        return element;
     }
 
     private IContainer CreateContainer(
+        UdfReader discReader,
         DiscDirectoryInfo sourceContainer,
         FullName fullname,
         NativePath nativePath,
@@ -138,7 +147,7 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
             SupportsDelete.False,
             false,
             FormatAttributes(sourceContainer.Attributes),
-            new VirtualDiskContentProvider(parentContentProvider, _timelessContentProvider),
+            _virtualDiskContentProviderFactory.Create(parentContentProvider),
             false,
             pointInTime,
             exceptions,
@@ -148,7 +157,11 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
 
         if (!initializationSettings.SkipChildInitialization)
         {
-            ThreadPool.QueueUserWorkItem(_ => LoadChildren(container, sourceContainer, children, pointInTime, exceptions));
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                LoadChildren(container, sourceContainer, children, pointInTime, exceptions);
+                discReader.Dispose();
+            });
         }
 
         return container;
@@ -204,7 +217,7 @@ public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
             false,
             FormatAttributes(childElement.Attributes),
             childElement.Length,
-            new VirtualDiskContentProvider(parentContentProvider, _timelessContentProvider),
+            _virtualDiskContentProviderFactory.Create(parentContentProvider),
             pointInTime,
             new ObservableCollection<Exception>(),
             new ReadOnlyExtensionCollection(new ExtensionCollection())

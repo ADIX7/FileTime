@@ -164,6 +164,22 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         };
     }
 
+    public override ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath)
+    {
+        var path = nativePath.Path;
+        var pathParts = path.Split(Path.DirectorySeparatorChar).SelectMany(p => p.Split(Constants.SeparatorChar)).ToArray();
+        
+        for (var i = pathParts.Length - 1; i > 0; i--)
+        {
+            var possiblePath = string.Join(Path.DirectorySeparatorChar, pathParts.Take(i));
+            if (!File.Exists(possiblePath) && !Directory.Exists(possiblePath)) continue;
+
+            return ValueTask.FromResult<NativePath?>(new NativePath(possiblePath));
+        }
+
+        return ValueTask.FromResult<NativePath?>(null);
+    }
+
     private Container CreateEmptyContainer(NativePath nativePath,
         PointInTime pointInTime,
         IEnumerable<Exception>? initialExceptions = null)

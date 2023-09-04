@@ -29,4 +29,5 @@ public interface IContentProvider : IContainer, IOnContainerEnter
     Task<bool> CanHandlePathAsync(NativePath path);
     Task<bool> CanHandlePathAsync(FullName path);
     VolumeSizeInfo? GetVolumeSizeInfo(FullName path);
+    ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath);
 }

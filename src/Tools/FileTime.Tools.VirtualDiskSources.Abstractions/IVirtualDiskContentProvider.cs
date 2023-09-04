@@ -2,7 +2,7 @@
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public interface IVirtualDiskSubContentProvider : ISubContentProvider
+public interface IVirtualDiskContentProvider : IContentProvider
 {
     
 }

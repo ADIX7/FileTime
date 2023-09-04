@@ -80,6 +80,7 @@ public class SearchContentProvider : ContentProviderBase, ISearchContentProvider
 
     public override Task<bool> CanHandlePathAsync(NativePath path) => Task.FromResult(path.Path.StartsWith(ContentProviderName));
     public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
+    public override ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath) => throw new NotImplementedException();
 
     public async Task<ISearchTask> StartSearchAsync(ISearchMatcher matcher, IContainer searchIn)
     {

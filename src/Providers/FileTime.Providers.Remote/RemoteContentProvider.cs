@@ -104,6 +104,7 @@ public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentP
 
     public override Task<bool> CanHandlePathAsync(NativePath path) => throw new NotImplementedException();
     public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => throw new NotImplementedException();
+    public override ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath) => throw new NotImplementedException();
 
     private string ConvertLocalFullNameToRemote(FullName fullName)
     {

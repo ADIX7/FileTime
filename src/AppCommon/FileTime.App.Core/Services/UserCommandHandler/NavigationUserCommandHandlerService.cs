@@ -22,6 +22,7 @@ namespace FileTime.App.Core.Services.UserCommandHandler;
 public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 {
     private const int PageSize = 8;
+
     private readonly IAppState _appState;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILocalContentProvider _localContentProvider;
@@ -33,6 +34,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IContentProviderRegistry _contentProviderRegistry;
     private readonly ILogger<NavigationUserCommandHandlerService> _logger;
     private readonly ApplicationConfiguration _applicationConfiguration;
+
     private ITabViewModel? _selectedTab;
     private IDeclarativeProperty<IContainer?>? _currentLocation;
     private IDeclarativeProperty<IItemViewModel?>? _currentSelectedItem;
@@ -147,9 +149,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     }
 
     private async Task GoByFrequency()
-    {
-        await _frequencyNavigationService.OpenNavigationWindow();
-    }
+        => await _frequencyNavigationService.OpenNavigationWindow();
 
     private async Task GoToPath()
     {
@@ -166,6 +166,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         }
         catch
         {
+            // ignored
         }
 
         if (resolvedPath is IContainer container)
@@ -173,10 +174,10 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
             await _userCommandHandlerService.HandleCommandAsync(
                 new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, container)));
         }
-        else if (resolvedPath is IElement element)
+        else if (resolvedPath is IElement {Parent: { } parent})
         {
             await _userCommandHandlerService.HandleCommandAsync(
-                new OpenContainerCommand(element.Parent!));
+                new OpenContainerCommand(parent));
         }
         else
         {
@@ -492,7 +493,10 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private Task CloseTab()
     {
-        if ((!_applicationConfiguration.AllowCloseLastTab && _appState.Tabs.Count < 2) || _selectedTab == null) return Task.CompletedTask;
+        if ((!_applicationConfiguration.AllowCloseLastTab && _appState.Tabs.Count < 2) || _selectedTab == null)
+        {
+            return Task.CompletedTask;
+        }
 
         var tabToRemove = _selectedTab;
         _appState.RemoveTab(tabToRemove!);
@@ -503,6 +507,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         }
         catch
         {
+            // ignored
         }
 
         return Task.CompletedTask;
