@@ -184,7 +184,9 @@ public partial class TabViewModel : ITabViewModel
 
     private static IItem MapItem(AbsolutePath item)
     {
-        var t = Task.Run(async () => await MapItemAsync(item));
+        var t = Task.Run(async () => 
+            await MapItemAsync(item) 
+            ?? throw new Exception("Could not resolve path " + item.Path.Path));
         t.Wait();
         return t.Result;
     }

@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using FileTime.Core.Enums;
 using FileTime.Core.Timeline;
 
 namespace FileTime.Core.Models;
 
+[DebuggerDisplay("{Path.Path}, {Type}")]
 public class AbsolutePath
 {
     public ITimelessContentProvider TimelessProvider { get; }

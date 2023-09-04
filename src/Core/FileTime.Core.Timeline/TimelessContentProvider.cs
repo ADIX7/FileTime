@@ -1,4 +1,4 @@
-using System.Reactive.Subjects;
+using DeclarativeProperty;
 using FileTime.Core.ContentAccess;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
@@ -10,8 +10,8 @@ public class TimelessContentProvider : ITimelessContentProvider
 {
     private readonly IContentProviderRegistry _contentProviderRegistry;
     private readonly Lazy<IRootContentProvider> _rootContentProvider;
-
-    public BehaviorSubject<PointInTime> CurrentPointInTime { get; } = new(PointInTime.Present);
+    private readonly DeclarativeProperty<PointInTime> _currentPointInTime = new(PointInTime.Present);
+    public IDeclarativeProperty<PointInTime> CurrentPointInTime => _currentPointInTime;
 
     public TimelessContentProvider(
         IContentProviderRegistry contentProviderRegistry,

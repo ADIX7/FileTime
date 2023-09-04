@@ -6,6 +6,7 @@ using FileTime.Core;
 using FileTime.Providers.Local;
 using FileTime.Providers.LocalAdmin;
 using FileTime.Providers.Remote;
+using FileTime.Tools.VirtualDiskSources;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,6 +29,7 @@ public static class DependencyInjection
             .AddAppCoreDependencies(configuration)
             .AddLocalProviderServices()
             .AddLocalAdminProviderServices(configuration)
-            .AddRemoteProviderServices();
+            .AddRemoteProviderServices()
+            .AddVirtualDisk();
     }
 }

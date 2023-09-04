@@ -24,7 +24,7 @@ public class SearchContentProvider : ContentProviderBase, ISearchContentProvider
         PointInTime pointInTime,
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
-        ItemInitializationSettings itemInitializationSettings = null
+        ItemInitializationSettings itemInitializationSettings = default
     )
     {
         if (fullName.Path == ContentProviderName)

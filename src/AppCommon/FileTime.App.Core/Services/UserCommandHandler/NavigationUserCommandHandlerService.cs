@@ -8,6 +8,7 @@ using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.UserCommand;
 using FileTime.App.Core.ViewModels;
 using FileTime.App.FrequencyNavigation.Services;
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
@@ -29,6 +30,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
     private readonly IUserCommunicationService _userCommunicationService;
     private readonly IFrequencyNavigationService _frequencyNavigationService;
     private readonly ICommandPaletteService _commandPaletteService;
+    private readonly IContentProviderRegistry _contentProviderRegistry;
     private readonly ILogger<NavigationUserCommandHandlerService> _logger;
     private readonly ApplicationConfiguration _applicationConfiguration;
     private ITabViewModel? _selectedTab;
@@ -46,6 +48,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         IUserCommunicationService userCommunicationService,
         IFrequencyNavigationService frequencyNavigationService,
         ICommandPaletteService commandPaletteService,
+        IContentProviderRegistry contentProviderRegistry,
         ILogger<NavigationUserCommandHandlerService> logger,
         ApplicationConfiguration applicationConfiguration) : base(appState)
     {
@@ -57,6 +60,7 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
         _userCommunicationService = userCommunicationService;
         _frequencyNavigationService = frequencyNavigationService;
         _commandPaletteService = commandPaletteService;
+        _contentProviderRegistry = contentProviderRegistry;
         _logger = logger;
         _applicationConfiguration = applicationConfiguration;
 
@@ -249,13 +253,40 @@ public class NavigationUserCommandHandlerService : UserCommandHandlerServiceBase
 
     private async Task OpenSelected()
     {
-        if (_currentSelectedItem?.Value is not IContainerViewModel containerViewModel || containerViewModel.Container is null)
+        var targetContainer = await GetSubContainer();
+
+        if (targetContainer is null
+            && _currentSelectedItem?.Value is IContainerViewModel {Container: { } container})
+        {
+            targetContainer = container;
+        }
+
+        if (targetContainer is null)
+        {
             return;
+        }
 
         await _appState.SetRapidTravelTextAsync("");
         if (_selectedTab?.Tab is { } tab)
         {
-            await tab.SetCurrentLocation(containerViewModel.Container);
+            await tab.SetCurrentLocation(targetContainer);
+        }
+
+        async Task<IContainer?> GetSubContainer()
+        {
+            if (_currentSelectedItem?.Value is not {BaseItem: IElement element})
+            {
+                return null;
+            }
+
+            var subContentProvider = await _contentProviderRegistry.GetSubContentProviderForElement(element);
+            if (subContentProvider is null) return null;
+
+            var resolvedItem = await subContentProvider.GetItemByFullNameAsync(
+                element,
+                new FullName(""),
+                _timelessContentProvider.CurrentPointInTime.Value!);
+            return resolvedItem as IContainer;
         }
     }
 

@@ -12,15 +12,18 @@ namespace FileTime.Providers.Local;
 public sealed partial class LocalContentProvider : ContentProviderBase, ILocalContentProvider
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
+    private readonly IContentProviderRegistry _contentProviderRegistry;
     private readonly bool _isCaseInsensitive;
     private readonly Lazy<ObservableCollection<RootDriveInfo>> _rootDriveInfos;
 
     public LocalContentProvider(
         ITimelessContentProvider timelessContentProvider,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IContentProviderRegistry contentProviderRegistry)
         : base(LocalContentProviderConstants.ContentProviderId, timelessContentProvider)
     {
         _timelessContentProvider = timelessContentProvider;
+        _contentProviderRegistry = contentProviderRegistry;
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         _rootDriveInfos = new Lazy<ObservableCollection<RootDriveInfo>>(() => serviceProvider.GetRequiredService<IRootDriveInfoService>().RootDriveInfos);
@@ -45,12 +48,6 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
         Items.Clear();
         Items.AddRange(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
-
-        /*Items.Edit(actions =>
-        {
-            actions.Clear();
-            actions.AddOrUpdate(rootDirectories.Select(d => DirectoryToAbsolutePath(d, PointInTime.Present)));
-        });*/
     }
 
     public override async Task<bool> CanHandlePathAsync(NativePath path)
@@ -79,11 +76,11 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         return new VolumeSizeInfo(rootDriveInfo.Size, rootDriveInfo.Free);
     }
 
-    public override Task<IItem> GetItemByNativePathAsync(NativePath nativePath,
+    public override async Task<IItem> GetItemByNativePathAsync(NativePath nativePath,
         PointInTime pointInTime,
         bool forceResolve = false,
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
-        ItemInitializationSettings? itemInitializationSettings = null)
+        ItemInitializationSettings itemInitializationSettings = default)
     {
         var path = nativePath.Path;
         Exception? innerException;
@@ -91,19 +88,40 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         {
             if (path.Length == 0)
             {
-                return Task.FromResult((IItem) this);
+                return this;
             }
-            else if (Directory.Exists(path))
+
+            if (Directory.Exists(path))
             {
-                return Task.FromResult((IItem) DirectoryToContainer(
-                    new DirectoryInfo(path!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
+                return DirectoryToContainer(
+                    new DirectoryInfo(path.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar),
                     pointInTime,
-                    itemInitializationSettings)
-                );
+                    itemInitializationSettings);
             }
             else if (File.Exists(path))
             {
-                return Task.FromResult((IItem) FileToElement(new FileInfo(path), pointInTime));
+                return FileToElement(new FileInfo(path), pointInTime);
+            }
+
+            var pathParts = path.Split(Path.DirectorySeparatorChar).SelectMany(p => p.Split(Constants.SeparatorChar)).ToArray();
+
+            for (var i = pathParts.Length - 1; i > 0; i--)
+            {
+                var possibleFile = string.Join(Path.DirectorySeparatorChar, pathParts.Take(i));
+                if (!File.Exists(possibleFile)) continue;
+
+                var element = FileToElement(new FileInfo(possibleFile), pointInTime);
+                var subContentProvider = await _contentProviderRegistry.GetSubContentProviderForElement(element);
+                if (subContentProvider is null) break;
+
+                var subPath = string.Join(Constants.SeparatorChar, pathParts.Skip(i));
+
+                var resolvedItem = await subContentProvider.GetItemByFullNameAsync(element, new FullName(subPath), pointInTime, forceResolvePathType, itemInitializationSettings);
+
+                if (resolvedItem is not null)
+                {
+                    return resolvedItem;
+                }
             }
 
             var type = forceResolvePathType switch
@@ -134,14 +152,12 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
         return forceResolvePathType switch
         {
-            AbsolutePathType.Container => Task.FromResult(
-                (IItem) CreateEmptyContainer(
-                    nativePath,
-                    pointInTime,
-                    new List<Exception>() {innerException}
-                )
+            AbsolutePathType.Container => CreateEmptyContainer(
+                nativePath,
+                pointInTime,
+                new List<Exception> {innerException}
             ),
-            AbsolutePathType.Element => Task.FromResult(CreateEmptyElement(nativePath)),
+            AbsolutePathType.Element => CreateEmptyElement(nativePath),
             _ => throw new Exception(
                 $"Could not resolve path '{nativePath.Path}' and could not force create, because {nameof(forceResolvePathType)} is {nameof(AbsolutePathType.Unknown)}.",
                 innerException)
@@ -211,10 +227,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     }
 
     private Container DirectoryToContainer(DirectoryInfo directoryInfo, PointInTime pointInTime,
-        ItemInitializationSettings? initializationSettings = null)
+        ItemInitializationSettings initializationSettings = default)
     {
-        initializationSettings ??= new();
-
         var fullName = GetFullName(directoryInfo.FullName);
         var parentFullName = fullName.GetParent();
         var parent =
@@ -336,17 +350,6 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         }
     }
 
-    private List<AbsolutePath> GetItemsByContainer(DirectoryInfo directoryInfo, PointInTime pointInTime)
-        => directoryInfo
-            .GetDirectories()
-            .Select(d => DirectoryToAbsolutePath(d, pointInTime))
-            .Concat(
-                directoryInfo
-                    .GetFiles()
-                    .Select(f => FileToAbsolutePath(f, pointInTime))
-            )
-            .ToList();
-
     private Element FileToElement(FileInfo fileInfo, PointInTime pointInTime)
     {
         var fullName = GetFullName(fileInfo);
@@ -387,7 +390,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                                  nativePath.TrimStart(Constants.SeparatorChar).Split(Path.DirectorySeparatorChar)))
             .TrimEnd(Constants.SeparatorChar))!;
 
-    public override ValueTask<NativePath> GetNativePathAsync(FullName fullName) 
+    public override ValueTask<NativePath> GetNativePathAsync(FullName fullName)
         => ValueTask.FromResult(GetNativePath(fullName));
 
     public NativePath GetNativePath(FullName fullName)

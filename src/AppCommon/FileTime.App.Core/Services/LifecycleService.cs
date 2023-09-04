@@ -5,15 +5,18 @@ namespace FileTime.App.Core.Services;
 
 public class LifecycleService : ILifecycleService
 {
+    private readonly IEnumerable<IPreStartupHandler> _preStartupHandlers;
     private readonly IEnumerable<IExitHandler> _exitHandlers;
     private readonly IEnumerable<IStartupHandler> _startupHandlers;
     private readonly ILogger<LifecycleService> _logger;
 
     public LifecycleService(
+        IEnumerable<IPreStartupHandler> preStartupHandlers,
         IEnumerable<IStartupHandler> startupHandlers,
         IEnumerable<IExitHandler> exitHandlers,
         ILogger<LifecycleService> logger)
     {
+        _preStartupHandlers = preStartupHandlers;
         _exitHandlers = exitHandlers;
         _startupHandlers = startupHandlers;
         _logger = logger;
@@ -21,6 +24,18 @@ public class LifecycleService : ILifecycleService
 
     public async Task InitStartupHandlersAsync()
     {
+        foreach (var preStartupHandler in _preStartupHandlers)
+        {
+            try
+            {
+                await preStartupHandler.InitAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while running pre-startup handler {Handler}", preStartupHandler.GetType().FullName);
+            }
+        }
+        
         foreach (var startupHandler in _startupHandlers)
         {
             try
@@ -29,7 +44,7 @@ public class LifecycleService : ILifecycleService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while running startup handler {Handler}", startupHandler?.GetType().FullName);
+                _logger.LogError(ex, "Error while running startup handler {Handler}", startupHandler.GetType().FullName);
             }
         }
     }

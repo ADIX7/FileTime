@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace FileTime.Core.Models;
 
+[DebuggerDisplay("{Path}")]
 public record FullName(string Path)
 {
     public FullName? GetParent()

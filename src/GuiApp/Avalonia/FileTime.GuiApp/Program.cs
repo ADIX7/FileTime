@@ -113,9 +113,9 @@ public static class Program
 
     private static void NormalStartup(string[] args)
     {
-        AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
+        /*AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
         AppDomain.CurrentDomain.UnhandledException += OnAppDomainUnhandledException;
-        TaskScheduler.UnobservedTaskException += OnTaskSchedulerUnobservedTaskException;
+        TaskScheduler.UnobservedTaskException += OnTaskSchedulerUnobservedTaskException;*/
         try
         {
             BuildAvaloniaApp()

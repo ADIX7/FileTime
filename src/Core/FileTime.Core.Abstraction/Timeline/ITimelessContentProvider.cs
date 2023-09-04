@@ -1,4 +1,4 @@
-using System.Reactive.Subjects;
+using DeclarativeProperty;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
 
@@ -6,7 +6,7 @@ namespace FileTime.Core.Timeline;
 
 public interface ITimelessContentProvider
 {
-    BehaviorSubject<PointInTime> CurrentPointInTime { get; }
+    IDeclarativeProperty<PointInTime> CurrentPointInTime { get; }
 
     Task<IItem> GetItemByFullNameAsync(FullName fullName,
         PointInTime? pointInTime,

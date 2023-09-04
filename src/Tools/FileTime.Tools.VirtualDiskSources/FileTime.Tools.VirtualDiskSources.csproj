@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AppCommon\FileTime.App.Core.Abstraction\FileTime.App.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\Core\FileTime.Core.Abstraction\FileTime.Core.Abstraction.csproj" />
+    <ProjectReference Include="..\..\Core\FileTime.Core.ContentAccess\FileTime.Core.ContentAccess.csproj" />
+    <ProjectReference Include="..\..\Core\FileTime.Core.Models\FileTime.Core.Models.csproj" />
+    <ProjectReference Include="..\FileTime.Tools.VirtualDiskSources.Abstractions\FileTime.Tools.VirtualDiskSources.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LTRData.DiscUtils.Containers" Version="1.0.28" />
+    <PackageReference Include="LTRData.DiscUtils.FileSystems" Version="1.0.28" />
+    <PackageReference Include="LTRData.DiscUtils.OpticalDisk" Version="1.0.28" />
+    <PackageReference Include="LTRData.DiscUtils.VirtualFileSystem" Version="1.0.28" />
+  </ItemGroup>
+
+</Project>
