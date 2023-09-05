@@ -70,13 +70,13 @@ public partial class TabViewModel : ITabViewModel
 
         CurrentItems =
             tab.CurrentItems
-                .Map((items, _) =>
+                .Map(items =>
                     Task.FromResult<ObservableCollection<IItemViewModel>?>(
                         items?.Selecting<IItem, IItemViewModel>(
                             i => MapItemToViewModel(i, ItemViewModelType.Main)
                         )
                     )
-                );
+                )!;
 
         using var _ = Defer(
             () => CurrentItems.Subscribe(c => UpdateConsumer(c, ref _currentItemsConsumer))
@@ -144,9 +144,9 @@ public partial class TabViewModel : ITabViewModel
             SelectedsChildren.Subscribe(c => UpdateConsumer(c, ref _selectedsChildrenConsumer))
         );
 
-        ParentsChildren = CurrentLocation.Map(async (item, _) =>
+        ParentsChildren = CurrentLocation.Map(async item =>
         {
-            if (item is null || item.Parent is null) return (ObservableCollection<IItemViewModel>?) null;
+            if (item?.Parent is null) return (ObservableCollection<IItemViewModel>?) null;
             var parent = (IContainer) await item.Parent.ResolveAsync();
 
             var items = parent.Items
@@ -156,7 +156,7 @@ public partial class TabViewModel : ITabViewModel
                 .Selecting(i => MapItemToViewModel(i, ItemViewModelType.Parent));
 
             return items;
-        });
+        })!;
         using var ___ = Defer(() =>
             ParentsChildren.Subscribe(c => UpdateConsumer(c, ref _parentsChildrenConsumer))
         );

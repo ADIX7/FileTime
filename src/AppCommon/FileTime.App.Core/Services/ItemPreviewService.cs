@@ -19,12 +19,12 @@ public class ItemPreviewService : IItemPreviewService
             .Map(t => t?.CurrentSelectedItem)
             .Switch()
             .Debounce(TimeSpan.FromMilliseconds(250))
-            .Map(async (item, _) =>
+            .Map(async item =>
                 item == null
                     ? null
                     : await Map(item)
             )
-            .DistinctUntilChanged();
+            .DistinctUntilChanged()!;
     }
 
     private async Task<IItemPreviewViewModel?> Map(IItemViewModel itemViewModel)

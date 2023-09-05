@@ -176,6 +176,15 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
             if (item is IContainer container)
             {
+                try
+                {
+                    await container.WaitForLoaded(_cancellationTokenSource.Token);
+                }
+                catch(OperationCanceledException)
+                {
+                    return;
+                }
+
                 if (resolvedTarget.Items.All(i => i.Path.GetName() != item.Name))
                 {
                     await copyOperation.CreateContainerAsync(resolvedTarget, container.Name, container.PointInTime);

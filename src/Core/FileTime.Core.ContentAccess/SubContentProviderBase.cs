@@ -46,6 +46,9 @@ public abstract class SubContentProviderBase : ContentProviderBase
     public override async ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath)
         => await ParentContentProvider.GetSupportedPathPart(nativePath);
 
-    protected async Task<ParentElementReaderContext> GetParentElementReaderAsync(IElement element)
-        => await Helper.GetParentElementReaderAsync(_contentAccessorFactory, element, ParentContentProvider);
+    protected async Task<ParentElementReaderContext> GetParentElementReaderAsync(IItem item)
+        => await Helper.GetParentElementReaderAsync(_contentAccessorFactory, item, ParentContentProvider);
+
+    protected async Task<IElement> GetParentElementAsync(IItem item)
+        => await Helper.GetParentElementAsync(item, ParentContentProvider);
 }

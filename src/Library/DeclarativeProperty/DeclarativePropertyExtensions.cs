@@ -21,6 +21,9 @@ public static class DeclarativePropertyExtensions
     public static IDeclarativeProperty<T> DistinctUntilChanged<T>(this IDeclarativeProperty<T> from)
         => new DistinctUntilChangedProperty<T>(from);
 
+    public static IDeclarativeProperty<TTo> Map<TFrom, TTo>(this IDeclarativeProperty<TFrom?> from, Func<TFrom?, Task<TTo?>> mapper)
+        => Map(from, async (v, _) => await mapper(v));
+
     public static IDeclarativeProperty<TTo> Map<TFrom, TTo>(this IDeclarativeProperty<TFrom?> from, Func<TFrom?, CancellationToken, Task<TTo?>> mapper)
         => new MapProperty<TFrom?, TTo>(mapper, from);
 

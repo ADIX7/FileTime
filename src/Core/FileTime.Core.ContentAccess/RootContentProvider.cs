@@ -85,7 +85,7 @@ public class RootContentProvider : IRootContentProvider
     public Task<bool> CanHandlePathAsync(NativePath path) => throw new NotImplementedException();
 
     public Task<bool> CanHandlePathAsync(FullName path) => throw new NotImplementedException();
-    public VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => null;
+    public ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path) => ValueTask.FromResult<VolumeSizeInfo?>(null);
     public ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath) => throw new NotImplementedException();
 
     public IItem WithParent(AbsolutePath parent) => this;

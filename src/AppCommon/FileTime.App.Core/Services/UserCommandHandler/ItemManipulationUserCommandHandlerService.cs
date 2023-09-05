@@ -461,7 +461,7 @@ public class ItemManipulationUserCommandHandlerService : UserCommandHandlerServi
 
         var deleteCommand = _serviceProvider.GetRequiredService<FileTime.Core.Command.Delete.DeleteCommand>();
         deleteCommand.HardDelete = command.IsHardDelete;
-        deleteCommand.ItemsToDelete.AddRange(itemsToDelete!);
+        deleteCommand.ItemsToDelete.AddRange(itemsToDelete);
         await AddCommandAsync(deleteCommand);
 
         _selectedTab?.ClearMarkedItems();

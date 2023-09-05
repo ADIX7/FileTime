@@ -66,14 +66,14 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         return rootDrive is not null;
     }
 
-    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path)
+    public override ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path)
     {
         var rootDriveInfos = _rootDriveInfos.Value;
         var rootDriveInfo = rootDriveInfos.FirstOrDefault(d => path.Path.StartsWith(d.Path.Path));
 
-        if (rootDriveInfo is null) return null;
+        if (rootDriveInfo is null) return ValueTask.FromResult<VolumeSizeInfo?>(null);
 
-        return new VolumeSizeInfo(rootDriveInfo.Size, rootDriveInfo.Free);
+        return ValueTask.FromResult<VolumeSizeInfo?>(new VolumeSizeInfo(rootDriveInfo.Size, rootDriveInfo.Free));
     }
 
     public override async Task<IItem> GetItemByNativePathAsync(NativePath nativePath,

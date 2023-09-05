@@ -7,7 +7,7 @@ namespace FileTime.Tools.VirtualDiskSources;
 
 public sealed class VirtualDiskContentProvider : SubContentProviderBase, IVirtualDiskContentProvider
 {
-    private readonly IContentAccessorFactory _contentAccessorFactory;
+    private readonly ITimelessContentProvider _timelessContentProvider;
 
     public VirtualDiskContentProvider(
         ITimelessContentProvider timelessContentProvider,
@@ -20,7 +20,7 @@ public sealed class VirtualDiskContentProvider : SubContentProviderBase, IVirtua
             "virtual-disk"
         )
     {
-        _contentAccessorFactory = contentAccessorFactory;
+        _timelessContentProvider = timelessContentProvider;
     }
 
     public override async Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default)
@@ -41,6 +41,11 @@ public sealed class VirtualDiskContentProvider : SubContentProviderBase, IVirtua
         return data[..readAsync].ToArray();
     }
 
-    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path)
-        => ParentContentProvider.GetVolumeSizeInfo(path);
+
+    public override async ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path)
+    {
+        var item = await GetItemByFullNameAsync(path, _timelessContentProvider.CurrentPointInTime.Value!);
+        var parentElement = await GetParentElementAsync(item);
+        return new VolumeSizeInfo(parentElement.Size, 0);
+    }
 }

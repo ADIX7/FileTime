@@ -103,7 +103,7 @@ public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentP
     public override Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     public override Task<bool> CanHandlePathAsync(NativePath path) => throw new NotImplementedException();
-    public override VolumeSizeInfo? GetVolumeSizeInfo(FullName path) => throw new NotImplementedException();
+    public override ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path) => throw new NotImplementedException();
     public override ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath) => throw new NotImplementedException();
 
     private string ConvertLocalFullNameToRemote(FullName fullName)

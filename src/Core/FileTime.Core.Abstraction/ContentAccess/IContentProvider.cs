@@ -28,6 +28,6 @@ public interface IContentProvider : IContainer, IOnContainerEnter
     Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default);
     Task<bool> CanHandlePathAsync(NativePath path);
     Task<bool> CanHandlePathAsync(FullName path);
-    VolumeSizeInfo? GetVolumeSizeInfo(FullName path);
+    ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path);
     ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath);
 }

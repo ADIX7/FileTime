@@ -9,6 +9,7 @@ public class DeleteCommand : CommandBase, IExecutableCommand
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
     public bool HardDelete { get; set; }
     public List<FullName> ItemsToDelete { get; } = new();
 
@@ -35,10 +36,7 @@ public class DeleteCommand : CommandBase, IExecutableCommand
         return Task.FromResult(currentTime);
     }
 
-    public override void Cancel()
-    {
-        //TODO: Implement
-    }
+    public override void Cancel() => _cancellationTokenSource.Cancel();
 
     public async Task Execute()
     {
@@ -70,6 +68,8 @@ public class DeleteCommand : CommandBase, IExecutableCommand
     {
         foreach (var itemToDeleteName in itemsToDelete)
         {
+            if (_cancellationTokenSource.IsCancellationRequested) return;
+            
             var itemToDelete = await _timelessContentProvider.GetItemByFullNameAsync(itemToDeleteName, currentTime);
             IItemDeleter? itemDeleter = null;
 
@@ -93,6 +93,15 @@ public class DeleteCommand : CommandBase, IExecutableCommand
 
             if (itemToDelete is IContainer container)
             {
+                try
+                {
+                    await container.WaitForLoaded(_cancellationTokenSource.Token);
+                }
+                catch(OperationCanceledException)
+                {
+                    return;
+                }
+                
                 await TraverseTree(
                     currentTime,
                     container.Items.Select(i => i.Path),

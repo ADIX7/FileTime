@@ -24,8 +24,8 @@ public partial class RootViewModel : IRootViewModel
     public IAdminElevationManager AdminElevationManager { get; }
     public IDialogService DialogService { get; }
     public ITimelineViewModel TimelineViewModel { get; }
-    public IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get;}
-    
+    public IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get; }
+
     public event Action<IInputElement>? FocusReadInputElement;
 
     public RootViewModel(
@@ -71,6 +71,6 @@ public partial class RootViewModel : IRootViewModel
         VolumeSizeInfo = appState.SelectedTab
             .Map(t => t?.CurrentLocation)
             .Switch()
-            .Map(l => l?.Provider.GetVolumeSizeInfo(l.FullName!));
+            .Map(async l => l is null ? null : await l.Provider.GetVolumeSizeInfoAsync(l.FullName!));
     }
 }

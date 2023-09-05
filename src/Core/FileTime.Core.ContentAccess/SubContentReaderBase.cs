@@ -13,6 +13,9 @@ public abstract class SubContentReaderBase<TContentProvider> : IContentReaderFac
 
     public abstract Task<IContentReader> CreateContentReaderAsync(IElement element);
 
-    protected async Task<ParentElementReaderContext> GetParentElementReaderAsync(IElement element, SubContentProviderBase provider)
-        => await Helper.GetParentElementReaderAsync(_contentAccessorFactory, element, provider.ParentContentProvider);
+    protected async Task<ParentElementReaderContext> GetParentElementReaderAsync(IItem item, SubContentProviderBase provider)
+        => await Helper.GetParentElementReaderAsync(_contentAccessorFactory, item, provider.ParentContentProvider);
+
+    protected async Task<IElement> GetParentElementAsync(IItem item, SubContentProviderBase provider)
+        => await Helper.GetParentElementAsync(item, provider.ParentContentProvider);
 }

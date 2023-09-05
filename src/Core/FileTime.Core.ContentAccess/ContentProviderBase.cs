@@ -93,7 +93,7 @@ public abstract class ContentProviderBase : IContentProvider
         => path.Path.TrimEnd(Constants.SeparatorChar) == Name 
            || await CanHandlePathAsync(await GetNativePathAsync(path));
 
-    public abstract VolumeSizeInfo? GetVolumeSizeInfo(FullName path);
+    public abstract ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path);
 
     public IItem WithParent(AbsolutePath parent) => this;
     public abstract ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath);
