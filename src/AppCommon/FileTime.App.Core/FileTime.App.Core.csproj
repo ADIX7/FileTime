@@ -18,6 +18,7 @@
     <PackageReference Include="morelinq" Version="3.4.2" />
     <PackageReference Include="MvvmGen" Version="1.2.1" />
     <PackageReference Include="ObservableComputations" Version="2.3.0" />
+    <PackageReference Include="PdfPig" Version="0.1.8" />
     <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

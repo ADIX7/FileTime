@@ -1,15 +1,20 @@
 using System.Text;
 using FileTime.App.Core.Models;
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Models;
 using InitableService;
-using MvvmGen;
+using PropertyChanged.SourceGenerator;
+using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 
 namespace FileTime.App.Core.ViewModels.ItemPreview;
 
-[ViewModel]
 public partial class ElementPreviewViewModel : IElementPreviewViewModel, IAsyncInitable<IElement>
 {
+    private readonly IContentAccessorFactory _contentAccessorFactory;
     public const string PreviewName = "ElementPreview";
+
     private record EncodingResult(char BinaryChar, string PartialResult);
 
     private const int MaxTextPreviewSize = 1024 * 1024;
@@ -25,29 +30,90 @@ public partial class ElementPreviewViewModel : IElementPreviewViewModel, IAsyncI
 
     public ItemPreviewMode Mode { get; private set; }
 
-    [Property] private string? _textContent;
-    [Property] private byte[]? _binaryContent;
-    [Property] private string? _textEncoding;
+    [Notify] private string _textContent = string.Empty;
+    [Notify] private byte[] _binaryContent = Array.Empty<byte>();
+    [Notify] private string _textEncoding = string.Empty;
 
     public string Name => PreviewName;
+
+    public ElementPreviewViewModel(IContentAccessorFactory contentAccessorFactory)
+    {
+        _contentAccessorFactory = contentAccessorFactory;
+    }
 
     public async Task InitAsync(IElement element)
     {
         try
         {
-            var content = await element.Provider.GetContentAsync(element, MaxTextPreviewSize);
-            BinaryContent = content;
-
-            if (content is null)
+            if (element.FullName?.Path.EndsWith(".pdf") ?? false)
             {
-                TextContent = "Could not read any data from file " + element.Name;
+                var readerFactory = _contentAccessorFactory.GetContentReaderFactory(element.Provider);
+                var reader = await readerFactory.CreateContentReaderAsync(element);
+                await using var inputStream = reader.AsStream();
+                using var pdfDocument = PdfDocument.Open(inputStream);
+
+                var contentBuilder = new StringBuilder();
+                contentBuilder.AppendLine(element.Name + ", " + pdfDocument.NumberOfPages + " pages");
+                foreach (var page in pdfDocument.GetPages())
+                {
+                    contentBuilder.AppendLine("=== Page " + page.Number + "===");
+
+                    var words = page.GetWords();
+
+                    var lines = words.GroupBy(x => (int)Math.Round((x.Letters[0].StartBaseLine.Y / 7.0) * 7));
+
+                    foreach (var line in lines)
+                    {
+                        Word? previousWord = null;
+                        foreach (var word in line.OrderBy(x => x.BoundingBox.Left))
+                        {
+                            if (previousWord != null)
+                            {
+                                var gap = word.BoundingBox.Left - previousWord.BoundingBox.Right;
+
+                                var spaceSize = word.Letters[0].Width * 2;
+                                if (gap > spaceSize)
+                                {
+                                    contentBuilder.Append(' ', (int)(gap / spaceSize));
+                                }
+
+                                contentBuilder.Append(word).Append(" ");
+                            }
+                            else
+                            {
+                                contentBuilder.Append(word).Append(" ");
+                            }
+
+                            previousWord = word;
+                        }
+
+                        contentBuilder.AppendLine();
+                    }
+                    contentBuilder.AppendLine();
+
+                    if (contentBuilder.Length > MaxTextPreviewSize)
+                        break;
+                }
+
+                TextContent = contentBuilder.ToString();
+                TextEncoding = "UTF-8";
             }
             else
             {
-                (TextContent, var encoding) = GetNormalizedText(content);
-                TextEncoding = encoding is null
-                    ? null
-                    : $"{encoding.EncodingName} ({encoding.WebName})";
+                var content = await element.Provider.GetContentAsync(element, MaxTextPreviewSize);
+                BinaryContent = content ?? Array.Empty<byte>();
+
+                if (content is null)
+                {
+                    TextContent = "Could not read any data from file " + element.Name;
+                }
+                else
+                {
+                    (TextContent, var encoding) = GetNormalizedText(content);
+                    TextEncoding = encoding is null
+                        ? string.Empty
+                        : $"{encoding.EncodingName} ({encoding.WebName})";
+                }
             }
         }
         catch (Exception ex)
