@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using ObservableComputations;
 using PropertyChanged.SourceGenerator;
 using TerminalUI.Models;
@@ -27,6 +28,10 @@ public sealed partial class ItemsControl<TDataContext, TItem>
         set
         {
             if (_itemsSource == value) return;
+            
+            if(_itemsSource is INotifyCollectionChanged notifyCollectionChanged)
+                notifyCollectionChanged.CollectionChanged -= SourceCollectionChanged;
+            
             _itemsSource = value;
 
             foreach (var disposable in _itemsDisposables)
@@ -39,17 +44,25 @@ public sealed partial class ItemsControl<TDataContext, TItem>
             if (_itemsSource is ObservableCollection<TItem> observableDeclarative)
             {
                 var consumer = new OcConsumer();
-                _children = observableDeclarative
+                var children = observableDeclarative
                     .Selecting(i => CreateItem(i))
                     .For(consumer);
+                
+                children.CollectionChanged += SourceCollectionChanged;
+                _children = children;
+                
                 _itemsDisposables.Add(consumer);
             }
             else if (_itemsSource is ReadOnlyObservableCollection<TItem> readOnlyObservableDeclarative)
             {
                 var consumer = new OcConsumer();
-                _children = readOnlyObservableDeclarative
+                var children = readOnlyObservableDeclarative
                     .Selecting(i => CreateItem(i))
                     .For(consumer);
+                
+                children.CollectionChanged += SourceCollectionChanged;
+                _children = children;
+                
                 _itemsDisposables.Add(consumer);
             }
             else if (_itemsSource is ICollection<TItem> collection)
@@ -78,6 +91,10 @@ public sealed partial class ItemsControl<TDataContext, TItem>
         RerenderProperties.Add(nameof(Orientation));
     }
 
+    private void SourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RequestRerenderForThis();
+
+    private void RequestRerenderForThis() 
+        => ApplicationContext?.RenderEngine.RequestRerender(this);
 
     protected override Size CalculateSize()
     {

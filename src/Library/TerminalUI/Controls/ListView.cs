@@ -76,6 +76,10 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
         set
         {
             if (_itemsSource == value) return;
+
+            if (_itemsSource is INotifyCollectionChanged notifyCollectionChanged)
+                notifyCollectionChanged.CollectionChanged -= SourceCollectionChanged;
+
             _itemsSource = value;
 
             foreach (var disposable in _itemsDisposables)
@@ -87,15 +91,13 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
 
             if (_itemsSource is ObservableCollection<TItem> observableDeclarative)
             {
-                ((INotifyCollectionChanged) observableDeclarative).CollectionChanged +=
-                    (_, _) => ApplicationContext?.RenderEngine.RequestRerender(this);
+                ((INotifyCollectionChanged) observableDeclarative).CollectionChanged += SourceCollectionChanged;
 
                 _getItems = () => observableDeclarative;
             }
             else if (_itemsSource is ReadOnlyObservableCollection<TItem> readOnlyObservableDeclarative)
             {
-                ((INotifyCollectionChanged) readOnlyObservableDeclarative).CollectionChanged +=
-                    (_, _) => ApplicationContext?.RenderEngine.RequestRerender(this);
+                ((INotifyCollectionChanged) readOnlyObservableDeclarative).CollectionChanged += SourceCollectionChanged;
 
                 _getItems = () => readOnlyObservableDeclarative;
             }
@@ -134,6 +136,11 @@ public sealed partial class ListView<TDataContext, TItem> : View<ListView<TDataC
         RerenderProperties.Add(nameof(SelectedIndex));
         RerenderProperties.Add(nameof(Orientation));
     }
+
+    private void SourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RequestRerenderForThis();
+
+    private void RequestRerenderForThis()
+        => ApplicationContext?.RenderEngine.RequestRerender(this);
 
     protected override Size CalculateSize()
     {
