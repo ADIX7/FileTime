@@ -87,8 +87,8 @@ public class CommandPalette
                                         new TextBlock<ICommandPaletteEntryViewModel>()
                                             .Setup(t => t.Bind(
                                                 t,
-                                                d => d.Title,
-                                                t => t.Text)),
+                                                dc => dc!.Title,
+                                                tb => tb.Text)),
                                         new TextBlock<ICommandPaletteEntryViewModel>
                                             {
                                                 Extensions =
@@ -98,20 +98,24 @@ public class CommandPalette
                                             }
                                             .Setup(t => t.Bind(
                                                 t,
-                                                d => d.Shortcuts,
-                                                t => t.Text))
+                                                dc => dc!.Shortcuts,
+                                                tb => tb.Text))
                                     }
                                 };
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem.Identifier == item.DataContext.Identifier ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
+                                    dc => dc!.CommandPalette.SelectedItem!.Identifier == item.DataContext!.Identifier 
+                                        ? _theme.ListViewItemTheme.SelectedBackgroundColor 
+                                        : null,
                                     t => t.Background
                                 );
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.CommandPalette.SelectedItem.Identifier == item.DataContext.Identifier ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
+                                    dc => dc!.CommandPalette.SelectedItem!.Identifier == item.DataContext!.Identifier 
+                                        ? _theme.ListViewItemTheme.SelectedForegroundColor 
+                                        : null,
                                     t => t.Foreground
                                 );
 
@@ -119,13 +123,13 @@ public class CommandPalette
                             }
                         }.Setup(t => t.Bind(
                             t,
-                            d => d.CommandPalette.FilteredMatches,
-                            t => t.ItemsSource
+                            dc => dc!.CommandPalette.FilteredMatches,
+                            tb => tb.ItemsSource
                         ))
                         .Setup(t => t.Bind(
                             t,
-                            d => d.CommandPalette.SelectedItem,
-                            t => t.SelectedItem
+                            dc => dc!.CommandPalette.SelectedItem,
+                            tb => tb.SelectedItem
                         ))
                 }
             }
@@ -146,9 +150,8 @@ public class CommandPalette
 
         root.Bind(
             root,
-            d => d.CommandPalette.ShowWindow.Value,
-            t => t.IsVisible,
-            r => r);
+            dc => dc!.CommandPalette.ShowWindow.Value,
+            t => t.IsVisible);
 
         return root;
     }

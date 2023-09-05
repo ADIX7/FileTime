@@ -42,8 +42,8 @@ public class Timeline
                                         {
                                             new TextBlock<ICommandTimeStateViewModel>().Setup(t => t.Bind(
                                                 t,
-                                                dc => dc.DisplayLabel.Value,
-                                                t => t.Text)),
+                                                dc => dc!.DisplayLabel.Value,
+                                                tb => tb.Text)),
                                             new TextBlock<ICommandTimeStateViewModel>
                                             {
                                                 Width = 5,
@@ -51,8 +51,8 @@ public class Timeline
                                                 Extensions = {new GridPositionExtension(1, 0)}
                                             }.Setup(t => t.Bind(
                                                 t,
-                                                dc => dc.TotalProgress.Value,
-                                                t => t.Text,
+                                                dc => dc!.TotalProgress.Value,
+                                                tb => tb.Text,
                                                 v => $"{v}%")),
                                         }
                                     },
@@ -80,8 +80,8 @@ public class Timeline
                                         }
                                         .Setup(p => p.Bind(
                                             p,
-                                            dc => dc.TotalProgress.Value,
-                                            p => p.Value)),
+                                            dc => dc!.TotalProgress.Value,
+                                            pb => pb.Value)),
                                 }
                             };
 
@@ -90,8 +90,8 @@ public class Timeline
                     }
                     .Setup(i => i.Bind(
                         i,
-                        dc => dc.TimelineViewModel.ParallelCommandsGroups[0].Commands,
-                        i => i.ItemsSource))
+                        dc => dc!.TimelineViewModel.ParallelCommandsGroups[0].Commands,
+                        ic => ic.ItemsSource))
             }
         };
 

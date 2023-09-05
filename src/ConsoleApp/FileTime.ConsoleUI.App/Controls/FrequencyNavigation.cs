@@ -52,7 +52,7 @@ public class FrequencyNavigation
                 {
                     sender.DataContext.FrequencyNavigation.SearchText = text;
                 }
-            });;
+            });
         
         var root = new Border<IRootViewModel>
         {
@@ -86,19 +86,19 @@ public class FrequencyNavigation
                                             .Setup(t => t.Bind(
                                                 t,
                                                 d => d,
-                                                t => t.Text)),
+                                                tb => tb.Text)),
                                     }
                                 };
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.FrequencyNavigation.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
+                                    dc => dc!.FrequencyNavigation.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedBackgroundColor : null,
                                     t => t.Background
                                 );
 
                                 item.Bind(
                                     item.Parent,
-                                    d => d.FrequencyNavigation.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
+                                    dc => dc!.FrequencyNavigation.SelectedItem == item.DataContext ? _theme.ListViewItemTheme.SelectedForegroundColor : null,
                                     t => t.Foreground
                                 );
 
@@ -106,13 +106,13 @@ public class FrequencyNavigation
                             }
                         }.Setup(t => t.Bind(
                             t,
-                            d => d.FrequencyNavigation.FilteredMatches,
-                            t => t.ItemsSource
+                            dc => dc!.FrequencyNavigation.FilteredMatches,
+                            tb => tb.ItemsSource
                         ))
                         .Setup(t => t.Bind(
                             t,
-                            d => d.FrequencyNavigation.SelectedItem,
-                            t => t.SelectedItem
+                            dc => dc!.FrequencyNavigation.SelectedItem,
+                            tb => tb.SelectedItem
                         ))
                 }
             }
@@ -133,7 +133,7 @@ public class FrequencyNavigation
 
         root.Bind(
             root,
-            d => d.FrequencyNavigation.ShowWindow.Value,
+            dc => dc!.FrequencyNavigation.ShowWindow.Value,
             t => t.IsVisible,
             r => r);
 

@@ -19,7 +19,7 @@ public class ItemPreviews
     private readonly ITheme _theme;
     private readonly IConsoleAppState _appState;
     private readonly IColorProvider _colorProvider;
-    private ItemsControl<ContainerPreview, ISizePreviewItem> _sizePreviews;
+    private ItemsControl<ContainerPreview, ISizePreviewItem> _sizePreviews = null!;
 
     public ItemPreviews(
         ITheme theme,
@@ -45,16 +45,16 @@ public class ItemPreviews
                     Foreground = _theme.ErrorForegroundColor,
                 }.Setup(t => t.Bind(
                     t,
-                    dc => dc.AppState.SelectedTab.Value.SelectedsChildren.Value.Count == 0,
-                    t => t.IsVisible,
+                    dc => dc!.AppState.SelectedTab.Value!.SelectedsChildren.Value!.Count == 0,
+                    tb => tb.IsVisible,
                     fallbackValue: false)),
                 ElementPreviews()
                     .WithDataContextBinding<IRootViewModel, IElementPreviewViewModel>(
-                        dc => (IElementPreviewViewModel) dc.ItemPreviewService.ItemPreview.Value
+                        dc => (IElementPreviewViewModel) dc!.ItemPreviewService.ItemPreview.Value!
                     ),
                 SizeContainerPreview()
                     .WithDataContextBinding<IRootViewModel, ContainerPreview>(
-                        dc => (ContainerPreview) dc.ItemPreviewService.ItemPreview.Value
+                        dc => (ContainerPreview) dc!.ItemPreviewService.ItemPreview.Value!
                     )
             }
         };
@@ -71,8 +71,8 @@ public class ItemPreviews
         };
         sizePreviews.Setup(c => c.Bind(
             c,
-            dc => dc.TopItems,
-            c => c.ItemsSource));
+            dc => dc!.TopItems,
+            ic => ic.ItemsSource));
 
         _sizePreviews = sizePreviews;
 
@@ -101,8 +101,8 @@ public class ItemPreviews
                                         }
                                         .Setup(r => r.Bind(
                                             r,
-                                            dc => GenerateSizeBackground(_sizePreviews.DataContext.TopItems, dc),
-                                            r => r.Fill)),
+                                            dc => GenerateSizeBackground(_sizePreviews.DataContext!.TopItems, dc),
+                                            rt => rt.Fill)),
                                     new TextBlock<ISizePreviewItem>
                                         {
                                             Extensions = {new GridPositionExtension(1, 0)},
@@ -111,8 +111,8 @@ public class ItemPreviews
                                         }
                                         .Setup(t => t.Bind(
                                             t,
-                                            dc => dc.Size.Value,
-                                            t => t.Text,
+                                            dc => dc!.Size.Value,
+                                            tb => tb.Text,
                                             v => ByteSize.FromBytes(v).ToString())),
                                     new TextBlock<ISizePreviewItem>
                                         {
@@ -120,8 +120,8 @@ public class ItemPreviews
                                         }
                                         .Setup(t => t.Bind(
                                             t,
-                                            dc => dc.Name,
-                                            t => t.Text))
+                                            dc => dc!.Name,
+                                            tb => tb.Text))
                                 }
                             };
 
@@ -130,14 +130,14 @@ public class ItemPreviews
                     }
                     .Setup(c => c.Bind(
                         c,
-                        dc => dc.TopItems,
-                        c => c.ItemsSource))
+                        dc => dc!.TopItems,
+                        ic => ic.ItemsSource))
             }
         };
 
         root.Bind(
             root,
-            dc => dc.Name == ContainerPreview.PreviewName,
+            dc => dc!.Name == ContainerPreview.PreviewName,
             r => r.IsVisible);
 
         return root;
@@ -155,14 +155,14 @@ public class ItemPreviews
                     }
                     .Setup(r => r.Bind(
                         r,
-                        dc => GenerateSizeBackground(_sizePreviews.DataContext.TopItems, dc),
-                        r => r.Fill))
+                        dc => GenerateSizeBackground(_sizePreviews.DataContext!.TopItems, dc),
+                        rt => rt.Fill))
             }
         };
 
         root.Bind(
             root,
-            dc => GetWidth(dc.Size.Value, _sizePreviews.DataContext.TopItems, _sizePreviews.ActualWidth),
+            dc => GetWidth(dc!.Size.Value, _sizePreviews.DataContext!.TopItems, _sizePreviews.ActualWidth),
             r => r.Width);
 
         return root;
@@ -193,8 +193,8 @@ public class ItemPreviews
                     Text = "Don't know how to preview this item.",
                 }.Setup(t => t.Bind(
                     t,
-                    dc => dc.Mode == ItemPreviewMode.Unknown,
-                    t => t.IsVisible,
+                    dc => dc!.Mode == ItemPreviewMode.Unknown,
+                    tb => tb.IsVisible,
                     fallbackValue: false)),
                 new TextBlock<IElementPreviewViewModel>
                 {
@@ -202,8 +202,8 @@ public class ItemPreviews
                     Text = "Empty",
                 }.Setup(t => t.Bind(
                     t,
-                    dc => dc.Mode == ItemPreviewMode.Empty,
-                    t => t.IsVisible,
+                    dc => dc!.Mode == ItemPreviewMode.Empty,
+                    tb => tb.IsVisible,
                     fallbackValue: false)),
                 new Grid<IElementPreviewViewModel>
                 {
@@ -215,14 +215,14 @@ public class ItemPreviews
                             {
                                 t.Bind(
                                     t,
-                                    dc => dc.TextContent,
-                                    t => t.Text,
+                                    dc => dc!.TextContent,
+                                    tb => tb.Text,
                                     fallbackValue: string.Empty);
 
                                 t.Bind(
                                     t,
                                     dc => _appState.PreviewType,
-                                    t => t.IsVisible,
+                                    tb => tb.IsVisible,
                                     v => v is null or ItemPreviewType.Text);
                             }),
                         new BinaryView<IElementPreviewViewModel>()
@@ -230,13 +230,13 @@ public class ItemPreviews
                             {
                                 b.Bind(
                                     b,
-                                    dc => dc.BinaryContent,
-                                    b => b.Data);
+                                    dc => dc!.BinaryContent,
+                                    bv => bv.Data);
 
                                 b.Bind(
                                     b,
                                     dc => _appState.PreviewType,
-                                    t => t.IsVisible,
+                                    bv => bv.IsVisible,
                                     v => v == ItemPreviewType.Binary);
                             }),
                         new TextBlock<IElementPreviewViewModel>
@@ -245,22 +245,22 @@ public class ItemPreviews
                             Extensions = {new GridPositionExtension(0, 1)}
                         }.Setup(t => t.Bind(
                             t,
-                            dc => dc.TextEncoding,
-                            t => t.Text,
+                            dc => dc!.TextEncoding,
+                            tb => tb.Text,
                             v => $"Encoding: {v}"))
                     }
                 }.Setup(t => t.Bind(
                     t,
-                    dc => dc.Mode == ItemPreviewMode.Text,
-                    t => t.IsVisible,
+                    dc => dc!.Mode == ItemPreviewMode.Text,
+                    tb => tb.IsVisible,
                     fallbackValue: false)),
             }
         };
 
         view.Bind(
             view,
-            dc => dc.Name == ElementPreviewViewModel.PreviewName,
-            v => v.IsVisible
+            dc => dc!.Name == ElementPreviewViewModel.PreviewName,
+            gr => gr.IsVisible
         );
 
         return view;

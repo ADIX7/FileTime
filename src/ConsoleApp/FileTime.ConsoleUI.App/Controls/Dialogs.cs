@@ -18,7 +18,6 @@ namespace FileTime.ConsoleUI.App.Controls;
 public class Dialogs
 {
     private readonly IRootViewModel _rootViewModel;
-    private readonly ITheme _theme;
     private ItemsControl<IRootViewModel, IInputElement> _readInputs = null!;
     private IInputElement? _inputElementToFocus;
 
@@ -30,7 +29,6 @@ public class Dialogs
     public Dialogs(IRootViewModel rootViewModel, ITheme theme)
     {
         _rootViewModel = rootViewModel;
-        _theme = theme;
 
         _specialItemNamePartFormat = new OrFormat
         {
@@ -40,7 +38,7 @@ public class Dialogs
             },
             Format2 = new SimpleFormat
             {
-                Foreground = _theme.DefaultForegroundAccentColor
+                Foreground = theme.DefaultForegroundAccentColor
             }
         };
 
@@ -74,8 +72,8 @@ public class Dialogs
             Content = new TextBlock<IRootViewModel>()
                 .Setup(t => t.Bind(
                     t,
-                    dc => dc.DialogService.LastMessageBox.Value.OkText,
-                    t => t.Text)),
+                    dc => dc!.DialogService.LastMessageBox.Value!.OkText,
+                    tb => tb.Text)),
         }.WithClickHandler(b => b.DataContext?.DialogService.LastMessageBox.Value?.Ok());
 
         var cancelButton =
@@ -85,13 +83,13 @@ public class Dialogs
                     Content = new TextBlock<IRootViewModel>()
                         .Setup(t => t.Bind(
                             t,
-                            dc => dc.DialogService.LastMessageBox.Value.CancelText,
-                            t => t.Text)),
+                            dc => dc!.DialogService.LastMessageBox.Value!.CancelText,
+                            tb => tb.Text)),
                 }
                 .Setup(b => b.Bind(
                     b,
-                    dc => dc.DialogService.LastMessageBox.Value.ShowCancel,
-                    b => b.IsVisible))
+                    dc => dc!.DialogService.LastMessageBox.Value!.ShowCancel,
+                    bt => bt.IsVisible))
                 .WithClickHandler(b => b.DataContext?.DialogService.LastMessageBox.Value?.Cancel());
 
         var root = new Border<IRootViewModel>
@@ -107,8 +105,8 @@ public class Dialogs
                     new TextBlock<IRootViewModel>()
                         .Setup(t => t.Bind(
                             t,
-                            dc => dc.DialogService.LastMessageBox.Value.Text,
-                            t => t.Text)),
+                            dc => dc!.DialogService.LastMessageBox.Value!.Text,
+                            tb => tb.Text)),
                     new StackPanel<IRootViewModel>
                     {
                         Orientation = Orientation.Horizontal,
@@ -125,8 +123,8 @@ public class Dialogs
 
         root.Bind(
             root,
-            d => d.DialogService.LastMessageBox.Value != null,
-            v => v.IsVisible,
+            dc => dc!.DialogService.LastMessageBox.Value != null,
+            br => br.IsVisible,
             fallbackValue: false);
 
         ((INotifyPropertyChanged) root).PropertyChanged += (_, e) =>
@@ -159,8 +157,8 @@ public class Dialogs
                         }
                         .Setup(i => i.Bind(
                             i,
-                            dc => dc.DialogService.ReadInput.Value.Previews,
-                            c => c.ItemsSource
+                            dc => dc!.DialogService.ReadInput.Value!.Previews,
+                            ic => ic.ItemsSource
                         ))
                         .WithExtension(new GridPositionExtension(0, 1))
                 }
@@ -169,8 +167,8 @@ public class Dialogs
 
         root.Bind(
             root,
-            d => d.DialogService.ReadInput.Value != null,
-            v => v.IsVisible);
+            dc => dc!.DialogService.ReadInput.Value != null,
+            br => br.IsVisible);
 
         return root;
     }
@@ -187,12 +185,12 @@ public class Dialogs
                     }
                     .Setup(i => i.Bind(
                         i,
-                        dc => (PreviewType) dc.PreviewType == PreviewType.PreviewList,
-                        c => c.IsVisible))
+                        dc => (PreviewType) dc!.PreviewType == PreviewType.PreviewList,
+                        ic => ic.IsVisible))
                     .Setup(i => i.Bind(
                         i,
-                        dc => ((PreviewList) dc).Items,
-                        c => c.ItemsSource)),
+                        dc => ((PreviewList) dc!).Items,
+                        ic => ic.ItemsSource)),
                 new Grid<IPreviewElement>
                 {
                     ColumnDefinitionsObject = "* *",
@@ -201,7 +199,7 @@ public class Dialogs
                         new TextBlock<IPreviewElement>()
                             .Setup(t => t.Bind(
                                 t,
-                                dc => ((DoubleTextPreview) dc).Text1,
+                                dc => ((DoubleTextPreview) dc!).Text1,
                                 tb => tb.Text
                             )),
                         new TextBlock<IPreviewElement>
@@ -213,14 +211,14 @@ public class Dialogs
                             }
                             .Setup(t => t.Bind(
                                 t,
-                                dc => ((DoubleTextPreview) dc).Text2,
+                                dc => ((DoubleTextPreview) dc!).Text2,
                                 tb => tb.Text
                             ))
                     }
                 }.Setup(g => g.Bind(
                     g,
-                    dc => (PreviewType) dc.PreviewType == PreviewType.DoubleText,
-                    g => g.IsVisible)),
+                    dc => (PreviewType) dc!.PreviewType == PreviewType.DoubleText,
+                    gr => gr.IsVisible)),
                 new Grid<IPreviewElement>
                 {
                     ColumnDefinitionsObject = "* *",
@@ -232,7 +230,7 @@ public class Dialogs
                             ItemTemplate = ItemNamePartItemTemplate
                         }.Setup(i => i.Bind(
                             i,
-                            dc => ((DoubleItemNamePartListPreview) dc).ItemNameParts1,
+                            dc => ((DoubleItemNamePartListPreview) dc!).ItemNameParts1,
                             c => c.ItemsSource)),
                         new ItemsControl<IPreviewElement, ItemNamePart>
                         {
@@ -244,13 +242,13 @@ public class Dialogs
                             ItemTemplate = ItemNamePartItemTemplate
                         }.Setup(i => i.Bind(
                             i,
-                            dc => ((DoubleItemNamePartListPreview) dc).ItemNameParts2,
+                            dc => ((DoubleItemNamePartListPreview) dc!).ItemNameParts2,
                             c => c.ItemsSource))
                     }
                 }.Setup(g => g.Bind(
                     g,
-                    dc => (PreviewType) dc.PreviewType == PreviewType.DoubleItemNamePartList,
-                    g => g.IsVisible))
+                    dc => (PreviewType) dc!.PreviewType == PreviewType.DoubleItemNamePartList,
+                    gr => gr.IsVisible))
             }
         };
 
@@ -261,12 +259,12 @@ public class Dialogs
             var textBlock = new TextBlock<ItemNamePart>();
             textBlock.Bind(
                 textBlock,
-                dc => dc.Text,
+                dc => dc!.Text,
                 tb => tb.Text
             );
             textBlock.Bind(
                 textBlock,
-                dc => dc.IsSpecial ? _specialItemNamePartFormat : null,
+                dc => dc!.IsSpecial ? _specialItemNamePartFormat : null,
                 tb => tb.TextFormat
             );
 
@@ -289,7 +287,7 @@ public class Dialogs
                             new TextBlock<IInputElement>()
                                 .Setup(t => t.Bind(
                                     t,
-                                    c => c.Label,
+                                    dc => dc!.Label,
                                     tb => tb.Text
                                 )),
                             new Grid<IInputElement>
@@ -306,14 +304,14 @@ public class Dialogs
                                                 new TextBox<IInputElement>()
                                                     .Setup(t => t.Bind(
                                                         t,
-                                                        d => ((TextInputElement) d).Value,
+                                                        dc => ((TextInputElement) dc!).Value,
                                                         tb => tb.Text,
                                                         v => v ?? string.Empty,
                                                         fallbackValue: string.Empty
                                                     ))
                                                     .Setup(t => t.Bind(
                                                         t,
-                                                        d => ((TextInputElement) d).Label,
+                                                        dc => ((TextInputElement) dc!).Label,
                                                         tb => tb.Name))
                                                     .WithTextHandler((tb, t) =>
                                                     {
@@ -323,7 +321,7 @@ public class Dialogs
                                         }
                                         .Setup(t => t.Bind(
                                             t,
-                                            d => d.Type == InputType.Text,
+                                            dc => dc!.Type == InputType.Text,
                                             tb => tb.IsVisible
                                         )),
                                     new Border<IInputElement>
@@ -335,14 +333,14 @@ public class Dialogs
                                                     }
                                                     .Setup(t => t.Bind(
                                                         t,
-                                                        d => ((PasswordInputElement) d).Value,
+                                                        d => ((PasswordInputElement) d!).Value,
                                                         tb => tb.Text,
                                                         v => v ?? string.Empty,
                                                         fallbackValue: string.Empty
                                                     ))
                                                     .Setup(t => t.Bind(
                                                         t,
-                                                        d => ((PasswordInputElement) d).Label,
+                                                        d => ((PasswordInputElement) d!).Label,
                                                         tb => tb.Name))
                                                     .WithTextHandler((tb, t) =>
                                                     {
@@ -352,7 +350,7 @@ public class Dialogs
                                         }
                                         .Setup(t => t.Bind(
                                             t,
-                                            d => d.Type == InputType.Password,
+                                            dc => dc!.Type == InputType.Password,
                                             tb => tb.IsVisible
                                         ))
                                     //TODO: OptionInputElement
@@ -366,8 +364,8 @@ public class Dialogs
             }
             .Setup(t => t.Bind(
                 t,
-                d => d.DialogService.ReadInput.Value.Inputs,
-                c => c.ItemsSource
+                dc => dc!.DialogService.ReadInput.Value!.Inputs,
+                ic => ic.ItemsSource
             ));
 
         readInputs.WithKeyHandler((_, e) =>
@@ -413,7 +411,7 @@ public class Dialogs
 
                 void NotifyCollectionChangedEventHandler(
                     object? sender,
-                    NotifyCollectionChangedEventArgs e)
+                    NotifyCollectionChangedEventArgs _)
                 {
                     UpdateReadInputsFocus();
                 }
