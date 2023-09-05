@@ -298,7 +298,9 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var lockObj = new object();
         var loadingIndicatorCancellation = new CancellationTokenSource();
 
+#pragma warning disable CS4014
         Task.Run(async () => await DelayedLoadingIndicator());
+#pragma warning restore CS4014
         await LoadChildrenInternal();
 
         lock (lockObj)

@@ -21,7 +21,6 @@ namespace FileTime.App.Core.ViewModels;
 public partial class TabViewModel : ITabViewModel
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IAppState _appState;
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IRefreshSmoothnessCalculator _refreshSmoothnessCalculator;
     private readonly ObservableCollection<FullName> _markedItems = new();
@@ -34,16 +33,16 @@ public partial class TabViewModel : ITabViewModel
     public ITab? Tab { get; private set; }
     public int TabNumber { get; private set; }
 
-    public IDeclarativeProperty<bool> IsSelected { get; }
+    public IDeclarativeProperty<bool> IsSelected { get; } = null!;
 
-    public IDeclarativeProperty<IContainer?> CurrentLocation { get; private set; }
-    public IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; private set; }
-    public IDeclarativeProperty<int?> CurrentSelectedItemIndex { get; set; }
-    public IDeclarativeProperty<IContainerViewModel?> CurrentSelectedItemAsContainer { get; private set; }
-    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> CurrentItems { get; private set; }
-    public IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; }
-    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> SelectedsChildren { get; private set; }
-    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> ParentsChildren { get; private set; }
+    public IDeclarativeProperty<IContainer?> CurrentLocation { get; private set; } = null!;
+    public IDeclarativeProperty<IItemViewModel?> CurrentSelectedItem { get; private set; } = null!;
+    public IDeclarativeProperty<int?> CurrentSelectedItemIndex { get; set; } = null!;
+    public IDeclarativeProperty<IContainerViewModel?> CurrentSelectedItemAsContainer { get; private set; } = null!;
+    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> CurrentItems { get; private set; } = null!;
+    public IDeclarativeProperty<ObservableCollection<FullName>> MarkedItems { get; } = null!;
+    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> SelectedsChildren { get; private set; } = null!;
+    public IDeclarativeProperty<ObservableCollection<IItemViewModel>?> ParentsChildren { get; private set; } = null!;
 
 
     public TabViewModel(
@@ -53,10 +52,9 @@ public partial class TabViewModel : ITabViewModel
         IRefreshSmoothnessCalculator refreshSmoothnessCalculator)
     {
         _serviceProvider = serviceProvider;
-        _appState = appState;
 
-        MarkedItems = _markedItems.Watch();
-        IsSelected = _appState.SelectedTab.Map(s => s == this);
+        MarkedItems = _markedItems.Watch()!;
+        IsSelected = appState.SelectedTab.Map(s => s == this);
         _timelessContentProvider = timelessContentProvider;
         _refreshSmoothnessCalculator = refreshSmoothnessCalculator;
     }
@@ -117,7 +115,7 @@ public partial class TabViewModel : ITabViewModel
                 return Task.FromResult<int?>(-1);
             });
 
-        CurrentSelectedItem.Subscribe((v) =>
+        CurrentSelectedItem.Subscribe(_ =>
         {
             _refreshSmoothnessCalculator.RegisterChange();
             _refreshSmoothnessCalculator.RecalculateSmoothness();
@@ -175,12 +173,6 @@ public partial class TabViewModel : ITabViewModel
         consumer = new OcConsumer();
         computing.For(consumer);
     }
-
-    private static SortExpressionComparer<IItemViewModel> SortItems()
-        //TODO: Order
-        => SortExpressionComparer<IItemViewModel>
-            .Ascending(i => i.BaseItem?.Type ?? AbsolutePathType.Unknown)
-            .ThenByAscending(i => i.DisplayNameText?.ToLower() ?? "");
 
     private static IItem MapItem(AbsolutePath item)
     {

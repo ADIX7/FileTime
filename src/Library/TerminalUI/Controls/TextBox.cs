@@ -60,7 +60,7 @@ public sealed partial class TextBox<T> : View<TextBox<T>, T>, IFocusable, IDispl
         ((INotifyPropertyChanged) this).PropertyChanged += OnPropertyChangedEventHandler;
     }
 
-    private void OnPropertyChangedEventHandler(object sender, PropertyChangedEventArgs args)
+    private void OnPropertyChangedEventHandler(object? sender, PropertyChangedEventArgs args)
     {
         if (args.PropertyName == nameof(Text))
         {

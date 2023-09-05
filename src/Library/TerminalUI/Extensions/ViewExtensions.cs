@@ -35,11 +35,11 @@ public static class ViewExtensions
         Expression<Func<TItem, TExpressionResult>> dataSourceExpression,
         Action<bool, TExpressionResult> handler)
     {
-        new PropertyChangedHandler<TItem, TExpressionResult>
+        _ = new PropertyChangedHandler<TItem, TExpressionResult>
         (
             dataSource,
             dataSourceExpression,
-            handler
+            handler!
         );
 
         return dataSource;

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
@@ -337,17 +338,6 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
         }
 
         return (x, y);
-    }
-
-    private void WithCalculatedSize(in RenderContext renderContext, Option<Size> size, WithSizes actionWithSizes)
-    {
-        WithCalculatedSize(renderContext, size, Helper);
-
-        object? Helper(in RenderContext renderContext1, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights)
-        {
-            actionWithSizes(renderContext1, widths, heights);
-            return null;
-        }
     }
 
     private TResult WithCalculatedSize<TResult>(in RenderContext renderContext, Option<Size> size, WithSizes<TResult> actionWithSizes)

@@ -37,7 +37,7 @@ public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFreque
         if (keyEventArgs.Key == Keys.Enter)
         {
             keyEventArgs.Handled = true;
-            var targetContainer = await _timelessContentProvider.GetItemByFullNameAsync(new FullName(SelectedItem), PointInTime.Present);
+            var targetContainer = await _timelessContentProvider.GetItemByFullNameAsync(new FullName(SelectedItem!), PointInTime.Present);
             var openContainerCommand = new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, targetContainer));
             await _userCommandHandlerService.HandleCommandAsync(openContainerCommand);
             Close();

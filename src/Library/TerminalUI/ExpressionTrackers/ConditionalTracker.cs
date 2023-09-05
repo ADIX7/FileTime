@@ -38,7 +38,7 @@ public class ConditionalTracker : ExpressionTrackerBase
         {
             true => _ifTrueExpressionTracker.GetValue(),
             false => _ifFalseExpressionTracker.GetValue(),
-            _ => throw new NotSupportedException($"Conditional expression must evaluate to a boolean value, but {testValue} ({testValue.GetType().Name}) is not that.")
+            _ => throw new NotSupportedException($"Conditional expression must evaluate to a boolean value, but {testValue} ({testValue?.GetType().Name}) is not that.")
         };
     }
 }

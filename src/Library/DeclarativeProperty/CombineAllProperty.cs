@@ -14,7 +14,7 @@ public class CombineAllProperty<T, TResult> : DeclarativePropertyBase<TResult>
         _sources = sourcesList;
         _combiner = combiner;
 
-        var initialValueTask = _combiner(sourcesList.Select(p => p.Value));
+        var initialValueTask = _combiner(sourcesList.Select(p => p.Value)!);
         initialValueTask.Wait();
         SetNewValueSync(initialValueTask.Result);
 
@@ -29,7 +29,7 @@ public class CombineAllProperty<T, TResult> : DeclarativePropertyBase<TResult>
     private async Task Update()
     {
         var values = _sources.Select(p => p.Value);
-        var result = await _combiner(values);
+        var result = await _combiner(values!);
 
         await SetNewValueAsync(result);
     }

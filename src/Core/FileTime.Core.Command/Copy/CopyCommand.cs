@@ -153,7 +153,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
                     var statusList = statuses.ToList();
                     var done = statusList.Count(s => s) + 1;
                     if (done > statusList.Count) done = statusList.Count;
-
+                    
                     return Task.FromResult($"Copy - {done} / {statusList.Count}");
                 })
                 .Subscribe(async (v, _) => await SetDisplayLabelAsync(v));

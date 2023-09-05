@@ -68,7 +68,7 @@ public abstract class ExpressionTrackerBase : IExpressionTracker
                 useNull = true;
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             useNull = true;
         }

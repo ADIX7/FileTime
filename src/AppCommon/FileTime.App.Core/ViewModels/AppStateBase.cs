@@ -47,10 +47,10 @@ public abstract partial class AppStateBase : IAppState
 
         SearchText = _searchText.AsObservable();
         SelectedTab = DeclarativePropertyHelpers.CombineLatest<ObservableCollection<ITabViewModel>, ITabViewModel, ITabViewModel>(
-            _tabs.Watch(),
-            _selectedTab,
-            (tabs, selectedTab) => Task.FromResult(GetSelectedTab(tabs, selectedTab))
-        );
+            _tabs.Watch()!,
+            _selectedTab!,
+            (tabs, selectedTab) => Task.FromResult(GetSelectedTab(tabs, selectedTab)!)
+        )!;
 
         Tabs = new ReadOnlyObservableCollection<ITabViewModel>(_tabs);
 
@@ -58,7 +58,7 @@ public abstract partial class AppStateBase : IAppState
             .Map(t => t?.CurrentLocation)
             .Switch()
             .Map(c => c?.GetExtension<StatusProviderContainerExtension>()?.GetStatusProperty())
-            .Switch();
+            .Switch()!;
     }
 
     public void AddTab(ITabViewModel tabViewModel)

@@ -6,7 +6,6 @@ namespace FileTime.ConsoleUI.App;
 
 public interface IConsoleAppState : IAppState
 {
-    string ErrorText { get; set; }
     ObservableCollection<string> PopupTexts { get; }
     ItemPreviewType? PreviewType { get; set; }
 }

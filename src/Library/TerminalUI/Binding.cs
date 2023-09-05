@@ -72,7 +72,7 @@ public sealed class Binding<TDataContext, TExpressionResult, TResult> : Property
         {
             if (couldCompute)
             {
-                value = _converter(_dataContextMapper(_dataSourceView.DataContext));
+                value = _converter(_dataContextMapper(_dataSourceView.DataContext!));
             }
             else
             {

@@ -19,7 +19,6 @@ public class RenderEngine : IRenderEngine
     private bool[,]? _updatedCells;
     private bool[,]? _filledCells;
     private bool[,]? _lastFilledCells;
-    private DateTime _renderRequestDetected;
     private ITheme? _lastTheme;
 
     public RenderEngine(IApplicationContext applicationContext, IEventLoop eventLoop)

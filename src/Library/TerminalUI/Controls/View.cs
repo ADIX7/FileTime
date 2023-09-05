@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using GeneralInputKey;
 using PropertyChanged.SourceGenerator;
@@ -14,6 +15,7 @@ namespace TerminalUI.Controls;
 
 public delegate string TextTransformer(string text, Position position, Size size);
 
+[SuppressMessage("Performance", "EPS02:Non-readonly struct used as in-parameter")]
 public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : View<TConcrete, T>
 {
     private readonly List<IDisposable> _disposables = new();
@@ -510,7 +512,6 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
         ProcessKeyHandlers(keyEventArgs);
         ProcessParentKeyHandlers(keyEventArgs);
     }
-
 
     protected void ProcessKeyHandlers(GeneralKeyEventArgs keyEventArgs)
     {

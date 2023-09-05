@@ -166,7 +166,7 @@ public class TabPersistenceService : ITabPersistenceService
             }
 
             var tab = await _serviceProvider
-                .GetAsyncInitableResolver<IContainer>(currentDirectory ?? _localContentProvider)
+                .GetAsyncInitableResolver(currentDirectory ?? _localContentProvider)
                 .GetRequiredServiceAsync<ITab>();
             var tabViewModel = _serviceProvider.GetInitableResolver(tab, 1).GetRequiredService<ITabViewModel>();
 
@@ -191,8 +191,8 @@ public class TabPersistenceService : ITabPersistenceService
                 if (tab.Path == null) continue;
                 if (_contentProvidersNotToRestore.Any(p => tab.Path.StartsWith(p))) continue;
 
-                IContainer? container = null;
-                var path = FullName.CreateSafe(tab.Path);
+                IContainer? container;
+                var path = FullName.CreateSafe(tab.Path)!;
                 while (true)
                 {
                     try
@@ -213,7 +213,7 @@ public class TabPersistenceService : ITabPersistenceService
                     }
                     catch
                     {
-                        path = path?.GetParent();
+                        path = path.GetParent();
                         if (path == null)
                         {
                             throw new Exception($"Could not find an initializable path along {tab.Path}");

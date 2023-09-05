@@ -45,7 +45,7 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         var sourceCollection = itemViewModelType switch
         {
-            ItemViewModelType.Main => parentTab.CurrentItems,
+            ItemViewModelType.Main => parentTab.CurrentItems!,
             ItemViewModelType.Parent => parentTab.ParentsChildren,
             ItemViewModelType.SelectedChild => parentTab.SelectedsChildren,
             _ => throw new InvalidEnumArgumentException()
@@ -59,15 +59,15 @@ public abstract partial class ItemViewModel : IItemViewModel
                     ? (IReadOnlyList<ItemNamePart>) await nameConverterProvider.GetItemNamePartsAsync(item)
                     : _itemNameConverterService.GetDisplayName(item.DisplayName, s)
             ),
-            _ => new DeclarativeProperty<IReadOnlyList<ItemNamePart>>(new List<ItemNamePart> {new(item.DisplayName)}),
+            _ => new DeclarativeProperty<IReadOnlyList<ItemNamePart>>(new List<ItemNamePart> {new(item.DisplayName)})!,
         };
 
         BaseItem = item;
-        DisplayName = displayName;
+        DisplayName = displayName!;
         DisplayNameText = item.DisplayName;
 
         IsMarked = itemViewModelType is ItemViewModelType.Main
-            ? parentTab.MarkedItems.Map(m => m.Any(i => i.Path == item.FullName?.Path))
+            ? parentTab.MarkedItems!.Map(m => m!.Any(i => i.Path == item.FullName?.Path))
             : new DeclarativeProperty<bool>(false);
 
         IsSelected = itemViewModelType is ItemViewModelType.Main
@@ -78,7 +78,7 @@ public abstract partial class ItemViewModel : IItemViewModel
             : new DeclarativeProperty<bool>(IsInDeepestPath());
 
         IsAlternative = sourceCollection
-            .Debounce(TimeSpan.FromMilliseconds(100))
+            .Debounce(TimeSpan.FromMilliseconds(100))!
             .Map(c =>
                 c?.Index().FirstOrDefault(i => EqualsTo(i.Value)).Key % 2 == 1
             );

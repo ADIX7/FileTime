@@ -15,13 +15,13 @@ public partial class RootDriveInfo
 
     [Notify] private string? _label;
 
-    [Notify] private long _size = 0;
+    [Notify] private long _size;
 
-    [Notify] private long _free = 0;
+    [Notify] private long _free;
 
-    [Notify] private long _used = 0;
+    [Notify] private long _used;
 
-    [Notify] public long UsedPercentage => Size == 0 ? 0 : Used * 100 / Size;
+    public long UsedPercentage => Size == 0 ? 0 : Used * 100 / Size;
 
     public FullName Path { get; }
 

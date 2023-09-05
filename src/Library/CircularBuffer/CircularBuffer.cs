@@ -325,32 +325,20 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     }
 
     /// <inheritdoc/>
-    public int Capacity
-    {
-        get { return _buffer.Length; }
-    }
+    public int Capacity => _buffer.Length;
 
     /// <inheritdoc/>
-    public bool IsFull
-    {
-        get { return Count == Capacity; }
-    }
+    public bool IsFull => Count == Capacity;
 
     /// <inheritdoc/>
-    public bool IsEmpty
-    {
-        get { return Count == 0; }
-    }
+    public bool IsEmpty => Count == 0;
 
     /// <inheritdoc/>
     [Obsolete("Use Count property instead")]
     public int Size => Count;
 
     /// <inheritdoc/>
-    public int Count
-    {
-        get { return _size; }
-    }
+    public int Count => _size;
 
     /// <inheritdoc/>
     [Obsolete("Use First() method instead")]
@@ -381,30 +369,30 @@ public class CircularBuffer<T> : ICircularBuffer<T>
         {
             if (IsEmpty)
             {
-                throw new IndexOutOfRangeException(string.Format("Cannot access index {0}. Buffer is empty", index));
+                throw new IndexOutOfRangeException($"Cannot access index {index}. Buffer is empty");
             }
 
             if (index >= _size)
             {
-                throw new IndexOutOfRangeException(string.Format("Cannot access index {0}. Buffer size is {1}", index, _size));
+                throw new IndexOutOfRangeException($"Cannot access index {index}. Buffer size is {_size}");
             }
 
-            int actualIndex = InternalIndex(index);
+            var actualIndex = InternalIndex(index);
             return _buffer[actualIndex];
         }
         set
         {
             if (IsEmpty)
             {
-                throw new IndexOutOfRangeException(string.Format("Cannot access index {0}. Buffer is empty", index));
+                throw new IndexOutOfRangeException($"Cannot access index {index}. Buffer is empty");
             }
 
             if (index >= _size)
             {
-                throw new IndexOutOfRangeException(string.Format("Cannot access index {0}. Buffer size is {1}", index, _size));
+                throw new IndexOutOfRangeException($"Cannot access index {index}. Buffer size is {_size}");
             }
 
-            int actualIndex = InternalIndex(index);
+            var actualIndex = InternalIndex(index);
             _buffer[actualIndex] = value;
         }
     }
@@ -449,7 +437,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
         ThrowIfEmpty("Cannot take elements from an empty buffer.");
         Decrement(ref _end);
         var value = _buffer[_start];
-        _buffer[_end] = default(T);
+        _buffer[_end] = default!;
         --_size;
         return value;
     }
@@ -459,7 +447,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     {
         ThrowIfEmpty("Cannot take elements from an empty buffer.");
         var value = _buffer[_start];
-        _buffer[_start] = default(T);
+        _buffer[_start] = default!;
         Increment(ref _start);
         --_size;
         return value;
@@ -478,7 +466,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     /// <inheritdoc/>
     public T[] ToArray()
     {
-        T[] newArray = new T[Count];
+        var newArray = new T[Count];
         CopyToInternal(newArray, 0);
         return newArray;
     }
@@ -553,24 +541,15 @@ public class CircularBuffer<T> : ICircularBuffer<T>
 #endif
 
     /// <inheritdoc/>
-    public IList<ArraySegment<T>> ToArraySegments()
-    {
-        return new[] {ArrayOne(), ArrayTwo()};
-    }
+    public IList<ArraySegment<T>> ToArraySegments() => new[] {ArrayOne(), ArrayTwo()};
 
 #if (NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 
     /// <inheritdoc/>
-    public SpanTuple<T> ToSpan()
-    {
-        return new SpanTuple<T>(SpanOne(), SpanTwo());
-    }
+    public SpanTuple<T> ToSpan() => new(SpanOne(), SpanTwo());
 
     /// <inheritdoc/>
-    public (ReadOnlyMemory<T> A, ReadOnlyMemory<T> B) ToMemory()
-    {
-        return (MemoryOne(), MemoryTwo());
-    }
+    public (ReadOnlyMemory<T> A, ReadOnlyMemory<T> B) ToMemory() => (MemoryOne(), MemoryTwo());
 
 #endif
 
@@ -583,11 +562,11 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     public IEnumerator<T> GetEnumerator()
     {
         var segments = ToArraySegments();
-        foreach (ArraySegment<T> segment in segments)
+        foreach (var segment in segments)
         {
-            for (int i = 0; i < segment.Count; i++)
+            for (var i = 0; i < segment.Count; i++)
             {
-                yield return segment.Array[segment.Offset + i];
+                yield return segment.Array![segment.Offset + i];
             }
         }
     }
@@ -596,24 +575,15 @@ public class CircularBuffer<T> : ICircularBuffer<T>
 
     #region IEnumerable implementation
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return (IEnumerator) GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     #endregion
 
 #if (NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 
-    private void CopyToInternal(T[] array, int index)
-    {
-        CopyToInternal(array.AsSpan(index));
-    }
+    private void CopyToInternal(T[] array, int index) => CopyToInternal(array.AsSpan(index));
 
-    private void CopyToInternal(Memory<T> memory)
-    {
-        CopyToInternal(memory.Span);
-    }
+    private void CopyToInternal(Memory<T> memory) => CopyToInternal(memory.Span);
 
     private void CopyToInternal(Span<T> span)
     {
@@ -639,10 +609,10 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     {
         var segments = ToArraySegments();
         var segment = segments[0];
-        Array.Copy(segment.Array, segment.Offset, array, index, segment.Count);
+        Array.Copy(segment.Array!, segment.Offset, array, index, segment.Count);
         index += segment.Count;
         segment = segments[1];
-        Array.Copy(segment.Array, segment.Offset, array, index, segment.Count);
+        Array.Copy(segment.Array!, segment.Offset, array, index, segment.Count);
     }
 
     private void ThrowIfEmpty(string message = "Cannot access an empty buffer.")
@@ -690,10 +660,7 @@ public class CircularBuffer<T> : ICircularBuffer<T>
     /// <param name='index'>
     /// External index.
     /// </param>
-    private int InternalIndex(int index)
-    {
-        return _start + (index < (Capacity - _start) ? index : index - Capacity);
-    }
+    private int InternalIndex(int index) => _start + (index < (Capacity - _start) ? index : index - Capacity);
 
     // doing ArrayOne and ArrayTwo methods returning ArraySegment<T> as seen here: 
     // http://www.boost.org/doc/libs/1_37_0/libs/circular_buffer/doc/circular_buffer.html#classboost_1_1circular__buffer_1957cccdcb0c4ef7d80a34a990065818d

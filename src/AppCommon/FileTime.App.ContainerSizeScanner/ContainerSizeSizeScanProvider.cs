@@ -23,7 +23,7 @@ public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSize
         _serviceProvider = serviceProvider;
     }
 
-    public override async Task<IItem> GetItemByFullNameAsync(
+    public override Task<IItem> GetItemByFullNameAsync(
         FullName fullName,
         PointInTime pointInTime,
         bool forceResolve = false,
@@ -32,14 +32,14 @@ public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSize
     )
     {
         if (fullName.Path == ContentProviderName)
-            return this;
+            return Task.FromResult((IItem)this);
 
         var pathParts = fullName.Path.Split(Constants.SeparatorChar);
 
         var item = _sizeScanTasks.FirstOrDefault(t => t.SizeSizeScanContainer.Name == pathParts[1])?.SizeSizeScanContainer;
 
         if (pathParts.Length == 2)
-            return item ?? throw new ItemNotFoundException(fullName);
+            return Task.FromResult((IItem)item!) ?? throw new ItemNotFoundException(fullName);
 
         for (var i = 2; i < pathParts.Length - 1 && item != null; i++)
         {
@@ -47,22 +47,8 @@ public class ContainerSizeSizeScanProvider : ContentProviderBase, IContainerSize
             item = item.ChildContainers.FirstOrDefault(c => c.Name == childName);
         }
 
-        if (item is not null)
-        {
-            var childItem = item.SizeItems.FirstOrDefault(c => c.Name == pathParts[^1]);
-            if (childItem is not null) return childItem;
-
-            /*var childName = item.RealContainer.FullName?.GetChild(pathParts[^1]);
-            if (childName is null) throw new ItemNotFoundException(fullName);
-
-            return await _timelessContentProvider.GetItemByFullNameAsync(
-                childName,
-                pointInTime,
-                forceResolve,
-                forceResolvePathType,
-                itemInitializationSettings
-            );*/
-        }
+        var childItem = item?.SizeItems.FirstOrDefault(c => c.Name == pathParts[^1]);
+        if (childItem != null) return Task.FromResult((IItem)childItem);
 
         throw new ItemNotFoundException(fullName);
     }

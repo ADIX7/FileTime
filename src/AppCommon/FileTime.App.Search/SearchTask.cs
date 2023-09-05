@@ -71,7 +71,9 @@ public class SearchTask : ISearchTask
         _isSearching = true;
         _searchingLock.Release();
 
+#pragma warning disable CS4014
         Task.Run(BootstrapSearch);
+#pragma warning restore CS4014
 
         async Task BootstrapSearch()
         {

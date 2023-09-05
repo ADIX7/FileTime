@@ -7,7 +7,7 @@ public static class DeclarativePropertyHelpers
         IDeclarativeProperty<T2> prop2,
         Func<T1, T2, Task<TResult>> func,
         Action<TResult?>? setValueHook = null)
-        => new(prop1, prop2, func, setValueHook);
+        => new(prop1, prop2, func!, setValueHook);
 
     public static CombineLatestProperty<T1, T2, T3, TResult> CombineLatest<T1, T2, T3, TResult>(
         IDeclarativeProperty<T1> prop1,
@@ -15,7 +15,7 @@ public static class DeclarativePropertyHelpers
         IDeclarativeProperty<T3> prop3,
         Func<T1, T2, T3, Task<TResult>> func,
         Action<TResult?>? setValueHook = null)
-        => new(prop1, prop2, prop3, func, setValueHook);
+        => new(prop1, prop2, prop3, func!, setValueHook);
     
     public static MergeProperty<T> Merge<T>(params IDeclarativeProperty<T>[] props)
         => new(props);
@@ -46,6 +46,7 @@ public sealed class DeclarativeProperty<T> : DeclarativePropertyBase<T>
             }
             catch
             {
+                // ignored
             }
         });
     }

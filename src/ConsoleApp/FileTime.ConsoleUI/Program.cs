@@ -140,6 +140,6 @@ static bool HandleInfoProviders(string[] args, IServiceProvider serviceProvider)
 
 public partial class Program
 {
-    public static string AppDataRoot { get; private set; }
-    public static string EnvironmentName { get; private set; }
+    public static string AppDataRoot { get; private set; } = null!;
+    public static string EnvironmentName { get; private set; } = null!;
 }

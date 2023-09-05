@@ -8,8 +8,8 @@ namespace FileTime.App.Core.Services;
 public abstract class DialogServiceBase : IDialogServiceBase
 {
     private readonly IModalService _modalService;
-    private OcConsumer _readInputConsumer = new();
-    private OcConsumer _lastMessageBoxConsumer = new();
+    private readonly OcConsumer _readInputConsumer = new();
+    private readonly OcConsumer _lastMessageBoxConsumer = new();
     public ScalarComputing<ReadInputsViewModel?> ReadInput { get; }
     public ScalarComputing<MessageBoxViewModel?> LastMessageBox { get; }
 
@@ -20,14 +20,14 @@ public abstract class DialogServiceBase : IDialogServiceBase
             .OpenModals
             .OfTypeComputing<ReadInputsViewModel>()
             .FirstComputing()
-            .For(_readInputConsumer);
+            .For(_readInputConsumer)!;
 
         LastMessageBox =
             modalService
                 .OpenModals
                 .OfTypeComputing<MessageBoxViewModel>()
                 .LastComputing()
-                .For(_lastMessageBoxConsumer);
+                .For(_lastMessageBoxConsumer)!;
     }
 
     private void ReadInputs(

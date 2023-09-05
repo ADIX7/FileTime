@@ -91,7 +91,7 @@ public class RapidTravelModeKeyInputHandler : IRapidTravelModeKeyInputHandler
             if (selectedCommandBinding != null)
             {
                 args.Handled = true;
-                await CallCommandAsync(_identifiableUserCommandService.GetCommand(selectedCommandBinding.Command));
+                await CallCommandAsync(_identifiableUserCommandService.GetCommand(selectedCommandBinding.Command)!);
             }
         }
     }

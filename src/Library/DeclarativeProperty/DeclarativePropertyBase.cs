@@ -70,7 +70,7 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
     {
         lock (_subscriberLock)
         {
-            _subscribers.Remove(onChange);
+            _subscribers.Remove(onChange!);
         }
     }
 
@@ -95,7 +95,7 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
     IDisposable IObservable<T>.Subscribe(IObserver<T> observer)
         => Subscribe((v, _) =>
         {
-            observer.OnNext(v);
+            observer.OnNext(v!);
             return Task.CompletedTask;
         });
 

@@ -1,5 +1,4 @@
-﻿using GeneralInputKey;
-using TerminalUI.ConsoleDrivers;
+﻿using TerminalUI.ConsoleDrivers;
 using TerminalUI.Controls;
 
 namespace TerminalUI.Traits;
@@ -9,5 +8,4 @@ public interface IFocusable : IView
     void Focus();
     void UnFocus();
     void SetCursorPosition(IConsoleDriver consoleDriver);
-    void HandleKeyInput(GeneralKeyEventArgs keyEventArgs);
 }
