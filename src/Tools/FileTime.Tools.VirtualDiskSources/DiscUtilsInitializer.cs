@@ -2,7 +2,7 @@
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public class DiscUtilsInitializer : IPreStartupHandler
+public sealed class DiscUtilsInitializer : IPreStartupHandler
 {
     public Task InitAsync()
     {

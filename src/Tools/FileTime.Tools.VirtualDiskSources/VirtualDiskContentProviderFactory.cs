@@ -3,7 +3,7 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public class VirtualDiskContentProviderFactory : IVirtualDiskContentProviderFactory
+public sealed class VirtualDiskContentProviderFactory : IVirtualDiskContentProviderFactory
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IContentAccessorFactory _contentAccessorFactory;
@@ -17,5 +17,5 @@ public class VirtualDiskContentProviderFactory : IVirtualDiskContentProviderFact
     }
     
     public IVirtualDiskContentProvider Create(IContentProvider parentContentProvider)
-        => new VirtualDiskContentProvider(parentContentProvider, _timelessContentProvider, _contentAccessorFactory);
+        => new VirtualDiskContentProvider(_timelessContentProvider, _contentAccessorFactory, parentContentProvider);
 }

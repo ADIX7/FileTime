@@ -6,13 +6,18 @@ namespace FileTime.Core.ContentAccess;
 
 public abstract class SubContentProviderBase : ContentProviderBase
 {
+    private readonly IContentAccessorFactory _contentAccessorFactory;
+
     public IContentProvider ParentContentProvider { get; }
 
     protected SubContentProviderBase(
+        ITimelessContentProvider timelessContentProvider,
+        IContentAccessorFactory contentAccessorFactory,
         IContentProvider parentContentProvider,
-        string name,
-        ITimelessContentProvider timelessContentProvider) : base(name, timelessContentProvider)
+        string name
+    ) : base(name, timelessContentProvider)
     {
+        _contentAccessorFactory = contentAccessorFactory;
         ParentContentProvider = parentContentProvider;
     }
 
@@ -40,4 +45,7 @@ public abstract class SubContentProviderBase : ContentProviderBase
 
     public override async ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath)
         => await ParentContentProvider.GetSupportedPathPart(nativePath);
+
+    protected async Task<ParentElementReaderContext> GetParentElementReaderAsync(IElement element)
+        => await Helper.GetParentElementReaderAsync(_contentAccessorFactory, element, ParentContentProvider);
 }

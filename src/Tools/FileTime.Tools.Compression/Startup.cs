@@ -28,6 +28,7 @@ public static class Startup
         services.AddSingleton<IUserCommandHandler, CompressionUserCommandHandler>();
         services.TryAddSingleton<ICompressedContentProviderFactory, CompressedContentProviderFactory>();
         services.AddSingleton<ISubContentProvider, CompressedSubContentProvider>();
+        services.TryAddSingleton<IContentReaderFactory<CompressedContentProvider>, CompressedContentReaderFactory>();
         return services;
     }
 }

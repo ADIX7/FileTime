@@ -1,18 +1,29 @@
 ﻿using FileTime.Core.ContentAccess;
+using SharpCompress.Archives;
 
-namespace FileTime.Tools.VirtualDiskSources;
+namespace FileTime.Tools.Compression.ContentProvider;
 
-public sealed class VirtualDiskContentReader : IContentReader
+public sealed class CompressedContentReader : IContentReader
 {
+    private readonly IDisposable[] _disposables;
     private readonly Stream _stream;
-    private readonly ICollection<IDisposable> _disposables;
+
     public int PreferredBufferSize => 1024 * 1024;
     public long? Position => _stream.Position;
 
-    public VirtualDiskContentReader(Stream stream, ICollection<IDisposable> disposables)
+    public CompressedContentReader(IArchiveEntry entry, IDisposable[] disposables)
     {
-        _stream = stream;
         _disposables = disposables;
+        _stream = entry.OpenEntryStream();
+    }
+
+    public void Dispose()
+    {
+        _stream.Dispose();
+        foreach (var disposable in _disposables)
+        {
+            disposable.Dispose();
+        }
     }
 
     public async Task<byte[]> ReadBytesAsync(int bufferSize, int? offset = null)
@@ -26,14 +37,4 @@ public sealed class VirtualDiskContentReader : IContentReader
     public void SetPosition(long position) => _stream.Seek(position, SeekOrigin.Begin);
 
     public Stream AsStream() => _stream;
-
-
-    public void Dispose()
-    {
-        _stream.Dispose();
-        foreach (var disposable in _disposables)
-        {
-            disposable.Dispose();
-        }
-    }
 }

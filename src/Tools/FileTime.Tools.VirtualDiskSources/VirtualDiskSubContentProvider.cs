@@ -8,7 +8,7 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
+public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
 {
     private readonly IContentAccessorFactory _contentAccessorFactory;
     private readonly ITimelessContentProvider _timelessContentProvider;
