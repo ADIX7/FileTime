@@ -66,20 +66,38 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <Grid
+        <StackPanel
             Grid.Column="2"
-            IsVisible="{Binding ShowAttributes, ElementName=ItemRoot}">
-            <StackPanel
-                HorizontalAlignment="Right"
-                Orientation="Horizontal">
+            HorizontalAlignment="Right"
+            IsVisible="{Binding ShowAttributes, ElementName=ItemRoot}"
+            Orientation="Horizontal">
+            <TextBlock
+                Width="50"
+                Classes="SmallText"
+                IsVisible="{Binding Converter={StaticResource IsTypeConverter}, ConverterParameter={x:Type appcore:IElementViewModel}}"
+                Text="{Binding BaseItem.DisplayName, Converter={StaticResource GetFileExtensionConverter}}" />
+            <Grid IsVisible="{Binding Converter={StaticResource IsTypeConverter}, ConverterParameter={x:Type traits:ISizeProvider}}">
                 <TextBlock
-                    Width="50"
+                    Width="60"
+                    x:DataType="traits:ISizeProvider"
                     Classes="SmallText"
-                    IsVisible="{Binding Converter={StaticResource IsTypeConverter}, ConverterParameter={x:Type appcore:IElementViewModel}}"
-                    Text="{Binding BaseItem.DisplayName, Converter={StaticResource GetFileExtensionConverter}}" />
-                <Grid
-                    DataContext="{Binding BaseItem}"
-                    IsVisible="{Binding Converter={StaticResource IsTypeConverter}, ConverterParameter={x:Type traits:ISizeProvider}}">
+                    Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}"
+                    TextAlignment="Right" />
+            </Grid>
+            <Grid>
+                <Grid.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding
+                            Converter="{StaticResource IsNotTypeConverter}"
+                            ConverterParameter="{x:Type traits:ISizeProvider}" />
+                        <Binding
+                            Converter="{StaticResource IsTypeConverter}"
+                            ConverterParameter="{x:Type traits:ISizeProvider}"
+                            Path="BaseItem" />
+                    </MultiBinding>
+                </Grid.IsVisible>
+
+                <Grid DataContext="{Binding BaseItem}">
                     <TextBlock
                         Width="60"
                         x:DataType="traits:ISizeProvider"
@@ -87,24 +105,24 @@
                         Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}"
                         TextAlignment="Right" />
                 </Grid>
-                <TextBlock
-                    Width="95"
-                    Classes="SmallText"
-                    Text="{Binding ModifiedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"
-                    TextAlignment="Right" />
-                <TextBlock
-                    Width="35"
-                    Classes="SmallText"
-                    Text="{Binding ModifiedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"
-                    TextAlignment="Right" />
-                <TextBlock
-                    Width="45"
-                    Classes="SmallText"
-                    Text="{Binding BaseItem.Attributes}"
-                    TextAlignment="Right" />
+            </Grid>
+            <TextBlock
+                Width="95"
+                Classes="SmallText"
+                Text="{Binding ModifiedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=yyyy-MM-dd}"
+                TextAlignment="Right" />
+            <TextBlock
+                Width="35"
+                Classes="SmallText"
+                Text="{Binding ModifiedAt, Converter={StaticResource DateTimeConverter}, ConverterParameter=hh:mm}"
+                TextAlignment="Right" />
+            <TextBlock
+                Width="45"
+                Classes="SmallText"
+                Text="{Binding BaseItem.Attributes}"
+                TextAlignment="Right" />
 
-            </StackPanel>
+        </StackPanel>
 
-        </Grid>
     </Grid>
 </UserControl>
