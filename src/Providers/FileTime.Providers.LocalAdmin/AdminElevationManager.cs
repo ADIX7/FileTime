@@ -162,8 +162,11 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
         {
             StartInfo = new()
             {
-                FileName = _configuration.CurrentValue.LinuxElevationTool,
-                CreateNoWindow = true
+                FileName =  _configuration.CurrentValue.LinuxElevationTool,
+                CreateNoWindow = true,
+                RedirectStandardInput = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
             },
             EnableRaisingEvents = true
         };
@@ -179,13 +182,13 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
     private (string fileName, IEnumerable<string> arguments) GetServerPathAndArgs(string portFileName)
     {
         var selfStart = _configuration.CurrentValue.ServerExecutablePath is null;
-        
+
         var fileName = selfStart
             ? Process.GetCurrentProcess().MainModule?.FileName
             : _configuration.CurrentValue.ServerExecutablePath;
 
-        if(fileName is null) throw new Exception("Could not get server executable path");
-        
+        if (fileName is null) throw new Exception("Could not get server executable path");
+
         IEnumerable<string> arguments = new[]
         {
             "--PortWriter:FileName",
