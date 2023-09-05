@@ -70,7 +70,7 @@ public class MainWindow
         _root.Value
     };
 
-    public Grid<IRootViewModel> Initialize()
+    private Grid<IRootViewModel> Initialize()
     {
         var root = new Grid<IRootViewModel>
         {
@@ -110,15 +110,15 @@ public class MainWindow
                                 new TextBlock<IRootViewModel>()
                                     .Setup(t => t.Bind(
                                         t,
-                                        root => root.UserName,
+                                        root => root!.UserName,
                                         tb => tb.Text
                                     )),
                                 new TextBlock<IRootViewModel>()
                                     .Setup(t => t.Bind(
                                         t,
-                                        root => root.MachineName,
+                                        root => root!.MachineName,
                                         tb => tb.Text,
-                                        t => $"@{t}"
+                                        v => $"@{v}"
                                     ))
                             }
                         },
@@ -132,7 +132,7 @@ public class MainWindow
                             }
                             .Setup(t => t.Bind(
                                 t,
-                                root => root.AppState.SelectedTab.Value.CurrentLocation.Value.FullName.Path,
+                                root => root!.AppState.SelectedTab.Value!.CurrentLocation.Value!.FullName!.Path,
                                 tb => tb.Text
                             )),
                         new StackPanel<IRootViewModel>
@@ -149,8 +149,8 @@ public class MainWindow
                                     AsciiOnly = false
                                 }.Setup(t => t.Bind(
                                     t,
-                                    dc => dc.AdminElevationManager.IsAdminInstanceRunning,
-                                    t => t.IsVisible)),
+                                    dc => dc!.AdminElevationManager.IsAdminInstanceRunning,
+                                    tb => tb.IsVisible)),
                                 new TextBlock<IRootViewModel>
                                 {
                                     Text = _consoleApplicationConfiguration.Value.ClipboardSingleIcon ??
@@ -158,8 +158,8 @@ public class MainWindow
                                     AsciiOnly = false
                                 }.Setup(t => t.Bind(
                                     t,
-                                    dc => dc.ClipboardService.Content.Count == 1,
-                                    t => t.IsVisible)),
+                                    dc => dc!.ClipboardService.Content.Count == 1,
+                                    tb => tb.IsVisible)),
                                 new TextBlock<IRootViewModel>
                                 {
                                     Text = _consoleApplicationConfiguration.Value.ClipboardMultipleIcon ??
@@ -167,8 +167,8 @@ public class MainWindow
                                     AsciiOnly = false
                                 }.Setup(t => t.Bind(
                                     t,
-                                    dc => dc.ClipboardService.Content.Count > 1,
-                                    t => t.IsVisible))
+                                    dc => dc!.ClipboardService.Content.Count > 1,
+                                    tb => tb.IsVisible))
                             }
                         },
                         TabControl()
@@ -201,8 +201,8 @@ public class MainWindow
                                     TextAlignment = TextAlignment.Center
                                 }.Setup(t => t.Bind(
                                     t,
-                                    dc => dc.AppState.SelectedTab.Value.CurrentItems.Value.Count == 0,
-                                    t => t.IsVisible,
+                                    dc => dc!.AppState.SelectedTab.Value!.CurrentItems.Value!.Count == 0,
+                                    tb => tb.IsVisible,
                                     fallbackValue: true
                                 ))
                             }
@@ -237,13 +237,13 @@ public class MainWindow
                                 .Setup(t => t.Bind(
                                     t,
                                     dc => dc,
-                                    t => t.Text));
+                                    tb => tb.Text));
                         }
                     }
                     .Setup(i => i.Bind(
                         i,
-                        root => root.AppState.PopupTexts,
-                        c => c.ItemsSource
+                        dc => dc!.AppState.PopupTexts,
+                        ic => ic.ItemsSource
                     )),
                 new Grid<IRootViewModel>
                 {
@@ -268,14 +268,14 @@ public class MainWindow
                     {
                         t.Bind(
                             t,
-                            dc => dc.AppState.RapidTravelText.Value,
-                            t => t.Text,
-                            v => "Filter: " + v);
+                            dc => dc!.AppState.RapidTravelText.Value,
+                            v => v.Text,
+                            tb => "Filter: " + tb);
 
                         t.Bind(
                             t,
-                            dc => dc.AppState.ViewMode.Value == ViewMode.RapidTravel,
-                            t => t.IsVisible);
+                            dc => dc!.AppState.ViewMode.Value == ViewMode.RapidTravel,
+                            tb => tb.IsVisible);
                     }),
                 StatusLine().WithExtension(new GridPositionExtension(0, 6)),
             }
@@ -298,7 +298,7 @@ public class MainWindow
                             }
                             .Setup(t => t.Bind(
                                 t,
-                                dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.Attributes,
+                                dc => dc!.AppState.SelectedTab.Value!.CurrentSelectedItem.Value!.Attributes,
                                 tb => tb.Text)),
                         new TextBlock<IRootViewModel>
                             {
@@ -306,7 +306,7 @@ public class MainWindow
                             }
                             .Setup(t => t.Bind(
                                 t,
-                                dc => dc.AppState.SelectedTab.Value.CurrentSelectedItem.Value.ModifiedAt,
+                                dc => dc!.AppState.SelectedTab.Value!.CurrentSelectedItem.Value!.ModifiedAt,
                                 tb => tb.Text,
                                 v => v.ToString()))
                     }
@@ -322,13 +322,13 @@ public class MainWindow
                             {
                                 t.Bind(
                                     t,
-                                    dc => dc.VolumeSizeInfo.Value,
-                                    t => t.IsVisible,
-                                    v => v is null ? false : v.HasValue
+                                    dc => dc!.VolumeSizeInfo.Value,
+                                    tb => tb.IsVisible,
+                                    v => v.HasValue
                                 );
                                 t.Bind(
                                     t,
-                                    dc => dc.VolumeSizeInfo.Value,
+                                    dc => dc!.VolumeSizeInfo.Value,
                                     tb => tb.Text,
                                     v => v.HasValue
                                         ? $"{ByteSize.FromBytes(v.Value.FreeSize)} / {ByteSize.FromBytes(v.Value.TotalSize)} free"
@@ -344,9 +344,9 @@ public class MainWindow
                                     new TextBlock<IRootViewModel>()
                                         .Setup(t => t.Bind(
                                             t,
-                                            dc => dc.AppState.SelectedTab.Value.CurrentSelectedItemIndex.Value,
+                                            dc => dc!.AppState.SelectedTab.Value!.CurrentSelectedItemIndex.Value,
                                             tb => tb.Text,
-                                            v => v is null || v < 0 ? "?" : $"{v + 1}")),
+                                            v => v is null or < 0 ? "?" : $"{v + 1}")),
                                     new TextBlock<IRootViewModel>
                                         {
                                             Foreground = _theme.MarkedItemForegroundColor,
@@ -359,27 +359,27 @@ public class MainWindow
                                         {
                                             t.Bind(
                                                 t,
-                                                dc => dc.AppState.SelectedTab.Value.MarkedItems.Value.Count,
+                                                dc => dc!.AppState.SelectedTab.Value!.MarkedItems.Value!.Count,
                                                 tb => tb.Text,
                                                 v => $"/{v}");
 
                                             t.Bind(
                                                 t,
-                                                dc => dc.AppState.SelectedTab.Value.MarkedItems.Value.Count > 0,
-                                                s => s.IsVisible);
+                                                dc => dc!.AppState.SelectedTab.Value!.MarkedItems.Value!.Count > 0,
+                                                tb => tb.IsVisible);
                                         }),
                                     new TextBlock<IRootViewModel>()
                                         .Setup(t => t.Bind(
                                             t,
-                                            dc => dc.AppState.SelectedTab.Value.CurrentItems.Value.Count,
+                                            dc => dc!.AppState.SelectedTab.Value!.CurrentItems.Value!.Count,
                                             tb => tb.Text,
                                             v => $"/{v}")),
                                 }
                             }
                             .Setup(s => s.Bind(
                                 s,
-                                dc => dc.AppState.SelectedTab.Value.CurrentItems.Value.Count > 0,
-                                s => s.IsVisible)),
+                                dc => dc!.AppState.SelectedTab.Value!.CurrentItems.Value!.Count > 0,
+                                sp => sp.IsVisible)),
                     }
                 }
             }
@@ -401,7 +401,7 @@ public class MainWindow
                             .Setup(t =>
                                 t.Bind(
                                     t,
-                                    dc => dc.KeysText,
+                                    dc => dc!.KeysText,
                                     tb => tb.Text)
                             ),
                         new TextBlock<IPossibleCommandEntryViewModel>
@@ -413,7 +413,7 @@ public class MainWindow
                         }.Setup(t =>
                             t.Bind(
                                 t,
-                                dc => dc.Title,
+                                dc => dc!.Title,
                                 tb => tb.Text)
                         )
                     }
@@ -425,9 +425,8 @@ public class MainWindow
 
         commandBindings.Bind(
             commandBindings,
-            root => root.PossibleCommands.PossibleCommands,
-            v => v.ItemsSource,
-            d => d);
+            dc => dc!.PossibleCommands.PossibleCommands,
+            v => v.ItemsSource);
 
         return commandBindings;
     }
@@ -444,14 +443,14 @@ public class MainWindow
 
                 textBlock.Bind(
                     textBlock,
-                    dc => dc.TabNumber.ToString(),
+                    dc => dc!.TabNumber.ToString(),
                     tb => tb.Text,
                     value => $" {value}",
                     fallbackValue: "?");
 
                 textBlock.Bind(
                     textBlock,
-                    dc => dc.IsSelected.Value ? _theme.SelectedTabBackgroundColor : null,
+                    dc => dc!.IsSelected.Value ? _theme.SelectedTabBackgroundColor : null,
                     tb => tb.Background,
                     fallbackValue: null
                 );
@@ -461,8 +460,8 @@ public class MainWindow
 
         tabList.Bind(
             tabList,
-            root => root.AppState.Tabs,
-            v => v.ItemsSource);
+            root => root!.AppState.Tabs,
+            tl => tl.ItemsSource);
 
         return tabList;
     }
@@ -475,17 +474,17 @@ public class MainWindow
             Margin = "1 0 1 0"
         };
 
-        list.ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions(true));
+        list.ItemTemplate = _ => ItemItemTemplate(new ItemViewRenderOptions(true));
 
         list.Bind(
             list,
-            root => root.AppState.SelectedTab.Value.CurrentItems.Value,
-            v => v.ItemsSource);
+            dc => dc!.AppState.SelectedTab.Value!.CurrentItems.Value,
+            lv => lv.ItemsSource);
 
         list.Bind(
             list,
-            root => root.AppState.SelectedTab.Value.CurrentSelectedItem.Value,
-            v => v.SelectedItem);
+            dc => dc!.AppState.SelectedTab.Value!.CurrentSelectedItem.Value,
+            lv => lv.SelectedItem);
 
         return list;
     }
@@ -495,20 +494,20 @@ public class MainWindow
         var list = new ListView<IRootViewModel, IItemViewModel>
         {
             ListPadding = 8,
-            ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions())
+            ItemTemplate = _ => ItemItemTemplate(new ItemViewRenderOptions())
         };
 
         list.Bind(
             list,
             dc =>
-                dc.AppState.SelectedTab.Value.SelectedsChildren.Value.Count > 0
+                dc!.AppState.SelectedTab.Value!.SelectedsChildren.Value!.Count > 0
                 && dc.ItemPreviewService.ItemPreview.Value == null,
             l => l.IsVisible,
             fallbackValue: false);
 
         list.Bind(
             list,
-            dc => dc.AppState.SelectedTab.Value.SelectedsChildren.Value,
+            dc => dc!.AppState.SelectedTab.Value!.SelectedsChildren.Value,
             v => v.ItemsSource,
             fallbackValue: null);
 
@@ -520,21 +519,18 @@ public class MainWindow
         var list = new ListView<IRootViewModel, IItemViewModel>
         {
             ListPadding = 8,
-            ItemTemplate = item => ItemItemTemplate(item, new ItemViewRenderOptions())
+            ItemTemplate = _ => ItemItemTemplate(new ItemViewRenderOptions())
         };
 
         list.Bind(
             list,
-            dc => dc.AppState.SelectedTab.Value.ParentsChildren.Value,
-            v => v.ItemsSource);
+            dc => dc!.AppState.SelectedTab.Value!.ParentsChildren.Value,
+            lv => lv.ItemsSource);
 
         return list;
     }
 
-    private IView<IItemViewModel> ItemItemTemplate(
-        ListViewItem<IItemViewModel, IRootViewModel> item,
-        ItemViewRenderOptions options
-    )
+    private IView<IItemViewModel> ItemItemTemplate(ItemViewRenderOptions options)
     {
         var root = new Grid<IItemViewModel>
         {
@@ -570,7 +566,7 @@ public class MainWindow
                                             t,
                                             dc => dc is ISizeProvider
                                                 ? ((ISizeProvider) dc).Size.Value
-                                                : ((ISizeProvider) dc.BaseItem).Size.Value,
+                                                : ((ISizeProvider) dc!.BaseItem!).Size.Value,
                                             tb => tb.Text,
                                             v =>
                                             {
@@ -583,16 +579,18 @@ public class MainWindow
                                 new TextBlock<IItemViewModel>()
                                     .Setup(t =>
                                     {
+                                        t.Bind(
+                                            t,
+                                            dc => dc!.BaseItem!.Type == AbsolutePathType.Container,
+                                            tb => tb.IsVisible);
+
                                         if (!options.ShowAttributes) return;
                                         t.Bind(
                                             t,
-                                            dc => ((IContainer) dc.BaseItem).Items.Count,
+                                            dc => ((IContainer) dc!.BaseItem!).Items.Count,
                                             tb => tb.Text,
-                                            t => $" {t,4}");
-                                    }).Setup(s => s.Bind(
-                                        s,
-                                        dc => dc.BaseItem.Type == AbsolutePathType.Container,
-                                        s => s.IsVisible))
+                                            v => $" {v,4}");
+                                    })
                             }
                         },
                     }
@@ -602,13 +600,17 @@ public class MainWindow
 
         root.Bind(
             root,
-            dc => dc == null ? _theme.DefaultForegroundColor : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+            dc => dc == null
+                ? _theme.DefaultForegroundColor
+                : ToForegroundColor(dc.ViewMode.Value, dc.BaseItem!.Type),
             tb => tb.Foreground
         );
 
         root.Bind(
             root,
-            dc => dc == null ? _theme.DefaultBackgroundColor : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem.Type),
+            dc => dc == null
+                ? _theme.DefaultBackgroundColor
+                : ToBackgroundColor(dc.ViewMode.Value, dc.BaseItem!.Type),
             tb => tb.Background
         );
 
