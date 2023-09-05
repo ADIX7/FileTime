@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -56,6 +57,12 @@ public static class Program
     [STAThread]
     public static async Task Main(string[] args)
     {
+        if(args.Length > 0 && args[0] == "--server")
+        {
+            Server.Program.Main(args.Skip(1).ToArray());
+            return;
+        }
+        
 #if DEBUG
         (AppDataRoot, EnvironmentName) = Init.InitDevelopment();
 #endif

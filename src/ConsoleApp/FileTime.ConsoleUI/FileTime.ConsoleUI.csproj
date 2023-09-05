@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\AppCommon\FileTime.App.FrequencyNavigation\FileTime.App.FrequencyNavigation.csproj" />
     <ProjectReference Include="..\..\Library\TerminalUI.DependencyInjection\TerminalUI.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\Server\FileTime.Server.Extensions.DependencyInjection\FileTime.Server.Extensions.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\Server\FileTime.Server\FileTime.Server.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools.Compression\FileTime.Tools.Compression.csproj" />
     <ProjectReference Include="..\FileTime.ConsoleUI.App\FileTime.ConsoleUI.App.csproj" />
   </ItemGroup>

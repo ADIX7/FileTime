@@ -16,6 +16,7 @@ namespace FileTime.Providers.LocalAdmin;
 public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChanged, IExitHandler
 {
     private const string AdminContentProviderName = "localAdminRemote";
+
     private class ConnectionInfo
     {
         public string? SignalRBaseUrl { get; init; }
@@ -60,8 +61,6 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
 
     public async Task CreateAdminInstanceIfNecessaryAsync(string? confirmationMessage = null)
     {
-        ArgumentNullException.ThrowIfNull(_configuration.CurrentValue.ServerExecutablePath, "ServerExecutablePath");
-
         await _lock.WaitAsync();
         try
         {
@@ -74,11 +73,11 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
             var port = _configuration.CurrentValue.ServerPort;
             _logger.LogTrace("Admin server port is {Port}", port is null ? "<not set>" : $"{port}");
             if (StartProcess || port is null)
-            {                
+            {
                 var portFileName = Path.GetTempFileName();
                 File.Delete(portFileName);
-                
-                var process = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+
+                var process = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? CreateWindowsAdminProcess(portFileName)
                     : CreateLinuxAdminProcess(portFileName);
                 process.Exited += ProcessExitHandler;
@@ -131,40 +130,74 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
         }
     }
 
-    private Process CreateWindowsAdminProcess(string portFileName) 
-        => new()
+    private Process CreateWindowsAdminProcess(string portFileName)
+    {
+        var (fileName, arguments) = GetServerPathAndArgs(portFileName);
+        var process = new Process
         {
             StartInfo = new()
             {
-                FileName = _configuration.CurrentValue.ServerExecutablePath,
-                ArgumentList =
-                {
-                    "--PortWriter:FileName",
-                    portFileName
-                },
+                FileName = fileName,
                 UseShellExecute = true,
                 Verb = "runas"
             },
             EnableRaisingEvents = true
         };
 
+        foreach (var argument in arguments)
+        {
+            process.StartInfo.ArgumentList.Add(argument);
+        }
+
+        return process;
+    }
+
     private Process CreateLinuxAdminProcess(string portFileName)
     {
-        return new Process
+        var (fileName, arguments) = GetServerPathAndArgs(portFileName);
+
+        arguments = arguments.Prepend(fileName);
+
+        var process = new Process
         {
             StartInfo = new()
             {
                 FileName = _configuration.CurrentValue.LinuxElevationTool,
-                ArgumentList =
-                {
-                    _configuration.CurrentValue.ServerExecutablePath,
-                    "--PortWriter:FileName",
-                    portFileName
-                },
                 CreateNoWindow = true
             },
             EnableRaisingEvents = true
         };
+
+        foreach (var argument in arguments)
+        {
+            process.StartInfo.ArgumentList.Add(argument);
+        }
+
+        return process;
+    }
+
+    private (string fileName, IEnumerable<string> arguments) GetServerPathAndArgs(string portFileName)
+    {
+        var selfStart = _configuration.CurrentValue.ServerExecutablePath is null;
+        
+        var fileName = selfStart
+            ? Process.GetCurrentProcess().MainModule?.FileName
+            : _configuration.CurrentValue.ServerExecutablePath;
+
+        if(fileName is null) throw new Exception("Could not get server executable path");
+        
+        IEnumerable<string> arguments = new[]
+        {
+            "--PortWriter:FileName",
+            portFileName
+        };
+
+        if (selfStart)
+        {
+            arguments = arguments.Prepend("--server");
+        }
+
+        return (fileName, arguments);
     }
 
     //Note: this does not have to return a task
@@ -172,7 +205,7 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
     {
         try
         {
-            if (_remoteContentProvider != null) return Task.FromResult((IRemoteContentProvider)_remoteContentProvider);
+            if (_remoteContentProvider != null) return Task.FromResult((IRemoteContentProvider) _remoteContentProvider);
 
             ArgumentNullException.ThrowIfNull(_connectionInfo);
             //TODO: use other connections too (if there will be any)
@@ -186,7 +219,7 @@ public class AdminElevationManager : IAdminElevationManager, INotifyPropertyChan
                 AdminContentProviderName
             );
 
-            return Task.FromResult((IRemoteContentProvider)_remoteContentProvider);
+            return Task.FromResult((IRemoteContentProvider) _remoteContentProvider);
         }
         catch (Exception ex)
         {

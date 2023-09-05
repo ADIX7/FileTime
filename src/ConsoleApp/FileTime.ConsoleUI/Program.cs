@@ -15,6 +15,12 @@ using TerminalUI.ConsoleDrivers;
 using ITheme = FileTime.ConsoleUI.App.Styling.ITheme;
 using Version = FileTime.ConsoleUI.InfoProviders.Version;
 
+if(args.Length > 0 && args[0] == "--server")
+{
+    FileTime.Server.Program.Main(args.Skip(1).ToArray());
+    return;
+}
+
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 IConsoleDriver? driver = null;
 

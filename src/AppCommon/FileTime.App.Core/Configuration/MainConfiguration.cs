@@ -13,13 +13,7 @@ public class MainConfiguration
 
     static MainConfiguration()
     {
-        var serverFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? "FileTime.Server.exe"
-            : "FileTime.Server";
-        Configuration = new()
-        {
-            {AdminElevationConfiguration.SectionName + ":" + nameof(AdminElevationConfiguration.ServerExecutablePath), serverFileName},
-        };
+        Configuration = new();
 
         PopulateDefaultEditorPrograms(Configuration);
         PopulateDefaultKeyBindings(Configuration, DefaultKeybindings.Value,
