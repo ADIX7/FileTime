@@ -34,13 +34,14 @@ public class RootDriveInfoService : IRootDriveInfoService
         var rootDriveInfos = _rootDrives.Selecting(r => GetContainer(r))
             .Filtering(t => t.Item != null)
             .Selecting(t => new RootDriveInfo(t.Drive, t.Item!))
-            .Ordering(d => d.Name)
+            .Ordering(d => GetDriveOrder(d.DriveType))
+            .ThenOrdering(d => d.Name)
             .For(_rootDriveInfosConsumer);
 
         RootDriveInfos = new ReadOnlyObservableCollection<RootDriveInfo>(rootDriveInfos);
         AllDrives = new ReadOnlyObservableCollection<DriveInfo>(_allDrives);
 
-        (DriveInfo[] RootDrives, DriveInfo[] AllDrives) GetRootDrives()
+        static (DriveInfo[] RootDrives, DriveInfo[] AllDrives) GetRootDrives()
         {
             var allDrives = DriveInfo.GetDrives();
             var drives = DriveInfo.GetDrives().Where(d => d.DriveType is not DriveType.Unknown and not DriveType.Ram);
@@ -69,6 +70,16 @@ public class RootDriveInfoService : IRootDriveInfoService
 
         return (rootDriveInfo, task.Result as IContainer);
     }
+
+    private static int GetDriveOrder(DriveType type) 
+        => type switch
+        {
+            DriveType.Fixed => 0,
+            DriveType.Removable => 1,
+            DriveType.CDRom => 2,
+            DriveType.Network => 3,
+            _ => 5
+        };
 
     public Task ExitAsync(CancellationToken token = default)
     {

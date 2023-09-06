@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Collections.ObjectModel;
+using Avalonia;
 using FileTime.App.CommandPalette.Services;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
@@ -24,8 +25,9 @@ public interface IMainWindowViewModel : IMainWindowViewModelBase
     ITimelineViewModel TimelineViewModel { get; }
     IPossibleCommandsViewModel PossibleCommands { get; }
     ICloudDriveService CloudDriveService { get; }
-    IRootDriveInfoService RootDriveInfoService { get; }
     Action? ShowWindow { get; set; }
     Thickness IconStatusPanelMargin { get; }
+    ObservableCollection<RootDriveInfo> LocalDrives { get; set; }
+    ObservableCollection<RootDriveInfo> NetworkDrives { get; set; }
     Task RunOrOpenItem(IItemViewModel itemViewModel);
 }

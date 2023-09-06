@@ -20,6 +20,8 @@ public partial class RootDriveInfo
     [Notify] private long _free;
 
     [Notify] private long _used;
+    
+    public DriveType DriveType => _driveInfo.DriveType;
 
     public long UsedPercentage => Size == 0 ? 0 : Used * 100 / Size;
 

@@ -41,6 +41,82 @@
                 <ResourceInclude Source="avares://FileTime.GuiApp.App/Resources/SolarizedDarkTheme.axaml" />
                 <ResourceInclude Source="avares://FileTime.GuiApp.App/Resources/Brushes.axaml" />
                 <ResourceInclude Source="avares://FileTime.GuiApp.App/Resources/Converters.axaml" />
+                <ResourceDictionary>
+                    <DataTemplate
+                        x:Key="RootDriveTemplate"
+                        x:DataType="local1:RootDriveInfo">
+                        <Grid
+                            Classes="SidebarContainerPresenter"
+                            PointerPressed="OnHasContainerPointerPressed"
+                            ToolTip.Tip="{Binding FullName}">
+                            <Grid
+                                Margin="10,5"
+                                ColumnDefinitions="Auto,*,Auto"
+                                RowDefinitions="Auto,Auto">
+                                <Image
+                                    Grid.RowSpan="2"
+                                    Width="20"
+                                    Height="20"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Source="{SvgImage /Assets/material/folder.svg}" />
+
+                                <StackPanel
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+
+                                    <TextBlock
+                                        Margin="5,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Name}" />
+
+                                    <TextBlock
+                                        Margin="5,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Classes="ExtraSmallText"
+                                        IsVisible="{Binding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                        Text="{Binding Label}" />
+                                </StackPanel>
+
+                                <StackPanel
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Classes="SmallText"
+                                        Text="{Binding Free, Converter={StaticResource FormatSizeConverter}}" />
+
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Classes="SmallText"
+                                        Text=" / " />
+
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Classes="SmallText"
+                                        Text="{Binding Size, Converter={StaticResource FormatSizeConverter}}" />
+                                </StackPanel>
+
+                                <ProgressBar
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Grid.ColumnSpan="2"
+                                    MinWidth="100"
+                                    Margin="5,0,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    Maximum="100"
+                                    Value="{Binding UsedPercentage}" />
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -111,103 +187,49 @@
                     </Grid>
                 </Grid>
 
-                <Grid
+                <StackPanel
                     Grid.Row="1"
-                    RowDefinitions="Auto,Auto,Auto,Auto">
+                    Grid.Column="0">
 
                     <Border
                         Margin="10"
                         Padding="0,10"
                         Background="{DynamicResource ContainerBackgroundBrush}"
-                        CornerRadius="10">
+                        CornerRadius="10"
+                        IsVisible="{Binding LocalDrives.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
                         <Grid RowDefinitions="Auto,Auto">
 
                             <TextBlock
                                 Margin="10,0,10,10"
-                                Text="Drives" />
+                                Text="Local drives" />
 
                             <ItemsRepeater
                                 Grid.Row="1"
-                                ItemsSource="{Binding RootDriveInfoService.RootDriveInfos}">
-                                <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate x:DataType="local1:RootDriveInfo">
-                                        <Grid
-                                            Classes="SidebarContainerPresenter"
-                                            PointerPressed="OnHasContainerPointerPressed"
-                                            ToolTip.Tip="{Binding FullName}">
-                                            <Grid
-                                                Margin="10,5"
-                                                ColumnDefinitions="Auto,*,Auto"
-                                                RowDefinitions="Auto,Auto">
-                                                <Image
-                                                    Grid.RowSpan="2"
-                                                    Width="20"
-                                                    Height="20"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Source="{SvgImage /Assets/material/folder.svg}" />
-
-                                                <StackPanel
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Center"
-                                                    Orientation="Horizontal">
-
-                                                    <TextBlock
-                                                        Margin="5,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        Text="{Binding Name}" />
-
-                                                    <TextBlock
-                                                        Margin="5,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        Classes="ExtraSmallText"
-                                                        IsVisible="{Binding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                                        Text="{Binding Label}" />
-                                                </StackPanel>
-
-                                                <StackPanel
-                                                    Grid.Column="2"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    Orientation="Horizontal">
-
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        Classes="SmallText"
-                                                        Text="{Binding Free, Converter={StaticResource FormatSizeConverter}}" />
-
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        Classes="SmallText"
-                                                        Text=" / " />
-
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        Classes="SmallText"
-                                                        Text="{Binding Size, Converter={StaticResource FormatSizeConverter}}" />
-                                                </StackPanel>
-
-                                                <ProgressBar
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Grid.ColumnSpan="2"
-                                                    MinWidth="100"
-                                                    Margin="5,0,0,0"
-                                                    HorizontalAlignment="Stretch"
-                                                    Maximum="100"
-                                                    Value="{Binding UsedPercentage}" />
-                                            </Grid>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                            </ItemsRepeater>
+                                ItemTemplate="{StaticResource RootDriveTemplate}"
+                                ItemsSource="{Binding LocalDrives}" />
                         </Grid>
                     </Border>
 
                     <Border
-                        Grid.Row="1"
+                        Margin="10"
+                        Padding="0,10"
+                        Background="{DynamicResource ContainerBackgroundBrush}"
+                        CornerRadius="10"
+                        IsVisible="{Binding NetworkDrives.Count, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
+                        <Grid RowDefinitions="Auto,Auto">
+
+                            <TextBlock
+                                Margin="10,0,10,10"
+                                Text="Network drives" />
+
+                            <ItemsRepeater
+                                Grid.Row="1"
+                                ItemTemplate="{StaticResource RootDriveTemplate}"
+                                ItemsSource="{Binding NetworkDrives}" />
+                        </Grid>
+                    </Border>
+
+                    <Border
                         Margin="10"
                         Padding="0,10"
                         Background="{DynamicResource ContainerBackgroundBrush}"
@@ -250,7 +272,6 @@
                     </Border>
 
                     <Border
-                        Grid.Row="2"
                         Margin="10"
                         Padding="0,10"
                         VerticalAlignment="Bottom"
@@ -295,7 +316,6 @@
                     </Border>
 
                     <Border
-                        Grid.Row="3"
                         Margin="10"
                         Padding="10"
                         VerticalAlignment="Bottom"
@@ -318,7 +338,7 @@
                         </StackPanel>
                     </Border>
 
-                </Grid>
+                </StackPanel>
 
                 <Grid
                     Grid.Row="1"

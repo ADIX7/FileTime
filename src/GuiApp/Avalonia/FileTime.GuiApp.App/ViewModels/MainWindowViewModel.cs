@@ -1,4 +1,5 @@
-﻿using System.Reactive.Linq;
+﻿using System.Collections.ObjectModel;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia;
@@ -20,6 +21,7 @@ using FileTime.Providers.Local;
 using FileTime.Providers.LocalAdmin;
 using Microsoft.Extensions.Logging;
 using MvvmGen;
+using ObservableComputations;
 
 namespace FileTime.GuiApp.App.ViewModels;
 
@@ -45,9 +47,10 @@ namespace FileTime.GuiApp.App.ViewModels;
 [Inject(typeof(IPossibleCommandsViewModel), PropertyName = "PossibleCommands", PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IInstanceMessageHandler), PropertyName = "_instanceMessageHandler")]
 [Inject(typeof(ICloudDriveService), PropertyAccessModifier = AccessModifier.Public)]
-[Inject(typeof(IRootDriveInfoService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IRootDriveInfoService), PropertyName = "_rootDriveInfoService")]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
+    private readonly OcConsumer _rootDriveInfosConsumer = new();
     public bool Loading => false;
     public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
     public DeclarativeProperty<string> FatalError { get; } = new();
@@ -57,6 +60,9 @@ public partial class MainWindowViewModel : IMainWindowViewModel
     public Thickness IconStatusPanelMargin { get; private set; } = new(20, 10, 10, 10);
     public Action? FocusDefaultElement { get; set; }
     public Action? ShowWindow { get; set; }
+
+    public ObservableCollection<RootDriveInfo> LocalDrives { get; set; }
+    public ObservableCollection<RootDriveInfo> NetworkDrives { get; set; }
 
     partial void OnInitialize()
     {
@@ -84,6 +90,15 @@ public partial class MainWindowViewModel : IMainWindowViewModel
 #endif
 
         Title.SetValueSafe(title);
+        
+        var localDrives = _rootDriveInfoService.RootDriveInfos.Filtering(r => r.DriveType != DriveType.Network);
+        var networkDrives = _rootDriveInfoService.RootDriveInfos.Filtering(r => r.DriveType == DriveType.Network);
+            
+        localDrives.For(_rootDriveInfosConsumer);
+        networkDrives.For(_rootDriveInfosConsumer);
+
+        LocalDrives = localDrives;
+        NetworkDrives = networkDrives;
 
         _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
         _instanceMessageHandler.ShowWindow += () => ShowWindow?.Invoke();
