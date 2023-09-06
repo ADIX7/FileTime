@@ -128,12 +128,13 @@
 
                             <ItemsRepeater
                                 Grid.Row="1"
-                                ItemsSource="{Binding AppState.RootDriveInfos}">
+                                ItemsSource="{Binding RootDriveInfoService.RootDriveInfos}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="local1:RootDriveInfo">
                                         <Grid
                                             Classes="SidebarContainerPresenter"
-                                            PointerPressed="OnHasContainerPointerPressed">
+                                            PointerPressed="OnHasContainerPointerPressed"
+                                            ToolTip.Tip="{Binding FullName}">
                                             <Grid
                                                 Margin="10,5"
                                                 ColumnDefinitions="Auto,*,Auto"
@@ -147,6 +148,7 @@
                                                     Source="{SvgImage /Assets/material/folder.svg}" />
 
                                                 <StackPanel
+                                                    Grid.Row="0"
                                                     Grid.Column="1"
                                                     HorizontalAlignment="Stretch"
                                                     VerticalAlignment="Center"
@@ -155,7 +157,7 @@
                                                     <TextBlock
                                                         Margin="5,0,0,0"
                                                         VerticalAlignment="Center"
-                                                        Text="{Binding FullName}" />
+                                                        Text="{Binding Name}" />
 
                                                     <TextBlock
                                                         Margin="5,0,0,0"

@@ -13,17 +13,14 @@ public partial class GuiAppState : AppStateBase, IGuiAppState, IDisposable
 {
     private readonly BehaviorSubject<GuiPanel> _activePanel = new(GuiPanel.FileBrowser);
 
-    [Notify] private ObservableCollection<RootDriveInfo> _rootDriveInfos;
-
     [Notify] private IReadOnlyList<PlaceInfo> _places = new List<PlaceInfo>();
     public ObservableCollection<string> PopupTexts { get; } = new();
 
     public IObservable<GuiPanel> ActivePanel { get; }
 
-    public GuiAppState(IRootDriveInfoService rootDriveInfoService)
+    public GuiAppState()
     {
         ActivePanel = _activePanel.AsObservable();
-        _rootDriveInfos = rootDriveInfoService.RootDriveInfos;
     }
 
     public void SetActivePanel(GuiPanel newPanel)

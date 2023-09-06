@@ -5,5 +5,6 @@ namespace FileTime.Providers.Local;
 
 public interface IRootDriveInfoService : IExitHandler
 {
-    ObservableCollection<RootDriveInfo> RootDriveInfos { get; set; }
+    ReadOnlyObservableCollection<RootDriveInfo> RootDriveInfos { get; set; }
+    ReadOnlyObservableCollection<DriveInfo> AllDrives { get; set; }
 }

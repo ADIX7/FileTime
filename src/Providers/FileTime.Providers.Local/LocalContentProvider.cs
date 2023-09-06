@@ -14,7 +14,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly IContentProviderRegistry _contentProviderRegistry;
     private readonly bool _isCaseInsensitive;
-    private readonly Lazy<ObservableCollection<RootDriveInfo>> _rootDriveInfos;
+    private readonly Lazy<IRootDriveInfoService> _rootDriveInfo;
 
     public LocalContentProvider(
         ITimelessContentProvider timelessContentProvider,
@@ -26,7 +26,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         _contentProviderRegistry = contentProviderRegistry;
         _isCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        _rootDriveInfos = new Lazy<ObservableCollection<RootDriveInfo>>(() => serviceProvider.GetRequiredService<IRootDriveInfoService>().RootDriveInfos);
+        _rootDriveInfo = new Lazy<IRootDriveInfoService>(serviceProvider.GetRequiredService<IRootDriveInfoService>);
 
         SupportsContentStreams = true;
 
@@ -68,12 +68,26 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
     public override ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path)
     {
-        var rootDriveInfos = _rootDriveInfos.Value;
-        var rootDriveInfo = rootDriveInfos.FirstOrDefault(d => path.Path.StartsWith(d.Path.Path));
+        var nativePath = GetNativePath(path);
+        
+        var possibleRootDrives =  _rootDriveInfo.Value.AllDrives.Where(d => nativePath.Path.StartsWith(d.RootDirectory.FullName)).ToArray();
+        var rootDrive = possibleRootDrives.Length == 0
+            ? null
+            : possibleRootDrives.MaxBy(d => d.RootDirectory.FullName.Length);
+        
+        return rootDrive is null 
+            ? ValueTask.FromResult<VolumeSizeInfo?>(null) 
+            : ValueTask.FromResult<VolumeSizeInfo?>(new VolumeSizeInfo(rootDrive.TotalSize, rootDrive.AvailableFreeSpace));
+
+        /*var rootDriveInfos = _rootDriveInfo.Value;
+        var possibleRootDriveInfo = rootDriveInfos.RootDriveInfos.Where(d => path.Path.StartsWith(d.Path.Path)).ToArray();
+        var rootDriveInfo = possibleRootDriveInfo.Length == 0
+            ? null
+            : possibleRootDriveInfo.MaxBy(d => d.FullName.Length);
 
         if (rootDriveInfo is null) return ValueTask.FromResult<VolumeSizeInfo?>(null);
 
-        return ValueTask.FromResult<VolumeSizeInfo?>(new VolumeSizeInfo(rootDriveInfo.Size, rootDriveInfo.Free));
+        return ValueTask.FromResult<VolumeSizeInfo?>(new VolumeSizeInfo(rootDriveInfo.Size, rootDriveInfo.Free));*/
     }
 
     public override async Task<IItem> GetItemByNativePathAsync(NativePath nativePath,
@@ -103,7 +117,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                 return FileToElement(new FileInfo(path), pointInTime);
             }
 
-            var pathParts = path.Split(Path.DirectorySeparatorChar).SelectMany(p => p.Split(Constants.SeparatorChar)).ToArray();
+            var pathParts = path.Split(Path.DirectorySeparatorChar).SelectMany(p => p.Split(Constants.SeparatorChar))
+                .ToArray();
 
             for (var i = pathParts.Length - 1; i > 0; i--)
             {
@@ -116,7 +131,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
 
                 var subPath = string.Join(Constants.SeparatorChar, pathParts.Skip(i));
 
-                var resolvedItem = await subContentProvider.GetItemByFullNameAsync(element, new FullName(subPath), pointInTime, forceResolvePathType, itemInitializationSettings);
+                var resolvedItem = await subContentProvider.GetItemByFullNameAsync(element, new FullName(subPath),
+                    pointInTime, forceResolvePathType, itemInitializationSettings);
 
                 if (resolvedItem is not null)
                 {
@@ -155,7 +171,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             AbsolutePathType.Container => CreateEmptyContainer(
                 nativePath,
                 pointInTime,
-                new List<Exception> {innerException}
+                new List<Exception> { innerException }
             ),
             AbsolutePathType.Element => CreateEmptyElement(nativePath),
             _ => throw new Exception(
@@ -167,8 +183,9 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
     public override ValueTask<NativePath?> GetSupportedPathPart(NativePath nativePath)
     {
         var path = nativePath.Path;
-        var pathParts = path.Split(Path.DirectorySeparatorChar).SelectMany(p => p.Split(Constants.SeparatorChar)).ToArray();
-        
+        var pathParts = path.Split(Path.DirectorySeparatorChar).SelectMany(p => p.Split(Constants.SeparatorChar))
+            .ToArray();
+
         for (var i = pathParts.Length - 1; i > 0; i--)
         {
             var possiblePath = string.Join(Path.DirectorySeparatorChar, pathParts.Take(i));
@@ -440,7 +457,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         var finalSize = size switch
         {
             > int.MaxValue => int.MaxValue,
-            _ => (int) size
+            _ => (int)size
         };
         var buffer = new byte[finalSize];
         var realSize = await reader.ReadAsync(buffer.AsMemory(0, finalSize), cancellationToken);

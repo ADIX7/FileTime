@@ -31,14 +31,7 @@ public partial class RootDriveInfo
 
         _name = container.Name;
 
-        _fullName = _name;
-        try
-        {
-            _fullName = container.FullName?.Path[(container.Provider.FullName!.Path.Length + 1)..] ?? _fullName;
-        }
-        catch
-        {
-        }
+        _fullName = driveInfo.Name;
 
         Path = container.FullName ?? throw new NullReferenceException($"Container does not have a {nameof(FullName)}");
 

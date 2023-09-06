@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using FileTime.Core.Models;
+using FileTime.Core.Timeline;
 using ObservableComputations;
 
 namespace FileTime.Providers.Local;
@@ -8,66 +9,65 @@ namespace FileTime.Providers.Local;
 public class RootDriveInfoService : IRootDriveInfoService
 {
     private readonly ILocalContentProvider _localContentProvider;
-    private readonly List<DriveInfo> _rootDrives = new();
+    private readonly ObservableCollection<DriveInfo> _rootDrives = new();
+    private readonly ObservableCollection<DriveInfo> _allDrives = new();
     private readonly OcConsumer _rootDriveInfosConsumer = new();
 
-    public ObservableCollection<RootDriveInfo> RootDriveInfos { get; set; }
+    public ReadOnlyObservableCollection<DriveInfo> AllDrives { get; set; }
+    public ReadOnlyObservableCollection<RootDriveInfo> RootDriveInfos { get; set; }
 
     public RootDriveInfoService(ILocalContentProvider localContentProvider)
     {
         _localContentProvider = localContentProvider;
-        InitRootDrives();
+        var (rootDrives, allDrives) = GetRootDrives();
 
-        var rootDriveInfos = localContentProvider.Items.Selecting<AbsolutePath, (AbsolutePath Path, DriveInfo? Drive)>(
-                i => MatchRootDrive(i)
-            )
-            .Filtering(t => IsNotNull(t.Drive))
-            .Selecting(t => Resolve(t))
-            .Filtering(t => t.Item is IContainer)
-            .Selecting(t => new RootDriveInfo(t.Drive, (IContainer) t.Item!))
-            .Ordering(d => d.Name);
-
-        rootDriveInfos.For(_rootDriveInfosConsumer);
-
-        RootDriveInfos = rootDriveInfos;
-
-        void InitRootDrives()
+        foreach (var driveInfo in rootDrives)
         {
-            var drives = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed)
-                : DriveInfo.GetDrives().Where(d =>
-                    d.DriveType == DriveType.Fixed
+            _rootDrives.Add(driveInfo);
+        }
+        
+        foreach (var driveInfo in allDrives)
+        {
+            _allDrives.Add(driveInfo);
+        }
+
+        var rootDriveInfos = _rootDrives.Selecting(r => GetContainer(r))
+            .Filtering(t => t.Item != null)
+            .Selecting(t => new RootDriveInfo(t.Drive, t.Item!))
+            .Ordering(d => d.Name)
+            .For(_rootDriveInfosConsumer);
+
+        RootDriveInfos = new ReadOnlyObservableCollection<RootDriveInfo>(rootDriveInfos);
+        AllDrives = new ReadOnlyObservableCollection<DriveInfo>(_allDrives);
+
+        (DriveInfo[] RootDrives, DriveInfo[] AllDrives) GetRootDrives()
+        {
+            var allDrives = DriveInfo.GetDrives();
+            var drives = DriveInfo.GetDrives().Where(d => d.DriveType is not DriveType.Unknown and not DriveType.Ram);
+            drives = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? drives
+                : drives.Where(d =>
+                    d.TotalSize != 0
                     && d.DriveFormat != "pstorefs"
                     && d.DriveFormat != "bpf_fs"
                     && d.DriveFormat != "tracefs"
+                    && d.DriveFormat != "rpc_pipefs"
                     && !d.RootDirectory.FullName.StartsWith("/snap/"));
 
-            _rootDrives.Clear();
-            _rootDrives.AddRange(drives);
+            return (drives.ToArray(), allDrives);
         }
     }
 
-    private static bool IsNotNull(object? obj) => obj is not null;
-
-    private static (IItem? Item, DriveInfo Drive) Resolve((AbsolutePath Path, DriveInfo? Drive) tuple)
+    private (DriveInfo Drive, IContainer? Item) GetContainer(DriveInfo rootDriveInfo)
     {
-        var t = Task.Run(async () => await tuple.Path.ResolveAsyncSafe());
-        t.Wait();
-        return (Item: t.Result, Drive: tuple.Drive!);
-    }
+        var task = Task.Run(
+            async () => await _localContentProvider.GetItemByNativePathAsync(
+                new NativePath(rootDriveInfo.RootDirectory.FullName),
+                PointInTime.Present)
+        );
+        task.Wait();
 
-    private (AbsolutePath Path, DriveInfo? Drive) MatchRootDrive(AbsolutePath sourceItem)
-    {
-        var rootDrive = _rootDrives.FirstOrDefault(d =>
-        {
-            var containerPath = _localContentProvider.GetNativePath(sourceItem.Path).Path;
-            var drivePath = d.Name.TrimEnd(Path.DirectorySeparatorChar);
-            return containerPath == drivePath
-                   || (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && containerPath == "/" &&
-                       d.Name == "/");
-        });
-
-        return (Path: sourceItem, Drive: rootDrive);
+        return (rootDriveInfo, task.Result as IContainer);
     }
 
     public Task ExitAsync(CancellationToken token = default)

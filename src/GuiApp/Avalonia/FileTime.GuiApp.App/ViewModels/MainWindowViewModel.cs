@@ -45,6 +45,7 @@ namespace FileTime.GuiApp.App.ViewModels;
 [Inject(typeof(IPossibleCommandsViewModel), PropertyName = "PossibleCommands", PropertyAccessModifier = AccessModifier.Public)]
 [Inject(typeof(IInstanceMessageHandler), PropertyName = "_instanceMessageHandler")]
 [Inject(typeof(ICloudDriveService), PropertyAccessModifier = AccessModifier.Public)]
+[Inject(typeof(IRootDriveInfoService), PropertyAccessModifier = AccessModifier.Public)]
 public partial class MainWindowViewModel : IMainWindowViewModel
 {
     public bool Loading => false;
