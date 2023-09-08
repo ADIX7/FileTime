@@ -344,8 +344,38 @@
                     Grid.Row="1"
                     Grid.Column="1"
                     RowDefinitions="Auto,40,*,Auto">
+                    <!--  https://github.com/AvaloniaUI/Avalonia/issues/3466  -->
+                    <!--<Grid.Styles>
+                        <Style Selector="Grid#CommandGroupsContainer.Active">
+                            <Setter Property="Background" Value="Red" />
+                            <Style.Animations>
+                                <Animation
+                                    FillMode="Both"
+                                    Duration="0:0:2">
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="Height" Value="180.0" />
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                        <Style Selector="Grid#CommandGroupsContainer.Inactive">
+                            <Setter Property="Background" Value="Blue" />
+                            <Style.Animations>
+                                <Animation
+                                    FillMode="Both"
+                                    Duration="0:0:2">
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="Height" Value="0.0" />
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Grid.Styles>-->
 
-                    <Grid x:Name="CommandGroupsContainer">
+                    <Grid
+                        x:Name="CommandGroupsContainer"
+                        Classes.Active="{Binding #CommandGroups.ItemCount, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}"
+                        Classes.Inactive="{Binding #CommandGroups.ItemCount, Converter={StaticResource EqualsConverter}, ConverterParameter=0}">
                         <Grid.Transitions>
                             <Transitions>
                                 <DoubleTransition
