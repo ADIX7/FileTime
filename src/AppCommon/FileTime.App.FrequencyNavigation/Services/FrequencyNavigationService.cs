@@ -140,8 +140,6 @@ public partial class FrequencyNavigationService : IFrequencyNavigationService, I
         if (!File.Exists(_oldDbPath)) return;
         using var _ = Defer(() => File.Delete(_oldDbPath));
 
-        if ((await _frequencyNavigationRepository.GetContainersAsync()).Any()) return;
-
         await using var dbStream = File.OpenRead(_oldDbPath);
         var containerScores = await JsonSerializer.DeserializeAsync<Dictionary<string, OldContainerFrequencyData>>(dbStream);
         if (containerScores is null || containerScores.Count == 0)
