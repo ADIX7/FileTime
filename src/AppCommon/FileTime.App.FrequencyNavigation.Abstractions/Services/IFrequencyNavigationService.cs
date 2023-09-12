@@ -9,5 +9,5 @@ public interface IFrequencyNavigationService
     IFrequencyNavigationViewModel? CurrentModal { get; }
     Task OpenNavigationWindow();
     void CloseNavigationWindow();
-    IList<string> GetMatchingContainers(string searchText);
+    ValueTask<IList<string>> GetMatchingContainers(string searchText);
 }

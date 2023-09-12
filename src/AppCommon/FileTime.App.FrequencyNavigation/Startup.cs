@@ -14,7 +14,7 @@ public static class Startup
         services.AddSingleton<FrequencyNavigationService>();
         services.TryAddSingleton<IFrequencyNavigationService>(sp => sp.GetRequiredService<FrequencyNavigationService>());
         services.AddSingleton<IStartupHandler>(sp => sp.GetRequiredService<FrequencyNavigationService>());
-        services.AddSingleton<IExitHandler>(sp => sp.GetRequiredService<FrequencyNavigationService>());
+        services.TryAddTransient<FrequencyNavigationRepository>();
         return services;
     }
 }

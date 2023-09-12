@@ -4,4 +4,5 @@ public interface IApplicationSettings
 {
     string AppDataRoot { get; }
     string EnvironmentName { get; }
+    string DataFolderName { get; }
 }

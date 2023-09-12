@@ -2,6 +2,7 @@ using FileTime.App.Core;
 using FileTime.App.Core.Models;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.Services.Persistence;
+using FileTime.App.Database;
 using FileTime.Core;
 using FileTime.Providers.Local;
 using FileTime.Providers.LocalAdmin;
@@ -26,6 +27,7 @@ public static class DependencyInjection
 
         return serviceCollection
             .AddCoreDependencies()
+            .AddDatabase()
             .AddAppCoreDependencies(configuration)
             .AddLocalProviderServices()
             .AddLocalAdminProviderServices(configuration)

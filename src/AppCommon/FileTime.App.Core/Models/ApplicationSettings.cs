@@ -7,6 +7,8 @@ public class ApplicationSettings : IApplicationSettings
     public string AppDataRoot { get; private set; } = null!;
     public string EnvironmentName { get; private set; } = null!;
 
+    public string DataFolderName { get; } = "data";
+
     public ApplicationSettings()
     {
 #if DEBUG

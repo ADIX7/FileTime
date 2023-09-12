@@ -4,6 +4,7 @@ using Avalonia.Input;
 using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
+using FileTime.App.Database.LiteDb;
 using FileTime.Core.Interactions;
 using FileTime.GuiApp.App.CloudDrives;
 using FileTime.GuiApp.App.Configuration;

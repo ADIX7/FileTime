@@ -6,6 +6,7 @@ using FileTime.App.FuzzyPanel;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 using GeneralInputKey;
+using Microsoft.Extensions.Logging;
 
 namespace FileTime.App.FrequencyNavigation.ViewModels;
 
@@ -18,7 +19,8 @@ public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFreque
     public FrequencyNavigationViewModel(
         IFrequencyNavigationService frequencyNavigationService,
         IUserCommandHandlerService userCommandHandlerService,
-        ITimelessContentProvider timelessContentProvider)
+        ITimelessContentProvider timelessContentProvider,
+        ILogger<FrequencyNavigationViewModel> logger) : base(logger)
     {
         _frequencyNavigationService = frequencyNavigationService;
         _userCommandHandlerService = userCommandHandlerService;
@@ -64,8 +66,8 @@ public class FrequencyNavigationViewModel : FuzzyPanelViewModel<string>, IFreque
         return false;
     }
 
-    public override void UpdateFilteredMatches() =>
-        FilteredMatches = new List<string>(_frequencyNavigationService.GetMatchingContainers(SearchText));
+    public override async Task UpdateFilteredMatches() 
+        => FilteredMatches = new List<string>(await _frequencyNavigationService.GetMatchingContainers(SearchText));
 
     string IModalViewModel.Name => "FrequencyNavigation";
 }

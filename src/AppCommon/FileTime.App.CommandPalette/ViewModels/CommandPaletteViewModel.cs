@@ -21,7 +21,7 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
         IIdentifiableUserCommandService identifiableUserCommandService,
         IUserCommandHandlerService userCommandHandlerService,
         ICommandKeysHelperService commandKeysHelperService,
-        ILogger<CommandPaletteViewModel> logger)
+        ILogger<CommandPaletteViewModel> logger) : base(logger)
     {
         _commandPaletteService = commandPaletteService;
         _identifiableUserCommandService = identifiableUserCommandService;
@@ -34,7 +34,11 @@ public class CommandPaletteViewModel : FuzzyPanelViewModel<ICommandPaletteEntryV
 
     public void Close() => _commandPaletteService.CloseCommandPalette();
 
-    public override void UpdateFilteredMatches() => UpdateFilteredMatchesInternal();
+    public override Task UpdateFilteredMatches()
+    {
+        UpdateFilteredMatchesInternal();
+        return Task.CompletedTask;
+    }
 
     private void UpdateFilteredMatchesInternal() =>
         FilteredMatches = _commandPaletteService

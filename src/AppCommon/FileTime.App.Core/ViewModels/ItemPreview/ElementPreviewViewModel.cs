@@ -118,7 +118,7 @@ public partial class ElementPreviewViewModel : IElementPreviewViewModel, IAsyncI
         }
         catch (Exception ex)
         {
-            TextContent = $"Error while getting content of {element.FullName}. " + ex.ToString();
+            TextContent = $"Error while getting content of {element.FullName}. " + ex;
         }
 
         Mode = (TextContent?.Length ?? 0) switch

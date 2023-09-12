@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\Providers\FileTime.Providers.Local\FileTime.Providers.Local.csproj" />
     <ProjectReference Include="..\..\Tools\FileTime.Tools.VirtualDiskSources\FileTime.Tools.VirtualDiskSources.csproj" />
     <ProjectReference Include="..\FileTime.App.Core\FileTime.App.Core.csproj" />
+    <ProjectReference Include="..\FileTime.App.Database\FileTime.App.Database.csproj" />
   </ItemGroup>
 
 </Project>

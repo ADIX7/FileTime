@@ -7,6 +7,6 @@ public interface IFuzzyPanelViewModel<TItem> where TItem : class
     List<TItem> FilteredMatches { get; }
     TItem? SelectedItem { get; }
     string SearchText { get; set; }
-    void UpdateFilteredMatches();
+    Task UpdateFilteredMatches();
     Task<bool> HandleKeyDown(GeneralKeyEventArgs keyEventArgs);
 }

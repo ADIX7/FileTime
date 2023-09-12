@@ -1,21 +1,24 @@
 ﻿using System.ComponentModel;
 using DeclarativeProperty;
 using GeneralInputKey;
+using Microsoft.Extensions.Logging;
 using PropertyChanged.SourceGenerator;
 
 namespace FileTime.App.FuzzyPanel;
 
 public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<TItem> where TItem : class
 {
+    private readonly ILogger _logger;
     private readonly Func<TItem, TItem, bool> _itemEquality;
     private string _searchText = String.Empty;
 
-    [Notify(set: Setter.Protected)] private IDeclarativeProperty<bool> _showWindow;
-    [Notify(set: Setter.Protected)] private List<TItem> _filteredMatches;
+    [Notify(set: Setter.Protected)] private IDeclarativeProperty<bool> _showWindow = null!;
+    [Notify(set: Setter.Protected)] private List<TItem> _filteredMatches = null!;
     [Notify(set: Setter.Protected)] private TItem? _selectedItem;
 
-    protected FuzzyPanelViewModel(Func<TItem, TItem, bool>? itemEquality = null)
+    protected FuzzyPanelViewModel(ILogger logger, Func<TItem, TItem, bool>? itemEquality = null)
     {
+        _logger = logger;
         _itemEquality = itemEquality ?? ((a, b) => a == b);
     }
 
@@ -29,7 +32,15 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
             _searchText = value;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SearchText)));
 
-            UpdateFilteredMatches();
+            Update(value);
+        }
+    }
+
+    private async void Update(string value)
+    {
+        try
+        {
+            await UpdateFilteredMatches();
             if (string.IsNullOrWhiteSpace(value))
             {
                 SelectedItem = null;
@@ -38,6 +49,10 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
             {
                 UpdateSelectedItem();
             }
+        }
+        catch(Exception e)
+        {
+            _logger.LogError(e, "Error while updating filtered matches");
         }
     }
 
@@ -50,7 +65,7 @@ public abstract partial class FuzzyPanelViewModel<TItem> : IFuzzyPanelViewModel<
             : null;
     }
 
-    public abstract void UpdateFilteredMatches();
+    public abstract Task UpdateFilteredMatches();
 
     public virtual Task<bool> HandleKeyDown(GeneralKeyEventArgs keyEventArgs)
     {
