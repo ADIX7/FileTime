@@ -1,24 +1,20 @@
 using System.Collections.ObjectModel;
 using DeclarativeProperty;
 using DynamicData;
-using DynamicData.Binding;
 using FileTime.App.Core.Extensions;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.Services;
-using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Services;
 using FileTime.Core.Timeline;
 using InitableService;
-using MvvmGen;
 using ObservableComputations;
 using IContainer = FileTime.Core.Models.IContainer;
 using static System.DeferTools;
 
 namespace FileTime.App.Core.ViewModels;
 
-[ViewModel]
-public partial class TabViewModel : ITabViewModel
+public class TabViewModel : ITabViewModel
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ITimelessContentProvider _timelessContentProvider;

@@ -33,7 +33,6 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Terminal.Gui" Version="1.13.5" />
   </ItemGroup>
 
   <ItemGroup Condition="Exists('appsettings.json') AND '$(Configuration)' == 'Debug'">

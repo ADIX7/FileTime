@@ -6,33 +6,30 @@ using FileTime.Core.Behaviors;
 using FileTime.Core.Helper;
 using FileTime.Core.Models;
 using MoreLinq;
-using MvvmGen;
+using PropertyChanged.SourceGenerator;
 
 namespace FileTime.App.Core.ViewModels;
 
-[ViewModel]
-[Inject(typeof(IAppState), "_appState")]
-[Inject(typeof(IItemNameConverterService), "_itemNameConverterService")]
-public abstract partial class ItemViewModel : IItemViewModel
+public abstract partial class ItemViewModel(IItemNameConverterService itemNameConverterService, IAppState appState) : IItemViewModel
 {
     private ITabViewModel? _parentTab;
 
-    [Property] private IItem? _baseItem;
+    [Notify] private IItem? _baseItem;
 
-    [Property] private string? _displayNameText;
+    [Notify] private string? _displayNameText;
 
-    [Property] private IDeclarativeProperty<bool> _isSelected;
+    [Notify] private IDeclarativeProperty<bool> _isSelected = null!;
 
-    [Property] private IDeclarativeProperty<bool>? _isMarked;
+    [Notify] private IDeclarativeProperty<bool> _isMarked = null!;
 
-    [Property] private IDeclarativeProperty<ItemViewMode> _viewMode;
+    [Notify] private IDeclarativeProperty<ItemViewMode> _viewMode = null!;
 
-    [Property] private DateTime? _createdAt;
-    [Property] private DateTime? _modifiedAt;
+    [Notify] private DateTime? _createdAt;
+    [Notify] private DateTime? _modifiedAt;
 
-    [Property] private string? _attributes;
+    [Notify] private string? _attributes;
 
-    [Property] private IDeclarativeProperty<bool> _isAlternative;
+    [Notify] private IDeclarativeProperty<bool> _isAlternative = null!;
 
     public IDeclarativeProperty<IReadOnlyList<ItemNamePart>>? DisplayName { get; private set; }
 
@@ -45,7 +42,7 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         var sourceCollection = itemViewModelType switch
         {
-            ItemViewModelType.Main => parentTab.CurrentItems!,
+            ItemViewModelType.Main => parentTab.CurrentItems,
             ItemViewModelType.Parent => parentTab.ParentsChildren,
             ItemViewModelType.SelectedChild => parentTab.SelectedsChildren,
             _ => throw new InvalidEnumArgumentException()
@@ -53,11 +50,11 @@ public abstract partial class ItemViewModel : IItemViewModel
 
         var displayName = itemViewModelType switch
         {
-            ItemViewModelType.Main => _appState.RapidTravelTextDebounced.Map(async s =>
-                _appState.ViewMode.Value != Models.Enums.ViewMode.RapidTravel
-                && _appState.SelectedTab.Value?.CurrentLocation.Value?.Provider is IItemNameConverterProvider nameConverterProvider
+            ItemViewModelType.Main => appState.RapidTravelTextDebounced.Map(async s =>
+                appState.ViewMode.Value != Models.Enums.ViewMode.RapidTravel
+                && appState.SelectedTab.Value?.CurrentLocation.Value?.Provider is IItemNameConverterProvider nameConverterProvider
                     ? (IReadOnlyList<ItemNamePart>) await nameConverterProvider.GetItemNamePartsAsync(item)
-                    : _itemNameConverterService.GetDisplayName(item.DisplayName, s)
+                    : itemNameConverterService.GetDisplayName(item.DisplayName, s)
             ),
             _ => new DeclarativeProperty<IReadOnlyList<ItemNamePart>>(new List<ItemNamePart> {new(item.DisplayName)})!,
         };
