@@ -4,10 +4,18 @@ namespace FileTime.Server.Common.ContentAccess;
 
 public class ContentAccessManager : IContentAccessManager
 {
-    private readonly Dictionary<string, IContentWriter> _contentWriters = new();
-    public void AddContentWriter(string transactionId, IContentWriter contentWriter) 
-        => _contentWriters.Add(transactionId, contentWriter);
-    
-    public IContentWriter GetContentWriter(string transactionId) => _contentWriters[transactionId];
-    public void RemoveContentWriter(string transactionId) => _contentWriters.Remove(transactionId);
+    private readonly Dictionary<string, IStreamContainer> _contentStreamContainers = new();
+
+    public void AddContentStreamContainer(string transactionId, IStreamContainer streamContainer)
+        => _contentStreamContainers.Add(transactionId, streamContainer);
+
+    public Stream GetContentStream(string transactionId) => _contentStreamContainers[transactionId].GetStream();
+
+    public void RemoveContentStreamContainer(string transactionId)
+    {
+        if (!_contentStreamContainers.TryGetValue(transactionId, out var streamContainer)) return;
+
+        streamContainer.Dispose();
+        _contentStreamContainers.Remove(transactionId);
+    }
 }

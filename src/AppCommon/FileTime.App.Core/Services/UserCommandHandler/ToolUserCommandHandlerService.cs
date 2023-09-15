@@ -70,7 +70,8 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
             new TypeUserCommandHandler<AddRemoteContentProviderCommand>(AddRemoteContentProvider),
             new TypeUserCommandHandler<OpenInDefaultFileExplorerCommand>(OpenInDefaultFileExplorer),
             new TypeUserCommandHandler<CopyNativePathCommand>(CopyNativePath),
-            new TypeUserCommandHandler<CopyBase64Command>(CopyBase64),
+            //TODO: this should rather base hash instead of base64
+            //new TypeUserCommandHandler<CopyBase64Command>(CopyBase64),
             new TypeUserCommandHandler<EditCommand>(Edit),
             new TypeUserCommandHandler<SearchCommand>(Search),
             new TypeUserCommandHandler<ScanSizeCommand>(ScanSize),
@@ -92,10 +93,10 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
         var path = containerNameInput.Value!;
 
-        Func<Task<IRemoteConnection>>? connection = null;
+        Func<ValueTask<IRemoteConnection>>? connection = null;
         if (path.StartsWith("http"))
         {
-            connection = async () => await SignalRConnection.GetOrCreateForAsync(path, providerName.Value);
+            connection = () => SignalRConnection.GetOrCreateForAsync(path, providerName.Value);
         }
 
         if (connection is null)
@@ -121,7 +122,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
         await _userCommandHandlerService.HandleCommandAsync(
             new OpenContainerCommand(new AbsolutePath(_timelessContentProvider, remoteContentProvider)));
-        
+
         await remoteContentProvider.InitializeChildren();
     }
 
@@ -192,7 +193,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
         await _currentSelectedTab.Tab.Ordering.SetValue(sortItemsCommand.Ordering);
     }
 
-    private async Task CopyBase64()
+    /*private async Task CopyBase64()
     {
         var item = _currentSelectedItem?.Value?.BaseItem;
         if (item?.Type != AbsolutePathType.Element || item is not IElement element) return;
@@ -209,7 +210,7 @@ public class ToolUserCommandHandlerService : UserCommandHandlerServiceBase
 
         var base64Hash = Convert.ToBase64String(ms.ToArray());
         await _systemClipboardService.CopyToClipboardAsync(base64Hash);
-    }
+    }*/
 
     private async Task Search(SearchCommand searchCommand)
     {

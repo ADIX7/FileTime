@@ -113,7 +113,7 @@ public class CompressCommand : CommandBase, IExecutableCommand, ITransportationC
             await _contentAccessorFactory.GetItemCreator(resolvedParent.Provider).CreateElementAsync(resolvedParent.Provider, newItemName);
             var targetElement = (IElement) await _timelessContentProvider.GetItemByFullNameAsync(newItemName, PointInTime.Present);
             using var contentWriter = await _contentAccessorFactory.GetContentWriterFactory(resolvedParent.Provider).CreateContentWriterAsync(targetElement);
-            await using var contentWriterStream = contentWriter.AsStream();
+            await using var contentWriterStream = contentWriter.GetStream();
             compressOperation.SaveTo(contentWriterStream);
 
             await contentWriterStream.FlushAsync(_cancellationTokenSource.Token);

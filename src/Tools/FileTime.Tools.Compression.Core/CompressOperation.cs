@@ -27,21 +27,14 @@ public class CompressOperation<TEntry, TVolume> : ICompressOperation
 
     public async Task<IEnumerable<IDisposable>> CompressElement(IElement element, string key)
     {
-        if (element.Provider.SupportsContentStreams)
-        {
-            var contentReader = await _contentAccessorFactory.GetContentReaderFactory(element.Provider).CreateContentReaderAsync(element);
+        var contentReader = await _contentAccessorFactory.GetContentReaderFactory(element.Provider).CreateContentReaderAsync(element);
+        var contentReaderStream = contentReader.GetStream();
+        _archive.AddEntry(key, contentReaderStream);
 
-            var contentReaderStream = contentReader.AsStream();
-
-            _archive.AddEntry(key, contentReaderStream);
-
-            return new IDisposable[] {contentReader, contentReaderStream};
-        }
-
-        return Enumerable.Empty<IDisposable>();
+        return new IDisposable[] {contentReader, contentReaderStream};
     }
 
-    public void SaveTo(Stream stream) 
+    public void SaveTo(Stream stream)
         => _saveTo(stream);
 
     ~CompressOperation()

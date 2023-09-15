@@ -95,7 +95,7 @@ public class DecompressCommand : CommandBase, IExecutableCommand, ITransportatio
                 var newItem = (IElement) await _timelessContentProvider.GetItemByFullNameAsync(entryPath, PointInTime.Present);
                 using var writer = await contentWriterFactory.CreateContentWriterAsync(newItem);
 
-                archiveEntry.WriteTo(writer.AsStream());
+                archiveEntry.WriteTo(writer.GetStream());
             }
         }
     }
@@ -107,7 +107,7 @@ public class DecompressCommand : CommandBase, IExecutableCommand, ITransportatio
         {
             var targetElement = (IElement) await _timelessContentProvider.GetItemByFullNameAsync(source, PointInTime.Present);
             var contentReader = await _contentAccessorFactory.GetContentReaderFactory(targetElement.Provider).CreateContentReaderAsync(targetElement);
-            var contentReaderStream = contentReader.AsStream();
+            var contentReaderStream = contentReader.GetStream();
             _disposables.Add(contentReader);
             using var archive = ArchiveFactory.Open(contentReaderStream);
 

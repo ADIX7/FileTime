@@ -49,7 +49,7 @@ public partial class ElementPreviewViewModel : IElementPreviewViewModel, IAsyncI
             {
                 var readerFactory = _contentAccessorFactory.GetContentReaderFactory(element.Provider);
                 var reader = await readerFactory.CreateContentReaderAsync(element);
-                await using var inputStream = reader.AsStream();
+                await using var inputStream = reader.GetStream();
                 using var pdfDocument = PdfDocument.Open(inputStream);
 
                 var contentBuilder = new StringBuilder();

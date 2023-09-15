@@ -4,7 +4,7 @@ namespace FileTime.Server.Common.ContentAccess;
 
 public interface IContentAccessManager
 {
-    void AddContentWriter(string transactionId, IContentWriter contentWriter);
-    IContentWriter GetContentWriter(string transactionId);
-    void RemoveContentWriter(string transactionId);
+    void AddContentStreamContainer(string transactionId, IStreamContainer streamContainer);
+    Stream GetContentStream(string transactionId);
+    void RemoveContentStreamContainer(string transactionId);
 }

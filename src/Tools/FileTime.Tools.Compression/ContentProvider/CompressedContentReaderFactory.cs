@@ -22,7 +22,7 @@ public sealed class CompressedContentReaderFactory : SubContentReaderBase<Compre
         var reader = parentElementReaderContext.ContentReader;
         var subPath = parentElementReaderContext.SubNativePath;
         
-        var readerStream = reader.AsStream();
+        var readerStream = reader.GetStream();
         var archive = ArchiveFactory.Open(readerStream);
 
         var entry = archive.Entries.First(e => e.Key == subPath.Path);

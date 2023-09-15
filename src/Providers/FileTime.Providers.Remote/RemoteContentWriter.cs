@@ -30,25 +30,78 @@ public class RemoteContentWriter : IContentWriter, IInitable<IRemoteContentProvi
         Task.Run(async () => await (await _remoteContentProvider.GetRemoteConnectionAsync()).CloseWriterAsync(_transactionId));
     }
 
-    public int PreferredBufferSize => 10 * 1024 * 1024;
+    public Stream GetStream() => new ProxyStream(this);
 
-    public async Task WriteBytesAsync(byte[] data, int? index = null, CancellationToken cancellationToken = default)
+    public async Task InitializeRemoteWriterAsync()
     {
-        if (!_isRemoteWriterInitialized) await InitializeRemoteWriter(_nativePath);
-        await (await _remoteContentProvider.GetRemoteConnectionAsync()).WriteBytesAsync(_transactionId, data, index, cancellationToken);
-    }
-
-    public async Task FlushAsync(CancellationToken cancellationToken = default)
-    {
-        if (!_isRemoteWriterInitialized) return;
-        await (await _remoteContentProvider.GetRemoteConnectionAsync()).FlushWriterAsync(_transactionId, cancellationToken);
-    }
-
-    public Stream AsStream() => new ContentAccessStream(this);
-
-    private async Task InitializeRemoteWriter(NativePath nativePath)
-    {
+        if (_isRemoteWriterInitialized) return;
         _isRemoteWriterInitialized = true;
-        await (await _remoteContentProvider.GetRemoteConnectionAsync()).InitializeRemoteWriter(_remoteContentProviderId, _transactionId, nativePath);
+        await (await _remoteContentProvider.GetRemoteConnectionAsync()).InitializeRemoteWriter(_remoteContentProviderId, _transactionId, _nativePath);
+    }
+
+    public async Task FlushAsync()
+    {
+        await InitializeRemoteWriterAsync();
+        await (await _remoteContentProvider.GetRemoteConnectionAsync()).FlushAsync(_transactionId);
+    }
+
+    public async Task<int> ReadAsync(byte[] buffer, int offset, int count)
+    {
+        await InitializeRemoteWriterAsync();
+        return await (await _remoteContentProvider.GetRemoteConnectionAsync()).ReadAsync(_transactionId, buffer, offset, count);
+    }
+
+    public async Task<long> SeekAsync(long offset, SeekOrigin origin)
+    {
+        await InitializeRemoteWriterAsync();
+        return await (await _remoteContentProvider.GetRemoteConnectionAsync()).SeekAsync(_transactionId, offset, origin);
+    }
+
+    public async Task SetLengthAsync(long value)
+    {
+        await InitializeRemoteWriterAsync();
+        await (await _remoteContentProvider.GetRemoteConnectionAsync()).SetLengthAsync(_transactionId, value);
+    }
+
+    public async Task WriteAsync(byte[] buffer, int offset, int count)
+    {
+        await InitializeRemoteWriterAsync();
+        await (await _remoteContentProvider.GetRemoteConnectionAsync()).WriteAsync(_transactionId, buffer, offset, count);
+    }
+
+    public async Task<bool> CanReadAsync()
+    {
+        await InitializeRemoteWriterAsync();
+        return await (await _remoteContentProvider.GetRemoteConnectionAsync()).CanReadAsync(_transactionId);
+    }
+
+    public async Task<bool> CanSeekAsync()
+    {
+        await InitializeRemoteWriterAsync();
+        return await (await _remoteContentProvider.GetRemoteConnectionAsync()).CanSeekAsync(_transactionId);
+    }
+
+    public async Task<bool> CanWriteAsync()
+    {
+        await InitializeRemoteWriterAsync();
+        return await (await _remoteContentProvider.GetRemoteConnectionAsync()).CanWriteAsync(_transactionId);
+    }
+
+    public async Task<long> GetLengthAsync()
+    {
+        await InitializeRemoteWriterAsync();
+        return await (await _remoteContentProvider.GetRemoteConnectionAsync()).GetLengthAsync(_transactionId);
+    }
+
+    public async Task<long> GetPositionAsync()
+    {
+        await InitializeRemoteWriterAsync();
+        return await (await _remoteContentProvider.GetRemoteConnectionAsync()).GetPositionAsync(_transactionId);
+    }
+
+    public async Task SetPositionAsync(long position)
+    {
+        await InitializeRemoteWriterAsync();
+        await (await _remoteContentProvider.GetRemoteConnectionAsync()).SetPositionAsync(_transactionId, position);
     }
 }

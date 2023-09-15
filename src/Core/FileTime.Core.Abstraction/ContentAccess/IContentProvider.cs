@@ -7,8 +7,6 @@ namespace FileTime.Core.ContentAccess;
 
 public interface IContentProvider : IContainer, IOnContainerEnter
 {
-    bool SupportsContentStreams { get; }
-
     Task<IItem> GetItemByFullNameAsync(
         FullName fullName,
         PointInTime pointInTime,

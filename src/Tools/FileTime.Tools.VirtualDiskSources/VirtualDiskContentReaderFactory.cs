@@ -22,7 +22,7 @@ public sealed class VirtualDiskContentReaderFactory : SubContentReaderBase<Virtu
         var reader = parentElementReaderContext.ContentReader;
         var subPath = parentElementReaderContext.SubNativePath;
 
-        var readerStream = reader.AsStream();
+        var readerStream = reader.GetStream();
         var discReader = new UdfReader(readerStream);
 
         var fileInfo = discReader.GetFileInfo(subPath.Path);

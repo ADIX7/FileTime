@@ -1,10 +1,5 @@
 namespace FileTime.Core.ContentAccess;
 
-public interface IContentWriter : IDisposable
+public interface IContentWriter : IStreamContainer
 {
-    int PreferredBufferSize { get; }
-
-    Task WriteBytesAsync(byte[] data, int? index = null, CancellationToken cancellationToken = default);
-    Task FlushAsync(CancellationToken cancellationToken = default);
-    Stream AsStream();
 }

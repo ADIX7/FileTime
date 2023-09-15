@@ -38,7 +38,7 @@ public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvid
         var contentReaderFactory = _contentAccessorFactory.GetContentReaderFactory(parentElement.Provider);
         var reader = await contentReaderFactory.CreateContentReaderAsync(parentElement);
 
-        await using var readerStream = reader.AsStream();
+        await using var readerStream = reader.GetStream();
         var discReader = new UdfReader(readerStream);
 
         if (itemPath.Path.Length == 0 || itemPath.Path == Constants.SubContentProviderRootContainer)

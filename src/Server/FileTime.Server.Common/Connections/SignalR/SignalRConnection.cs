@@ -32,7 +32,7 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string, strin
         await _client.SetClientIdentifier(providerName);
     }
 
-    public static async Task<SignalRConnection> GetOrCreateForAsync(string baseUrl, string providerName)
+    public static async ValueTask<IRemoteConnection> GetOrCreateForAsync(string baseUrl, string providerName)
     {
         SignalRConnection? connection;
         lock (ConnectionsLock)
@@ -70,12 +70,6 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string, strin
     public async Task MoveItemAsync(string contentProviderId, FullName fullName, FullName newPath)
         => await _client.MoveItemAsync(contentProviderId, fullName.Path, newPath.Path);
 
-    public async Task WriteBytesAsync(string transactionId, byte[] data, int? index, CancellationToken cancellationToken = default)
-        => await _client.WriteBytesAsync(transactionId, Convert.ToBase64String(data), index ?? -1);
-
-    public async Task FlushWriterAsync(string transactionId, CancellationToken cancellationToken = default)
-        => await _client.FlushWriterAsync(transactionId);
-
     public async Task InitializeRemoteWriter(string contentProviderId, string transactionId, NativePath nativePath)
         => await _client.InitializeRemoteWriter(contentProviderId, transactionId, nativePath.Path);
 
@@ -87,6 +81,40 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string, strin
         var path = await _client.GetNativePathAsync(contentProviderId, fullName.Path);
         return new NativePath(path);
     }
+
+    public Task FlushAsync(string transactionId) => _client.FlushAsync(transactionId);
+
+    public async Task<int> ReadAsync(string transactionId, byte[] buffer, int offset, int count)
+    {
+        var dataString = await _client.ReadAsync(transactionId, count);
+        var data = GetDataFromString(dataString);
+        
+        data.CopyTo(buffer.AsSpan(offset, data.Length));
+        
+        return data.Length;
+    }
+
+    public Task<long> SeekAsync(string transactionId, long offset, SeekOrigin origin) => _client.SeekAsync(transactionId, offset, origin);
+
+    public Task SetLengthAsync(string transactionId, long value) => _client.SetLengthAsync(transactionId, value);
+
+    public Task WriteAsync(string transactionId, byte[] buffer, int offset, int count)
+    {
+        var data = GetStringFromData(buffer.AsSpan(offset, count));
+        return _client.WriteAsync(transactionId, data);
+    }
+
+    public Task<bool> CanReadAsync(string transactionId) => _client.CanReadAsync(transactionId);
+
+    public Task<bool> CanSeekAsync(string transactionId) => _client.CanSeekAsync(transactionId);
+
+    public Task<bool> CanWriteAsync(string transactionId) => _client.CanWriteAsync(transactionId);
+
+    public Task<long> GetLengthAsync(string transactionId) => _client.GetLengthAsync(transactionId);
+
+    public Task<long> GetPositionAsync(string transactionId) => _client.GetPositionAsync(transactionId);
+
+    public Task SetPositionAsync(string transactionId, long position) => _client.SetPositionAsync(transactionId, position);
 
     public async Task<ISerialized> GetItemByNativePathAsync(
         string contentProviderId,
@@ -110,4 +138,7 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string, strin
 
     public async Task<SerializedAbsolutePath[]> GetChildren(string contentProviderId, string fullName) 
         => await _client.GetChildren(contentProviderId, fullName);
+    
+    private static byte[] GetDataFromString(string data) => Convert.FromBase64String(data);
+    private static string GetStringFromData(ReadOnlySpan<byte> data) => Convert.ToBase64String(data);
 }

@@ -41,7 +41,7 @@ public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
         ItemInitializationSettings itemInitializationSettings = default)
     {
         var parentContentReader = await _contentAccessorFactory.GetContentReaderFactory(parentElement.Provider).CreateContentReaderAsync(parentElement);
-        var parentContentReaderStream = parentContentReader.AsStream();
+        var parentContentReaderStream = parentContentReader.GetStream();
         var archive = ArchiveFactory.Open(parentContentReaderStream);
         var disposables = new IDisposable[] {parentContentReader, parentContentReaderStream, archive};
 

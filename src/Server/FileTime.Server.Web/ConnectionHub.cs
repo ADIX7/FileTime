@@ -103,20 +103,13 @@ public class ConnectionHub : Hub<ISignalRClient>, ISignalRHub
             throw new FileNotFoundException("Item is not an element", nativePath);
 
         var contentWriter = await _contentAccessorFactory.GetContentWriterFactory(contentProvider).CreateContentWriterAsync(element);
-        _contentAccessManager.AddContentWriter(transactionId, contentWriter);
+        _contentAccessManager.AddContentStreamContainer(transactionId, contentWriter);
     }
-
-    public async Task WriteBytesAsync(string transactionId, string data, int index)
-        => await _contentAccessManager.GetContentWriter(transactionId).WriteBytesAsync(Convert.FromBase64String(data), index == -1 ? null : index);
-
-    public async Task FlushWriterAsync(string transactionId)
-        => await _contentAccessManager.GetContentWriter(transactionId).FlushAsync();
-
 
     public Task CloseWriterAsync(string transactionId)
     {
-        _contentAccessManager.GetContentWriter(transactionId).Dispose();
-        _contentAccessManager.RemoveContentWriter(transactionId);
+        _contentAccessManager.GetContentStream(transactionId).Dispose();
+        _contentAccessManager.RemoveContentStreamContainer(transactionId);
         return Task.CompletedTask;
     }
 
@@ -167,8 +160,54 @@ public class ConnectionHub : Hub<ISignalRClient>, ISignalRHub
         throw new NotSupportedException();
     }
 
+    public async Task FlushAsync(string transactionId)
+        => await _contentAccessManager.GetContentStream(transactionId).FlushAsync();
+
+    public async Task<string> ReadAsync(string transactionId, int dataLength)
+    {
+        // this might be stack allocated when dataLength is small
+        var data = new byte[dataLength];
+        var dataRead = await _contentAccessManager.GetContentStream(transactionId).ReadAsync(data);
+
+        return GetStringFromData(data.AsSpan()[..dataRead]);
+    }
+
+    public Task<long> SeekAsync(string transactionId, long offset, SeekOrigin origin)
+        => Task.FromResult(_contentAccessManager.GetContentStream(transactionId).Seek(offset, origin));
+
+    public Task SetLengthAsync(string transactionId, long value)
+    {
+        _contentAccessManager.GetContentStream(transactionId).SetLength(value);
+        return Task.CompletedTask;
+    }
+
+    public async Task WriteAsync(string transactionId, string buffer)
+    {
+        var data = GetDataFromString(buffer);
+        await _contentAccessManager.GetContentStream(transactionId).WriteAsync(data);
+    }
+
+    public Task<bool> CanReadAsync(string transactionId) => Task.FromResult(_contentAccessManager.GetContentStream(transactionId).CanRead);
+
+    public Task<bool> CanSeekAsync(string transactionId) => Task.FromResult(_contentAccessManager.GetContentStream(transactionId).CanSeek);
+
+    public Task<bool> CanWriteAsync(string transactionId) => Task.FromResult(_contentAccessManager.GetContentStream(transactionId).CanWrite);
+
+    public Task<long> GetLengthAsync(string transactionId) => Task.FromResult(_contentAccessManager.GetContentStream(transactionId).Length);
+
+    public Task<long> GetPositionAsync(string transactionId) => Task.FromResult(_contentAccessManager.GetContentStream(transactionId).Position);
+
+    public Task SetPositionAsync(string transactionId, long position)
+    {
+        _contentAccessManager.GetContentStream(transactionId).Position = position;
+        return Task.CompletedTask;
+    }
+
     private IContentProvider GetContentProvider(string contentProviderId)
         => _contentProviderRegistry
             .ContentProviders
             .First(p => p.Name == contentProviderId);
+
+    private static byte[] GetDataFromString(string data) => Convert.FromBase64String(data);
+    private static string GetStringFromData(ReadOnlySpan<byte> data) => Convert.ToBase64String(data);
 }

@@ -29,7 +29,7 @@ public sealed class CompressedContentProvider : SubContentProviderBase, ICompres
         var reader = parentElementContext.ContentReader;
         var subPath = parentElementContext.SubNativePath.Path;
 
-        await using var readerStream = reader.AsStream();
+        await using var readerStream = reader.GetStream();
         using var archive = ArchiveFactory.Open(readerStream);
 
         var entry = archive.Entries.First(e => e.Key == subPath);

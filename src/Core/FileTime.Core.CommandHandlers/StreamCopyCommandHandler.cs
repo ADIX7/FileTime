@@ -7,44 +7,14 @@ namespace FileTime.Core.CommandHandlers;
 
 public class StreamCopyCommandHandler : ICommandHandler
 {
-    private readonly IContentProviderRegistry _contentProviderRegistry;
     private readonly IContentAccessorFactory _contentAccessorFactory;
 
-    public StreamCopyCommandHandler(
-        IContentProviderRegistry contentProviderRegistry,
-        IContentAccessorFactory contentAccessorFactory)
+    public StreamCopyCommandHandler(IContentAccessorFactory contentAccessorFactory)
     {
-        _contentProviderRegistry = contentProviderRegistry;
         _contentAccessorFactory = contentAccessorFactory;
     }
 
-    public async Task<bool> CanHandleAsync(ICommand command)
-    {
-        if (command is not CopyCommand copyCommand) return false;
-
-        var targetSupportsContentStream =
-            (await _contentProviderRegistry
-                .ContentProviders
-                .ToAsyncEnumerable()
-                .FirstOrDefaultAwaitAsync(async p => await p.CanHandlePathAsync(copyCommand.Target))
-            )?.SupportsContentStreams ?? false;
-
-        var allSourcesSupportsContentStream =
-            (await copyCommand
-                .Sources
-                .ToAsyncEnumerable()
-                .SelectAwait(s =>
-                    _contentProviderRegistry
-                        .ContentProviders
-                        .ToAsyncEnumerable()
-                        .FirstOrDefaultAwaitAsync(async p => await p.CanHandlePathAsync(s))
-                )
-                .ToListAsync()
-            )
-            .All(p => p?.SupportsContentStreams ?? false);
-
-        return targetSupportsContentStream && allSourcesSupportsContentStream;
-    }
+    public Task<bool> CanHandleAsync(ICommand command) => Task.FromResult(command is CopyCommand);
 
     public async Task ExecuteAsync(ICommand command)
     {
@@ -53,7 +23,7 @@ public class StreamCopyCommandHandler : ICommandHandler
         await copyCommand.ExecuteAsync(CopyElement);
     }
 
-    public async Task CopyElement(AbsolutePath sourcePath, AbsolutePath targetPath, CopyCommandContext copyCommandContext)
+    private async Task CopyElement(AbsolutePath sourcePath, AbsolutePath targetPath, CopyCommandContext copyCommandContext)
     {
         if (copyCommandContext.CancellationToken.IsCancellationRequested) return;
 
@@ -72,25 +42,25 @@ public class StreamCopyCommandHandler : ICommandHandler
         using var reader = await _contentAccessorFactory.GetContentReaderFactory(source.Provider).CreateContentReaderAsync(source);
         using var writer = await _contentAccessorFactory.GetContentWriterFactory(target.Provider).CreateContentWriterAsync(target);
 
-        byte[] dataRead;
+        var readerStream = reader.GetStream();
+        var writerStream = writer.GetStream();
+
+        var dataRead = new byte[1024 * 1024];
         long currentProgress = 0;
 
-        do
+        while (true)
         {
             if (copyCommandContext.CancellationToken.IsCancellationRequested) return;
-            dataRead = await reader.ReadBytesAsync(writer.PreferredBufferSize);
-            if (dataRead.Length > 0)
-            {
-                await writer.WriteBytesAsync(dataRead, cancellationToken: copyCommandContext.CancellationToken);
-                await writer.FlushAsync(copyCommandContext.CancellationToken);
-                currentProgress += dataRead.LongLength;
-                if (copyCommandContext.CurrentProgress is not null)
-                {
-                    copyCommandContext.CurrentProgress.SetProgressSafe(currentProgress);
-                }
+            var readLength = await readerStream.ReadAsync(dataRead);
+            var actualDataRead = dataRead[..readLength];
+            if (actualDataRead.Length == 0) break;
 
-                await copyCommandContext.UpdateProgressAsync();
-            }
-        } while (dataRead.Length > 0);
+            await writerStream.WriteAsync(actualDataRead, cancellationToken: copyCommandContext.CancellationToken);
+            await writerStream.FlushAsync(copyCommandContext.CancellationToken);
+            currentProgress += actualDataRead.LongLength;
+            copyCommandContext.CurrentProgress?.SetProgressSafe(currentProgress);
+
+            await copyCommandContext.UpdateProgressAsync();
+        }
     }
 }

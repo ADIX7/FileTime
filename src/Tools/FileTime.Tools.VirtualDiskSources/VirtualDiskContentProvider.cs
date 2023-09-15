@@ -29,7 +29,7 @@ public sealed class VirtualDiskContentProvider : SubContentProviderBase, IVirtua
         var reader = parentElementContext.ContentReader;
         var subPath = parentElementContext.SubNativePath.Path;
         
-        await using var readerStream = reader.AsStream();
+        await using var readerStream = reader.GetStream();
         using var discReader = new UdfReader(readerStream);
 
         var fileInfo = discReader.GetFileInfo(subPath);

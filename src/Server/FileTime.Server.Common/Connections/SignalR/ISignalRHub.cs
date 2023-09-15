@@ -13,15 +13,23 @@ public interface ISignalRHub
     Task CreateElementAsync(string contentProviderId, string fullName);
     Task DeleteItemAsync(string contentProviderId, string fullName);
     Task MoveItemAsync(string contentProviderId, string fullName, string newPath);
-
-    //TODO: CancellationToken https://github.com/nenoNaninu/TypedSignalR.Client/issues/120
-    Task FlushWriterAsync(string transactionId);
     Task InitializeRemoteWriter(string contentProviderId, string transactionId, string nativePath);
 
-    //TODO: CancellationToken https://github.com/nenoNaninu/TypedSignalR.Client/issues/120
-    Task WriteBytesAsync(string transactionId, string data, int index);
     Task CloseWriterAsync(string transactionId);
     Task<string> GetNativePathAsync(string contentProviderId, string fullNamePath);
+
+    Task FlushAsync(string transactionId);
+    Task<string> ReadAsync(string transactionId, int dataLength);
+    Task<long> SeekAsync(string transactionId, long offset, SeekOrigin origin);
+    Task SetLengthAsync(string transactionId, long value);
+    Task WriteAsync(string transactionId, string data);
+    Task<bool> CanReadAsync(string transactionId);
+    Task<bool> CanSeekAsync(string transactionId);
+    Task<bool> CanWriteAsync(string transactionId);
+    Task<long> GetLengthAsync(string transactionId);
+    Task<long> GetPositionAsync(string transactionId);
+    Task SetPositionAsync(string transactionId, long position);
+
     Task<ISerialized> GetItemByNativePathAsync(
         string contentProviderId,
         NativePath nativePath,

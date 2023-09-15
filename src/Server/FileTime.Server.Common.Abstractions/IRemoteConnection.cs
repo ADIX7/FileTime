@@ -13,10 +13,20 @@ public interface IRemoteConnection
     Task DeleteItemAsync(string contentProviderId, FullName fullName);
     Task MoveItemAsync(string contentProviderId, FullName fullName, FullName newPath);
     Task InitializeRemoteWriter(string contentProviderId, string transactionId, NativePath nativePath);
-    Task WriteBytesAsync(string transactionId, byte[] data, int? index, CancellationToken cancellationToken = default);
-    Task FlushWriterAsync(string transactionId, CancellationToken cancellationToken = default);
     Task CloseWriterAsync(string transactionId);
     Task<NativePath> GetNativePathAsync(string contentProviderId, FullName fullName);
+    
+    Task FlushAsync(string transactionId);
+    Task<int> ReadAsync(string transactionId, byte[] buffer, int offset, int count);
+    Task<long> SeekAsync(string transactionId, long offset, SeekOrigin origin);
+    Task SetLengthAsync(string transactionId, long value);
+    Task WriteAsync(string transactionId, byte[] buffer, int offset, int count);
+    Task<bool> CanReadAsync(string transactionId);
+    Task<bool> CanSeekAsync(string transactionId);
+    Task<bool> CanWriteAsync(string transactionId);
+    Task<long> GetLengthAsync(string transactionId);
+    Task<long> GetPositionAsync(string transactionId);
+    Task SetPositionAsync(string transactionId, long position);
 
     Task<ISerialized> GetItemByNativePathAsync(
         string contentProviderId,

@@ -11,7 +11,7 @@ namespace FileTime.Providers.Remote;
 public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentProvider
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly Func<Task<IRemoteConnection>> _remoteConnectionProvider;
+    private readonly Func<ValueTask<IRemoteConnection>> _remoteConnectionProvider;
     private readonly SemaphoreSlim _initializeSemaphore = new(1, 1);
     private bool _initialized;
 
@@ -20,7 +20,7 @@ public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentP
     public RemoteContentProvider(
         ITimelessContentProvider timelessContentProvider,
         IServiceProvider serviceProvider,
-        Func<Task<IRemoteConnection>> remoteConnectionProvider,
+        Func<ValueTask<IRemoteConnection>> remoteConnectionProvider,
         string remoteName,
         string name)
         : base(name, timelessContentProvider)
@@ -30,8 +30,7 @@ public sealed class RemoteContentProvider : ContentProviderBase, IRemoteContentP
         _remoteConnectionProvider = remoteConnectionProvider;
     }
 
-    public async Task<IRemoteConnection> GetRemoteConnectionAsync()
-        => await _remoteConnectionProvider();
+    public ValueTask<IRemoteConnection> GetRemoteConnectionAsync() => _remoteConnectionProvider();
 
     public async Task InitializeChildren()
     {
