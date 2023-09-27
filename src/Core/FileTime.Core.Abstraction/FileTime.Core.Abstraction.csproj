@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DynamicData" Version="7.14.2" />
+    <PackageReference Include="DynamicData" Version="8.0.2" />
     <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
