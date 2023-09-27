@@ -5,7 +5,7 @@ public class OptionElement<T> : IOptionElement
     public string Text { get; }
     public T Value { get; }
 
-    object IOptionElement.Value => Value;
+    object? IOptionElement.Value => Value;
 
     public OptionElement(string text, T value)
     {
