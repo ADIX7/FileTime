@@ -1,4 +1,5 @@
-﻿using FileTime.Core.Enums;
+﻿using System.Runtime.Caching;
+using FileTime.Core.Enums;
 using FileTime.Core.Models;
 using FileTime.Core.Serialization;
 using FileTime.Core.Timeline;
@@ -14,6 +15,7 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string, strin
     private static readonly Dictionary<string, SignalRConnection> Connections = new();
     private static readonly object ConnectionsLock = new();
 
+    private readonly MemoryCache _readCache = new(nameof(SignalRConnection));
     private string _baseUrl = null!;
     private HubConnection _connection = null!;
     private ISignalRHub _client = null!;
@@ -88,6 +90,8 @@ public class SignalRConnection : IRemoteConnection, IAsyncInitable<string, strin
     {
         var dataString = await _client.ReadAsync(transactionId, count);
         var data = GetDataFromString(dataString);
+
+        _readCache.Add(new CacheItem(offset.ToString(), data), new CacheItemPolicy());
         
         data.CopyTo(buffer.AsSpan(offset, data.Length));
         
