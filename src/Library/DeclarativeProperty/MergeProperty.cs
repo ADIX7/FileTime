@@ -2,7 +2,7 @@
 
 public class MergeProperty<T> : DeclarativePropertyBase<T>
 {
-    public MergeProperty(params IDeclarativeProperty<T>[] props)
+    public MergeProperty(params IDeclarativeProperty<T>[] props) : base(default!)
     {
         ArgumentNullException.ThrowIfNull(props);
 
@@ -12,6 +12,6 @@ public class MergeProperty<T> : DeclarativePropertyBase<T>
         }
     }
 
-    private async Task UpdateAsync(T? newValue, CancellationToken token)
+    private async Task UpdateAsync(T newValue, CancellationToken token)
         => await SetNewValueAsync(newValue, token);
 }

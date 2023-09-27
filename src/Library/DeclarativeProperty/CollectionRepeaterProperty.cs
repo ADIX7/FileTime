@@ -3,11 +3,11 @@
 namespace DeclarativeProperty;
 
 public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropertyBase<TCollection>
-    where TCollection : IList<TItem>, INotifyCollectionChanged
+    where TCollection : IList<TItem>?, INotifyCollectionChanged?
 {
     private TCollection? _currentCollection;
 
-    public CollectionRepeaterProperty(IDeclarativeProperty<TCollection?> from) : base(from.Value)
+    public CollectionRepeaterProperty(IDeclarativeProperty<TCollection> from) : base(from.Value)
     {
         _currentCollection = from.Value;
         if (from.Value is { } value)
@@ -18,7 +18,7 @@ public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropert
         AddDisposable(from.Subscribe(Handle));
     }
 
-    public CollectionRepeaterProperty(TCollection? collection) : base(collection)
+    public CollectionRepeaterProperty(TCollection collection) : base(collection)
     {
         ArgumentNullException.ThrowIfNull(collection);
 
@@ -32,7 +32,7 @@ public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropert
         t.Wait();
     }
 
-    private async Task Handle(TCollection? collection, CancellationToken cancellationToken = default)
+    private async Task Handle(TCollection collection, CancellationToken cancellationToken = default)
     {
         if (_currentCollection is { } currentCollection)
         {

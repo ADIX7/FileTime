@@ -13,7 +13,7 @@ namespace FileTime.App.Core.ViewModels;
 public abstract partial class AppStateBase : IAppState
 {
     private readonly BehaviorSubject<string?> _searchText = new(null);
-    private readonly DeclarativeProperty<ITabViewModel?> _selectedTab = new();
+    private readonly DeclarativeProperty<ITabViewModel?> _selectedTab = new(null);
     private readonly DeclarativeProperty<ViewMode> _viewMode = new(Models.Enums.ViewMode.Default);
     private readonly ObservableCollection<ITabViewModel> _tabs = new();
     private readonly DeclarativeProperty<string?> _rapidTravelText;

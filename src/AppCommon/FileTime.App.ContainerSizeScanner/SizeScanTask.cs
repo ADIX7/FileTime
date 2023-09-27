@@ -17,7 +17,7 @@ public class SizeScanTask : ISizeScanTask
     private readonly ILogger<SizeScanTask> _logger;
     private Thread? _sizeScanThread;
     private static int _searchId = 1;
-    private readonly DeclarativeProperty<string> _containerStatus = new();
+    private readonly DeclarativeProperty<string> _containerStatus = new(string.Empty);
     private readonly IDeclarativeProperty<string> _containerStatusDebounced;
     public ISizeScanContainer SizeSizeScanContainer { get; private set; } = null!;
     public bool IsRunning { get; private set; }

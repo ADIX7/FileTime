@@ -5,8 +5,8 @@ namespace DeclarativeProperty;
 
 public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
 {
-    private readonly List<Func<T?, CancellationToken, Task>> _subscribers = new();
-    private readonly Action<T?>? _setValueHook;
+    private readonly List<Func<T, CancellationToken, Task>> _subscribers = new();
+    private readonly Action<T>? _setValueHook;
     private readonly List<IDisposable> _disposables = new();
     private readonly List<Func<IDeclarativeProperty<T>, T, IDisposable?>> _subscribeTriggers = new();
     private readonly List<Action<IDeclarativeProperty<T>, T>> _unsubscribeTriggers = new();
@@ -14,29 +14,24 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
     private readonly object _triggerLock = new();
     private readonly object _subscriberLock = new();
 
-    private T? _value;
+    private T _value;
 
-    public T? Value
+    public T Value
     {
         get => _value;
         set => _setValueHook?.Invoke(value);
     }
 
-    protected DeclarativePropertyBase(Action<T?>? setValueHook = null)
-    {
-        _setValueHook = setValueHook;
-    }
-
-    protected DeclarativePropertyBase(T? initialValue, Action<T?>? setValueHook = null)
+    protected DeclarativePropertyBase(T initialValue, Action<T>? setValueHook = null)
     {
         _setValueHook = setValueHook;
         _value = initialValue;
     }
 
 
-    protected async Task NotifySubscribersAsync(T? newValue, CancellationToken cancellationToken = default)
+    protected async Task NotifySubscribersAsync(T newValue, CancellationToken cancellationToken = default)
     {
-        List<Func<T?, CancellationToken, Task>> subscribers;
+        List<Func<T, CancellationToken, Task>> subscribers;
         lock (_subscriberLock)
         {
             subscribers = _subscribers.ToList();
@@ -54,7 +49,7 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-    public IDisposable Subscribe(Func<T?, CancellationToken, Task> onChange)
+    public IDisposable Subscribe(Func<T, CancellationToken, Task> onChange)
     {
         lock (_subscriberLock)
         {
@@ -70,7 +65,7 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
     {
         lock (_subscriberLock)
         {
-            _subscribers.Remove(onChange!);
+            _subscribers.Remove(onChange);
         }
     }
 
@@ -99,14 +94,14 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
             return Task.CompletedTask;
         });
 
-    protected async Task SetNewValueAsync(T? newValue, CancellationToken cancellationToken = default)
+    protected async Task SetNewValueAsync(T newValue, CancellationToken cancellationToken = default)
     {
         SetNewValueSync(newValue, cancellationToken);
         if (cancellationToken.IsCancellationRequested) return;
         await NotifySubscribersAsync(newValue, cancellationToken);
     }
 
-    protected void SetNewValueSync(T? newValue, CancellationToken cancellationToken = default)
+    protected void SetNewValueSync(T newValue, CancellationToken cancellationToken = default)
     {
         if (!(Value?.Equals(newValue) ?? false))
         {

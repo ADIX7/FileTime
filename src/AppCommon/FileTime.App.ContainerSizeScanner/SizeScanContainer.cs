@@ -88,7 +88,7 @@ public record SizeScanContainer : ISizeScanContainer
         return Task.CompletedTask;
     }
 
-    public required IDeclarativeProperty<string> Status { get; init; } = new DeclarativeProperty<string>();
+    public required IDeclarativeProperty<string> Status { get; init; } = new DeclarativeProperty<string>(string.Empty);
 
     public required SizeScanTask SizeScanTask { get; init; }
 

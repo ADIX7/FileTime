@@ -11,7 +11,7 @@ public sealed class DistinctUntilChangedProperty<T> : DeclarativePropertyBase<T>
         AddDisposable(from.Subscribe(Handle));
     }
 
-    async Task Handle(T? next, CancellationToken cancellationToken = default)
+    async Task Handle(T next, CancellationToken cancellationToken = default)
     {
         if (_comparer is { } comparer)
         {
@@ -20,8 +20,10 @@ public sealed class DistinctUntilChangedProperty<T> : DeclarativePropertyBase<T>
                 return;
             }
         }
-        else if ((next is null && Value is null && !_firstFire)
-                 || (Value?.Equals(next) ?? false))
+        else if (
+            (next is null && Value is null && !_firstFire)
+            || (Value?.Equals(next) ?? false)
+        )
         {
             return;
         }

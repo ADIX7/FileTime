@@ -4,7 +4,7 @@ public sealed class SwitchProperty<TItem> : DeclarativePropertyBase<TItem>
 {
     private IDisposable? _innerSubscription;
 
-    public SwitchProperty(IDeclarativeProperty<IDeclarativeProperty<TItem>?> from) : base(from.Value is null ? default : from.Value.Value)
+    public SwitchProperty(IDeclarativeProperty<IDeclarativeProperty<TItem>?> from) : base(from.Value is null ? default! : from.Value.Value)
     {
         AddDisposable(from.Subscribe(HandleStreamChange));
         _innerSubscription = from.Value?.Subscribe(HandleInnerValueChange);
@@ -15,10 +15,9 @@ public sealed class SwitchProperty<TItem> : DeclarativePropertyBase<TItem>
         _innerSubscription?.Dispose();
         _innerSubscription = next?.Subscribe(HandleInnerValueChange);
 
-
-        await SetNewValueAsync(next is null ? default : next.Value, token);
+        await SetNewValueAsync(next is null ? default! : next.Value, token);
     }
 
-    private async Task HandleInnerValueChange(TItem? next, CancellationToken token)
+    private async Task HandleInnerValueChange(TItem next, CancellationToken token)
         => await SetNewValueAsync(next, token);
 }

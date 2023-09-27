@@ -9,13 +9,13 @@ public class ThrottleProperty<T> : DeclarativePropertyBase<T>
     public ThrottleProperty(
         IDeclarativeProperty<T> from,
         Func<TimeSpan> interval,
-        Action<T?>? setValueHook = null) : base(from.Value, setValueHook)
+        Action<T>? setValueHook = null) : base(from.Value, setValueHook)
     {
         _interval = interval;
         AddDisposable(from.Subscribe(SetValue));
     }
 
-    private async Task SetValue(T? next, CancellationToken cancellationToken = default)
+    private async Task SetValue(T next, CancellationToken cancellationToken = default)
     {
         lock (_lock)
         {

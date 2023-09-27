@@ -5,7 +5,7 @@ public sealed class CombineProperty<TFrom, TTo> : DeclarativePropertyBase<TTo>
     private readonly Func<IReadOnlyList<TFrom?>, Task<TTo>> _combiner;
     private readonly List<IDeclarativeProperty<TFrom>> _sourceProperties = new();
 
-    public CombineProperty(Func<IReadOnlyList<TFrom?>, Task<TTo>> combiner)
+    public CombineProperty(Func<IReadOnlyList<TFrom?>, Task<TTo>> combiner) : base(default!)
     {
         _combiner = combiner;
     }

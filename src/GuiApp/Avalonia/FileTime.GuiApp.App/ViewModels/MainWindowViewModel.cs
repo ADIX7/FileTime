@@ -53,10 +53,10 @@ public partial class MainWindowViewModel : IMainWindowViewModel
     private readonly OcConsumer _rootDriveInfosConsumer = new();
     public bool Loading => false;
     public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
-    public DeclarativeProperty<string> FatalError { get; } = new();
+    public DeclarativeProperty<string?> FatalError { get; } = new(null);
     public IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint { get; } = new[] {WindowTransparencyLevel.Blur};
     public IGuiAppState AppState => _appState;
-    public DeclarativeProperty<string> Title { get; } = new();
+    public DeclarativeProperty<string> Title { get; } = new(string.Empty);
     public Thickness IconStatusPanelMargin { get; private set; } = new(20, 10, 10, 10);
     public Action? FocusDefaultElement { get; set; }
     public Action? ShowWindow { get; set; }

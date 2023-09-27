@@ -15,11 +15,11 @@ public class CopyCommand : CommandBase, ITransportationCommand
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private readonly List<OperationProgress> _operationProgresses = new();
-    private readonly DeclarativeProperty<OperationProgress?> _currentOperationProgress = new();
+    private readonly DeclarativeProperty<OperationProgress?> _currentOperationProgress = new(null);
 
     private long _recentTotalSum;
-    private readonly DeclarativeProperty<long> _recentTotalProcessed = new();
-    private readonly DeclarativeProperty<DateTime> _recentStartTime = new();
+    private readonly DeclarativeProperty<long> _recentTotalProcessed = new(0);
+    private readonly DeclarativeProperty<DateTime> _recentStartTime = new(DateTime.Now);
 
     public IReadOnlyList<FullName> Sources { get; }
 

@@ -8,6 +8,6 @@ public interface IMainWindowViewModelBase
     DeclarativeProperty<string> Title { get; }
     bool Loading { get; }
     IObservable<string?> MainFont { get; } 
-    DeclarativeProperty<string> FatalError { get; }
+    DeclarativeProperty<string?> FatalError { get; }
     IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint { get; }
 }

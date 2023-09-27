@@ -3,9 +3,9 @@
 public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
 {
     private readonly object _lock = new();
-    private readonly Func<T?, TimeSpan> _interval;
+    private readonly Func<T, TimeSpan> _interval;
     private DateTime _startTime = DateTime.MinValue;
-    private T? _nextValue;
+    private T _nextValue = default!;
     private CancellationToken _nextCancellationToken;
     private bool _isThrottleTaskRunning;
     public bool ResetTimer { get; init; }
@@ -13,14 +13,14 @@ public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
 
     public DebounceProperty(
         IDeclarativeProperty<T> from,
-        Func<T?, TimeSpan> interval,
-        Action<T?>? setValueHook = null) : base(from.Value, setValueHook)
+        Func<T, TimeSpan> interval,
+        Action<T>? setValueHook = null) : base(from.Value, setValueHook)
     {
         _interval = interval;
         AddDisposable(from.Subscribe(SetValue));
     }
 
-    private Task SetValue(T? next, CancellationToken cancellationToken = default)
+    private Task SetValue(T next, CancellationToken cancellationToken = default)
     {
         lock (_lock)
         {
@@ -38,7 +38,7 @@ public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
 
             _startTime = DateTime.Now;
             _isThrottleTaskRunning = true;
-            Task.Run(async () => await StartDebounceTask());
+            Task.Run(StartDebounceTask);
         }
 
         return Task.CompletedTask;
@@ -51,7 +51,7 @@ public sealed class DebounceProperty<T> : DeclarativePropertyBase<T>
             await Task.Delay(WaitInterval);
         }
 
-        T? next;
+        T next;
         CancellationToken cancellationToken;
         lock (_lock)
         {

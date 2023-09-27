@@ -2,23 +2,27 @@
 
 public sealed class CombineLatestProperty<T1, T2, TResult> : DeclarativePropertyBase<TResult>
 {
-    private readonly Func<T1?, T2?, Task<TResult>> _func;
-    private T1? _value1;
-    private T2? _value2;
+    private readonly Func<T1, T2, Task<TResult>> _func;
+    private T1 _value1;
+    private T2 _value2;
 
     public CombineLatestProperty(
         IDeclarativeProperty<T1> prop1,
         IDeclarativeProperty<T2> prop2,
-        Func<T1?, T2?, Task<TResult>> func,
-        Action<TResult?>? setValueHook = null) : base(setValueHook)
+        Func<T1, T2, Task<TResult>> func,
+        Action<TResult>? setValueHook = null) : base(default!, setValueHook)
     {
         ArgumentNullException.ThrowIfNull(prop1);
         ArgumentNullException.ThrowIfNull(prop2);
 
         _func = func;
 
-        _value1 = prop1.Value is null ? default : prop1.Value;
-        _value2 = prop2.Value is null ? default : prop2.Value;
+        _value1 = prop1.Value;
+        _value2 = prop2.Value;
+
+        var initialValueTask = Task.Run(async () => await _func(_value1, _value2));
+        initialValueTask.Wait();
+        SetNewValueSync(initialValueTask.Result);
 
         prop1.Subscribe(async (value1, token) =>
         {
@@ -51,7 +55,7 @@ public sealed class CombineLatestProperty<T1, T2, T3, TResult> : DeclarativeProp
         IDeclarativeProperty<T2> prop2,
         IDeclarativeProperty<T3> prop3,
         Func<T1?, T2?, T3?,Task<TResult>> func,
-        Action<TResult?>? setValueHook = null) : base(setValueHook)
+        Action<TResult>? setValueHook = null) : base(default!, setValueHook)
     {
         ArgumentNullException.ThrowIfNull(prop1);
         ArgumentNullException.ThrowIfNull(prop2);
@@ -59,9 +63,13 @@ public sealed class CombineLatestProperty<T1, T2, T3, TResult> : DeclarativeProp
 
         _func = func;
 
-        _value1 = prop1.Value is null ? default : prop1.Value;
-        _value2 = prop2.Value is null ? default : prop2.Value;
-        _value3 = prop3.Value is null ? default : prop3.Value;
+        _value1 = prop1.Value;
+        _value2 = prop2.Value;
+        _value3 = prop3.Value;
+
+        var initialValueTask = Task.Run(async () => await _func(_value1, _value2, _value3));
+        initialValueTask.Wait();
+        SetNewValueSync(initialValueTask.Result);
 
         prop1.Subscribe(async (value1, token) =>
         {

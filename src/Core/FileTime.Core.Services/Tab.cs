@@ -19,9 +19,9 @@ public class Tab : ITab
 
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ITabEvents _tabEvents;
-    private readonly DeclarativeProperty<IContainer?> _currentLocation = new();
-    private readonly DeclarativeProperty<IContainer?> _currentLocationForced = new();
-    private readonly DeclarativeProperty<AbsolutePath?> _currentRequestItem = new();
+    private readonly DeclarativeProperty<IContainer?> _currentLocation = new(null);
+    private readonly DeclarativeProperty<IContainer?> _currentLocationForced = new(null);
+    private readonly DeclarativeProperty<AbsolutePath?> _currentRequestItem = new(null);
     private readonly ObservableCollection<ItemFilter> _itemFilters = new();
     private readonly CircularBuffer<FullName> _history = new(20);
     private readonly CircularBuffer<FullName> _future = new(20);
@@ -64,28 +64,26 @@ public class Tab : ITab
             return Task.CompletedTask;
         });
 
-        CurrentItems = DeclarativePropertyHelpers.CombineLatest(
+        IDeclarativeProperty<ObservableCollection<IItem>?> asd1 = DeclarativePropertyHelpers.CombineLatest(
             CurrentLocation,
             itemFiltersProperty,
-            (container, filters) =>
+            Task<ObservableCollection<IItem>?> (container, filters) =>
             {
                 ObservableCollection<IItem>? items = null;
 
-                if (container is not null)
-                {
-                    items = container
-                        .Items
-                        .Selecting<AbsolutePath, IItem>(i => MapItem(i));
+                if (container is null) return Task.FromResult(items);
 
-                    if (filters is not null)
-                    {
-                        items = items.Filtering(i => filters.All(f => f.Filter(i)));
-                    }
-                }
+                items = container
+                    .Items
+                    .Selecting<AbsolutePath, IItem>(i => MapItem(i));
 
-                return Task.FromResult(items);
+                items = items.Filtering(i => filters.All(f => f.Filter(i)));
+
+                return Task.FromResult(items)!;
             }
-        ).CombineLatest(
+        );
+
+        var asd2 = asd1.CombineLatest(
             Ordering.Map(ordering =>
             {
                 var (itemComparer, order) = ordering switch
@@ -103,7 +101,7 @@ public class Tab : ITab
 
                 return (itemComparer, order, ordering is not ItemOrdering.Name and not ItemOrdering.NameDesc);
             }),
-            (items, ordering) =>
+            Task<ObservableCollection<IItem>?> (items, ordering) =>
             {
                 if (items is null) return Task.FromResult<ObservableCollection<IItem>?>(null);
 
@@ -117,14 +115,16 @@ public class Tab : ITab
                     ? primaryOrderedItems.ThenOrdering(i => i.DisplayName)
                     : primaryOrderedItems;
 
-                return Task.FromResult(orderedItems);
+                return Task.FromResult<ObservableCollection<IItem>?>(orderedItems);
             }
         );
 
+        CurrentItems = asd2;
+
         CurrentSelectedItem = DeclarativePropertyHelpers.CombineLatest(
-            CurrentItems.Watch<ObservableCollection<IItem>, IItem>(),
+            CurrentItems.Watch<ObservableCollection<IItem>?, IItem>(),
             _currentRequestItem.DistinctUntilChanged(),
-            (items, selected) =>
+            Task<AbsolutePath?> (items, selected) =>
             {
                 var itemSelectingContext = new LastItemSelectingContext(CurrentLocation.Value);
                 var lastItemSelectingContext = _lastItemSelectingContext;
@@ -143,7 +143,7 @@ public class Tab : ITab
                     var candidate = _selectedItemCandidates.FirstOrDefault(c => items.Any(i => i.FullName?.Path == c.Path.Path));
                     if (candidate != null)
                     {
-                        return Task.FromResult(candidate);
+                        return Task.FromResult<AbsolutePath?>(candidate);
                     }
                 }
 
@@ -160,7 +160,7 @@ public class Tab : ITab
         DeclarativePropertyHelpers.CombineLatest(
                 CurrentItems,
                 CurrentSelectedItem,
-                (items, selected) =>
+                Task<IEnumerable<AbsolutePath>?> (items, selected) =>
                 {
                     if (items is null || selected is null) return Task.FromResult<IEnumerable<AbsolutePath>?>(null);
                     var primaryCandidates = items.SkipWhile(i => i.FullName is {Path: var p} && p != selected.Path.Path).Skip(1);
@@ -169,7 +169,7 @@ public class Tab : ITab
                         .Concat(secondaryCandidates)
                         .Select(c => new AbsolutePath(_timelessContentProvider, c));
 
-                    return Task.FromResult(candidates);
+                    return Task.FromResult<IEnumerable<AbsolutePath>?>(candidates);
                 })
             .Subscribe(candidates =>
             {

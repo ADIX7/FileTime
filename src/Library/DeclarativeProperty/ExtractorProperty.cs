@@ -4,7 +4,7 @@ using ObservableComputations;
 
 namespace DeclarativeProperty;
 
-public sealed class ExtractorProperty<T> : DeclarativePropertyBase<T>
+public sealed class ExtractorProperty<T, TResult> : DeclarativePropertyBase<TResult>
 {
     private interface ICollectionWrapper : IDisposable
     {
@@ -108,12 +108,12 @@ public sealed class ExtractorProperty<T> : DeclarativePropertyBase<T>
         ) => new CollectionComputingWrapper(collection, handler);
     }
 
-    private readonly Func<IList<T>?, T?> _extractor;
+    private readonly Func<IList<T>?, TResult> _extractor;
     private ICollectionWrapper? _collectionWrapper;
 
     public ExtractorProperty(
-        IDeclarativeProperty<ObservableCollection<T>> from,
-        Func<IList<T>?, T?> extractor) : base(extractor(from.Value))
+        IDeclarativeProperty<ObservableCollection<T>?> from,
+        Func<IList<T>?, TResult> extractor) : base(extractor(from.Value))
     {
         _extractor = extractor;
         _collectionWrapper = from.Value is null
@@ -124,8 +124,8 @@ public sealed class ExtractorProperty<T> : DeclarativePropertyBase<T>
     }
 
     public ExtractorProperty(
-        IDeclarativeProperty<ReadOnlyObservableCollection<T>> from,
-        Func<IList<T>?, T?> extractor) : base(extractor(from.Value))
+        IDeclarativeProperty<ReadOnlyObservableCollection<T>?> from,
+        Func<IList<T>?, TResult> extractor) : base(extractor(from.Value))
     {
         _extractor = extractor;
         _collectionWrapper = from.Value is null
@@ -136,8 +136,8 @@ public sealed class ExtractorProperty<T> : DeclarativePropertyBase<T>
     }
 
     public ExtractorProperty(
-        IDeclarativeProperty<CollectionComputing<T>> from,
-        Func<IList<T>?, T?> extractor) : base(extractor(from.Value))
+        IDeclarativeProperty<CollectionComputing<T>?> from,
+        Func<IList<T>?, TResult> extractor) : base(extractor(from.Value))
     {
         _extractor = extractor;
         _collectionWrapper = from.Value is null
@@ -165,9 +165,7 @@ public sealed class ExtractorProperty<T> : DeclarativePropertyBase<T>
 
     private async Task Fire(IList<T>? items, CancellationToken cancellationToken = default)
     {
-        var newValue = items is null
-            ? default
-            : _extractor(items);
+        var newValue = _extractor(items);
 
         await SetNewValueAsync(newValue, cancellationToken);
     }
