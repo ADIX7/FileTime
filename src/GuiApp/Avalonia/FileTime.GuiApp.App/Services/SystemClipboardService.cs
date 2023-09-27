@@ -45,10 +45,13 @@ public class SystemClipboardService : ISystemClipboardService
 
         if (obj is IEnumerable<IStorageItem> storageItems)
         {
-            return storageItems
-                .Select(i => _timelessContentProvider.GetFullNameByNativePathAsync(new NativePath(WebUtility.UrlDecode(i.Path.AbsolutePath))))
+            
+            return await storageItems
+                .ToAsyncEnumerable()
+                .SelectAwait(async i => await _timelessContentProvider.GetFullNameByNativePathAsync(new NativePath(WebUtility.UrlDecode(i.Path.AbsolutePath))))
                 .Where(i => i != null)
-                .OfType<FullName>();
+                .OfType<FullName>()
+                .ToListAsync();
         }
 
         return Enumerable.Empty<FullName>();
