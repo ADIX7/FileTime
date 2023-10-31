@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
-    <PackageReference Include="morelinq" Version="3.4.2" />
+    <PackageReference Include="morelinq" Version="4.0.0" />
     <PackageReference Include="ObservableComputations" Version="2.3.0" />
     <PackageReference Include="PdfPig" Version="0.1.8" />
     <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.8">

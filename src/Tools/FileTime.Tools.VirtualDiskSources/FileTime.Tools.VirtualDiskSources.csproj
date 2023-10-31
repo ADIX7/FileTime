@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="LTRData.DiscUtils.Containers" Version="1.0.29" />
-    <PackageReference Include="LTRData.DiscUtils.FileSystems" Version="1.0.29" />
-    <PackageReference Include="LTRData.DiscUtils.OpticalDisk" Version="1.0.29" />
-    <PackageReference Include="LTRData.DiscUtils.VirtualFileSystem" Version="1.0.29" />
+    <PackageReference Include="LTRData.DiscUtils.Containers" Version="1.0.31" />
+    <PackageReference Include="LTRData.DiscUtils.FileSystems" Version="1.0.31" />
+    <PackageReference Include="LTRData.DiscUtils.OpticalDisk" Version="1.0.31" />
+    <PackageReference Include="LTRData.DiscUtils.VirtualFileSystem" Version="1.0.31" />
   </ItemGroup>
 
 </Project>
