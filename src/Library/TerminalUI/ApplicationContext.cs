@@ -5,12 +5,12 @@ using TerminalUI.Styling;
 
 namespace TerminalUI;
 
-public class ApplicationContext : IApplicationContext
+public class ApplicationContext(IServiceProvider serviceProvider) : IApplicationContext
 {
-    private readonly Lazy<IConsoleDriver> _consoleDriver;
-    private readonly Lazy<IFocusManager> _focusManager;
-    private readonly Lazy<ILoggerFactory?> _loggerFactory;
-    private readonly Lazy<IRenderEngine> _renderEngine;
+    private readonly Lazy<IConsoleDriver> _consoleDriver = new Lazy<IConsoleDriver>(serviceProvider.GetRequiredService<IConsoleDriver>);
+    private readonly Lazy<IFocusManager> _focusManager = new Lazy<IFocusManager>(serviceProvider.GetRequiredService<IFocusManager>);
+    private readonly Lazy<ILoggerFactory?> _loggerFactory = new Lazy<ILoggerFactory?>(serviceProvider.GetService<ILoggerFactory?>);
+    private readonly Lazy<IRenderEngine> _renderEngine = new Lazy<IRenderEngine>(serviceProvider.GetRequiredService<IRenderEngine>);
 
     public IConsoleDriver ConsoleDriver => _consoleDriver.Value;
     public IFocusManager FocusManager => _focusManager.Value;
@@ -20,12 +20,4 @@ public class ApplicationContext : IApplicationContext
     public bool IsRunning { get; set; }
     public char EmptyCharacter { get; init; } = ' ';
     public bool SupportUtf8Output { get; set; } = true;
-
-    public ApplicationContext(IServiceProvider serviceProvider)
-    {
-        _consoleDriver = new Lazy<IConsoleDriver>(serviceProvider.GetRequiredService<IConsoleDriver>);
-        _focusManager = new Lazy<IFocusManager>(serviceProvider.GetRequiredService<IFocusManager>);
-        _loggerFactory = new Lazy<ILoggerFactory?>(serviceProvider.GetService<ILoggerFactory?>);
-        _renderEngine = new Lazy<IRenderEngine>(serviceProvider.GetRequiredService<IRenderEngine>);
-    }
 }

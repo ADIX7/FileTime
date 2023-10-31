@@ -6,24 +6,18 @@ namespace TerminalUI.Tests.Models;
 
 public sealed partial class TestViewModel : INotifyPropertyChanged
 {
-    [Notify] private List<TestNestedCollectionItem> _items;
-    [Notify] private string _text;
-
-    public TestViewModel()
+    [Notify] private List<TestNestedCollectionItem> _items = new()
     {
-        _text = "Initial text";
-        _items = new List<TestNestedCollectionItem>
-        {
+        TestNestedCollectionItem.Create(
+            3,
             TestNestedCollectionItem.Create(
-                3,
-                TestNestedCollectionItem.Create(
-                    1, 
-                    TestNestedCollectionItem.Create(2)
-                ),
-                new()
-            )
-        };
-    }
+                1, 
+                TestNestedCollectionItem.Create(2)
+            ),
+            new()
+        )
+    };
+    [Notify] private string _text = "Initial text";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

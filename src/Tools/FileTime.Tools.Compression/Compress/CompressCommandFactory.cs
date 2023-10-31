@@ -6,31 +6,18 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Tools.Compression.Compress;
 
-public class CompressCommandFactory : ITransportationCommandFactory<CompressCommand>
-{
-    private readonly IUserCommunicationService _userCommunicationService;
-    private readonly ITimelessContentProvider _timelessContentProvider;
-    private readonly IContentAccessorFactory _contentAccessorFactory;
-    private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
-
-    public CompressCommandFactory(
-        IUserCommunicationService userCommunicationService,
+public class CompressCommandFactory(IUserCommunicationService userCommunicationService,
         ITimelessContentProvider timelessContentProvider,
         IContentAccessorFactory contentAccessorFactory,
         ICommandSchedulerNotifier commandSchedulerNotifier)
-    {
-        _userCommunicationService = userCommunicationService;
-        _timelessContentProvider = timelessContentProvider;
-        _contentAccessorFactory = contentAccessorFactory;
-        _commandSchedulerNotifier = commandSchedulerNotifier;
-    }
-
+    : ITransportationCommandFactory<CompressCommand>
+{
     public CompressCommand GenerateCommand(IReadOnlyCollection<FullName> sources, TransportMode mode, FullName targetFullName)
         => new(
-            _userCommunicationService,
-            _timelessContentProvider,
-            _contentAccessorFactory,
-            _commandSchedulerNotifier,
+            userCommunicationService,
+            timelessContentProvider,
+            contentAccessorFactory,
+            commandSchedulerNotifier,
             sources,
             mode,
             targetFullName

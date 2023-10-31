@@ -5,20 +5,14 @@ using TerminalUI.TextFormat;
 
 namespace TerminalUI.Examples.Controls;
 
-public class ProgressBarExamples
+public class ProgressBarExamples(IApplicationContext applicationContext)
 {
-    private readonly IApplicationContext _applicationContext;
     private static readonly IConsoleDriver _driver;
 
     static ProgressBarExamples()
     {
         _driver = new DotnetDriver();
         _driver.Init();
-    }
-
-    public ProgressBarExamples(IApplicationContext applicationContext)
-    {
-        _applicationContext = applicationContext;
     }
 
     public void LoadingExample()
@@ -46,7 +40,7 @@ public class ProgressBarExamples
         {
             Value = percent,
             Attached = true,
-            ApplicationContext = _applicationContext
+            ApplicationContext = applicationContext
         };
 
     private void RenderProgressBar<T>(ProgressBar<T> progressBar, Position position)

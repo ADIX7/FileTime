@@ -1,11 +1,6 @@
 ﻿namespace TerminalUI.TextFormat;
 
-public readonly struct TextFormatContext
+public readonly struct TextFormatContext(bool supportsAnsi)
 {
-    public readonly bool SupportsAnsi;
-
-    public TextFormatContext(bool supportsAnsi)
-    {
-        SupportsAnsi = supportsAnsi;
-    }
+    public readonly bool SupportsAnsi = supportsAnsi;
 }

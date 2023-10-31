@@ -4,13 +4,8 @@ using FileTime.Core.Models;
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public sealed class VirtualDiskContentReaderFactory : SubContentReaderBase<VirtualDiskContentProvider>
+public sealed class VirtualDiskContentReaderFactory(IContentAccessorFactory contentAccessorFactory) : SubContentReaderBase<VirtualDiskContentProvider>(contentAccessorFactory)
 {
-    public VirtualDiskContentReaderFactory(IContentAccessorFactory contentAccessorFactory) 
-        : base(contentAccessorFactory)
-    {
-    }
-
     public override async Task<IContentReader> CreateContentReaderAsync(IElement element)
     {
         if (element.Provider is not VirtualDiskContentProvider provider)

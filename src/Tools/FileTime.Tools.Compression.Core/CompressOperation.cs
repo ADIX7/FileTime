@@ -5,37 +5,26 @@ using SharpCompress.Common;
 
 namespace FileTime.Tools.Compression;
 
-public class CompressOperation<TEntry, TVolume> : ICompressOperation
+public class CompressOperation<TEntry, TVolume>(IContentAccessorFactory contentAccessorFactory,
+        AbstractWritableArchive<TEntry, TVolume> archive,
+        Action<Stream> saveTo)
+    : ICompressOperation
     where TEntry : IArchiveEntry
     where TVolume : IVolume
 {
-    private readonly IContentAccessorFactory _contentAccessorFactory;
-    private readonly AbstractWritableArchive<TEntry, TVolume> _archive;
-    private readonly Action<Stream> _saveTo;
     private bool _disposed;
-
-    public CompressOperation(
-        IContentAccessorFactory contentAccessorFactory,
-        AbstractWritableArchive<TEntry, TVolume> archive,
-        Action<Stream> saveTo
-    )
-    {
-        _contentAccessorFactory = contentAccessorFactory;
-        _archive = archive;
-        _saveTo = saveTo;
-    }
 
     public async Task<IEnumerable<IDisposable>> CompressElement(IElement element, string key)
     {
-        var contentReader = await _contentAccessorFactory.GetContentReaderFactory(element.Provider).CreateContentReaderAsync(element);
+        var contentReader = await contentAccessorFactory.GetContentReaderFactory(element.Provider).CreateContentReaderAsync(element);
         var contentReaderStream = contentReader.GetStream();
-        _archive.AddEntry(key, contentReaderStream);
+        archive.AddEntry(key, contentReaderStream);
 
         return new IDisposable[] {contentReader, contentReaderStream};
     }
 
     public void SaveTo(Stream stream)
-        => _saveTo(stream);
+        => saveTo(stream);
 
     ~CompressOperation()
     {
@@ -54,7 +43,7 @@ public class CompressOperation<TEntry, TVolume> : ICompressOperation
         {
             if (disposing)
             {
-                _archive.Dispose();
+                archive.Dispose();
             }
         }
 

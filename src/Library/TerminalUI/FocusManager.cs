@@ -5,9 +5,8 @@ using TerminalUI.Traits;
 
 namespace TerminalUI;
 
-public class FocusManager : IFocusManager
+public class FocusManager(IRenderEngine renderEngine) : IFocusManager
 {
-    private readonly IRenderEngine _renderEngine;
     private IFocusable? _focused;
     private DateTime _focusLostCandidateTime = DateTime.MinValue;
 
@@ -50,11 +49,6 @@ public class FocusManager : IFocusManager
         }
 
         private set => _focused = value;
-    }
-
-    public FocusManager(IRenderEngine renderEngine)
-    {
-        _renderEngine = renderEngine;
     }
 
     public void SetFocus(IFocusable focusable) => Focused = focusable;
@@ -127,8 +121,8 @@ public class FocusManager : IFocusManager
 
         if (element is null) return;
 
-        _renderEngine.RequestRerender(element);
-        _renderEngine.RequestRerender(view);
+        renderEngine.RequestRerender(element);
+        renderEngine.RequestRerender(view);
         Focused = element;
     }
 

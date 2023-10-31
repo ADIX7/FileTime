@@ -8,24 +8,12 @@ using IContainer = FileTime.Core.Models.IContainer;
 
 namespace FileTime.Tools.Compression.ContentProvider;
 
-public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
+public sealed class CompressedSubContentProvider(IContentAccessorFactory contentAccessorFactory,
+        ICompressedContentProviderFactory compressedContentProviderFactory,
+        ITimelessContentProvider timelessContentProvider)
+    : ICompressedSubContentProvider
 {
     private static readonly string[] SupportedExtensions = {".zip", ".gz", ".7z"};
-
-    private readonly IContentAccessorFactory _contentAccessorFactory;
-    private readonly ICompressedContentProviderFactory _compressedContentProviderFactory;
-    private readonly ITimelessContentProvider _timelessContentProvider;
-
-    public CompressedSubContentProvider(
-        IContentAccessorFactory contentAccessorFactory,
-        ICompressedContentProviderFactory compressedContentProviderFactory,
-        ITimelessContentProvider timelessContentProvider
-    )
-    {
-        _contentAccessorFactory = contentAccessorFactory;
-        _compressedContentProviderFactory = compressedContentProviderFactory;
-        _timelessContentProvider = timelessContentProvider;
-    }
 
     public Task<bool> CanHandleAsync(IElement parentElement)
         => Task.FromResult(
@@ -40,7 +28,7 @@ public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default)
     {
-        var parentContentReader = await _contentAccessorFactory.GetContentReaderFactory(parentElement.Provider).CreateContentReaderAsync(parentElement);
+        var parentContentReader = await contentAccessorFactory.GetContentReaderFactory(parentElement.Provider).CreateContentReaderAsync(parentElement);
         var parentContentReaderStream = parentContentReader.GetStream();
         var archive = ArchiveFactory.Open(parentContentReaderStream);
         var disposables = new IDisposable[] {parentContentReader, parentContentReaderStream, archive};
@@ -117,7 +105,7 @@ public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
         }
 
         var parent = new AbsolutePath(
-            _timelessContentProvider,
+            timelessContentProvider,
             parentElement.PointInTime,
             childFullName.GetParent()!,
             AbsolutePathType.Container
@@ -183,7 +171,7 @@ public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
             SupportsDelete.False,
             false,
             "",
-            _compressedContentProviderFactory.Create(parentElement.Provider),
+            compressedContentProviderFactory.Create(parentElement.Provider),
             false,
             parentElement.PointInTime,
             exceptions,
@@ -246,7 +234,7 @@ public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
                 addedContainers.Add(itemName);
 
                 children.Add(new AbsolutePath(
-                    _timelessContentProvider,
+                    timelessContentProvider,
                     pointInTime,
                     container.FullName.GetChild(itemName),
                     AbsolutePathType.Container)
@@ -256,7 +244,7 @@ public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
             {
                 //Element
                 children.Add(new AbsolutePath(
-                    _timelessContentProvider,
+                    timelessContentProvider,
                     pointInTime,
                     container.FullName.GetChild(itemName),
                     AbsolutePathType.Element)
@@ -290,7 +278,7 @@ public sealed class CompressedSubContentProvider : ICompressedSubContentProvider
             false,
             "",
             size,
-            _compressedContentProviderFactory.Create(parentElement.Provider),
+            compressedContentProviderFactory.Create(parentElement.Provider),
             parentElement.PointInTime,
             exceptions,
             new ReadOnlyExtensionCollection(new ExtensionCollection())

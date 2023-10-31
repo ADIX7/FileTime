@@ -4,13 +4,8 @@ using SharpCompress.Archives;
 
 namespace FileTime.Tools.Compression.ContentProvider;
 
-public sealed class CompressedContentReaderFactory : SubContentReaderBase<CompressedContentProvider>
+public sealed class CompressedContentReaderFactory(IContentAccessorFactory contentAccessorFactory) : SubContentReaderBase<CompressedContentProvider>(contentAccessorFactory)
 {
-
-    public CompressedContentReaderFactory(IContentAccessorFactory contentAccessorFactory) 
-        : base(contentAccessorFactory)
-    {
-    }
     public override async Task<IContentReader> CreateContentReaderAsync(IElement element)
     {
         if (element.Provider is not CompressedContentProvider provider)

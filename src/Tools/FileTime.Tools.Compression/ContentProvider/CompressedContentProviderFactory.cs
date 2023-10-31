@@ -3,19 +3,10 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Tools.Compression.ContentProvider;
 
-public sealed class CompressedContentProviderFactory : ICompressedContentProviderFactory
-{
-    private readonly ITimelessContentProvider _timelessContentProvider;
-    private readonly IContentAccessorFactory _contentAccessorFactory;
-
-    public CompressedContentProviderFactory(
-        ITimelessContentProvider timelessContentProvider,
+public sealed class CompressedContentProviderFactory(ITimelessContentProvider timelessContentProvider,
         IContentAccessorFactory contentAccessorFactory)
-    {
-        _timelessContentProvider = timelessContentProvider;
-        _contentAccessorFactory = contentAccessorFactory;
-    }
-
+    : ICompressedContentProviderFactory
+{
     public ICompressedContentProvider Create(IContentProvider parentContentProvider) 
-        => new CompressedContentProvider(_timelessContentProvider, _contentAccessorFactory, parentContentProvider);
+        => new CompressedContentProvider(timelessContentProvider, contentAccessorFactory, parentContentProvider);
 }

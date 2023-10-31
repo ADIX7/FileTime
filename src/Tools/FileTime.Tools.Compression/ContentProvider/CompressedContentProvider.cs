@@ -5,24 +5,14 @@ using SharpCompress.Archives;
 
 namespace FileTime.Tools.Compression.ContentProvider;
 
-public sealed class CompressedContentProvider : SubContentProviderBase, ICompressedContentProvider
-{
-    private readonly ITimelessContentProvider _timelessContentProvider;
-
-    public CompressedContentProvider(
-        ITimelessContentProvider timelessContentProvider,
+public sealed class CompressedContentProvider(ITimelessContentProvider timelessContentProvider,
         IContentAccessorFactory contentAccessorFactory,
-        IContentProvider parentContentProvider
-    )
-        : base(
-            timelessContentProvider,
-            contentAccessorFactory,
-            parentContentProvider,
-            "compression")
-    {
-        _timelessContentProvider = timelessContentProvider;
-    }
-
+        IContentProvider parentContentProvider)
+    : SubContentProviderBase(timelessContentProvider,
+        contentAccessorFactory,
+        parentContentProvider,
+        "compression"), ICompressedContentProvider
+{
     public override async Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default)
     {
         var parentElementContext = await GetParentElementReaderAsync(element);
@@ -43,7 +33,7 @@ public sealed class CompressedContentProvider : SubContentProviderBase, ICompres
 
     public override async ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path)
     {
-        var item = await GetItemByFullNameAsync(path, _timelessContentProvider.CurrentPointInTime.Value!);
+        var item = await GetItemByFullNameAsync(path, timelessContentProvider.CurrentPointInTime.Value!);
         var parentElement = await GetParentElementAsync(item);
         return new VolumeSizeInfo(parentElement.Size, 0);
     }

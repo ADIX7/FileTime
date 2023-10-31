@@ -1,8 +1,7 @@
 ﻿namespace GeneralInputKey;
 
-public class GeneralKeyEventArgs
+public class GeneralKeyEventArgs(Action<bool>? handledChanged = null)
 {
-    private readonly Action<bool>? _handledChanged;
     private bool _handled;
     public required Keys? Key { get; init; }
     public required char KeyChar { get; init; }
@@ -16,13 +15,8 @@ public class GeneralKeyEventArgs
             if (_handled != value)
             {
                 _handled = value;
-                _handledChanged?.Invoke(value);
+                handledChanged?.Invoke(value);
             }
         }
-    }
-
-    public GeneralKeyEventArgs(Action<bool>? handledChanged = null)
-    {
-        _handledChanged = handledChanged;
     }
 }

@@ -3,21 +3,14 @@ using SharpCompress.Archives;
 
 namespace FileTime.Tools.Compression.ContentProvider;
 
-public sealed class CompressedContentReader : IContentReader
+public sealed class CompressedContentReader(IArchiveEntry entry, IDisposable[] disposables) : IContentReader
 {
-    private readonly IDisposable[] _disposables;
-    private readonly Stream _stream;
-
-    public CompressedContentReader(IArchiveEntry entry, IDisposable[] disposables)
-    {
-        _disposables = disposables;
-        _stream = entry.OpenEntryStream();
-    }
+    private readonly Stream _stream = entry.OpenEntryStream();
 
     public void Dispose()
     {
         _stream.Dispose();
-        foreach (var disposable in _disposables)
+        foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }

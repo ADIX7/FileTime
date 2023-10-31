@@ -5,24 +5,14 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public sealed class VirtualDiskContentProvider : SubContentProviderBase, IVirtualDiskContentProvider
-{
-    private readonly ITimelessContentProvider _timelessContentProvider;
-
-    public VirtualDiskContentProvider(
-        ITimelessContentProvider timelessContentProvider,
+public sealed class VirtualDiskContentProvider(ITimelessContentProvider timelessContentProvider,
         IContentAccessorFactory contentAccessorFactory,
         IContentProvider parentContentProvider)
-        : base(
-            timelessContentProvider, 
-            contentAccessorFactory, 
-            parentContentProvider, 
-            "virtual-disk"
-        )
-    {
-        _timelessContentProvider = timelessContentProvider;
-    }
-
+    : SubContentProviderBase(timelessContentProvider,
+        contentAccessorFactory,
+        parentContentProvider,
+        "virtual-disk"), IVirtualDiskContentProvider
+{
     public override async Task<byte[]?> GetContentAsync(IElement element, int? maxLength = null, CancellationToken cancellationToken = default)
     {
         var parentElementContext = await GetParentElementReaderAsync(element);
@@ -44,7 +34,7 @@ public sealed class VirtualDiskContentProvider : SubContentProviderBase, IVirtua
 
     public override async ValueTask<VolumeSizeInfo?> GetVolumeSizeInfoAsync(FullName path)
     {
-        var item = await GetItemByFullNameAsync(path, _timelessContentProvider.CurrentPointInTime.Value!);
+        var item = await GetItemByFullNameAsync(path, timelessContentProvider.CurrentPointInTime.Value!);
         var parentElement = await GetParentElementAsync(item);
         return new VolumeSizeInfo(parentElement.Size, 0);
     }

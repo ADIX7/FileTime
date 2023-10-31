@@ -3,9 +3,9 @@ using PropertyChanged.SourceGenerator;
 
 namespace FileTime.Core.Interactions;
 
-public partial class OptionsInputElement<T> : InputElementBase, IOptionsInputElement, INotifyPropertyChanged
+public partial class OptionsInputElement<T>(string label, IEnumerable<OptionElement<T>> options) : InputElementBase(label, InputType.Options), IOptionsInputElement, INotifyPropertyChanged
 {
-    public IReadOnlyCollection<OptionElement<T>> Options { get; }
+    public IReadOnlyCollection<OptionElement<T>> Options { get; } = Enumerable.ToList<OptionElement<T>>(options);
 
     [Notify] private T? _value;
 
@@ -25,10 +25,5 @@ public partial class OptionsInputElement<T> : InputElementBase, IOptionsInputEle
                 Value = optionElement.Value;
             }
         }
-    }
-
-    public OptionsInputElement(string label, IEnumerable<OptionElement<T>> options) : base(label, InputType.Options)
-    {
-        Options = options.ToList();
     }
 }

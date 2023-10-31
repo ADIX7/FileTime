@@ -8,23 +8,11 @@ using FileTime.Core.Timeline;
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvider
-{
-    private readonly IContentAccessorFactory _contentAccessorFactory;
-    private readonly ITimelessContentProvider _timelessContentProvider;
-    private readonly IVirtualDiskContentProviderFactory _virtualDiskContentProviderFactory;
-
-    public VirtualDiskSubContentProvider(
-        IContentAccessorFactory contentAccessorFactory,
+public sealed class VirtualDiskSubContentProvider(IContentAccessorFactory contentAccessorFactory,
         ITimelessContentProvider timelessContentProvider,
-        IVirtualDiskContentProviderFactory virtualDiskContentProviderFactory
-    )
-    {
-        _contentAccessorFactory = contentAccessorFactory;
-        _timelessContentProvider = timelessContentProvider;
-        _virtualDiskContentProviderFactory = virtualDiskContentProviderFactory;
-    }
-
+        IVirtualDiskContentProviderFactory virtualDiskContentProviderFactory)
+    : IVirtualDiskSubContentProvider
+{
     public Task<bool> CanHandleAsync(IElement parentElement)
         => Task.FromResult(parentElement.NativePath?.Path.EndsWith(".iso", StringComparison.OrdinalIgnoreCase) ?? false);
 
@@ -35,7 +23,7 @@ public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvid
         AbsolutePathType forceResolvePathType = AbsolutePathType.Unknown,
         ItemInitializationSettings itemInitializationSettings = default)
     {
-        var contentReaderFactory = _contentAccessorFactory.GetContentReaderFactory(parentElement.Provider);
+        var contentReaderFactory = contentAccessorFactory.GetContentReaderFactory(parentElement.Provider);
         var reader = await contentReaderFactory.CreateContentReaderAsync(parentElement);
 
         await using var readerStream = reader.GetStream();
@@ -80,7 +68,7 @@ public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvid
         var childNativePath = new NativePath(childNativePathBase);
 
         var parent = new AbsolutePath(
-            _timelessContentProvider,
+            timelessContentProvider,
             pointInTime,
             childFullName.GetParent()!,
             AbsolutePathType.Container
@@ -152,7 +140,7 @@ public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvid
             SupportsDelete.False,
             false,
             FormatAttributes(sourceContainer.Attributes),
-            _virtualDiskContentProviderFactory.Create(parentContentProvider),
+            virtualDiskContentProviderFactory.Create(parentContentProvider),
             false,
             pointInTime,
             exceptions,
@@ -191,7 +179,7 @@ public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvid
         foreach (var discDirectoryInfo in sourceContainer.GetDirectories())
         {
             children.Add(new AbsolutePath(
-                _timelessContentProvider,
+                timelessContentProvider,
                 pointInTime,
                 container.FullName.GetChild(discDirectoryInfo.Name),
                 AbsolutePathType.Container)
@@ -201,7 +189,7 @@ public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvid
         foreach (var fileInfo in sourceContainer.GetFiles())
         {
             children.Add(new AbsolutePath(
-                _timelessContentProvider,
+                timelessContentProvider,
                 pointInTime,
                 container.FullName.GetChild(fileInfo.Name),
                 AbsolutePathType.Element)
@@ -230,7 +218,7 @@ public sealed class VirtualDiskSubContentProvider : IVirtualDiskSubContentProvid
             false,
             FormatAttributes(childElement.Attributes),
             childElement.Length,
-            _virtualDiskContentProviderFactory.Create(parentContentProvider),
+            virtualDiskContentProviderFactory.Create(parentContentProvider),
             pointInTime,
             new ObservableCollection<Exception>(),
             new ReadOnlyExtensionCollection(new ExtensionCollection())

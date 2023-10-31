@@ -2,23 +2,14 @@
 
 namespace FileTime.Tools.VirtualDiskSources;
 
-public sealed class VirtualDiskContentReader : IContentReader
+public sealed class VirtualDiskContentReader(Stream stream, ICollection<IDisposable> disposables) : IContentReader
 {
-    private readonly Stream _stream;
-    private readonly ICollection<IDisposable> _disposables;
-
-    public VirtualDiskContentReader(Stream stream, ICollection<IDisposable> disposables)
-    {
-        _stream = stream;
-        _disposables = disposables;
-    }
-
-    public Stream GetStream() => _stream;
+    public Stream GetStream() => stream;
 
     public void Dispose()
     {
-        _stream.Dispose();
-        foreach (var disposable in _disposables)
+        stream.Dispose();
+        foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }
