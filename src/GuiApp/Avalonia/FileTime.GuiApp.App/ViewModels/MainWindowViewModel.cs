@@ -54,7 +54,7 @@ public partial class MainWindowViewModel : IMainWindowViewModel
     public bool Loading => false;
     public IObservable<string?> MainFont => _fontService.MainFont.Select(x => x ?? "");
     public DeclarativeProperty<string?> FatalError { get; } = new(null);
-    public IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint { get; } = new[] {WindowTransparencyLevel.Blur};
+    public IReadOnlyList<WindowTransparencyLevel> TransparencyLevelHint { get; } = new[] { WindowTransparencyLevel.Blur };
     public IGuiAppState AppState => _appState;
     public DeclarativeProperty<string> Title { get; } = new(string.Empty);
     public Thickness IconStatusPanelMargin { get; private set; } = new(20, 10, 10, 10);
@@ -90,10 +90,10 @@ public partial class MainWindowViewModel : IMainWindowViewModel
 #endif
 
         Title.SetValueSafe(title);
-        
+
         var localDrives = _rootDriveInfoService.RootDriveInfos.Filtering(r => r.DriveType != DriveType.Network);
         var networkDrives = _rootDriveInfoService.RootDriveInfos.Filtering(r => r.DriveType == DriveType.Network);
-            
+
         localDrives.For(_rootDriveInfosConsumer);
         networkDrives.For(_rootDriveInfosConsumer);
 
@@ -102,7 +102,7 @@ public partial class MainWindowViewModel : IMainWindowViewModel
 
         _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
         _instanceMessageHandler.ShowWindow += () => ShowWindow?.Invoke();
-        
+
         Task.Run(async () =>
         {
             await Task.Delay(100);
@@ -110,8 +110,18 @@ public partial class MainWindowViewModel : IMainWindowViewModel
         });
     }
 
-    public void ProcessKeyDown(KeyEventArgs e)
-        => _keyInputHandlerService.ProcessKeyDown(e);
+    public void ProcessKeyDown(KeyEventArgs e) =>
+        Task.Run(async () =>
+        {
+            try
+            {
+                await _keyInputHandlerService.ProcessKeyDown(e);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while processing key down event");
+            }
+        });
 
     public async Task OpenContainerByFullName(FullName fullName)
     {

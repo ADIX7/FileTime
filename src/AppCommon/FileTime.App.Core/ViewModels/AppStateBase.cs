@@ -33,7 +33,7 @@ public abstract partial class AppStateBase : IAppState
 
     protected AppStateBase()
     {
-        _rapidTravelText = new ("");
+        _rapidTravelText = new("");
         RapidTravelText = _rapidTravelText.DistinctUntilChanged();
         RapidTravelTextDebounced = RapidTravelText
             .Debounce(v =>
@@ -79,7 +79,11 @@ public abstract partial class AppStateBase : IAppState
 
     public void SetSearchText(string? searchText) => _searchText.OnNext(searchText);
 
-    public async Task SwitchViewModeAsync(ViewMode newViewMode) => await _viewMode.SetValue(newViewMode);
+    public async Task SwitchViewModeAsync(ViewMode newViewMode)
+    {
+        if (newViewMode != Models.Enums.ViewMode.RapidTravel) await SetRapidTravelTextAsync(null);
+        await _viewMode.SetValue(newViewMode);
+    }
 
     public async Task SetSelectedTabAsync(ITabViewModel tabToSelect) => await _selectedTab.SetValue(tabToSelect);
     public async Task SetRapidTravelTextAsync(string? text) => await _rapidTravelText.SetValue(text);
