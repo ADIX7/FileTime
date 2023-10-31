@@ -18,6 +18,6 @@ public sealed class SwitchProperty<TItem> : DeclarativePropertyBase<TItem>
         await SetNewValueAsync(next is null ? default! : next.Value, token);
     }
 
-    private async Task HandleInnerValueChange(TItem next, CancellationToken token)
-        => await SetNewValueAsync(next, token);
+    private Task HandleInnerValueChange(TItem next, CancellationToken token)
+        => SetNewValueAsync(next, token);
 }

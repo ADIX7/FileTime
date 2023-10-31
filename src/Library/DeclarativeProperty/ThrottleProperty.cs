@@ -15,19 +15,19 @@ public class ThrottleProperty<T> : DeclarativePropertyBase<T>
         AddDisposable(from.Subscribe(SetValue));
     }
 
-    private async Task SetValue(T next, CancellationToken cancellationToken = default)
+    private Task SetValue(T next, CancellationToken cancellationToken = default)
     {
         lock (_lock)
         {
             if (DateTime.Now - _lastFired < _interval())
             {
-                return;
+                return Task.CompletedTask;
             }
 
             _lastFired = DateTime.Now;
         }
 
-        await SetNewValueAsync(
+        return SetNewValueAsync(
             next,
             cancellationToken
         );

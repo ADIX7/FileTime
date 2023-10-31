@@ -11,9 +11,8 @@ public sealed class FilterProperty<T> : DeclarativePropertyBase<T>
     {
         _filter = filter;
 
-        var initialValueTask = Task.Run(async () => await _filter(from.Value));
-        initialValueTask.Wait();
-        if (initialValueTask.Result)
+        var result = Task.Run(async () => await _filter(from.Value)).GetAwaiter().GetResult();
+        if (result)
         {
             SetNewValueSync(from.Value);
         }

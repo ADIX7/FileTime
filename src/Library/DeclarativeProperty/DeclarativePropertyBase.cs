@@ -140,8 +140,8 @@ public abstract class DeclarativePropertyBase<T> : IDeclarativeProperty<T>
         }
     }
 
-    public async Task ReFireAsync()
-        => await SetNewValueAsync(Value);
+    public Task ReFireAsync()
+        => SetNewValueAsync(Value);
 
     public void Dispose()
     {

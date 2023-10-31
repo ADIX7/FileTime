@@ -12,6 +12,6 @@ public class MergeProperty<T> : DeclarativePropertyBase<T>
         }
     }
 
-    private async Task UpdateAsync(T newValue, CancellationToken token)
-        => await SetNewValueAsync(newValue, token);
+    private Task UpdateAsync(T newValue, CancellationToken token)
+        => SetNewValueAsync(newValue, token);
 }

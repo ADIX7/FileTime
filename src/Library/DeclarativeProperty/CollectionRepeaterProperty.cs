@@ -26,13 +26,10 @@ public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropert
         collection.CollectionChanged += HandleCollectionChanged;
     }
 
-    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        var t = Task.Run(async () => await NotifySubscribersAsync(Value));
-        t.Wait();
-    }
+    private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) 
+        => Task.Run(async () => await NotifySubscribersAsync(Value)).Wait();
 
-    private async Task Handle(TCollection collection, CancellationToken cancellationToken = default)
+    private Task Handle(TCollection collection, CancellationToken cancellationToken = default)
     {
         if (_currentCollection is { } currentCollection)
         {
@@ -47,6 +44,6 @@ public class CollectionRepeaterProperty<TCollection, TItem> : DeclarativePropert
 
         _currentCollection = collection;
 
-        await SetNewValueAsync(collection, cancellationToken);
+        return SetNewValueAsync(collection, cancellationToken);
     }
 }

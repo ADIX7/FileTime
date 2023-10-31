@@ -148,9 +148,9 @@ public sealed class ExtractorProperty<T, TResult> : DeclarativePropertyBase<TRes
     }
 
     private void CollectionUpdated(object? sender, NotifyCollectionChangedEventArgs e)
-        => Task.Run(async () => await Fire(_collectionWrapper?.Collection)).Wait();
+        => Task.Run(async () => await FireAsync(_collectionWrapper?.Collection)).Wait();
 
-    private async Task SetValue<TWrapper, TCollection>(TCollection? next, CancellationToken cancellationToken = default)
+    private Task SetValue<TWrapper, TCollection>(TCollection? next, CancellationToken cancellationToken = default)
         where TCollection : IList<T>, INotifyCollectionChanged
         where TWrapper : ICollectionWrapper<TCollection>
     {
@@ -160,13 +160,13 @@ public sealed class ExtractorProperty<T, TResult> : DeclarativePropertyBase<TRes
             ? null
             : TWrapper.Create(next, CollectionUpdated);
 
-        await Fire(next, cancellationToken);
+        return FireAsync(next, cancellationToken);
     }
 
-    private async Task Fire(IList<T>? items, CancellationToken cancellationToken = default)
+    private Task FireAsync(IList<T>? items, CancellationToken cancellationToken = default)
     {
         var newValue = _extractor(items);
 
-        await SetNewValueAsync(newValue, cancellationToken);
+        return SetNewValueAsync(newValue, cancellationToken);
     }
 }

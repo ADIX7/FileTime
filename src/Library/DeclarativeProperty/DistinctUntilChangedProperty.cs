@@ -11,13 +11,13 @@ public sealed class DistinctUntilChangedProperty<T> : DeclarativePropertyBase<T>
         AddDisposable(from.Subscribe(Handle));
     }
 
-    async Task Handle(T next, CancellationToken cancellationToken = default)
+    private Task Handle(T next, CancellationToken cancellationToken = default)
     {
         if (_comparer is { } comparer)
         {
             if (comparer(Value, next))
             {
-                return;
+                return Task.CompletedTask;
             }
         }
         else if (
@@ -25,10 +25,10 @@ public sealed class DistinctUntilChangedProperty<T> : DeclarativePropertyBase<T>
             || (Value?.Equals(next) ?? false)
         )
         {
-            return;
+            return Task.CompletedTask;
         }
 
         _firstFire = false;
-        await SetNewValueAsync(next, cancellationToken);
+        return SetNewValueAsync(next, cancellationToken);
     }
 }

@@ -27,8 +27,8 @@ public sealed class DeclarativeProperty<T> : DeclarativePropertyBase<T>
     {
     }
 
-    public async Task SetValue(T newValue, CancellationToken cancellationToken = default)
-        => await SetNewValueAsync(newValue, cancellationToken);
+    public Task SetValue(T newValue, CancellationToken cancellationToken = default)
+        => SetNewValueAsync(newValue, cancellationToken);
 
     public void SetValueSafe(T newValue, CancellationToken cancellationToken = default)
     {
