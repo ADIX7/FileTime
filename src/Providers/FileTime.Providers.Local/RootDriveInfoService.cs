@@ -61,14 +61,23 @@ public class RootDriveInfoService : IRootDriveInfoService
 
     private (DriveInfo Drive, IContainer? Item) GetContainer(DriveInfo rootDriveInfo)
     {
-        var task = Task.Run(
-            async () => await _localContentProvider.GetItemByNativePathAsync(
-                new NativePath(rootDriveInfo.RootDirectory.FullName),
-                PointInTime.Present)
-        );
-        task.Wait();
-
-        return (rootDriveInfo, task.Result as IContainer);
+        var container = Task.Run(
+            async () =>
+            {
+                try
+                {
+                    return await _localContentProvider.GetItemByNativePathAsync(
+                        new NativePath(rootDriveInfo.RootDirectory.FullName),
+                        PointInTime.Present);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        ).GetAwaiter().GetResult();
+        
+        return (rootDriveInfo, container as IContainer);
     }
 
     private static int GetDriveOrder(DriveType type) 
