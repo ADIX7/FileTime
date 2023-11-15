@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace TerminalUI;
 
@@ -41,15 +42,15 @@ public class EventLoop(IApplicationContext applicationContext,
     {
         foreach (var action in _permanentQueue)
         {
-            /*try
-            {*/
-            action();
-            /*}
+            try
+            {
+                action();
+            }
             catch (Exception e)
             {
                 Debug.Fail(e.Message);
                 _logger.LogError(e, "Error while processing action in permanent queue");
-            }*/
+            }
         }
     }
 }
