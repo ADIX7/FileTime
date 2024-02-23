@@ -29,7 +29,7 @@ public class ItemToImageConverter : IValueConverter
 
             if (path.Type == ImagePathType.Absolute)
             {
-                source = SvgSource.Load<SvgSource>(path.Path!, null);
+                source = SvgSource.Load(path.Path!, null);
             }
             else if (path.Type == ImagePathType.Raw)
             {
@@ -37,12 +37,12 @@ public class ItemToImageConverter : IValueConverter
             }
             else
             {
-                source = SvgSource.Load<SvgSource>("avares://FileTime.GuiApp.App" + path.Path, null);
+                source = SvgSource.Load("avares://FileTime.GuiApp.App" + path.Path, null);
             }
         }
         catch
         {
-            source = SvgSource.Load<SvgSource>("avares://FileTime.GuiApp.App/Assets/material/file.svg", null);
+            source = SvgSource.Load("avares://FileTime.GuiApp.App/Assets/material/file.svg", null);
         }
 
         return new SvgImage {Source = source};
