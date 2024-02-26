@@ -1,4 +1,5 @@
-﻿using TerminalUI.Controls;
+﻿using Microsoft.Extensions.Logging;
+using TerminalUI.Controls;
 using TerminalUI.Models;
 using TerminalUI.Styling;
 using TerminalUI.TextFormat;
@@ -10,6 +11,7 @@ public class RenderEngine : IRenderEngine
 {
     private readonly IApplicationContext _applicationContext;
     private readonly IEventLoop _eventLoop;
+    private readonly ILogger<RenderEngine> _logger;
     private readonly object _lock = new();
     private readonly List<IView> _permanentViewsToRender = new();
     private readonly List<IView> _forcedTemporaryViewsToRender = new();
@@ -21,10 +23,11 @@ public class RenderEngine : IRenderEngine
     private bool[,]? _lastFilledCells;
     private ITheme? _lastTheme;
 
-    public RenderEngine(IApplicationContext applicationContext, IEventLoop eventLoop)
+    public RenderEngine(IApplicationContext applicationContext, IEventLoop eventLoop, ILogger<RenderEngine> logger)
     {
         _applicationContext = applicationContext;
         _eventLoop = eventLoop;
+        _logger = logger;
 
         _eventLoop.AddToPermanentQueue(Render);
         _eventLoop.AddInitializer(() =>
@@ -32,10 +35,7 @@ public class RenderEngine : IRenderEngine
             _applicationContext.ConsoleDriver.ThreadId = _eventLoop.ThreadId;
             _applicationContext.ConsoleDriver.EnterRestrictedMode();
         });
-        _eventLoop.AddFinalizer(() =>
-        {
-            _applicationContext.ConsoleDriver.ExitRestrictedMode();
-        });
+        _eventLoop.AddFinalizer(() => { _applicationContext.ConsoleDriver.ExitRestrictedMode(); });
     }
 
     public void RequestRerender(IView view) => RequestRerender();
@@ -205,9 +205,16 @@ public class RenderEngine : IRenderEngine
     {
         foreach (var view in views)
         {
-            view.Attached = true;
-            view.GetRequestedSize();
-            view.Render(renderContext, position, size);
+            try
+            {
+                view.Attached = true;
+                view.GetRequestedSize();
+                view.Render(renderContext, position, size);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while rendering view");
+            }
         }
     }
 

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using TerminalUI.Extensions;
 using TerminalUI.Models;
@@ -10,10 +9,18 @@ namespace TerminalUI.Controls;
 
 public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChangeHandler
 {
+    private readonly struct ColumnRowSizeCalculationResult(int usedWidth, int widthStars, int usedHeight, int heightStars)
+    {
+        public readonly int UsedWidth = usedWidth;
+        public readonly int WidthStars = widthStars;
+        public readonly int UsedHeight = usedHeight;
+        public readonly int HeightStars = heightStars;
+    }
+
     private readonly List<IView> _forceRerenderChildren = new();
     private readonly object _forceRerenderChildrenLock = new();
-    private List<RowDefinition> _rowDefinitions = new() {RowDefinition.Star(1)};
-    private List<ColumnDefinition> _columnDefinitions = new() {ColumnDefinition.Star(1)};
+    private List<RowDefinition> _rowDefinitions = new() { RowDefinition.Star(1) };
+    private List<ColumnDefinition> _columnDefinitions = new() { ColumnDefinition.Star(1) };
     private ILogger<Grid<T>>? Logger => ApplicationContext?.LoggerFactory?.CreateLogger<Grid<T>>();
 
     private delegate void WithSizes(in RenderContext renderContext, ReadOnlySpan<int> widths, ReadOnlySpan<int> heights);
@@ -30,7 +37,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
             var nextValue = value;
             if (value.Count == 0)
             {
-                nextValue = new List<RowDefinition> {RowDefinition.Star(1)};
+                nextValue = new List<RowDefinition> { RowDefinition.Star(1) };
             }
 
             var needUpdate = nextValue.Count != _rowDefinitions.Count;
@@ -62,7 +69,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
             var nextValue = value;
             if (value.Count == 0)
             {
-                nextValue = new List<ColumnDefinition> {ColumnDefinition.Star(1)};
+                nextValue = new List<ColumnDefinition> { ColumnDefinition.Star(1) };
             }
 
             var needUpdate = nextValue.Count != _columnDefinitions.Count;
@@ -132,7 +139,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
         {
             return new Size(Width.Value, Height.Value);
         }
-        
+
         var size = WithCalculatedSize(
             RenderContext.Empty,
             new Option<Size>(new Size(0, 0), false),
@@ -163,7 +170,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
     {
         var width = Width ?? size.Width;
         var height = Height ?? size.Height;
-        
+
         if (width == 0 || height == 0) return false;
 
         return WithCalculatedSize(
@@ -238,12 +245,12 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
 
         if (renderPosition.X + width > gridPosition.X + gridSize.Width)
         {
-            renderSize = renderSize with {Width = gridPosition.X + gridSize.Width - renderPosition.X};
+            renderSize = renderSize with { Width = gridPosition.X + gridSize.Width - renderPosition.X };
         }
 
         if (renderPosition.Y + height > gridPosition.Y + gridSize.Height)
         {
-            renderSize = renderSize with {Height = gridPosition.Y + gridSize.Height - renderPosition.Y};
+            renderSize = renderSize with { Height = gridPosition.Y + gridSize.Height - renderPosition.Y };
         }
 
         if (renderSize.Width == 0 || renderSize.Height == 0) return false;
@@ -257,7 +264,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
         var updatedContext = context;
         if (needsRerender)
         {
-            updatedContext = context with {ForceRerender = true};
+            updatedContext = context with { ForceRerender = true };
         }
 
         //This implies that children further back in the list will be rendered on top of children placed before in the list.
@@ -267,7 +274,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
             if (rendered && !needsRerender)
             {
                 needsRerender = true;
-                updatedContext = context with {ForceRerender = true};
+                updatedContext = context with { ForceRerender = true };
             }
         }
 
@@ -310,7 +317,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
             }
             else
             {
-                viewsByPosition[(x, y)] = new List<IView> {child};
+                viewsByPosition[(x, y)] = new List<IView> { child };
             }
         }
 
@@ -349,9 +356,64 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
         Debug.Assert(columns > 0, "Columns must contain at least one element");
         Debug.Assert(rows > 0, "Rows must contain at least one element");
 
+
+        //Calculate the width and height for each column and row
+        Span<int> columnWidths = stackalloc int[columns];
+        Span<int> rowHeights = stackalloc int[rows];
+
+        var calculationResult = CalculateColumnAndRowSize(columns, rows, columnWidths, rowHeights, size);
+
+        //Calculate the width and height for each column and row with star value if size of the current grid is given
+        if (size.IsSome)
+        {
+            var widthLeft = size.Value.Width - calculationResult.UsedWidth;
+            var heightLeft = size.Value.Height - calculationResult.UsedHeight;
+
+            var widthPerStart = (int) Math.Floor((double) widthLeft / calculationResult.WidthStars);
+            var heightPerStart = (int) Math.Floor((double) heightLeft / calculationResult.HeightStars);
+
+            for (var i = 0; i < columnWidths.Length; i++)
+            {
+                var column = ColumnDefinitions[i];
+                if (column.Type == GridUnitType.Star)
+                {
+                    columnWidths[i] = widthPerStart * column.Value;
+                }
+            }
+
+            for (var i = 0; i < rowHeights.Length; i++)
+            {
+                var row = RowDefinitions[i];
+                if (row.Type == GridUnitType.Star)
+                {
+                    rowHeights[i] = heightPerStart * row.Value;
+                }
+            }
+        }
+
+        return actionWithSizes(renderContext, columnWidths, rowHeights);
+    }
+
+    private ColumnRowSizeCalculationResult CalculateColumnAndRowSize(
+        int columns,
+        int rows,
+        Span<int> columnWidths,
+        Span<int> rowHeights,
+        Option<Size> size)
+    {
         Span<int> allWidth = stackalloc int[columns * rows];
         Span<int> allHeight = stackalloc int[columns * rows];
 
+        CalculateAllWidthAndHeight(allWidth, allHeight, columns, rows);
+
+        var (usedWidth, widthStars) = CalculateColumnWidth(columnWidths, size, columns, rows, allWidth);
+        var (usedHeight, heightStars) = CalculateRowHeight(rowHeights, size, columns, allHeight);
+        
+        return new ColumnRowSizeCalculationResult(usedWidth, widthStars, usedHeight, heightStars);
+    }
+
+    private void CalculateAllWidthAndHeight(Span<int> allWidth, Span<int> allHeight, int columns, int rows)
+    {
         //Store the largest width and height for a cell
         foreach (var child in Children)
         {
@@ -371,11 +433,10 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
                 allHeight.SetToMatrix(childSize.Height, x, y, columns);
             }
         }
+    }
 
-        //Calculate the width and height for each column and row
-        Span<int> columnWidths = stackalloc int[columns];
-        Span<int> rowHeights = stackalloc int[rows];
-
+    private (int usedWidth, int widthStars) CalculateColumnWidth(Span<int> columnWidths, Option<Size> size, int columns, int rows, Span<int> allWidth)
+    {
         var usedWidth = 0;
         var widthStars = 0;
         for (var i = 0; i < columnWidths.Length; i++)
@@ -404,6 +465,11 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
                 usedWidth += columnWidths[i];
         }
 
+        return (usedWidth, widthStars);
+    }
+
+    private (int usedHeight, int heightStars) CalculateRowHeight(Span<int> rowHeights, Option<Size> size, int columns, Span<int> allHeight)
+    {
         var usedHeight = 0;
         var heightStars = 0;
         for (var i = 0; i < rowHeights.Length; i++)
@@ -432,35 +498,7 @@ public sealed class Grid<T> : ChildCollectionView<Grid<T>, T>, IVisibilityChange
                 usedHeight += rowHeights[i];
         }
 
-        //Calculate the width and height for each column and row with star value if size of the current grid is given
-        if (size.IsSome)
-        {
-            var widthLeft = size.Value.Width - usedWidth;
-            var heightLeft = size.Value.Height - usedHeight;
-
-            var widthPerStart = (int) Math.Floor((double) widthLeft / widthStars);
-            var heightPerStart = (int) Math.Floor((double) heightLeft / heightStars);
-
-            for (var i = 0; i < columnWidths.Length; i++)
-            {
-                var column = ColumnDefinitions[i];
-                if (column.Type == GridUnitType.Star)
-                {
-                    columnWidths[i] = widthPerStart * column.Value;
-                }
-            }
-
-            for (var i = 0; i < rowHeights.Length; i++)
-            {
-                var row = RowDefinitions[i];
-                if (row.Type == GridUnitType.Star)
-                {
-                    rowHeights[i] = heightPerStart * row.Value;
-                }
-            }
-        }
-
-        return actionWithSizes(renderContext, columnWidths, rowHeights);
+        return (usedHeight, heightStars);
     }
 
     public void SetRowDefinitions(string value)

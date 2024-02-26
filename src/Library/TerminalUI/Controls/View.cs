@@ -215,8 +215,13 @@ public abstract partial class View<TConcrete, T> : IView<T> where TConcrete : Vi
             driver.ResetStyle();
         }
 
-        Span<char> placeHolder = stackalloc char[size.Width];
-        placeHolder.Fill(ApplicationContext!.EmptyCharacter);
+        /*Span<char> placeHolder = stackalloc char[size.Width];
+        placeHolder.Fill(ApplicationContext!.EmptyCharacter);*/
+        var placeHolder = new char[size.Width];
+        for (var i = 0; i < size.Width; i++)
+        {
+            placeHolder[i] = ApplicationContext!.EmptyCharacter;
+        }
         for (var i = 0; i < size.Height; i++)
         {
             driver.SetCursorPosition(position with {Y = position.Y + i});
