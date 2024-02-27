@@ -5,6 +5,7 @@ using DeclarativeProperty;
 using FileTime.App.Core.Configuration;
 using FileTime.App.Core.Models.Enums;
 using FileTime.Core.Models.Extensions;
+using FileTime.Core.Services;
 using MoreLinq;
 using PropertyChanged.SourceGenerator;
 
@@ -31,7 +32,7 @@ public abstract partial class AppStateBase : IAppState
     [Notify] public List<KeyConfig> PreviousKeys { get; } = new();
     [Notify] public bool NoCommandFound { get; set; }
 
-    protected AppStateBase()
+    protected AppStateBase(ITabEvents tabEvents)
     {
         _rapidTravelText = new("");
         RapidTravelText = _rapidTravelText.DistinctUntilChanged();
@@ -59,6 +60,8 @@ public abstract partial class AppStateBase : IAppState
             .Switch()
             .Map(c => c?.GetExtension<StatusProviderContainerExtension>()?.GetStatusProperty())
             .Switch()!;
+
+        tabEvents.LocationChanged += (_, _) => Task.Run(async () => await SetRapidTravelTextAsync("")).Wait();
     }
 
     public void AddTab(ITabViewModel tabViewModel)
@@ -79,11 +82,8 @@ public abstract partial class AppStateBase : IAppState
 
     public void SetSearchText(string? searchText) => _searchText.OnNext(searchText);
 
-    public async Task SwitchViewModeAsync(ViewMode newViewMode)
-    {
-        if (newViewMode != Models.Enums.ViewMode.RapidTravel) await SetRapidTravelTextAsync(null);
-        await _viewMode.SetValue(newViewMode);
-    }
+    public Task SwitchViewModeAsync(ViewMode newViewMode) 
+        => _viewMode.SetValue(newViewMode);
 
     public async Task SetSelectedTabAsync(ITabViewModel tabToSelect) => await _selectedTab.SetValue(tabToSelect);
     public async Task SetRapidTravelTextAsync(string? text) => await _rapidTravelText.SetValue(text);

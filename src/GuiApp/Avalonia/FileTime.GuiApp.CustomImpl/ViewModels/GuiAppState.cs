@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using FileTime.App.Core.ViewModels;
+using FileTime.Core.Services;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.ViewModels;
 using FileTime.Providers.Local;
@@ -18,7 +19,7 @@ public partial class GuiAppState : AppStateBase, IGuiAppState, IDisposable
 
     public IObservable<GuiPanel> ActivePanel { get; }
 
-    public GuiAppState()
+    public GuiAppState(ITabEvents tabEvents):base(tabEvents)
     {
         ActivePanel = _activePanel.AsObservable();
     }

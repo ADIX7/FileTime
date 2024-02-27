@@ -74,7 +74,7 @@ public partial class MainWindow : Window, IUiAccessor
                 try
                 {
                     var viewModel = DI.ServiceProvider.GetRequiredService<MainWindowViewModel>();
-                    viewModel.FocusDefaultElement = () => Focus();
+                    viewModel.FocusDefaultElement = () => Dispatcher.UIThread.Invoke(() => Focus());
                     viewModel.ShowWindow = Activate;
                     ViewModel = viewModel;
                 }

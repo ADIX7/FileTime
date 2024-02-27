@@ -102,6 +102,7 @@ public partial class MainWindowViewModel : IMainWindowViewModel
 
         _modalService.AllModalClosed += (_, _) => FocusDefaultElement?.Invoke();
         _instanceMessageHandler.ShowWindow += () => ShowWindow?.Invoke();
+        _keyInputHandlerService.UnhandledEsc += (_,_) => FocusDefaultElement?.Invoke();
 
         Task.Run(async () =>
         {

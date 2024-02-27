@@ -16,6 +16,8 @@ public class KeyInputHandlerService : IKeyInputHandlerService
     private readonly IAppKeyService<Key> _appKeyService;
     private GuiPanel _activePanel;
 
+    public event EventHandler? UnhandledEsc;
+
     private readonly Dictionary<(GuiPanel, Key), GuiPanel> _panelMovements = new()
     {
         [(GuiPanel.FileBrowser, Key.Up)] = GuiPanel.Timeline,
@@ -72,6 +74,11 @@ public class KeyInputHandlerService : IKeyInputHandlerService
                 if (e.ToGeneralKeyEventArgs(_appKeyService, specialKeyStatus) is { } args)
                 {
                     await _defaultModeKeyInputHandler.HandleInputKey(args);
+
+                    if (!args.Handled && args.Key == Keys.Escape)
+                    {
+                        UnhandledEsc?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
             else

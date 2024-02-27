@@ -79,6 +79,10 @@ public class DefaultModeKeyInputHandler : IDefaultModeKeyInputHandler
             {
                 _modalService.CloseModal(_openModals.Last());
             }
+            else if (_appState.RapidTravelText.Value != "")
+            {
+                await _appState.SetRapidTravelTextAsync("");
+            }
             else if (_currentLocation.Value?.GetExtension<EscHandlerContainerExtension>() is { } escHandler)
             {
                 var escapeResult = await escHandler.HandleEsc();
