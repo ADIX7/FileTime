@@ -8,7 +8,9 @@ public static class Init
     {
         var environmentName = "Development";
 
-        var appDataRoot = Path.Combine(Environment.CurrentDirectory, "appdata");
+        var entryAssemblyFolder = Assembly.GetEntryAssembly()?.Location;
+        entryAssemblyFolder = entryAssemblyFolder is null ? null : Directory.GetParent(entryAssemblyFolder)?.FullName;
+        var appDataRoot = Path.Combine(entryAssemblyFolder ?? Assembly.GetExecutingAssembly().Location, "appdata");
 
         return new(appDataRoot, environmentName);
     }
