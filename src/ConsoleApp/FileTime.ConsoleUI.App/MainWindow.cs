@@ -3,6 +3,7 @@ using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Configuration;
 using FileTime.ConsoleUI.App.Controls;
+using FileTime.ConsoleUI.App.Services;
 using FileTime.ConsoleUI.App.Styling;
 using FileTime.Core.Enums;
 using FileTime.Core.Models;
@@ -39,6 +40,7 @@ public class MainWindow
     private readonly Dialogs _dialogs;
     private readonly Timeline _timeline;
     private readonly ItemPreviews _itemPreviews;
+    private readonly IIconProvider _iconProvider;
     private readonly IOptions<ConsoleApplicationConfiguration> _consoleApplicationConfiguration;
     private readonly Lazy<IView> _root;
 
@@ -51,6 +53,7 @@ public class MainWindow
         Dialogs dialogs,
         Timeline timeline,
         ItemPreviews itemPreviews,
+        IIconProvider iconProvider,
         IOptions<ConsoleApplicationConfiguration> consoleApplicationConfiguration)
     {
         _rootViewModel = rootViewModel;
@@ -61,6 +64,7 @@ public class MainWindow
         _dialogs = dialogs;
         _timeline = timeline;
         _itemPreviews = itemPreviews;
+        _iconProvider = iconProvider;
         _consoleApplicationConfiguration = consoleApplicationConfiguration;
         _root = new Lazy<IView>(Initialize);
     }
@@ -540,9 +544,21 @@ public class MainWindow
                 new Grid<IItemViewModel>
                 {
                     Margin = "1 0 1 0",
-                    ColumnDefinitionsObject = "* Auto",
+                    ColumnDefinitionsObject = "2 * Auto",
                     ChildInitializer =
                     {
+                        new TextBlock<IItemViewModel>()
+                        {
+                            AsciiOnly = false
+                        }
+                            .Setup(t =>
+                            {
+                                t.Bind(
+                                    t,
+                                    dc => dc == null ? string.Empty : _iconProvider.GetImage(dc.BaseItem),
+                                    tb => tb.Text
+                                );
+                            }),
                         new TextBlock<IItemViewModel>()
                             .Setup(t =>
                             {
@@ -551,11 +567,11 @@ public class MainWindow
                                     dc => dc == null ? string.Empty : dc.DisplayNameText,
                                     tb => tb.Text
                                 );
-                            }),
+                            }).WithExtension(new GridPositionExtension(1, 0)),
                         new StackPanel<IItemViewModel>
                         {
                             Orientation = Orientation.Horizontal,
-                            Extensions = {new GridPositionExtension(1, 0)},
+                            Extensions = {new GridPositionExtension(2, 0)},
                             ChildInitializer =
                             {
                                 new TextBlock<IItemViewModel>()

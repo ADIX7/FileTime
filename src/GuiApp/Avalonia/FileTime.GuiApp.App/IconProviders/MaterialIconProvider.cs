@@ -1,7 +1,6 @@
 using FileTime.Core.Models;
 using FileTime.GuiApp.App.Models;
 using FileTime.GuiApp.App.Places;
-using FileTime.GuiApp.App.Services;
 using FileTime.Providers.Local;
 
 namespace FileTime.GuiApp.App.IconProviders;

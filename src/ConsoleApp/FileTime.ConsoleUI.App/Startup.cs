@@ -42,6 +42,7 @@ public static class Startup
         services.TryAddSingleton<IUserCommunicationService>(sp => sp.GetRequiredService<IDialogService>());
         services.AddSingleton<IUserCommandHandler, ConsoleUserCommandHandler>();
         services.AddSingleton<IStartupHandler, StartupHandler>();
+        services.TryAddSingleton<IIconProvider, NerdFontIconProvider>();
         services.TryAddSingleton<IThemeProvider, ThemeProvider>();
 
         services.Configure<ConsoleApplicationConfiguration>(configuration);
