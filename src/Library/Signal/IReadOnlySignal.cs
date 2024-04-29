@@ -1,10 +1,9 @@
 namespace Signal;
 
-public interface IReadOnlySignal
+public interface IReadOnlySignal : IDisposable
 {
     bool IsDirty { get; }
     event Action<bool> IsDirtyChanged;
-    internal void SetDirty();
 }
 public interface IReadOnlySignal<T> : IReadOnlySignal
 {

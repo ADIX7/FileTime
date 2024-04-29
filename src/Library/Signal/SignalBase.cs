@@ -1,50 +1,122 @@
 namespace Signal;
 
-public abstract class SignalBase<T> : IReadOnlySignal<T>
+public abstract class SignalBase : IReadOnlySignal
 {
-    private readonly List<SignalBase<T>> _dependentSignals = [];
-    public bool IsDirty { get; protected set; } = true;
+    private bool _isDirty = true;
+
     public event Action<bool>? IsDirtyChanged;
 
-    public SignalBase()
+    public bool IsDirty
     {
-        
-    }
-
-    public SignalBase(IReadOnlySignal baseSignal)
-    {
-        HandleDependentSignal(baseSignal);
-    }
-
-    public SignalBase(IEnumerable<IReadOnlySignal> baseSignal)
-    {
-        foreach (var signal in baseSignal)
+        get => _isDirty;
+        protected set
         {
-            HandleDependentSignal(signal);
-        }
-    }
-    
-    private void HandleDependentSignal(IReadOnlySignal baseSignal)
-    {
-        baseSignal.IsDirtyChanged += isDirty =>
-        {
-            if (isDirty)
+            if (_isDirty == value)
             {
-                SetDirty();
+                return;
             }
-        };
+
+            _isDirty = value;
+            IsDirtyChanged?.Invoke(value);
+        }
+    }
+    public event Action<SignalBase> Disposed;
+    public bool IsDisposed { get; private set; }
+    
+    internal TreeLocker TreeLock { get; }
+    
+    private protected SignalBase(TreeLocker treeTreeLock)
+    {
+        TreeLock = treeTreeLock;
     }
 
-    public void SetDirty()
+    public virtual void Dispose()
     {
-        IsDirty = true;
-        for (var i = 0; i < _dependentSignals.Count; i++)
+        // TODO: disposing pattern
+        IsDisposed = true;
+        Disposed?.Invoke(this);
+    }
+}
+
+public abstract class SignalBase<T> : SignalBase, IReadOnlySignal<T>
+{
+    internal static AsyncLocal<TreeLocker> CurrentTreeLocker { get; } = new();
+    private protected SignalBase():base(new TreeLocker())
+    {
+    }
+
+    protected SignalBase(SignalBase parentSignal):base(parentSignal.TreeLock)
+    {
+        SubscribeToParentSignalChanges(parentSignal);
+    }
+
+    protected SignalBase(ICollection<SignalBase> parentSignals):base(CreateMultiParentTreeLock(parentSignals))
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(parentSignals.Count);
+        
+        foreach (var parentSignal in parentSignals)
         {
-            _dependentSignals[i].SetDirty();
+            SubscribeToParentSignalChanges(parentSignal);
+        }
+    }
+
+    private static TreeLocker CreateMultiParentTreeLock(ICollection<SignalBase> parentSignals)
+    {
+        var firstLock = parentSignals.First().TreeLock;
+        foreach (var parentSignal in parentSignals.Skip(1))
+        {
+            parentSignal.TreeLock.UseInstead(firstLock);
+        }
+        
+        return firstLock;
+    }
+
+    private void SubscribeToParentSignalChanges(SignalBase parentSignal)
+    {
+        // Note: Do not forget to unsubscribe from the parent signal when this signal is disposed.
+        parentSignal.IsDirtyChanged += HandleParentIsDirtyChanged;
+        parentSignal.Disposed += UnsubscribeFromParentSignalChangesAndDispose;
+    }
+
+    private void HandleParentIsDirtyChanged(bool isDirty)
+    {
+        if (isDirty)
+        {
+            IsDirty = true;
+        }
+    }
+
+    private void UnsubscribeFromParentSignalChangesAndDispose(SignalBase parentSignal)
+    {
+        parentSignal.IsDirtyChanged -= HandleParentIsDirtyChanged;
+        parentSignal.Disposed -= UnsubscribeFromParentSignalChangesAndDispose;
+
+        Dispose();
+    }
+
+    protected abstract ValueTask<T> GetValueInternalAsync();
+
+    public async ValueTask<T> GetValueAsync()
+    {
+        var shouldReleaseLock = false;
+        if (CurrentTreeLocker.Value != TreeLock)
+        {
+            await TreeLock.LockAsync();
+            shouldReleaseLock = true;
+            CurrentTreeLocker.Value = TreeLock;
         }
 
-        IsDirtyChanged?.Invoke(IsDirty);
+        try
+        {
+            return await GetValueInternalAsync();
+        }
+        finally
+        {
+            if (shouldReleaseLock)
+            {
+                CurrentTreeLocker.Value = null;
+                TreeLock.Release();
+            }
+        }
     }
-
-    public abstract ValueTask<T> GetValueAsync();
 }

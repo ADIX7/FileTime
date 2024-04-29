@@ -1,6 +1,6 @@
 ﻿namespace Signal;
 
-public class Signal<T> : SignalBase<T>, ISignal<T>
+public sealed class Signal<T> : SignalBase<T>, ISignal<T>
 {
     private T _value;
 
@@ -11,11 +11,33 @@ public class Signal<T> : SignalBase<T>, ISignal<T>
 
     public void SetValue(T value)
     {
-        _value = value;
-        SetDirty();
+        TreeLock.Lock();
+        try
+        {
+            _value = value;
+            IsDirty = true;
+        }
+        finally
+        {
+            TreeLock.Release();
+        }
     }
-    
-    public override ValueTask<T> GetValueAsync()
+
+    public async Task SetValueAsync(T value)
+    {
+        await TreeLock.LockAsync();
+        try
+        {
+            _value = value;
+            IsDirty = true;
+        }
+        finally
+        {
+            TreeLock.Release();
+        }
+    }
+
+    protected override ValueTask<T> GetValueInternalAsync()
     {
         IsDirty = false;
         return new ValueTask<T>(_value);
