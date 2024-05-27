@@ -73,6 +73,7 @@ public static class Startup
     private static IServiceCollection AddCommandFactories(this IServiceCollection serviceCollection) =>
         serviceCollection
             .AddSingleton<CopyCommandFactory>()
+            .AddSingleton<CopyStrategyFactory>()
             .AddSingleton<MoveCommandFactory>();
 
 

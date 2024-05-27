@@ -9,16 +9,19 @@ public class CopyCommandFactory : ITransportationCommandFactory<CopyCommand>
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
+    private readonly CopyStrategyFactory _copyStrategyFactory;
     private readonly IServiceProvider _serviceProvider;
 
     public CopyCommandFactory(
         ITimelessContentProvider timelessContentProvider,
         ICommandSchedulerNotifier commandSchedulerNotifier,
+        CopyStrategyFactory copyStrategyFactory,
         IServiceProvider serviceProvider)
 
     {
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
+        _copyStrategyFactory = copyStrategyFactory;
         _serviceProvider = serviceProvider;
     }
 
@@ -29,6 +32,7 @@ public class CopyCommandFactory : ITransportationCommandFactory<CopyCommand>
         => new(
             _timelessContentProvider,
             _commandSchedulerNotifier,
+            _copyStrategyFactory,
             _serviceProvider.GetRequiredService<ILogger<CopyCommand>>(),
             sources,
             mode,

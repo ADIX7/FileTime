@@ -11,6 +11,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
 {
     private readonly ITimelessContentProvider _timelessContentProvider;
     private readonly ICommandSchedulerNotifier _commandSchedulerNotifier;
+    private readonly CopyStrategyFactory _copyStrategyFactory;
     private readonly ILogger<CopyCommand> _logger;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -29,7 +30,8 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
     internal CopyCommand(
         ITimelessContentProvider timelessContentProvider,
-        ICommandSchedulerNotifier commandSchedulerNotifier,
+        ICommandSchedulerNotifier commandSchedulerNotifier, 
+        CopyStrategyFactory copyStrategyFactory,
         ILogger<CopyCommand> logger,
         IReadOnlyCollection<FullName> sources,
         TransportMode mode,
@@ -42,6 +44,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
         _timelessContentProvider = timelessContentProvider;
         _commandSchedulerNotifier = commandSchedulerNotifier;
+        _copyStrategyFactory = copyStrategyFactory;
         _logger = logger;
         _currentOperationProgress
             .Map(p =>
@@ -105,7 +108,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
         await CalculateProgressAsync(currentTime);
 
-        var copyOperation = new CopyStrategy(copy, new CopyStrategyParam(_operationProgresses, _commandSchedulerNotifier.RefreshContainer));
+        var copyOperation = _copyStrategyFactory.CreateCopyStrategy(copy, _operationProgresses, _commandSchedulerNotifier.RefreshContainer);
 
         var resolvedTarget = await _timelessContentProvider.GetItemByFullNameAsync(Target, currentTime);
 

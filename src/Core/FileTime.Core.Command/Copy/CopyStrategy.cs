@@ -1,3 +1,4 @@
+using FileTime.Core.ContentAccess;
 using FileTime.Core.Models;
 using FileTime.Core.Timeline;
 
@@ -7,11 +8,13 @@ public class CopyStrategy : ICopyStrategy
 {
     private readonly CopyFunc _copy;
     private readonly CopyStrategyParam _copyStrategyParam;
+    private readonly IContentAccessorFactory _contentAccessorFactory;
 
-    public CopyStrategy(CopyFunc copy, CopyStrategyParam copyStrategyParam)
+    public CopyStrategy(CopyFunc copy, CopyStrategyParam copyStrategyParam, IContentAccessorFactory contentAccessorFactory)
     {
         _copy = copy;
         _copyStrategyParam = copyStrategyParam;
+        _contentAccessorFactory = contentAccessorFactory;
     }
 
     public async Task ContainerCopyDoneAsync(AbsolutePath containerPath)
@@ -33,11 +36,14 @@ public class CopyStrategy : ICopyStrategy
         }
 
         if (to.Path.GetParent() is { } parent)
+        {
             await _copyStrategyParam.RefreshContainerAsync(parent);
+        }
     }
 
-    public Task CreateContainerAsync(IContainer target, string name, PointInTime currentTime)
+    public async Task CreateContainerAsync(IContainer target, string name, PointInTime currentTime)
     {
-        throw new NotImplementedException();
+        var itemCreator = _contentAccessorFactory.GetItemCreator(target.Provider);
+        await itemCreator.CreateContainerAsync(target.Provider, target.FullName!.GetChild(name));
     }
 }

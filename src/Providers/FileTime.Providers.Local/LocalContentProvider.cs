@@ -220,7 +220,7 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
                     parentFullName,
                     AbsolutePathType.Container);
 
-        return new Container(
+        var container = new Container(
             name,
             name,
             fullName,
@@ -240,6 +240,8 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
             new ExtensionCollection().AsReadOnly(),
             new ObservableCollection<AbsolutePath>()
         );
+        container.StopLoading();
+        return container;
     }
 
     private IItem CreateEmptyElement(NativePath nativePath)
@@ -301,6 +303,10 @@ public sealed partial class LocalContentProvider : ContentProviderBase, ILocalCo
         if (!initializationSettings.SkipChildInitialization)
         {
             Task.Run(async () => await LoadChildren(container, directoryInfo, children, pointInTime, exceptions));
+        }
+        else
+        {
+            container.StopLoading();
         }
 
         return container;
