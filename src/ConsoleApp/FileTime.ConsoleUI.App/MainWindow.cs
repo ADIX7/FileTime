@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using FileTime.App.Core.Models.Enums;
 using FileTime.App.Core.ViewModels;
 using FileTime.ConsoleUI.App.Configuration;
@@ -172,6 +173,15 @@ public class MainWindow
                                 }.Setup(t => t.Bind(
                                     t,
                                     dc => dc!.ClipboardService.Content.Count > 1,
+                                    tb => tb.IsVisible)),
+                                new TextBlock<IRootViewModel>
+                                {
+                                    Text = /*_consoleApplicationConfiguration.Value.ClipboardMultipleIcon ??*/
+                                           (_consoleApplicationConfiguration.Value.DisableUtf8 ? "DB " : "\udb80\udce4"),
+                                    AsciiOnly = false
+                                }.Setup(t => t.Bind(
+                                    t,
+                                    dc => dc.IsDebuggerAttached.Value,
                                     tb => tb.IsVisible))
                             }
                         },

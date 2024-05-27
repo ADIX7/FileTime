@@ -209,6 +209,10 @@ public class RenderEngine : IRenderEngine
             {
                 view.Attached = true;
                 view.GetRequestedSize();
+                if (view.DataContext is IBeforeRender beforeRenderHandler)
+                {
+                    beforeRenderHandler.BeforeRender();
+                }
                 view.Render(renderContext, position, size);
             }
             catch (Exception e)

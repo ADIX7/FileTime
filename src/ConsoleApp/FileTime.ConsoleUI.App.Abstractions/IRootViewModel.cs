@@ -25,5 +25,6 @@ public interface IRootViewModel
     IItemPreviewService ItemPreviewService { get; }
     IClipboardService ClipboardService { get; }
     IAdminElevationManager AdminElevationManager { get; }
+    IDeclarativeProperty<bool> IsDebuggerAttached { get; }
     event Action<IInputElement>? FocusReadInputElement;
 }

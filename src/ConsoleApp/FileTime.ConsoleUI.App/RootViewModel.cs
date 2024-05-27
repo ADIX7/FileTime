@@ -1,4 +1,5 @@
-﻿using DeclarativeProperty;
+﻿using System.Diagnostics;
+using DeclarativeProperty;
 using FileTime.App.CommandPalette.ViewModels;
 using FileTime.App.Core.Services;
 using FileTime.App.Core.ViewModels;
@@ -8,11 +9,13 @@ using FileTime.ConsoleUI.App.Services;
 using FileTime.Core.Interactions;
 using FileTime.Core.Models;
 using FileTime.Providers.LocalAdmin;
+using TerminalUI.Traits;
 
 namespace FileTime.ConsoleUI.App;
 
-public partial class RootViewModel : IRootViewModel
+public partial class RootViewModel : IRootViewModel, IBeforeRender
 {
+    private readonly DeclarativeProperty<bool> _isDebuggerAttached = new(Debugger.IsAttached);
     public string UserName => Environment.UserName;
     public string MachineName => Environment.MachineName;
     public IPossibleCommandsViewModel PossibleCommands { get; }
@@ -25,6 +28,7 @@ public partial class RootViewModel : IRootViewModel
     public IDialogService DialogService { get; }
     public ITimelineViewModel TimelineViewModel { get; }
     public IDeclarativeProperty<VolumeSizeInfo?> VolumeSizeInfo { get; }
+    public IDeclarativeProperty<bool> IsDebuggerAttached => _isDebuggerAttached;
 
     public event Action<IInputElement>? FocusReadInputElement;
 
@@ -73,4 +77,6 @@ public partial class RootViewModel : IRootViewModel
             .Switch()
             .Map(async l => l is null ? null : await l.Provider.GetVolumeSizeInfoAsync(l.FullName!));
     }
+
+    public void BeforeRender() => _isDebuggerAttached.SetValue(Debugger.IsAttached);
 }
