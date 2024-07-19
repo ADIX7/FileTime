@@ -13,7 +13,7 @@ public sealed class CompressedSubContentProvider(IContentAccessorFactory content
         ITimelessContentProvider timelessContentProvider)
     : ICompressedSubContentProvider
 {
-    private static readonly string[] SupportedExtensions = {".zip", ".gz", ".7z"};
+    private static readonly string[] SupportedExtensions = {".zip", ".gz", ".7z", ".nupkg", ".jar"};
 
     public Task<bool> CanHandleAsync(IElement parentElement)
         => Task.FromResult(
