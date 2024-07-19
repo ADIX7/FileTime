@@ -38,7 +38,8 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://FileTime.GuiApp.App/Resources/SolarizedDarkTheme.axaml" />
+                <ResourceInclude
+                    Source="avares://FileTime.GuiApp.App/Resources/SolarizedDarkTheme.axaml" />
                 <ResourceInclude Source="avares://FileTime.GuiApp.App/Resources/Brushes.axaml" />
                 <ResourceInclude Source="avares://FileTime.GuiApp.App/Resources/Converters.axaml" />
                 <ResourceDictionary>
@@ -150,7 +151,8 @@
                         <StackPanel
                             Margin="20,10"
                             Orientation="Horizontal">
-                            <local:PathPresenter DataContext="{Binding AppState.SelectedTab.Value.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
+                            <local:PathPresenter
+                                DataContext="{Binding AppState.SelectedTab.Value.CurrentLocation^.FullName.Path, Converter={StaticResource PathPreformatter}}" />
                             <TextBlock
                                 Foreground="{StaticResource AccentBrush}"
                                 Text="{Binding AppState.SelectedTab.Value.CurrentSelectedItem.Value.DisplayNameText}" />
@@ -158,7 +160,7 @@
                         <StackPanel
                             Grid.Column="1"
                             Margin="{Binding IconStatusPanelMargin, Mode=OneTime}"
-                            Orientation="Vertical">
+                            Orientation="Horizontal">
                             <Image
                                 Width="20"
                                 Height="20"
@@ -435,7 +437,8 @@
                                                                 <Grid
                                                                     Grid.ColumnSpan="2"
                                                                     ColumnDefinitions="*, Auto">
-                                                                    <TextBlock Text="{Binding DisplayLabel.Value}" />
+                                                                    <TextBlock
+                                                                        Text="{Binding DisplayLabel.Value}" />
 
                                                                     <Button
                                                                         Grid.Column="1"
@@ -564,7 +567,8 @@
                             <Grid
                                 Grid.Column="2"
                                 RowDefinitions="Auto,*">
-                                <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentLocation.Value.IsLoading^, FallbackValue=False}">
+                                <Grid
+                                    IsVisible="{Binding AppState.SelectedTab.Value.CurrentLocation.Value.IsLoading^, FallbackValue=False}">
                                     <Image
                                         Width="40"
                                         Height="40"
@@ -612,11 +616,14 @@
                                 Fill="{DynamicResource ContentSeparatorBrush}" />
 
                             <Grid Grid.Column="4">
-                                <Grid IsVisible="{Binding ItemPreviewService.ItemPreview.Value, Converter={x:Static ObjectConverters.IsNull}}">
-                                    <Grid IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                                <Grid
+                                    IsVisible="{Binding ItemPreviewService.ItemPreview.Value, Converter={x:Static ObjectConverters.IsNull}}">
+                                    <Grid
+                                        IsVisible="{Binding AppState.SelectedTab.Value.SelectedsChildren.Value, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                                         <Grid RowDefinitions="Auto, Auto, *">
 
-                                            <Grid IsVisible="{Binding AppState.SelectedTab.Value.CurrentSelectedItemAsContainer.Value.Container.IsLoading^, FallbackValue=False}">
+                                            <Grid
+                                                IsVisible="{Binding AppState.SelectedTab.Value.CurrentSelectedItemAsContainer.Value.Container.IsLoading^, FallbackValue=False}">
                                                 <Image
                                                     Width="40"
                                                     Height="40"
@@ -691,8 +698,10 @@
                                 <Grid
                                     DataContext="{Binding ItemPreviewService.ItemPreview.Value}"
                                     IsVisible="{Binding FallbackValue=false, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                    <Grid IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static itemPreview:ElementPreviewViewModel.PreviewName}}">
-                                        <Grid x:DataType="itemPreviewInterface:IElementPreviewViewModel">
+                                    <Grid
+                                        IsVisible="{Binding Name, FallbackValue=false, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static itemPreview:ElementPreviewViewModel.PreviewName}}">
+                                        <Grid
+                                            x:DataType="itemPreviewInterface:IElementPreviewViewModel">
                                             <TextBlock
                                                 HorizontalAlignment="Center"
                                                 IsVisible="{Binding Mode, Converter={StaticResource EqualsConverter}, ConverterParameter={x:Static appCoreModels:ItemPreviewMode.Unknown}, FallbackValue={x:Static appCoreModels:ItemPreviewMode.Unknown}}"
@@ -734,7 +743,8 @@
                                                     <DataTemplate>
                                                         <Grid>
                                                             <Grid.Width>
-                                                                <MultiBinding Converter="{StaticResource ItemSizeToSizeConverter}">
+                                                                <MultiBinding
+                                                                    Converter="{StaticResource ItemSizeToSizeConverter}">
                                                                     <MultiBinding.Bindings>
                                                                         <Binding />
                                                                         <Binding
@@ -749,7 +759,8 @@
 
                                                             <Rectangle HorizontalAlignment="Stretch">
                                                                 <Rectangle.Fill>
-                                                                    <MultiBinding Converter="{StaticResource ItemSizeToBrushConverter}">
+                                                                    <MultiBinding
+                                                                        Converter="{StaticResource ItemSizeToBrushConverter}">
                                                                         <MultiBinding.Bindings>
                                                                             <Binding />
                                                                             <Binding
@@ -768,7 +779,8 @@
                                                                     FontWeight="Bold"
                                                                     Text="{Binding Name}">
                                                                     <TextBlock.Foreground>
-                                                                        <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
+                                                                        <MultiBinding
+                                                                            Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
                                                                             <MultiBinding.Bindings>
                                                                                 <Binding />
                                                                                 <Binding
@@ -784,7 +796,8 @@
                                                                     FontWeight="Bold"
                                                                     Text="{Binding Size.Value, Converter={StaticResource FormatSizeConverter}}">
                                                                     <TextBlock.Foreground>
-                                                                        <MultiBinding Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
+                                                                        <MultiBinding
+                                                                            Converter="{StaticResource ItemSizeToForegroundBrushConverter}">
                                                                             <MultiBinding.Bindings>
                                                                                 <Binding />
                                                                                 <Binding
@@ -895,7 +908,8 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Grid IsVisible="{Binding PossibleCommands.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
+                            <Grid
+                                IsVisible="{Binding PossibleCommands.PossibleCommands.Count, Converter={StaticResource NotEqualsConverter}, ConverterParameter=0}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="1" />
                                     <RowDefinition Height="Auto" />
@@ -912,7 +926,8 @@
                                     Grid.Row="1"
                                     ItemsSource="{Binding PossibleCommands.PossibleCommands}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="corevm:IPossibleCommandEntryViewModel">
+                                        <DataTemplate
+                                            x:DataType="corevm:IPossibleCommandEntryViewModel">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="200" />
@@ -1063,7 +1078,8 @@
                 <Grid
                     Margin="100"
                     Background="{DynamicResource ContainerBackgroundColor}">
-                    <local:FrequencyNavigation IsVisible="{Binding ShowWindow^, FallbackValue=False}" />
+                    <local:FrequencyNavigation
+                        IsVisible="{Binding ShowWindow^, FallbackValue=False}" />
                 </Grid>
             </Border>
 
