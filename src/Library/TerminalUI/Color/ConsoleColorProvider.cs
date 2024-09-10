@@ -73,6 +73,7 @@ public class ConsoleColorProvider : ColorProviderBase
     protected IColor ApproximateColor(Rgb rgb, IEnumerable<(Rgb, IColor)> colors)
         => colors.MinBy(c => c.Item1 - rgb).Item2;
 
+    public override IColor DefaultForeground => _blackForeground;
     public override IColor BlackForeground => _blackForeground;
     public override IColor BlueForeground => _blueForeground;
     public override IColor CyanForeground => _cyanForeground;
@@ -90,6 +91,7 @@ public class ConsoleColorProvider : ColorProviderBase
     public override IColor WhiteForeground => _whiteForeground;
     public override IColor YellowForeground => _yellowForeground;
 
+    public override IColor DefaultBackground => _blackBackground;
     public override IColor BlackBackground => _blackBackground;
     public override IColor BlueBackground => _blueBackground;
     public override IColor CyanBackground => _cyanBackground;

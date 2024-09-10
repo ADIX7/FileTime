@@ -60,7 +60,7 @@ public static class Startup
                 DefaultForegroundColor: null,
                 DefaultForegroundAccentColor: colorProvider.RedForeground,
                 DefaultBackgroundColor: null,
-                ElementColor: colorProvider.GrayForeground,
+                ElementColor: colorProvider.DefaultForeground,
                 ContainerColor: colorProvider.BlueForeground,
                 MarkedItemForegroundColor: colorProvider.YellowForeground,
                 MarkedItemBackgroundColor: null,

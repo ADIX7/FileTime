@@ -5,6 +5,7 @@ public interface IColorProvider
     IColor Parse(string color, ColorType type);
     IColor FromRgb(Rgb rgb, ColorType type);
 
+    IColor DefaultForeground { get; }
     IColor BlackForeground { get; }
     IColor BlueForeground { get; }
     IColor CyanForeground { get; }
@@ -21,8 +22,8 @@ public interface IColorProvider
     IColor RedForeground { get; }
     IColor WhiteForeground { get; }
     IColor YellowForeground { get; }
-    
 
+    IColor DefaultBackground { get; }
     IColor BlackBackground { get; }
     IColor BlueBackground { get; }
     IColor CyanBackground { get; }

@@ -82,6 +82,7 @@ public abstract class ColorProviderBase : IColorProvider
             _ => null
         };
 
+    public abstract IColor DefaultForeground { get; }
     public abstract IColor BlackForeground { get; }
     public abstract IColor BlueForeground { get; }
     public abstract IColor CyanForeground { get; }
@@ -99,6 +100,7 @@ public abstract class ColorProviderBase : IColorProvider
     public abstract IColor WhiteForeground { get; }
     public abstract IColor YellowForeground { get; }
 
+    public abstract IColor DefaultBackground { get; }
     public abstract IColor BlackBackground { get; }
     public abstract IColor BlueBackground { get; }
     public abstract IColor CyanBackground { get; }

@@ -1,3 +1,8 @@
+[*]
+tab_width = 4
+indent_size = 4
+indent_style = space
+
 [*.cs]
 dotnet_diagnostic.RCS1196.severity = none
 csharp_style_namespace_declarations = file_scoped:error

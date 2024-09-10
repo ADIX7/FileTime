@@ -25,6 +25,7 @@ public class AnsiColorProvider : ColorProviderBase
 
     public override IColor FromRgb(Rgb rgb, ColorType type) => new ColorRgb(rgb.R, rgb.G, rgb.B, type);
 
+    public override IColor DefaultForeground { get; } = Color256.DefaultForeground;
     public override IColor BlackForeground { get; } = new Color256(0, ColorType.Foreground);
     public override IColor BlueForeground { get; } = new Color256(12, ColorType.Foreground);
     public override IColor CyanForeground { get; } = new Color256(14, ColorType.Foreground);
@@ -42,6 +43,7 @@ public class AnsiColorProvider : ColorProviderBase
     public override IColor WhiteForeground { get; } = new Color256(15, ColorType.Foreground);
     public override IColor YellowForeground { get; } = new Color256(11, ColorType.Foreground);
 
+    public override IColor DefaultBackground { get; } = Color256.DefaultBackground;
     public override IColor BlackBackground { get; } = new Color256(0, ColorType.Background);
     public override IColor BlueBackground { get; } = new Color256(12, ColorType.Background);
     public override IColor CyanBackground { get; } = new Color256(14, ColorType.Background);
