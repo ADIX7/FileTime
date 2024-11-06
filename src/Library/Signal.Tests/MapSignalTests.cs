@@ -76,4 +76,19 @@ public class MapSignalTests
         // Assert
         Assert.Equal("TEST", result);
     }
+
+    [Fact]
+    public async Task GetValueAsync_WhenParentSometimesReturnsNull_ShouldInitialize()
+    {
+        int count = 0;
+        // Arrange
+        var signal = new Signal<string>(null);
+        var mapped = signal.Map(_ => "TEST");
+        
+        // Act
+        var result = await mapped.GetValueAsync();
+        
+        // Assert
+        Assert.Equal("TEST", result);
+    }
 }

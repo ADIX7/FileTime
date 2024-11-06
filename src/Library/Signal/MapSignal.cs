@@ -4,6 +4,7 @@ public sealed class MapSignal<T, TResult> : SignalBase<TResult>
 {
     private readonly Func<T, ValueTask<TResult>> _map;
     private readonly SignalBase<T> _parentSignal;
+    private bool _isInitialized;
     private T? _lastParentValue;
     private TResult? _lastResult;
 
@@ -43,12 +44,17 @@ public sealed class MapSignal<T, TResult> : SignalBase<TResult>
         IsDirty = false;
         var baseValue = await _parentSignal.GetValueAsync();
         if (
-            (_lastParentValue == null && baseValue == null) ||
-            (baseValue != null && baseValue.Equals(_lastParentValue)))
+            _isInitialized 
+            &&
+            (
+                (baseValue == null && _lastParentValue == null) 
+                || (baseValue != null && baseValue.Equals(_lastParentValue))
+            ))
         {
             return _lastResult!;
         }
 
+        _isInitialized = true;
         _lastParentValue = baseValue;
         _lastResult = await _map(baseValue);
         return _lastResult;

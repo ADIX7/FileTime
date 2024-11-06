@@ -38,6 +38,7 @@ public sealed class CombineLatestSignal<T1, T2, TResult> : SignalBase<TResult>
             return _result;
         }
         
+        // TODO caching
         IsDirty = false;
         _result = await _combine();
         return _result;

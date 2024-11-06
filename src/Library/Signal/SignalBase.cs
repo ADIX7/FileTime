@@ -6,7 +6,7 @@ public abstract class SignalBase : IReadOnlySignal
 
     public event Action<bool>? IsDirtyChanged;
 
-    public bool IsDirty
+    public virtual bool IsDirty
     {
         get => _isDirty;
         protected set
@@ -20,11 +20,12 @@ public abstract class SignalBase : IReadOnlySignal
             IsDirtyChanged?.Invoke(value);
         }
     }
+
     public event Action<SignalBase> Disposed;
     public bool IsDisposed { get; private set; }
-    
+
     internal TreeLocker TreeLock { get; }
-    
+
     private protected SignalBase(TreeLocker treeTreeLock)
     {
         TreeLock = treeTreeLock;
@@ -41,33 +42,47 @@ public abstract class SignalBase : IReadOnlySignal
 public abstract class SignalBase<T> : SignalBase, IReadOnlySignal<T>
 {
     internal static AsyncLocal<TreeLocker> CurrentTreeLocker { get; } = new();
-    private protected SignalBase():base(new TreeLocker())
+
+    private protected SignalBase() : base(new TreeLocker())
     {
     }
 
-    protected SignalBase(SignalBase parentSignal):base(parentSignal.TreeLock)
+    protected SignalBase(SignalBase parentSignal) : base(parentSignal.TreeLock)
     {
         SubscribeToParentSignalChanges(parentSignal);
     }
 
-    protected SignalBase(ICollection<SignalBase> parentSignals):base(CreateMultiParentTreeLock(parentSignals))
+    protected SignalBase(ICollection<SignalBase> parentSignals) : base(CreateMultiParentTreeLock(parentSignals))
     {
         ArgumentOutOfRangeException.ThrowIfZero(parentSignals.Count);
-        
+
         foreach (var parentSignal in parentSignals)
         {
             SubscribeToParentSignalChanges(parentSignal);
         }
     }
 
-    private static TreeLocker CreateMultiParentTreeLock(ICollection<SignalBase> parentSignals)
+    protected SignalBase(IEnumerable<SignalBase> parentSignals) : base(CreateMultiParentTreeLock(parentSignals))
+    {
+        if (!parentSignals.Any())
+        {
+            throw new ArgumentOutOfRangeException(nameof(parentSignals));
+        }
+
+        foreach (var parentSignal in parentSignals)
+        {
+            SubscribeToParentSignalChanges(parentSignal);
+        }
+    }
+
+    private static TreeLocker CreateMultiParentTreeLock(IEnumerable<SignalBase> parentSignals)
     {
         var firstLock = parentSignals.First().TreeLock;
         foreach (var parentSignal in parentSignals.Skip(1))
         {
             parentSignal.TreeLock.UseInstead(firstLock);
         }
-        
+
         return firstLock;
     }
 
