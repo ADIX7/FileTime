@@ -30,7 +30,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
 
     internal CopyCommand(
         ITimelessContentProvider timelessContentProvider,
-        ICommandSchedulerNotifier commandSchedulerNotifier, 
+        ICommandSchedulerNotifier commandSchedulerNotifier,
         CopyStrategyFactory copyStrategyFactory,
         ILogger<CopyCommand> logger,
         IReadOnlyCollection<FullName> sources,
@@ -52,7 +52,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 return p?.Progress.Map(currentProgress =>
                     p.TotalCount == 0
                         ? 0
-                        : (int) (currentProgress * 100 / p.TotalCount)
+                        : (int)(currentProgress * 100 / p.TotalCount)
                 );
             })
             .Switch()
@@ -156,7 +156,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
                     var statusList = statuses.ToList();
                     var done = statusList.Count(s => s) + 1;
                     if (done > statusList.Count) done = statusList.Count;
-                    
+
                     return Task.FromResult($"Copy - {done} / {statusList.Count}");
                 })
                 .Subscribe(async (v, _) => await SetDisplayLabelAsync(v));
@@ -174,7 +174,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
         {
             if (_cancellationTokenSource.IsCancellationRequested) return;
 
-            var resolvedTarget = (IContainer) await target.ResolveAsync() ?? throw new Exception();
+            var resolvedTarget = (IContainer)await target.ResolveAsync() ?? throw new Exception();
             var item = await _timelessContentProvider.GetItemByFullNameAsync(source, currentTime);
 
             if (item is IContainer container)
@@ -183,7 +183,7 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 {
                     await container.WaitForLoaded(_cancellationTokenSource.Token);
                 }
-                catch(OperationCanceledException)
+                catch (OperationCanceledException)
                 {
                     return;
                 }
@@ -208,7 +208,15 @@ public class CopyCommand : CommandBase, ITransportationCommand
                 var currentProgress = _operationProgresses.Find(o => o.Key == element.FullName!.Path);
                 await _currentOperationProgress.SetValue(currentProgress);
 
-                await copyOperation.CopyAsync(new AbsolutePath(_timelessContentProvider, element), newElementPath, new CopyCommandContext(UpdateProgress, currentProgress, _cancellationTokenSource.Token));
+                try
+                {
+                    await copyOperation.CopyAsync(new AbsolutePath(_timelessContentProvider, element), newElementPath, new CopyCommandContext(UpdateProgress, currentProgress, _cancellationTokenSource.Token));
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError("Error while copying file: {Path}, {Message}", element.FullName!.Path, e.Message);
+                    AddError(new CommandError("Error while copying file: " + element.FullName!.Path, e));
+                }
             }
         }
     }
